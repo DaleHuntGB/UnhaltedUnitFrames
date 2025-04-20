@@ -616,11 +616,11 @@ function UUF:UpdateUnitFrame(FrameName)
             end
         end
         local UHAR, UHAG, UHAB, UHAA = unpack(Absorbs.Colour)
-        FrameName.unitHealAbsorbs:SetStatusBarColor(UHAR, UHAG, UHAB, UHAA)
+        FrameName.unitAbsorbs:SetStatusBarColor(UHAR, UHAG, UHAB, UHAA)
         FrameName.unitAbsorbs:SetSize(FrameName:GetWidth() - 2, FrameName:GetHeight() - 2)
         FrameName.unitAbsorbs:SetFrameLevel(FrameName.unitHealthBar:GetFrameLevel() + 1)
     end
-    
+
     -- Frame Heal Absorbs
     if FrameName.unitHealAbsorbs and HealAbsorbs.Enabled then
         FrameName.unitHealAbsorbs:SetStatusBarTexture(General.ForegroundTexture)
