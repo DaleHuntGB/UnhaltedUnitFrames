@@ -236,6 +236,12 @@ function UUF:CreateGUI()
         UIScaleToggle:SetValue(UUF.DB.global.UIScaleEnabled)
         UIScaleToggle:SetCallback("OnValueChanged", function(widget, event, value) UUF.DB.global.UIScaleEnabled = value ReloadUI() end)
         UIScaleToggle:SetRelativeWidth(1)
+        if not UUF.DB.global.UIScaleEnabled then
+            UIScale:SetDisabled(true)
+            TenEightyP:SetDisabled(true)
+            FourteenFortyP:SetDisabled(true)
+            ApplyUIScale:SetDisabled(true)
+        end
 
         UIScaleContainer:AddChild(UIScaleToggle)
         UIScaleContainer:AddChild(UIScale)
