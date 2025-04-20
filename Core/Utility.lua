@@ -821,17 +821,38 @@ function UUF:UpdateBossFrames()
     for _, BossFrame in ipairs(UUF.BossFrames) do UUF:UpdateUnitFrame(BossFrame) end
     local Frame = UUF.DB.profile.Boss.Frame
     local BossSpacing = Frame.Spacing
-    local BossContainer = 0
     local growDown = Frame.GrowthY == "DOWN"
     for i, BossFrame in ipairs(UUF.BossFrames) do
         BossFrame:ClearAllPoints()
         if i == 1 then
-            BossContainer = (BossFrame:GetHeight() + BossSpacing) * #UUF.BossFrames - BossSpacing
-            local offsetY = (BossContainer / 2 - BossFrame:GetHeight() / 2)
-            if not growDown then
-                offsetY = -offsetY
+            local BossContainerHeight = (BossFrame:GetHeight() + BossSpacing) * #UUF.BossFrames - BossSpacing
+            local offsetY = 0
+            if (Frame.AnchorFrom == "TOPLEFT" or Frame.AnchorFrom == "TOPRIGHT" or Frame.AnchorFrom == "TOP") and not growDown then
+                offsetY = -BossContainerHeight
+            elseif (Frame.AnchorFrom == "BOTTOMLEFT" or Frame.AnchorFrom == "BOTTOMRIGHT" or Frame.AnchorFrom == "BOTTOM") and growDown then
+                offsetY = BossContainerHeight
+            elseif (Frame.AnchorFrom == "CENTER" or Frame.AnchorFrom == "LEFT" or Frame.AnchorFrom == "RIGHT") then
+                if (growDown) then
+                    offsetY = (BossContainerHeight - BossFrame:GetHeight()) / 2
+                else
+                    offsetY = -(BossContainerHeight - BossFrame:GetHeight()) / 2
+                end
             end
-            BossFrame:SetPoint( Frame.AnchorFrom, Frame.AnchorParent, Frame.AnchorTo, Frame.XPosition, offsetY + Frame.YPosition )
+            local adjustedAnchorFrom = Frame.AnchorFrom 
+            if Frame.AnchorFrom == "TOPLEFT" and not growDown then
+                adjustedAnchorFrom = "BOTTOMLEFT"
+            elseif Frame.AnchorFrom == "TOP" and not growDown then
+                adjustedAnchorFrom = "BOTTOM"
+            elseif Frame.AnchorFrom == "TOPRIGHT" and not growDown then
+                adjustedAnchorFrom = "BOTTOMRIGHT"
+            elseif Frame.AnchorFrom == "BOTTOMLEFT" and growDown then
+                adjustedAnchorFrom = "TOPLEFT"
+            elseif Frame.AnchorFrom == "BOTTOM" and growDown then
+                adjustedAnchorFrom = "TOP"
+            elseif Frame.AnchorFrom == "BOTTOMRIGHT" and growDown then
+                adjustedAnchorFrom = "TOPRIGHT"
+            end
+            BossFrame:SetPoint( adjustedAnchorFrom, Frame.AnchorParent, Frame.AnchorTo, Frame.XPosition, Frame.YPosition + offsetY)
         else
             local anchor = growDown and "TOPLEFT" or "BOTTOMLEFT"
             local relativeAnchor = growDown and "BOTTOMLEFT" or "TOPLEFT"
