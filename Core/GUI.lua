@@ -600,6 +600,15 @@ function UUF:CreateGUI()
             Enabled:SetFullWidth(true)
             UUFGUI_Container:AddChild(Enabled)
 
+            if Unit == "Boss" then
+                local DisplayFrames = UUFGUI:Create("Button")
+                DisplayFrames:SetText("Display Frames")
+                DisplayFrames:SetCallback("OnClick", function(widget, event, value) UUF.DB.profile.TestMode = not UUF.DB.profile.TestMode UUF:DisplayBossFrames() UUF:UpdateFrames() end)
+                DisplayFrames:SetRelativeWidth(1)
+                UUFGUI_Container:AddChild(DisplayFrames)
+                if not Frame.Enabled then DisplayFrames:SetDisabled(true) end
+            end
+
             -- Frame Options
             local FrameOptions = UUFGUI:Create("InlineGroup")
             FrameOptions:SetTitle("Frame Options")
@@ -876,15 +885,6 @@ function UUF:CreateGUI()
             PowerBarHeight:SetCallback("OnMouseUp", function(widget, event, value) PowerBar.Height = value UUF:UpdateFrames() end)
             PowerBarHeight:SetRelativeWidth(0.5)
             PowerBarOptionsContainer:AddChild(PowerBarHeight)
-
-            if Unit == "Boss" then
-                local DisplayFrames = UUFGUI:Create("Button")
-                DisplayFrames:SetText("Display Frames")
-                DisplayFrames:SetCallback("OnClick", function(widget, event, value) UUF.DB.profile.TestMode = not UUF.DB.profile.TestMode UUF:DisplayBossFrames() UUF:UpdateFrames() end)
-                DisplayFrames:SetRelativeWidth(1)
-                UUFGUI_Container:AddChild(DisplayFrames)
-                if not Frame.Enabled then DisplayFrames:SetDisabled(true) end
-            end
 
             if not Frame.Enabled then
                 if FrameOptions then 
