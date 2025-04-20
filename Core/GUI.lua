@@ -206,7 +206,12 @@ function UUF:CreateGUI()
         UIScale:SetLabel("UI Scale")
         UIScale:SetSliderValues(0.4, 2, 0.01)
         UIScale:SetValue(UUF.DB.global.UIScale)
-        UIScale:SetCallback("OnMouseUp", function(widget, event, value) UUF.DB.global.UIScale = value UUF:UpdateUIScale() end)
+        UIScale:SetCallback("OnMouseUp", function(widget, event, value) 
+            if value > 2 then value = 1 print("|cFF8080FFUnhalted|rUnitFrames: UIScale reset. Maximum of 2 for UIScale.") end 
+            UUF.DB.global.UIScale = value
+            UUF:UpdateUIScale() 
+            UIScale:SetValue(value)
+        end)
         UIScale:SetRelativeWidth(0.25)
         UIScale:SetCallback("OnEnter", function(widget, event) GameTooltip:SetOwner(widget.frame, "ANCHOR_TOPLEFT") GameTooltip:AddLine("Decimals are supported. They will need to be manually typed in.") GameTooltip:Show() end)
         UIScale:SetCallback("OnLeave", function(widget, event) GameTooltip:Hide() end)
