@@ -37,6 +37,11 @@ If you have any issues / feedback, you can open them on [Github](https://github.
 
 ## Features
 
+### Pull Requests
+- Pull Requests will always be welcomed. They might not be merged but always happy to consider implementation provided they are inline with the current scope of the project.
+  - If you are wanting a feature implemented, please feel free to create a [Pull Request](https://github.com/DaleHuntGB/UnhaltedUnitFrames/pulls).
+- If you do open a PR, please ensure that you provide as much context / information possible to help streamline the process.
+
 ### General
 - UIScale Adjustments.
 - Font Style, Flags, Shadows.
