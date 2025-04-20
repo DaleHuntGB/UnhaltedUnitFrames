@@ -90,12 +90,24 @@ end
 
 function UUF:UpdateFrames()
     UUF:LoadCustomColours()
-    UUF:UpdateUnitFrame(self.PlayerFrame)
-    UUF:UpdateUnitFrame(self.TargetFrame)
-    UUF:UpdateUnitFrame(self.FocusFrame)
-    UUF:UpdateUnitFrame(self.FocusTargetFrame)
-    UUF:UpdateUnitFrame(self.PetFrame)
-    UUF:UpdateUnitFrame(self.TargetTargetFrame)
+    if self.PlayerFrame then
+        UUF:UpdateUnitFrame(self.PlayerFrame)
+    end
+    if self.TargetFrame then
+        UUF:UpdateUnitFrame(self.TargetFrame)
+    end
+    if self.FocusFrame then
+        UUF:UpdateUnitFrame(self.FocusFrame)
+    end
+    if self.FocusTargetFrame then
+        UUF:UpdateUnitFrame(self.FocusTargetFrame)
+    end
+    if self.PetFrame then
+        UUF:UpdateUnitFrame(self.PetFrame)
+    end
+    if self.TargetTargetFrame then
+        UUF:UpdateUnitFrame(self.TargetTargetFrame)
+    end
     UUF:UpdateBossFrames()
 end
 
