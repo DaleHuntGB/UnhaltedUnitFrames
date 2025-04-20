@@ -152,6 +152,20 @@ local GrowthY = {
     ["DOWN"] = "Down",
 }
 
+local function CopyUnit(sourceUnit, targetUnit)
+    if type(sourceUnit) ~= "table" or type(targetUnit) ~= "table" then return end
+    for key, targetValue in pairs(targetUnit) do
+        local sourceValue = sourceUnit[key]
+        if type(targetValue) == "table" and type(sourceValue) == "table" then
+            DevTool:AddData(sourceValue, "Source Value")
+            DevTool:AddData(targetValue, "Target Value")
+            -- CopyUnit(sourceValue, targetValue)
+        elseif sourceValue ~= nil then
+            targetUnit[key] = sourceValue
+        end
+    end
+end
+
 local function ResetColours()
     local General = UUF.DB.profile.General
     wipe(General.CustomColours)
@@ -609,8 +623,34 @@ function UUF:CreateGUI()
             Enabled:SetLabel("Enable Frame")
             Enabled:SetValue(Frame.Enabled)
             Enabled:SetCallback("OnValueChanged", function(widget, event, value) Frame.Enabled = value UUF:CreateReloadPrompt() end)
-            Enabled:SetFullWidth(true)
+            Enabled:SetRelativeWidth(0.5)
             UUFGUI_Container:AddChild(Enabled)
+
+            if Unit == "Player" or Unit == "Target" or Unit == "Focus" or Unit == "FocusTarget" or Unit == "Pet" or Unit == "TargetTarget" then
+                local CopyFromDropdown = UUFGUI:Create("Dropdown")
+                CopyFromDropdown:SetLabel("Copy From")
+                CopyFromDropdown:SetList({
+                    ["Player"] = "Player",
+                    ["Target"] = "Target",
+                    ["Focus"] = "Focus",
+                    ["FocusTarget"] = "Focus Target",
+                    ["Pet"] = "Pet",
+                    ["TargetTarget"] = "Target Target",
+                })
+                CopyFromDropdown:SetValue(nil)
+                CopyFromDropdown:SetCallback("OnValueChanged", function(widget, event, value)
+                    if value == Unit then return end
+                    local sourceUnit = UUF.DB.profile[value]
+                    local targetUnit = UUF.DB.profile[Unit]
+                    if not sourceUnit then print("|cFFFF0000Unhalted|r Error: No settings found for " .. value) return end
+                    if not targetUnit then print("|cFFFF0000Unhalted|r Error: No settings found for " .. Unit) return end
+                    CopyUnit(sourceUnit, targetUnit)
+                    print("|cFF8080FFUnhalted|rUnitFrames: Copied settings from " .. value .. " to " .. Unit .. ".")
+                    CopyFromDropdown:SetValue(nil)
+                end)
+                CopyFromDropdown:SetRelativeWidth(0.5)
+                UUFGUI_Container:AddChild(CopyFromDropdown)
+            end
 
             if Unit == "Boss" then
                 local DisplayFrames = UUFGUI:Create("Button")
