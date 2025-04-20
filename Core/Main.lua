@@ -100,6 +100,7 @@ UUF.Defaults = {
                 }
             },
             PowerBar = {
+                Direction               = "LR",
                 Enabled                 = false,
                 Height                  = 5,
                 ColourByType            = true,
@@ -239,6 +240,7 @@ UUF.Defaults = {
                 }
             },
             PowerBar = {
+                Direction               = "LR",
                 Enabled                 = true,
                 Height                  = 5,
                 ColourByType            = true,
@@ -367,6 +369,7 @@ UUF.Defaults = {
                 }
             },
             PowerBar = {
+                Direction              = "LR",
                 Enabled                 = false,
                 Height                  = 5,
                 ColourByType            = true,
@@ -495,6 +498,7 @@ UUF.Defaults = {
                 }
             },
             PowerBar = {
+                Direction              = "LR",
                 Enabled                 = false,
                 Height                  = 5,
                 ColourByType            = true,
@@ -623,6 +627,7 @@ UUF.Defaults = {
                 }
             },
             PowerBar = {
+                Direction              = "LR",
                 Enabled                 = false,
                 Height                  = 5,
                 ColourByType            = true,
@@ -751,6 +756,7 @@ UUF.Defaults = {
                 }
             },
             PowerBar = {
+                Direction              = "LR",
                 Enabled                 = false,
                 Height                  = 5,
                 ColourByType            = true,
@@ -881,6 +887,7 @@ UUF.Defaults = {
                 }
             },
             PowerBar = {
+                Direction              = "LR",
                 Enabled                 = true,
                 Height                  = 5,
                 ColourByType            = true,

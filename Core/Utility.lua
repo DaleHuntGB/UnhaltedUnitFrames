@@ -370,6 +370,11 @@ function UUF:CreateUnitFrame(Unit)
         self.unitPowerBar:SetMinMaxValues(0, 100)
         self.unitPowerBar:SetAlpha(PowerBar.Colour[4])
         self.unitPowerBar.colorPower = PowerBar.ColourByType
+        if PowerBar.Direction == "RL" then
+            self.unitPowerBar:SetReverseFill(true)
+        elseif PowerBar.Direction == "LR" then
+            self.unitPowerBar:SetReverseFill(false)
+        end
         self.Power = self.unitPowerBar
         -- Set Height of the Health Bar and Background to fit the Power Bar
         self.unitHealthBar:SetHeight(self:GetHeight() - PowerBar.Height - 1)
@@ -667,6 +672,11 @@ function UUF:UpdateUnitFrame(FrameName)
         FrameName.unitHealthBar:SetHeight(FrameName:GetHeight() - PowerBar.Height - 1)
         FrameName.unitHealthBarBackground:SetHeight(FrameName:GetHeight() - PowerBar.Height - 1)
         FrameName.unitPowerBar:SetAlpha(PowerBar.Colour[4])
+        if PowerBar.Direction == "RL" then
+            FrameName.unitPowerBar:SetReverseFill(true)
+        elseif PowerBar.Direction == "LR" then
+            FrameName.unitPowerBar:SetReverseFill(false)
+        end
         -- Power Bar Background
         FrameName.unitPowerBarBackground:ClearAllPoints()
         FrameName.unitPowerBarBackground:SetAllPoints()

@@ -847,8 +847,19 @@ function UUF:CreateGUI()
             PowerBarEnabled:SetLabel("Enable Power Bar")
             PowerBarEnabled:SetValue(PowerBar.Enabled)
             PowerBarEnabled:SetCallback("OnValueChanged", function(widget, event, value) PowerBar.Enabled = value UUF:CreateReloadPrompt() end)
-            PowerBarEnabled:SetRelativeWidth(1)
+            PowerBarEnabled:SetRelativeWidth(0.5)
             PowerBarOptionsContainer:AddChild(PowerBarEnabled)
+
+            local PowerBarGrowthDirection = UUFGUI:Create("Dropdown")
+            PowerBarGrowthDirection:SetLabel("Power Bar Growth Direction")
+            PowerBarGrowthDirection:SetList({
+                ["LR"] = "Left To Right",
+                ["RL"] = "Right To Left",
+            })
+            PowerBarGrowthDirection:SetValue(PowerBar.Direction)
+            PowerBarGrowthDirection:SetCallback("OnValueChanged", function(widget, event, value) PowerBar.Direction = value UUF:UpdateFrames() end)
+            PowerBarGrowthDirection:SetRelativeWidth(0.5)
+            PowerBarOptionsContainer:AddChild(PowerBarGrowthDirection)
 
             local PowerBarColourByType = UUFGUI:Create("CheckBox")
             PowerBarColourByType:SetLabel("Colour Bar By Type")
