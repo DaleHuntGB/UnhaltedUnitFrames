@@ -234,15 +234,7 @@ function UUF:CreateGUI()
         local UIScaleToggle = UUFGUI:Create("CheckBox")
         UIScaleToggle:SetLabel("Enable UI Scale")
         UIScaleToggle:SetValue(UUF.DB.global.UIScaleEnabled)
-        UIScaleToggle:SetCallback("OnValueChanged", function(widget, event, value) 
-            UUF.DB.global.UIScaleEnabled = value
-            if value then UUF:UpdateUIScale() else UIParent:SetScale(1) end
-            UIScale:SetDisabled(not value)
-            TenEightyP:SetDisabled(not value)
-            FourteenFortyP:SetDisabled(not value)
-            ApplyUIScale:SetDisabled(not value)
-            UUF:CreateReloadPrompt() 
-            end)
+        UIScaleToggle:SetCallback("OnValueChanged", function(widget, event, value) UUF.DB.global.UIScaleEnabled = value ReloadUI() end)
         UIScaleToggle:SetRelativeWidth(1)
 
         UIScaleContainer:AddChild(UIScaleToggle)
