@@ -152,6 +152,25 @@ local GrowthY = {
     ["DOWN"] = "Down",
 }
 
+local CopyFrom = {
+    ["Player"] = "Player",
+    ["Target"] = "Target",
+    ["Focus"] = "Focus",
+    ["FocusTarget"] = "Focus Target",
+    ["Pet"] = "Pet",
+    ["TargetTarget"] = "Target Target",
+}
+
+local function GenerateCopyFromList(Unit)
+    local CopyFromList = {}
+    for k, v in pairs(CopyFrom) do
+        if k ~= Unit then
+            CopyFromList[k] = v
+        end
+    end
+    return CopyFromList
+end
+
 local function CopyUnit(sourceUnit, targetUnit)
     if type(sourceUnit) ~= "table" or type(targetUnit) ~= "table" then return end
     for key, targetValue in pairs(targetUnit) do
@@ -629,14 +648,7 @@ function UUF:CreateGUI()
             if Unit == "Player" or Unit == "Target" or Unit == "Focus" or Unit == "FocusTarget" or Unit == "Pet" or Unit == "TargetTarget" then
                 local CopyFromDropdown = UUFGUI:Create("Dropdown")
                 CopyFromDropdown:SetLabel("Copy From")
-                CopyFromDropdown:SetList({
-                    ["Player"] = "Player",
-                    ["Target"] = "Target",
-                    ["Focus"] = "Focus",
-                    ["FocusTarget"] = "Focus Target",
-                    ["Pet"] = "Pet",
-                    ["TargetTarget"] = "Target Target",
-                })
+                CopyFromDropdown:SetList(GenerateCopyFromList(Unit))
                 CopyFromDropdown:SetValue(nil)
                 CopyFromDropdown:SetCallback("OnValueChanged", function(widget, event, value)
                     if value == Unit then return end
