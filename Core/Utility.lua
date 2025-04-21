@@ -165,6 +165,21 @@ function UUF:ShortenName(name, nameBlacklist)
     return nameBlacklist[words[2]] and words[1] or words[#words] or name
 end
 
+function UUF:AbbreviateName(unitName)
+    local unitNameParts = {}
+    for word in unitName:gmatch("%S+") do
+        table.insert(unitNameParts, word)
+    end
+
+    local last = table.remove(unitNameParts)
+    for i, word in ipairs(unitNameParts) do
+        unitNameParts[i] = (string.utf8sub or string.sub)(word, 1, 1) .. "."
+    end
+
+    table.insert(unitNameParts, last)
+    return table.concat(unitNameParts, " ")
+end
+
 function UUF:ResetDefaultSettings()
     UUF.DB:ResetProfile()
     UUF:CreateReloadPrompt()

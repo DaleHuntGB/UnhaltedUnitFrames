@@ -191,6 +191,20 @@ oUF.Tags.Methods["Name:Medium"] = function(unit)
     end
 end
 
+oUF.Tags.Methods["Name:Abbreviated"] = function(unit)
+    local name = UnitName(unit)
+    if name then 
+        return UUF:AbbreviateName(name)
+    end
+end
+
+oUF.Tags.Methods["Name:Abbreviated:Coloured"] = function(unit)
+    local name = UnitName(unit)
+    if name then
+        return UUF:WrapTextInColor(UUF:AbbreviateName(name), unit)
+    end
+end
+
 if NSM then
 	oUF.Tags.Methods['NSNickName'] = function(unit)
 		local name = UnitName(unit)
@@ -270,6 +284,8 @@ oUF.Tags.Events["Name:NamewithTargetTarget:LastNameOnly:Coloured"] = "UNIT_NAME_
 oUF.Tags.Events["Name:VeryShort"] = "UNIT_NAME_UPDATE"
 oUF.Tags.Events["Name:Short"] = "UNIT_NAME_UPDATE"
 oUF.Tags.Events["Name:Medium"] = "UNIT_NAME_UPDATE"
+oUF.Tags.Events["Name:Abbreviated"] = "UNIT_NAME_UPDATE"
+oUF.Tags.Events["Name:Abbreviated:Coloured"] = "UNIT_NAME_UPDATE"
 
 oUF.Tags.Events["Health:CurHPwithPerHP"] = "UNIT_HEALTH UNIT_MAXHEALTH UNIT_CONNECTION UNIT_ABSORB_AMOUNT_CHANGED"
 oUF.Tags.Events["Health:CurHPwithPerHP:Clean"] = "UNIT_HEALTH UNIT_MAXHEALTH UNIT_CONNECTION UNIT_ABSORB_AMOUNT_CHANGED"
@@ -313,7 +329,8 @@ local NameTagsDescription = {
     ["Short Name"] = {Tag = "[Name:Short]", Desc = "Displays Short Name (8 Characters)"},
     ["Medium Name"] = {Tag = "[Name:Medium]", Desc = "Displays Medium Name (10 Characters)"},
     ["Name"] = {Tag = "[name]", Desc = "Displays Name"},
-    
+    ["Abbreviated Name"] = {Tag = "[Name:Abbreviated]", Desc = "Displays Abbreviated Name"},
+    ["Abbreviated Name (Coloured)"] = {Tag = "[Name:Abbreviated:Coloured]", Desc = "Displays Abbreviated Name (Reaction / Class Coloured)"},
 }
 
 function UUF:FetchNameTagDescriptions()
