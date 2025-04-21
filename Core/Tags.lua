@@ -50,6 +50,20 @@ oUF.Tags.Methods["Health:PerHPwithAbsorbs:Clean"] = function(unit)
     return string.format("%.1f", unitHealthPercent)
 end
 
+oUF.Tags.Methods["Health:PerHP"] = function(unit)
+    local unitHealth = UnitHealth(unit)
+    local unitMaxHealth = UnitHealthMax(unit)
+    local unitHealthPercent = (unitMaxHealth > 0) and (unitHealth / unitMaxHealth * 100) or 0
+    return string.format("%.1f%%", unitHealthPercent)
+end
+
+oUF.Tags.Methods["Health:PerHP:Clean"] = function(unit)
+    local unitHealth = UnitHealth(unit)
+    local unitMaxHealth = UnitHealthMax(unit)
+    local unitHealthPercent = (unitMaxHealth > 0) and (unitHealth / unitMaxHealth * 100) or 0
+    return string.format("%.1f", unitHealthPercent)
+end
+
 oUF.Tags.Methods["Health:CurHP"] = function(unit)
     local unitHealth = UnitHealth(unit)
     local unitStatus = UnitIsDead(unit) and "Dead" or UnitIsGhost(unit) and "Ghost" or not UnitIsConnected(unit) and "Offline"
@@ -264,6 +278,8 @@ oUF.Tags.Events["Health:PerHPwithAbsorbs:Clean"] = "UNIT_HEALTH UNIT_MAXHEALTH U
 oUF.Tags.Events["Health:CurHP"] = "UNIT_HEALTH UNIT_CONNECTION"
 oUF.Tags.Events["Health:CurAbsorbs"] = "UNIT_ABSORB_AMOUNT_CHANGED"
 oUF.Tags.Events["Health:CurHPwithAbsorbs"] = "UNIT_HEALTH UNIT_MAXHEALTH UNIT_ABSORB_AMOUNT_CHANGED"
+oUF.Tags.Events["Health:PerHP"] = "UNIT_HEALTH UNIT_MAXHEALTH"
+oUF.Tags.Events["Health:PerHP:Clean"] = "UNIT_HEALTH UNIT_MAXHEALTH"
 
 oUF.Tags.Events["Power:CurPP"] = "UNIT_POWER_UPDATE UNIT_MAXPOWER"
 oUF.Tags.Events["Power:PerPP"] = "UNIT_POWER_UPDATE UNIT_MAXPOWER"
@@ -275,6 +291,7 @@ local HealthTagsDescription = {
     ["Current Health"] = {Tag = "[Health:CurHP]", Desc = "Displays Current Health"},
     ["Current Absorbs"] = {Tag = "[Health:CurAbsorbs]", Desc = "Displays Current Absorbs"},
     ["Current Health with Absorbs"] = {Tag = "[Health:CurHPwithAbsorbs]", Desc = "Displays Current Health with Absorbs"},
+    ["Percent Health"] = {Tag = "[Health:PerHP]", Desc = "Displays Percent Health"},
 }
 
 function UUF:FetchHealthTagDescriptions()
