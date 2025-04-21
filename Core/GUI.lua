@@ -650,6 +650,7 @@ function UUF:CreateGUI()
                 end)
                 CopyFromDropdown:SetRelativeWidth(0.5)
                 UUFGUI_Container:AddChild(CopyFromDropdown)
+                if not Frame.Enabled then CopyFromDropdown:SetDisabled(true) end
             end
 
             if Unit == "Boss" then
@@ -950,7 +951,7 @@ function UUF:CreateGUI()
             PowerBarOptionsContainer:AddChild(PowerBarHeight)
 
             if not Frame.Enabled then
-                if FrameOptions then 
+                if FrameOptions then
                     for _, child in ipairs(FrameOptions.children) do
                         if child.SetDisabled then
                             child:SetDisabled(true)
