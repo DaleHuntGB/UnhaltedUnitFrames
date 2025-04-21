@@ -157,13 +157,13 @@ local function CopyUnit(sourceUnit, targetUnit)
     for key, targetValue in pairs(targetUnit) do
         local sourceValue = sourceUnit[key]
         if type(targetValue) == "table" and type(sourceValue) == "table" then
-            DevTool:AddData(sourceValue, "Source Value")
-            DevTool:AddData(targetValue, "Target Value")
-            -- CopyUnit(sourceValue, targetValue)
+            CopyUnit(sourceValue, targetValue)
         elseif sourceValue ~= nil then
             targetUnit[key] = sourceValue
         end
     end
+    UUF:UpdateFrames()
+    UUF:CreateReloadPrompt()
 end
 
 local function ResetColours()
