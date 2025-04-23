@@ -203,6 +203,40 @@ UUF.Defaults = {
                     YOffset         = 0,
                     Tag             = "",
                 },
+            },
+            CastBar = {
+                Enabled            = true,
+                Width              = 272,
+                Height             = 24,
+                XOffset            = 0,
+                YOffset            = -1.1,
+                AnchorFrom         = "TOPLEFT",
+                AnchorTo           = "BOTTOMLEFT",
+                ForegroundColour        = {128/255, 128/255, 255/255, 1},
+                BackgroundColour        = {26/255, 26/255, 26/255, 1},
+                UninterruptibleColour   = {255/255, 64/255, 64/255, 1},
+                Icon = {
+                    Enabled         = true,
+                    Location        = "LEFT",
+                },
+                Texts = {
+                    SpellName = {
+                        FontSize = 12,
+                        XOffset = 3,
+                        YOffset = 0,
+                        AnchorFrom = "LEFT",
+                        AnchorTo = "LEFT",
+                        Colour = {1, 1, 1},
+                    },
+                    Time = {
+                        FontSize = 12,
+                        XOffset = -3,
+                        YOffset = 0,
+                        AnchorFrom = "RIGHT",
+                        AnchorTo = "RIGHT",
+                        Colour = {1, 1, 1},
+                    },
+                }
             }
         },
         Target = {
@@ -332,6 +366,40 @@ UUF.Defaults = {
                 Enable = true,
                 OOR = 0.5,
                 IR = 1.0
+            },
+            CastBar = {
+                Enabled            = true,
+                Width              = 272,
+                Height             = 24,
+                XOffset            = 0,
+                YOffset            = -1.1,
+                AnchorFrom         = "TOPLEFT",
+                AnchorTo           = "BOTTOMLEFT",
+                ForegroundColour        = {128/255, 128/255, 255/255, 1},
+                BackgroundColour        = {26/255, 26/255, 26/255, 1},
+                UninterruptibleColour   = {255/255, 64/255, 64/255, 1},
+                Icon = {
+                    Enabled         = true,
+                    Location        = "LEFT",
+                },
+                Texts = {
+                    SpellName = {
+                        FontSize = 12,
+                        XOffset = 3,
+                        YOffset = 0,
+                        AnchorFrom = "LEFT",
+                        AnchorTo = "LEFT",
+                        Colour = {1, 1, 1},
+                    },
+                    Time = {
+                        FontSize = 12,
+                        XOffset = -3,
+                        YOffset = 0,
+                        AnchorFrom = "RIGHT",
+                        AnchorTo = "RIGHT",
+                        Colour = {1, 1, 1},
+                    },
+                }
             }
         },
         TargetTarget = {
@@ -982,6 +1050,40 @@ UUF.Defaults = {
                 Enable = true,
                 OOR = 0.5,
                 IR = 1.0
+            },
+            CastBar = {
+                Enabled                 = false,
+                Width                   = 250,
+                Height                  = 24,
+                XOffset                 = 0,
+                YOffset                 = -1.1,
+                AnchorFrom              = "TOPLEFT",
+                AnchorTo                = "BOTTOMLEFT",
+                ForegroundColour        = {128/255, 128/255, 255/255, 1},
+                BackgroundColour        = {26/255, 26/255, 26/255, 1},
+                UninterruptibleColour   = {255/255, 64/255, 64/255, 1},
+                Icon = {
+                    Enabled         = true,
+                    Location        = "LEFT",
+                },
+                Texts = {
+                    SpellName = {
+                        FontSize = 12,
+                        XOffset = 3,
+                        YOffset = 0,
+                        AnchorFrom = "LEFT",
+                        AnchorTo = "LEFT",
+                        Colour = {1, 1, 1},
+                    },
+                    Time = {
+                        FontSize = 12,
+                        XOffset = -3,
+                        YOffset = 0,
+                        AnchorFrom = "RIGHT",
+                        AnchorTo = "RIGHT",
+                        Colour = {1, 1, 1},
+                    },
+                }
             }
         }
     }
