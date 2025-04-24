@@ -205,7 +205,7 @@ UUF.Defaults = {
                 },
             },
             CastBar = {
-                Enabled            = true,
+                Enabled            = false,
                 Width              = 272,
                 Height             = 24,
                 XOffset            = 0,
@@ -368,7 +368,7 @@ UUF.Defaults = {
                 IR = 1.0
             },
             CastBar = {
-                Enabled            = true,
+                Enabled            = false,
                 Width              = 272,
                 Height             = 24,
                 XOffset            = 0,

@@ -636,6 +636,7 @@ function UUF:CreateGUI()
         local SecondText = UUF.DB.profile[Unit].Texts.Second
         local ThirdText = UUF.DB.profile[Unit].Texts.Third
         local Range = UUF.DB.profile[Unit].Range
+        local CastBar = UUF.DB.profile[Unit].CastBar
 
         local function DrawFrameContainer(UUFGUI_Container)
             local Enabled = UUFGUI:Create("CheckBox")
@@ -1718,6 +1719,257 @@ function UUF:CreateGUI()
             RangeOptions:AddChild(IR)
         end
 
+        local function DrawCastBarContainer(UUFGUI_Container)
+            local CastBarEnabled = UUFGUI:Create("CheckBox")
+            CastBarEnabled:SetLabel("Enable Cast Bar")
+            CastBarEnabled:SetValue(CastBar.Enabled)
+            CastBarEnabled:SetCallback("OnValueChanged", function(widget, event, value) CastBar.Enabled = value UUF:CreateReloadPrompt() end)
+            CastBarEnabled:SetRelativeWidth(1)
+            UUFGUI_Container:AddChild(CastBarEnabled)
+
+            local CastBarOptions = UUFGUI:Create("InlineGroup")
+            CastBarOptions:SetTitle("Cast Bar Options")
+            CastBarOptions:SetLayout("Flow")
+            CastBarOptions:SetFullWidth(true)
+            UUFGUI_Container:AddChild(CastBarOptions)
+
+            local CastBarForegroundColour = UUFGUI:Create("ColorPicker")
+            CastBarForegroundColour:SetLabel("Foreground Colour")
+            local CBFGR, CBFGG, CBFGB, CBFGA = unpack(CastBar.ForegroundColour)
+            CastBarForegroundColour:SetColor(CBFGR, CBFGG, CBFGB, CBFGA)
+            CastBarForegroundColour:SetCallback("OnValueChanged", function(widget, event, r, g, b, a) CastBar.ForegroundColour = {r, g, b, a} UUF:UpdateFrames() end)
+            CastBarForegroundColour:SetHasAlpha(true)
+            CastBarForegroundColour:SetRelativeWidth(0.5)
+            CastBarOptions:AddChild(CastBarForegroundColour)
+
+            local CastBarBackgroundColour = UUFGUI:Create("ColorPicker")
+            CastBarBackgroundColour:SetLabel("Background Colour")
+            local CBBGR, CBBGG, CBBGB, CBBGA = unpack(CastBar.BackgroundColour)
+            CastBarBackgroundColour:SetColor(CBBGR, CBBGG, CBBGB, CBBGA)
+            CastBarBackgroundColour:SetCallback("OnValueChanged", function(widget, event, r, g, b, a) CastBar.BackgroundColour = {r, g, b, a} UUF:UpdateFrames() end)
+            CastBarBackgroundColour:SetHasAlpha(true)
+            CastBarBackgroundColour:SetRelativeWidth(0.5)
+            CastBarOptions:AddChild(CastBarBackgroundColour)
+
+            local CastBarAnchorFrom = UUFGUI:Create("Dropdown")
+            CastBarAnchorFrom:SetLabel("Anchor From")
+            CastBarAnchorFrom:SetList(AnchorPoints)
+            CastBarAnchorFrom:SetValue(CastBar.AnchorFrom)
+            CastBarAnchorFrom:SetCallback("OnValueChanged", function(widget, event, value) CastBar.AnchorFrom = value UUF:UpdateFrames() end)
+            CastBarAnchorFrom:SetRelativeWidth(0.5)
+            CastBarOptions:AddChild(CastBarAnchorFrom)
+
+            local CastBarAnchorTo = UUFGUI:Create("Dropdown")
+            CastBarAnchorTo:SetLabel("Anchor To")
+            CastBarAnchorTo:SetList(AnchorPoints)
+            CastBarAnchorTo:SetValue(CastBar.AnchorTo)
+            CastBarAnchorTo:SetCallback("OnValueChanged", function(widget, event, value) CastBar.AnchorTo = value UUF:UpdateFrames() end)
+            CastBarAnchorTo:SetRelativeWidth(0.5)
+            CastBarOptions:AddChild(CastBarAnchorTo)
+
+            local CastBarWidth = UUFGUI:Create("Slider")
+            CastBarWidth:SetLabel("Width")
+            CastBarWidth:SetSliderValues(1, 512, 1)
+            CastBarWidth:SetValue(CastBar.Width)
+            CastBarWidth:SetCallback("OnMouseUp", function(widget, event, value) CastBar.Width = value UUF:UpdateFrames() end)
+            CastBarWidth:SetRelativeWidth(0.5)
+            CastBarOptions:AddChild(CastBarWidth)
+
+            local CastBarHeight = UUFGUI:Create("Slider")
+            CastBarHeight:SetLabel("Height")
+            CastBarHeight:SetSliderValues(1, 64, 1)
+            CastBarHeight:SetValue(CastBar.Height)
+            CastBarHeight:SetCallback("OnMouseUp", function(widget, event, value) CastBar.Height = value UUF:UpdateFrames() end)
+            CastBarHeight:SetRelativeWidth(0.5)
+            CastBarOptions:AddChild(CastBarHeight)
+
+            local CastBarXOffset = UUFGUI:Create("Slider")
+            CastBarXOffset:SetLabel("X Offset")
+            CastBarXOffset:SetSliderValues(-64, 64, 1)
+            CastBarXOffset:SetValue(CastBar.XOffset)
+            CastBarXOffset:SetCallback("OnMouseUp", function(widget, event, value) CastBar.XOffset = value UUF:UpdateFrames() end)
+            CastBarXOffset:SetRelativeWidth(0.5)
+            CastBarOptions:AddChild(CastBarXOffset)
+
+            local CastBarYOffset = UUFGUI:Create("Slider")
+            CastBarYOffset:SetLabel("Y Offset")
+            CastBarYOffset:SetSliderValues(-64, 64, 1)
+            CastBarYOffset:SetValue(CastBar.YOffset)
+            CastBarYOffset:SetCallback("OnMouseUp", function(widget, event, value) CastBar.YOffset = value UUF:UpdateFrames() end)
+            CastBarYOffset:SetRelativeWidth(0.5)
+            CastBarOptions:AddChild(CastBarYOffset)
+
+            local CastBarIconOptions = UUFGUI:Create("InlineGroup")
+            CastBarIconOptions:SetTitle("Icon Options")
+            CastBarIconOptions:SetLayout("Flow")
+            CastBarIconOptions:SetFullWidth(true)
+            CastBarOptions:AddChild(CastBarIconOptions)
+
+            local CastBarIconEnabled = UUFGUI:Create("CheckBox")
+            CastBarIconEnabled:SetLabel("Enable Icon")
+            CastBarIconEnabled:SetValue(CastBar.Icon.Enabled)
+            CastBarIconEnabled:SetCallback("OnValueChanged", function(widget, event, value) CastBar.Icon.Enabled = value UUF:UpdateFrames() end)
+            CastBarIconEnabled:SetRelativeWidth(0.5)
+            CastBarIconOptions:AddChild(CastBarIconEnabled)
+
+            local CastBarIconLocation = UUFGUI:Create("Dropdown")
+            CastBarIconLocation:SetLabel("Icon Location")
+            CastBarIconLocation:SetList({ ["LEFT"] = "Left", ["RIGHT"] = "Right", })
+            CastBarIconLocation:SetValue(CastBar.Icon.Location)
+            CastBarIconLocation:SetCallback("OnValueChanged", function(widget, event, value) CastBar.Icon.Location = value UUF:UpdateFrames() end)
+            CastBarIconLocation:SetRelativeWidth(0.5)
+            CastBarIconOptions:AddChild(CastBarIconLocation)
+
+            local CastBarTextOptions = UUFGUI:Create("InlineGroup")
+            CastBarTextOptions:SetTitle("Text Options")
+            CastBarTextOptions:SetLayout("Flow")
+            CastBarTextOptions:SetFullWidth(true)
+            CastBarOptions:AddChild(CastBarTextOptions)
+
+            local CastBarTextSpellNameOptions = UUFGUI:Create("InlineGroup")
+            CastBarTextSpellNameOptions:SetTitle("Spell Name Options")
+            CastBarTextSpellNameOptions:SetLayout("Flow")
+            CastBarTextSpellNameOptions:SetFullWidth(true)
+            CastBarTextOptions:AddChild(CastBarTextSpellNameOptions)
+
+            local CastBarTextSpellNameFontSize = UUFGUI:Create("Slider")
+            CastBarTextSpellNameFontSize:SetLabel("Font Size")
+            CastBarTextSpellNameFontSize:SetSliderValues(1, 64, 1)
+            CastBarTextSpellNameFontSize:SetValue(CastBar.Texts.SpellName.FontSize)
+            CastBarTextSpellNameFontSize:SetCallback("OnMouseUp", function(widget, event, value) CastBar.Texts.SpellName.FontSize = value UUF:UpdateFrames() end)
+            CastBarTextSpellNameFontSize:SetRelativeWidth(0.5)
+            CastBarTextSpellNameOptions:AddChild(CastBarTextSpellNameFontSize)
+
+            local CastBarTextSpellNameColourPicker = UUFGUI:Create("ColorPicker")
+            CastBarTextSpellNameColourPicker:SetLabel("Colour")
+            local CBSTR, CBSTG, CBSTB, CBSTA = unpack(CastBar.Texts.SpellName.Colour)
+            CastBarTextSpellNameColourPicker:SetColor(CBSTR, CBSTG, CBSTB, CBSTA)
+            CastBarTextSpellNameColourPicker:SetCallback("OnValueChanged", function(widget, event, r, g, b) CastBar.Texts.SpellName.Colour = {r, g, b} UUF:UpdateFrames() end)
+            CastBarTextSpellNameColourPicker:SetRelativeWidth(0.5)
+            CastBarTextSpellNameOptions:AddChild(CastBarTextSpellNameColourPicker)
+
+            local CastBarTextSpellNameAnchorFrom = UUFGUI:Create("Dropdown")
+            CastBarTextSpellNameAnchorFrom:SetLabel("Anchor To")
+            CastBarTextSpellNameAnchorFrom:SetList(AnchorPoints)
+            CastBarTextSpellNameAnchorFrom:SetValue(CastBar.Texts.SpellName.AnchorFrom)
+            CastBarTextSpellNameAnchorFrom:SetCallback("OnValueChanged", function(widget, event, value) CastBar.Texts.SpellName.AnchorFrom = value UUF:UpdateFrames() end)
+            CastBarTextSpellNameAnchorFrom:SetRelativeWidth(0.5)
+            CastBarTextSpellNameOptions:AddChild(CastBarTextSpellNameAnchorFrom)
+
+            local CastBarTextSpellNameAnchorTo = UUFGUI:Create("Dropdown")
+            CastBarTextSpellNameAnchorTo:SetLabel("Anchor To")
+            CastBarTextSpellNameAnchorTo:SetList(AnchorPoints)
+            CastBarTextSpellNameAnchorTo:SetValue(CastBar.Texts.SpellName.AnchorTo)
+            CastBarTextSpellNameAnchorTo:SetCallback("OnValueChanged", function(widget, event, value) CastBar.Texts.SpellName.AnchorTo = value UUF:UpdateFrames() end)
+            CastBarTextSpellNameAnchorTo:SetRelativeWidth(0.5)
+            CastBarTextSpellNameOptions:AddChild(CastBarTextSpellNameAnchorTo)
+
+            local CastBarTextSpellNameXOffset = UUFGUI:Create("Slider")
+            CastBarTextSpellNameXOffset:SetLabel("X Offset")
+            CastBarTextSpellNameXOffset:SetSliderValues(-64, 64, 1)
+            CastBarTextSpellNameXOffset:SetValue(CastBar.Texts.SpellName.XOffset)
+            CastBarTextSpellNameXOffset:SetCallback("OnMouseUp", function(widget, event, value) CastBar.Texts.SpellName.XOffset = value UUF:UpdateFrames() end)
+            CastBarTextSpellNameXOffset:SetRelativeWidth(0.5)
+            CastBarTextSpellNameOptions:AddChild(CastBarTextSpellNameXOffset)
+
+            local CastBarTextSpellNameYOffset = UUFGUI:Create("Slider")
+            CastBarTextSpellNameYOffset:SetLabel("Y Offset")
+            CastBarTextSpellNameYOffset:SetSliderValues(-64, 64, 1)
+            CastBarTextSpellNameYOffset:SetValue(CastBar.Texts.SpellName.YOffset)
+            CastBarTextSpellNameYOffset:SetCallback("OnMouseUp", function(widget, event, value) CastBar.Texts.SpellName.YOffset = value UUF:UpdateFrames() end)
+            CastBarTextSpellNameYOffset:SetRelativeWidth(0.5)
+            CastBarTextSpellNameOptions:AddChild(CastBarTextSpellNameYOffset)
+
+            local CastBarTextTimeOptions = UUFGUI:Create("InlineGroup")
+            CastBarTextTimeOptions:SetTitle("Time Options")
+            CastBarTextTimeOptions:SetLayout("Flow")
+            CastBarTextTimeOptions:SetFullWidth(true)
+            CastBarTextOptions:AddChild(CastBarTextTimeOptions)
+
+            local CastBarTextTimeFontSize = UUFGUI:Create("Slider")
+            CastBarTextTimeFontSize:SetLabel("Font Size")
+            CastBarTextTimeFontSize:SetSliderValues(1, 64, 1)
+            CastBarTextTimeFontSize:SetValue(CastBar.Texts.Time.FontSize)
+            CastBarTextTimeFontSize:SetCallback("OnMouseUp", function(widget, event, value) CastBar.Texts.Time.FontSize = value UUF:UpdateFrames() end)
+            CastBarTextTimeFontSize:SetRelativeWidth(0.5)
+            CastBarTextTimeOptions:AddChild(CastBarTextTimeFontSize)
+
+            local CastBarTextTimeColourPicker = UUFGUI:Create("ColorPicker")
+            CastBarTextTimeColourPicker:SetLabel("Colour")
+            local CBTR, CBTG, CBTB, CBTA = unpack(CastBar.Texts.Time.Colour)
+            CastBarTextTimeColourPicker:SetColor(CBTR, CBTG, CBTB, CBTA)
+            CastBarTextTimeColourPicker:SetCallback("OnValueChanged", function(widget, event, r, g, b) CastBar.Texts.Time.Colour = {r, g, b} UUF:UpdateFrames() end)
+            CastBarTextTimeColourPicker:SetRelativeWidth(0.5)
+            CastBarTextTimeColourPicker:SetHasAlpha(true)
+            CastBarTextTimeOptions:AddChild(CastBarTextTimeColourPicker)
+
+            local CastBarTextTimeAnchorFrom = UUFGUI:Create("Dropdown")
+            CastBarTextTimeAnchorFrom:SetLabel("Anchor To")
+            CastBarTextTimeAnchorFrom:SetList(AnchorPoints)
+            CastBarTextTimeAnchorFrom:SetValue(CastBar.Texts.Time.AnchorFrom)
+            CastBarTextTimeAnchorFrom:SetCallback("OnValueChanged", function(widget, event, value) CastBar.Texts.Time.AnchorFrom = value UUF:UpdateFrames() end)
+            CastBarTextTimeAnchorFrom:SetRelativeWidth(0.5)
+            CastBarTextTimeOptions:AddChild(CastBarTextTimeAnchorFrom)
+
+            local CastBarTextTimeAnchorTo = UUFGUI:Create("Dropdown")
+            CastBarTextTimeAnchorTo:SetLabel("Anchor To")
+            CastBarTextTimeAnchorTo:SetList(AnchorPoints)
+            CastBarTextTimeAnchorTo:SetValue(CastBar.Texts.Time.AnchorTo)
+            CastBarTextTimeAnchorTo:SetCallback("OnValueChanged", function(widget, event, value) CastBar.Texts.Time.AnchorTo = value UUF:UpdateFrames() end)
+            CastBarTextTimeAnchorTo:SetRelativeWidth(0.5)
+            CastBarTextTimeOptions:AddChild(CastBarTextTimeAnchorTo)
+
+            local CastBarTextTimeXOffset = UUFGUI:Create("Slider")
+            CastBarTextTimeXOffset:SetLabel("X Offset")
+            CastBarTextTimeXOffset:SetSliderValues(-64, 64, 1)
+            CastBarTextTimeXOffset:SetValue(CastBar.Texts.Time.XOffset)
+            CastBarTextTimeXOffset:SetCallback("OnMouseUp", function(widget, event, value) CastBar.Texts.Time.XOffset = value UUF:UpdateFrames() end)
+            CastBarTextTimeXOffset:SetRelativeWidth(0.5)
+            CastBarTextTimeOptions:AddChild(CastBarTextTimeXOffset)
+
+            local CastBarTextTimeYOffset = UUFGUI:Create("Slider")
+            CastBarTextTimeYOffset:SetLabel("Y Offset")
+            CastBarTextTimeYOffset:SetSliderValues(-64, 64, 1)
+            CastBarTextTimeYOffset:SetValue(CastBar.Texts.Time.YOffset)
+            CastBarTextTimeYOffset:SetCallback("OnMouseUp", function(widget, event, value) CastBar.Texts.Time.YOffset = value UUF:UpdateFrames() end)
+            CastBarTextTimeYOffset:SetRelativeWidth(0.5)
+            CastBarTextTimeOptions:AddChild(CastBarTextTimeYOffset)
+
+            if not CastBar.Enabled then
+                if CastBarOptions then
+                    for _, child in ipairs(CastBarOptions.children) do
+                        if child.SetDisabled then
+                            child:SetDisabled(true)
+                        end
+                    end
+                end
+                if CastBarIconOptions then
+                    for _, child in ipairs(CastBarIconOptions.children) do
+                        if child.SetDisabled then
+                            child:SetDisabled(true)
+                        end
+                    end
+                end
+                if CastBarTextOptions then
+                    for _, child in ipairs(CastBarTextOptions.children) do
+                        if child.SetDisabled then
+                            child:SetDisabled(true)
+                        end
+                    end
+                    for _, child in ipairs(CastBarTextSpellNameOptions.children) do
+                        if child.SetDisabled then
+                            child:SetDisabled(true)
+                        end
+                    end
+                    for _, child in ipairs(CastBarTextTimeOptions.children) do
+                        if child.SetDisabled then
+                            child:SetDisabled(true)
+                        end
+                    end
+                end
+            end
+        end
+
         local function SelectedGroup(UUFGUI_Container, Event, Group)
             UUFGUI_Container:ReleaseChildren()
             if Group == "Frame" then
@@ -1732,6 +1984,8 @@ function UUF:CreateGUI()
                 DrawIndicatorContainer(UUFGUI_Container)
             elseif Unit ~= "player" and Group == "Range" then
                 DrawRangeContainer(UUFGUI_Container)
+            elseif Unit == "Player" or Unit == "Target" or Unit == "Boss" and Group == "CastBar" then
+                DrawCastBarContainer(UUFGUI_Container)
             end
         end
 
@@ -1746,6 +2000,9 @@ function UUF:CreateGUI()
         }
         if Unit ~= "Player" then
             table.insert(ContainerTabs, { text = "Range", value = "Range" })
+        end
+        if Unit == "Player" or Unit == "Target" or Unit == "Boss" then
+            table.insert(ContainerTabs, { text = "Cast Bar", value = "CastBar" })
         end
         if not Frame.Enabled then
             for i = 1, #ContainerTabs do
