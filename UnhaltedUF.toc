@@ -1,5 +1,5 @@
 ## Title: |cFF8080FFUnhalted|r Unit Frames
-## Interface: 110100
+## Interface: 110105
 ## Version: 1.7
 ## Notes: Simple, efficient & aesthetic Unit Frames built on the oUF Framework.
 ## SavedVariables: UUFDB
