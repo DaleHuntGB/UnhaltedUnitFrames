@@ -739,7 +739,7 @@ function UUF:UpdateUnitFrame(FrameName)
     end
     
     if Unit == "Player" or Unit == "Target" or Unit == "Boss" then
-        if FrameName.unitCastBar then
+        if FrameName.unitCastBar and CastBar.Enabled then
             -- Frame Cast Bar
             FrameName.unitCastBar:SetStatusBarTexture(General.ForegroundTexture)
             FrameName.unitCastBar:SetStatusBarColor(unpack(CastBar.ForegroundColour))
@@ -773,10 +773,14 @@ function UUF:UpdateUnitFrame(FrameName)
                 end
                 FrameName.unitCastBar:SetSize((CastBar.Width - CastBar.Height), CastBar.Height - 2)
             else
-                FrameName.unitCastBarIcon:Hide()
-                FrameName.unitCastBar:ClearAllPoints()
-                FrameName.unitCastBar:SetPoint("LEFT", FrameName.unitCastBarBorder, "LEFT", 1, 0)
-                FrameName.unitCastBar:SetSize(CastBar.Width - 2, CastBar.Height - 2)
+                if FrameName.unitCastBarIcon then 
+                    FrameName.unitCastBarIcon:Hide()
+                end
+                if FrameName.unitCastBar then
+                    FrameName.unitCastBar:ClearAllPoints()
+                    FrameName.unitCastBar:SetPoint("LEFT", FrameName.unitCastBarBorder, "LEFT", 1, 0)
+                    FrameName.unitCastBar:SetSize(CastBar.Width - 2, CastBar.Height - 2)
+                end
             end
             -- Frame Cast Bar Background
             FrameName.unitCastBarBackground:ClearAllPoints()
