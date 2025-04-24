@@ -391,7 +391,7 @@ function UUF:CreateUnitFrame(Unit)
                 self.unitCastBar:SetSize((CastBar.Width - CastBar.Height), CastBar.Height - 2)
                 self.Castbar.Icon = self.unitCastBarIcon
             else
-                self.unitCastBar:SetPoint("LEFT", self.unitCastBarBorder, "LEFT", 0, 0)
+                self.unitCastBar:SetPoint("LEFT", self.unitCastBarBorder, "LEFT", 1, 0)
                 self.unitCastBar:SetSize(CastBar.Width - 2, CastBar.Height - 2)
             end
             -- Frame Cast Bar Background
@@ -750,6 +750,15 @@ function UUF:UpdateUnitFrame(FrameName)
             FrameName.unitCastBarBorder:SetBackdropBorderColor(unpack(General.BorderColour))
             -- Frame Cast Bar Icon  
             if CastBar.Icon.Enabled then
+                if not FrameName.unitCastBarIcon then 
+                    FrameName.unitCastBarIcon = FrameName.unitCastBarBorder:CreateTexture(nil, "OVERLAY")
+                    FrameName.unitCastBarIcon:SetSize(CastBar.Height - 2, CastBar.Height - 2)
+                    FrameName.unitCastBarIcon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
+                    FrameName.Castbar.Icon = FrameName.unitCastBarIcon
+                    FrameName.unitCastBar:ForceUpdate()
+                else
+                    FrameName.unitCastBarIcon:Show()
+                end
                 FrameName.unitCastBarIcon:SetSize(CastBar.Height - 2, CastBar.Height - 2)
                 if CastBar.Icon.Location == "LEFT" then
                     FrameName.unitCastBarIcon:ClearAllPoints()
@@ -764,8 +773,9 @@ function UUF:UpdateUnitFrame(FrameName)
                 end
                 FrameName.unitCastBar:SetSize((CastBar.Width - CastBar.Height), CastBar.Height - 2)
             else
+                FrameName.unitCastBarIcon:Hide()
                 FrameName.unitCastBar:ClearAllPoints()
-                FrameName.unitCastBar:SetPoint("LEFT", FrameName.unitCastBarBorder, "LEFT", 0, 0)
+                FrameName.unitCastBar:SetPoint("LEFT", FrameName.unitCastBarBorder, "LEFT", 1, 0)
                 FrameName.unitCastBar:SetSize(CastBar.Width - 2, CastBar.Height - 2)
             end
             -- Frame Cast Bar Background
