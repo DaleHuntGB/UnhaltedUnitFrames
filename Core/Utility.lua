@@ -185,29 +185,11 @@ function UUF:ResetDefaultSettings()
     UUF:CreateReloadPrompt()
 end
 
-function UUF:CreateUnitFrame(Unit)
-    -- Localised SavedVariables
+local function CreateHealthBar(self, Unit)
     local General = UUF.DB.profile.General
     local Frame = UUF.DB.profile[Unit].Frame
-    local Portrait = UUF.DB.profile[Unit].Portrait
     local Health = UUF.DB.profile[Unit].Health
-    local PowerBar = UUF.DB.profile[Unit].PowerBar
-    local HealthPrediction = Health.HealthPrediction
-    local Absorbs = HealthPrediction.Absorbs
-    local HealAbsorbs = HealthPrediction.HealAbsorbs
-    local Buffs = UUF.DB.profile[Unit].Buffs
-    local Debuffs = UUF.DB.profile[Unit].Debuffs
-    local TargetMarker = UUF.DB.profile[Unit].TargetMarker
-    local CombatIndicator = UUF.DB.profile[Unit].CombatIndicator
-    local LeaderIndicator = UUF.DB.profile[Unit].LeaderIndicator
-    local TargetIndicator = UUF.DB.profile[Unit].TargetIndicator
-    local FirstText = UUF.DB.profile[Unit].Texts.First
-    local SecondText = UUF.DB.profile[Unit].Texts.Second
-    local ThirdText = UUF.DB.profile[Unit].Texts.Third
-    local MouseoverHighlight = UUF.DB.profile.General.MouseoverHighlight
-    local CastBar = UUF.DB.profile[Unit].CastBar
 
-    -- Backdrop Template
     local BackdropTemplate = {
         bgFile = General.BackgroundTexture,
         edgeFile = General.BorderTexture,
@@ -215,11 +197,7 @@ function UUF:CreateUnitFrame(Unit)
         insets = { left = General.BorderInset, right = General.BorderInset, top = General.BorderInset, bottom = General.BorderInset },
     }
 
-    -- Frame Size
-    self:SetSize(Frame.Width, Frame.Height)
-
-    -- Frame Border
-    if not self.unitBorder then 
+    if not self.unitBorder then
         self.unitBorder = CreateFrame("Frame", nil, self, "BackdropTemplate")
         self.unitBorder:SetAllPoints()
         self.unitBorder:SetBackdrop(BackdropTemplate)
@@ -228,7 +206,6 @@ function UUF:CreateUnitFrame(Unit)
         self.unitBorder:SetFrameLevel(1)
     end
 
-    -- Frame Health Bar
     if not self.unitHealthBar then
         self.unitHealthBar = CreateFrame("StatusBar", nil, self)
         self.unitHealthBar:SetSize(Frame.Width - 2, Frame.Height - 2)
@@ -249,48 +226,21 @@ function UUF:CreateUnitFrame(Unit)
         end
         self.unitHealthBar:SetFrameLevel(2)
         self.Health = self.unitHealthBar
-        -- Frame Health Bar Background
+
         self.unitHealthBarBackground = self:CreateTexture(nil, "BACKGROUND")
         self.unitHealthBarBackground:SetSize(Frame.Width - 2, Frame.Height - 2)
         self.unitHealthBarBackground:SetPoint("TOPLEFT", self, "TOPLEFT", 1, -1)
         self.unitHealthBarBackground:SetTexture(General.BackgroundTexture)
         self.unitHealthBarBackground:SetAlpha(General.BackgroundColour[4])
     end
+end
 
-    -- Frame Unit Is Target Indicator
-    if not self.unitIsTargetIndicator and Unit == "Boss" and TargetIndicator.Enabled then
-        self.unitIsTargetIndicator = CreateFrame("Frame", nil, self, "BackdropTemplate")
-        self.unitIsTargetIndicator:SetPoint("TOPLEFT", self, "TOPLEFT", 1, -1)
-        self.unitIsTargetIndicator:SetPoint("BOTTOMRIGHT", self, "BOTTOMRIGHT", -1, 1)
-        self.unitIsTargetIndicator:SetBackdrop({ bgFile = "Interface\\Buttons\\WHITE8X8", edgeFile = "Interface\\Buttons\\WHITE8X8", edgeSize = 1, insets = {left = 0, right = 0, top = 0, bottom = 0} })
-        self.unitIsTargetIndicator:SetBackdropColor(0, 0, 0, 0)
-        self.unitIsTargetIndicator:SetBackdropBorderColor(1, 1, 1, 1)
-        self.unitIsTargetIndicator:SetFrameLevel(self.unitHealthBar:GetFrameLevel() + 10)
-        self.unitIsTargetIndicator:Hide()
-    end
+local function CreateAbsorbBar(self, Unit)
+    local General = UUF.DB.profile.General
+    local Health = UUF.DB.profile[Unit].Health
+    local HealthPrediction = UUF.DB.profile[Unit].Health.HealthPrediction
+    local Absorbs = HealthPrediction.Absorbs
 
-    -- Frame Mouseover Highlight
-    if MouseoverHighlight.Enabled and not self.unitHighlight then
-        self.unitHighlight = CreateFrame("Frame", nil, self, "BackdropTemplate")
-        self.unitHighlight:SetPoint("TOPLEFT", self, "TOPLEFT", 1, -1)
-        self.unitHighlight:SetPoint("BOTTOMRIGHT", self, "BOTTOMRIGHT", -1, 1)
-        local MHR, MHG, MHB, MHA = unpack(MouseoverHighlight.Colour)
-        if MouseoverHighlight.Style == "BORDER" then
-            self.unitHighlight:SetBackdrop({ bgFile = "Interface\\Buttons\\WHITE8X8", edgeFile = "Interface\\Buttons\\WHITE8X8", edgeSize = 1, insets = {left = 0, right = 0, top = 0, bottom = 0} })
-            self.unitHighlight:SetBackdropColor(0, 0, 0, 0)
-            self.unitHighlight:SetBackdropBorderColor(MHR, MHG, MHB, MHA)
-            self.unitHighlight:SetFrameLevel(self.unitHealthBar:GetFrameLevel() + 10)
-            self.unitHighlight:Hide()
-        elseif MouseoverHighlight.Style == "HIGHLIGHT" then
-            self.unitHighlight:SetBackdrop({ bgFile = "Interface\\Buttons\\WHITE8X8", edgeFile = "Interface\\Buttons\\WHITE8X8", edgeSize = 1, insets = {left = 0, right = 0, top = 0, bottom = 0} })
-            self.unitHighlight:SetBackdropColor(MHR, MHG, MHB, MHA)
-            self.unitHighlight:SetBackdropBorderColor(0, 0, 0, 0)
-            self.unitHighlight:SetFrameLevel(self.unitHealthBar:GetFrameLevel() + 10)
-            self.unitHighlight:Hide()
-        end
-    end
-
-    -- Frame Absorbs
     if Absorbs.Enabled and not self.unitAbsorbs then
         self.unitAbsorbs = CreateFrame("StatusBar", nil, self.unitHealthBar)
         self.unitAbsorbs:SetStatusBarTexture(General.ForegroundTexture)
@@ -313,8 +263,14 @@ function UUF:CreateUnitFrame(Unit)
         self.unitAbsorbs:SetFrameLevel(self.unitHealthBar:GetFrameLevel() + 1)
         self.unitAbsorbs:Hide()
     end
+end
 
-    -- Frame Heal Absorbs
+local function CreateHealAbsorbBar(self, Unit)
+    local General = UUF.DB.profile.General
+    local Health = UUF.DB.profile[Unit].Health
+    local HealthPrediction = UUF.DB.profile[Unit].Health.HealthPrediction
+    local HealAbsorbs = HealthPrediction.HealAbsorbs
+    
     if HealAbsorbs.Enabled and not self.unitHealAbsorbs then
         self.unitHealAbsorbs = CreateFrame("StatusBar", nil, self.unitHealthBar)
         self.unitHealAbsorbs:SetStatusBarTexture(General.ForegroundTexture)
@@ -337,30 +293,69 @@ function UUF:CreateUnitFrame(Unit)
         self.unitHealAbsorbs:SetFrameLevel(self.unitHealthBar:GetFrameLevel() + 1)
         self.unitHealAbsorbs:Hide()
     end
+end
 
-    -- Register Absorb / Heal Absorbs for Health Prediction
-    self.HealthPrediction = {
-        myBar = nil,
-        otherBar = nil,
-        absorbBar = Absorbs.Enabled and self.unitAbsorbs or nil,
-        healAbsorbBar = HealAbsorbs.Enabled and self.unitHealAbsorbs or nil,
-        maxOverflow = 1,
-        PostUpdate = function(_, unit, _, _, absorb, _, _, _)
-            if not unit then return end
-            local absorbBar = self.unitAbsorbs
-            if not absorbBar then return end
-            local maxHealth = UnitHealthMax(unit) or 0
-            if maxHealth == 0 or not absorb or absorb == 0 then absorbBar:Hide() return end
-            local overflowFactor = (self.HealthPrediction and self.HealthPrediction.maxOverflow) or 1.0
-            if type(overflowFactor) ~= "number" then overflowFactor = 1.0 end
-            local overflowLimit = maxHealth * overflowFactor
-            local shownAbsorb = math.min(absorb, overflowLimit)
-            absorbBar:SetValue(shownAbsorb)
-            absorbBar:Show()
-        end
+local function CreatePowerBar(self, Unit)
+    local General = UUF.DB.profile.General
+    local Frame = UUF.DB.profile[Unit].Frame
+    local PowerBar = UUF.DB.profile[Unit].PowerBar
+    local BackdropTemplate = {
+        bgFile = General.BackgroundTexture,
+        edgeFile = General.BorderTexture,
+        edgeSize = General.BorderSize,
+        insets = { left = General.BorderInset, right = General.BorderInset, top = General.BorderInset, bottom = General.BorderInset },
     }
+    if not PowerBar.Enabled then return end
+    if PowerBar.Enabled and not self.unitPowerBar and not self.unitPowerBarBackground then
+        self.unitPowerBar = CreateFrame("StatusBar", nil, self)
+        self.unitPowerBar:SetPoint("BOTTOMLEFT", self, "BOTTOMLEFT", 0, 0)
+        self.unitPowerBar:SetSize(Frame.Width, PowerBar.Height)
+        self.unitPowerBar:SetStatusBarTexture(General.ForegroundTexture)
+        self.unitPowerBar:SetStatusBarColor(unpack(PowerBar.Colour))
+        self.unitPowerBar:SetMinMaxValues(0, 100)
+        self.unitPowerBar:SetAlpha(PowerBar.Colour[4])
+        self.unitPowerBar.colorPower = PowerBar.ColourByType
+        if PowerBar.Direction == "RL" then
+            self.unitPowerBar:SetReverseFill(true)
+        elseif PowerBar.Direction == "LR" then
+            self.unitPowerBar:SetReverseFill(false)
+        end
+        self.Power = self.unitPowerBar
+        -- Set Height of the Health Bar and Background to fit the Power Bar
+        self.unitHealthBar:SetHeight(self:GetHeight() - PowerBar.Height - 1)
+        self.unitHealthBarBackground:SetHeight(self:GetHeight() - PowerBar.Height - 1)
+        -- Frame Power Bar Background
+        self.unitPowerBarBackground = self.unitPowerBar:CreateTexture(nil, "BACKGROUND")
+        self.unitPowerBarBackground:SetAllPoints()
+        self.unitPowerBarBackground:SetTexture(General.BackgroundTexture)
+        self.unitPowerBarBackground:SetAlpha(PowerBar.BackgroundColour[4])
+        if PowerBar.ColourBackgroundByType then 
+            self.unitPowerBarBackground.multiplier = PowerBar.BackgroundMultiplier
+            self.unitPowerBar.bg = self.unitPowerBarBackground
+        else
+            self.unitPowerBarBackground:SetVertexColor(unpack(PowerBar.BackgroundColour))
+            self.unitPowerBar.bg = nil
+        end
+        -- Power Bar Border
+        self.unitPowerBarBorder = CreateFrame("Frame", nil, self.unitPowerBar, "BackdropTemplate")
+        self.unitPowerBarBorder:SetSize(Frame.Width, PowerBar.Height)
+        self.unitPowerBarBorder:SetPoint("BOTTOMLEFT", self, "BOTTOMLEFT", 0, 0)
+        self.unitPowerBarBorder:SetBackdrop(BackdropTemplate)
+        self.unitPowerBarBorder:SetBackdropColor(0,0,0,0)
+        self.unitPowerBarBorder:SetBackdropBorderColor(unpack(General.BorderColour))
+        self.unitPowerBarBorder:SetFrameLevel(4)
+    end
+end
 
-    -- Frame Cast Bar
+local function CreateCastBar(self, Unit)
+    local General = UUF.DB.profile.General
+    local CastBar = UUF.DB.profile[Unit].CastBar
+    local BackdropTemplate = {
+        bgFile = General.BackgroundTexture,
+        edgeFile = General.BorderTexture,
+        edgeSize = General.BorderSize,
+        insets = { left = General.BorderInset, right = General.BorderInset, top = General.BorderInset, bottom = General.BorderInset },
+    }
     if Unit == "Player" or Unit == "Target" or Unit == "Boss" then
         if not self.unitCastBar and CastBar.Enabled then
             -- Frame Cast Bar
@@ -420,65 +415,10 @@ function UUF:CreateUnitFrame(Unit)
         end
         
     end
+end
 
-    -- Frame Portrait
-    if Portrait.Enabled and not self.unitPortraitBackdrop and not self.unitPortrait then
-        self.unitPortraitBackdrop = CreateFrame("Frame", nil, self, "BackdropTemplate")
-        self.unitPortraitBackdrop:SetSize(Portrait.Size, Portrait.Size)
-        self.unitPortraitBackdrop:SetPoint(Portrait.AnchorFrom, self, Portrait.AnchorTo, Portrait.XOffset, Portrait.YOffset)
-        self.unitPortraitBackdrop:SetBackdrop(BackdropTemplate)
-        self.unitPortraitBackdrop:SetBackdropColor(unpack(General.BackgroundColour))
-        self.unitPortraitBackdrop:SetBackdropBorderColor(unpack(General.BorderColour))
-        
-        self.unitPortrait = self.unitPortraitBackdrop:CreateTexture(nil, "OVERLAY")
-        self.unitPortrait:SetSize(self.unitPortraitBackdrop:GetHeight() - 2, self.unitPortraitBackdrop:GetHeight() - 2)
-        self.unitPortrait:SetPoint("CENTER", self.unitPortraitBackdrop, "CENTER", 0, 0)
-        self.unitPortrait:SetTexCoord(0.2, 0.8, 0.2, 0.8)
-        self.Portrait = self.unitPortrait
-    end
-
-    -- Frame Power Bar
-    if PowerBar.Enabled and not self.unitPowerBar and not self.unitPowerBarBackground then
-        self.unitPowerBar = CreateFrame("StatusBar", nil, self)
-        self.unitPowerBar:SetPoint("BOTTOMLEFT", self, "BOTTOMLEFT", 0, 0)
-        self.unitPowerBar:SetSize(Frame.Width, PowerBar.Height)
-        self.unitPowerBar:SetStatusBarTexture(General.ForegroundTexture)
-        self.unitPowerBar:SetStatusBarColor(unpack(PowerBar.Colour))
-        self.unitPowerBar:SetMinMaxValues(0, 100)
-        self.unitPowerBar:SetAlpha(PowerBar.Colour[4])
-        self.unitPowerBar.colorPower = PowerBar.ColourByType
-        if PowerBar.Direction == "RL" then
-            self.unitPowerBar:SetReverseFill(true)
-        elseif PowerBar.Direction == "LR" then
-            self.unitPowerBar:SetReverseFill(false)
-        end
-        self.Power = self.unitPowerBar
-        -- Set Height of the Health Bar and Background to fit the Power Bar
-        self.unitHealthBar:SetHeight(self:GetHeight() - PowerBar.Height - 1)
-        self.unitHealthBarBackground:SetHeight(self:GetHeight() - PowerBar.Height - 1)
-        -- Frame Power Bar Background
-        self.unitPowerBarBackground = self.unitPowerBar:CreateTexture(nil, "BACKGROUND")
-        self.unitPowerBarBackground:SetAllPoints()
-        self.unitPowerBarBackground:SetTexture(General.BackgroundTexture)
-        self.unitPowerBarBackground:SetAlpha(PowerBar.BackgroundColour[4])
-        if PowerBar.ColourBackgroundByType then 
-            self.unitPowerBarBackground.multiplier = PowerBar.BackgroundMultiplier
-            self.unitPowerBar.bg = self.unitPowerBarBackground
-        else
-            self.unitPowerBarBackground:SetVertexColor(unpack(PowerBar.BackgroundColour))
-            self.unitPowerBar.bg = nil
-        end
-        -- Power Bar Border
-        self.unitPowerBarBorder = CreateFrame("Frame", nil, self.unitPowerBar, "BackdropTemplate")
-        self.unitPowerBarBorder:SetSize(Frame.Width, PowerBar.Height)
-        self.unitPowerBarBorder:SetPoint("BOTTOMLEFT", self, "BOTTOMLEFT", 0, 0)
-        self.unitPowerBarBorder:SetBackdrop(BackdropTemplate)
-        self.unitPowerBarBorder:SetBackdropColor(0,0,0,0)
-        self.unitPowerBarBorder:SetBackdropBorderColor(unpack(General.BorderColour))
-        self.unitPowerBarBorder:SetFrameLevel(4)
-    end
-
-    -- Frame Buffs / Debuffs
+local function CreateBuffs(self, Unit)
+    local Buffs = UUF.DB.profile[Unit].Buffs
     if Buffs.Enabled and not self.unitBuffs then
         self.unitBuffs = CreateFrame("Frame", nil, self)
         self.unitBuffs:SetSize(self:GetWidth(), Buffs.Size)
@@ -494,7 +434,10 @@ function UUF:CreateUnitFrame(Unit)
         self.unitBuffs.PostCreateButton = function(_, button) PostCreateButton(_, button, "Player", "HELPFUL") end
         self.Buffs = self.unitBuffs
     end
+end
 
+local function CreateDebuffs(self, Unit)
+    local Debuffs = UUF.DB.profile[Unit].Debuffs
     if Debuffs.Enabled and not self.unitDebuffs then
         self.unitDebuffs = CreateFrame("Frame", nil, self)
         self.unitDebuffs:SetSize(self:GetWidth(), Debuffs.Size)
@@ -510,8 +453,80 @@ function UUF:CreateUnitFrame(Unit)
         self.unitDebuffs.PostCreateButton = function(_, button) PostCreateButton(_, button, "Player", "HARMFUL") end
         self.Debuffs = self.unitDebuffs
     end
+end
 
-    -- Text Fields
+local function CreatePortrait(self, Unit)
+    local General = UUF.DB.profile.General
+    local Portrait = UUF.DB.profile[Unit].Portrait
+    local BackdropTemplate = {
+        bgFile = General.BackgroundTexture,
+        edgeFile = General.BorderTexture,
+        edgeSize = General.BorderSize,
+        insets = { left = General.BorderInset, right = General.BorderInset, top = General.BorderInset, bottom = General.BorderInset },
+    }
+    if Portrait.Enabled and not self.unitPortraitBackdrop and not self.unitPortrait then
+        self.unitPortraitBackdrop = CreateFrame("Frame", nil, self, "BackdropTemplate")
+        self.unitPortraitBackdrop:SetSize(Portrait.Size, Portrait.Size)
+        self.unitPortraitBackdrop:SetPoint(Portrait.AnchorFrom, self, Portrait.AnchorTo, Portrait.XOffset, Portrait.YOffset)
+        self.unitPortraitBackdrop:SetBackdrop(BackdropTemplate)
+        self.unitPortraitBackdrop:SetBackdropColor(unpack(General.BackgroundColour))
+        self.unitPortraitBackdrop:SetBackdropBorderColor(unpack(General.BorderColour))
+        
+        self.unitPortrait = self.unitPortraitBackdrop:CreateTexture(nil, "OVERLAY")
+        self.unitPortrait:SetSize(self.unitPortraitBackdrop:GetHeight() - 2, self.unitPortraitBackdrop:GetHeight() - 2)
+        self.unitPortrait:SetPoint("CENTER", self.unitPortraitBackdrop, "CENTER", 0, 0)
+        self.unitPortrait:SetTexCoord(0.2, 0.8, 0.2, 0.8)
+        self.Portrait = self.unitPortrait
+    end
+end
+
+local function CreateIndicators(self, Unit)
+    local TargetIndicator = UUF.DB.profile[Unit].TargetIndicator
+    local CombatIndicator = UUF.DB.profile[Unit].CombatIndicator
+    local LeaderIndicator = UUF.DB.profile[Unit].LeaderIndicator
+    local TargetMarker = UUF.DB.profile[Unit].TargetMarker
+
+    if not self.unitIsTargetIndicator and Unit == "Boss" and TargetIndicator.Enabled then
+        self.unitIsTargetIndicator = CreateFrame("Frame", nil, self, "BackdropTemplate")
+        self.unitIsTargetIndicator:SetPoint("TOPLEFT", self, "TOPLEFT", 1, -1)
+        self.unitIsTargetIndicator:SetPoint("BOTTOMRIGHT", self, "BOTTOMRIGHT", -1, 1)
+        self.unitIsTargetIndicator:SetBackdrop({ bgFile = "Interface\\Buttons\\WHITE8X8", edgeFile = "Interface\\Buttons\\WHITE8X8", edgeSize = 1, insets = {left = 0, right = 0, top = 0, bottom = 0} })
+        self.unitIsTargetIndicator:SetBackdropColor(0, 0, 0, 0)
+        self.unitIsTargetIndicator:SetBackdropBorderColor(1, 1, 1, 1)
+        self.unitIsTargetIndicator:SetFrameLevel(self.unitHealthBar:GetFrameLevel() + 10)
+        self.unitIsTargetIndicator:Hide()
+    end
+    -- Frame Target Marker
+    if TargetMarker.Enabled and not self.unitTargetMarker then
+        self.unitTargetMarker = self.unitHighLevelFrame:CreateTexture(nil, "OVERLAY")
+        self.unitTargetMarker:SetSize(TargetMarker.Size, TargetMarker.Size)
+        self.unitTargetMarker:SetPoint(TargetMarker.AnchorFrom, self.unitHighLevelFrame, TargetMarker.AnchorTo, TargetMarker.XOffset, TargetMarker.YOffset)
+        self.RaidTargetIndicator = self.unitTargetMarker
+    end
+
+    -- Frame Combat Indicator
+    if not self.unitCombatIndicator and Unit == "Player" and CombatIndicator.Enabled then
+        self.unitCombatIndicator = self.unitHighLevelFrame:CreateTexture(nil, "OVERLAY")
+        self.unitCombatIndicator:SetSize(CombatIndicator.Size, CombatIndicator.Size)
+        self.unitCombatIndicator:SetPoint(CombatIndicator.AnchorFrom, self.unitHighLevelFrame, CombatIndicator.AnchorTo, CombatIndicator.XOffset, CombatIndicator.YOffset)
+        self.CombatIndicator = self.unitCombatIndicator
+    end
+
+    -- Frame Leader Indicator
+    if not self.unitLeaderIndicator and Unit == "Player" and LeaderIndicator.Enabled then
+        self.unitLeaderIndicator = self.unitHighLevelFrame:CreateTexture(nil, "OVERLAY")
+        self.unitLeaderIndicator:SetSize(LeaderIndicator.Size, LeaderIndicator.Size)
+        self.unitLeaderIndicator:SetPoint(LeaderIndicator.AnchorFrom, self.unitHighLevelFrame, LeaderIndicator.AnchorTo, LeaderIndicator.XOffset, LeaderIndicator.YOffset)
+        self.LeaderIndicator = self.unitLeaderIndicator
+    end
+end
+
+local function CreateTextFields(self, Unit)
+    local General = UUF.DB.profile.General
+    local Frame = UUF.DB.profile[Unit].Frame
+    local FirstText = UUF.DB.profile[Unit].Texts.First
+    local SecondText = UUF.DB.profile[Unit].Texts.Second
+    local ThirdText = UUF.DB.profile[Unit].Texts.Third
     if not self.unitHighLevelFrame then 
         self.unitHighLevelFrame = CreateFrame("Frame", nil, self)
         self.unitHighLevelFrame:SetSize(Frame.Width, Frame.Height)
@@ -551,31 +566,33 @@ function UUF:CreateUnitFrame(Unit)
             self:Tag(self.unitThirdText, ThirdText.Tag)
         end
     end
+end
 
-    -- Frame Target Marker
-    if TargetMarker.Enabled and not self.unitTargetMarker then
-        self.unitTargetMarker = self.unitHighLevelFrame:CreateTexture(nil, "OVERLAY")
-        self.unitTargetMarker:SetSize(TargetMarker.Size, TargetMarker.Size)
-        self.unitTargetMarker:SetPoint(TargetMarker.AnchorFrom, self.unitHighLevelFrame, TargetMarker.AnchorTo, TargetMarker.XOffset, TargetMarker.YOffset)
-        self.RaidTargetIndicator = self.unitTargetMarker
+local function CreateMouseoverHighlight(self)
+    local MouseoverHighlight = UUF.DB.profile.General.MouseoverHighlight
+    if MouseoverHighlight.Enabled and not self.unitHighlight then
+        self.unitHighlight = CreateFrame("Frame", nil, self, "BackdropTemplate")
+        self.unitHighlight:SetPoint("TOPLEFT", self, "TOPLEFT", 1, -1)
+        self.unitHighlight:SetPoint("BOTTOMRIGHT", self, "BOTTOMRIGHT", -1, 1)
+        local MHR, MHG, MHB, MHA = unpack(MouseoverHighlight.Colour)
+        if MouseoverHighlight.Style == "BORDER" then
+            self.unitHighlight:SetBackdrop({ bgFile = "Interface\\Buttons\\WHITE8X8", edgeFile = "Interface\\Buttons\\WHITE8X8", edgeSize = 1, insets = {left = 0, right = 0, top = 0, bottom = 0} })
+            self.unitHighlight:SetBackdropColor(0, 0, 0, 0)
+            self.unitHighlight:SetBackdropBorderColor(MHR, MHG, MHB, MHA)
+            self.unitHighlight:SetFrameLevel(self.unitHealthBar:GetFrameLevel() + 10)
+            self.unitHighlight:Hide()
+        elseif MouseoverHighlight.Style == "HIGHLIGHT" then
+            self.unitHighlight:SetBackdrop({ bgFile = "Interface\\Buttons\\WHITE8X8", edgeFile = "Interface\\Buttons\\WHITE8X8", edgeSize = 1, insets = {left = 0, right = 0, top = 0, bottom = 0} })
+            self.unitHighlight:SetBackdropColor(MHR, MHG, MHB, MHA)
+            self.unitHighlight:SetBackdropBorderColor(0, 0, 0, 0)
+            self.unitHighlight:SetFrameLevel(self.unitHealthBar:GetFrameLevel() + 10)
+            self.unitHighlight:Hide()
+        end
     end
+end
 
-    -- Frame Combat Indicator
-    if not self.unitCombatIndicator and Unit == "Player" and CombatIndicator.Enabled then
-        self.unitCombatIndicator = self.unitHighLevelFrame:CreateTexture(nil, "OVERLAY")
-        self.unitCombatIndicator:SetSize(CombatIndicator.Size, CombatIndicator.Size)
-        self.unitCombatIndicator:SetPoint(CombatIndicator.AnchorFrom, self.unitHighLevelFrame, CombatIndicator.AnchorTo, CombatIndicator.XOffset, CombatIndicator.YOffset)
-        self.CombatIndicator = self.unitCombatIndicator
-    end
-
-    -- Frame Leader Indicator
-    if not self.unitLeaderIndicator and Unit == "Player" and LeaderIndicator.Enabled then
-        self.unitLeaderIndicator = self.unitHighLevelFrame:CreateTexture(nil, "OVERLAY")
-        self.unitLeaderIndicator:SetSize(LeaderIndicator.Size, LeaderIndicator.Size)
-        self.unitLeaderIndicator:SetPoint(LeaderIndicator.AnchorFrom, self.unitHighLevelFrame, LeaderIndicator.AnchorTo, LeaderIndicator.XOffset, LeaderIndicator.YOffset)
-        self.LeaderIndicator = self.unitLeaderIndicator
-    end
-
+local function ApplyScripts(self)
+    local MouseoverHighlight = UUF.DB.profile.General.MouseoverHighlight
     self:RegisterForClicks("AnyUp")
     self:SetAttribute("*type1", "target")
     self:SetAttribute("*type2", "togglemenu")
@@ -585,42 +602,51 @@ function UUF:CreateUnitFrame(Unit)
     self:HookScript("OnLeave", function() if not MouseoverHighlight.Enabled then return end self.unitHighlight:Hide() end)
 end
 
-function UUF:UpdateUnitFrame(FrameName)
-    if not FrameName then return end
-    if not FrameName.unit then return end
-
-    -- Localised SavedVariables
-    local Unit = UUF.Frames[FrameName.unit] or "Boss"
+function UUF:CreateUnitFrame(Unit)
     local Frame = UUF.DB.profile[Unit].Frame
-    local Portrait = UUF.DB.profile[Unit].Portrait
     local Health = UUF.DB.profile[Unit].Health
     local HealthPrediction = Health.HealthPrediction
     local Absorbs = HealthPrediction.Absorbs
     local HealAbsorbs = HealthPrediction.HealAbsorbs
-    local PowerBar = UUF.DB.profile[Unit].PowerBar
-    local General = UUF.DB.profile.General
-    local Buffs = UUF.DB.profile[Unit].Buffs
-    local Debuffs = UUF.DB.profile[Unit].Debuffs
-    local TargetMarker = UUF.DB.profile[Unit].TargetMarker
-    local CombatIndicator = UUF.DB.profile[Unit].CombatIndicator
-    local LeaderIndicator = UUF.DB.profile[Unit].LeaderIndicator
-    local TargetIndicator = UUF.DB.profile[Unit].TargetIndicator
-    local FirstText = UUF.DB.profile[Unit].Texts.First
-    local SecondText = UUF.DB.profile[Unit].Texts.Second
-    local ThirdText = UUF.DB.profile[Unit].Texts.Third
-    local Range = UUF.DB.profile[Unit].Range
-    local MouseoverHighlight = UUF.DB.profile.General.MouseoverHighlight
-    local CastBar = UUF.DB.profile[Unit].CastBar
 
-    -- Backdrop Template
-    local BackdropTemplate = {
-        bgFile = General.BackgroundTexture,
-        edgeFile = General.BorderTexture,
-        edgeSize = General.BorderSize,
-        insets = { left = General.BorderInset, right = General.BorderInset, top = General.BorderInset, bottom = General.BorderInset },
+    self:SetSize(Frame.Width, Frame.Height)
+    CreateHealthBar(self, Unit)
+    CreateMouseoverHighlight(self)
+    CreateAbsorbBar(self, Unit)
+    CreateHealAbsorbBar(self, Unit)
+    self.HealthPrediction = {
+        myBar = nil,
+        otherBar = nil,
+        absorbBar = Absorbs.Enabled and self.unitAbsorbs or nil,
+        healAbsorbBar = HealAbsorbs.Enabled and self.unitHealAbsorbs or nil,
+        maxOverflow = 1,
+        PostUpdate = function(_, unit, _, _, absorb, _, _, _)
+            if not unit then return end
+            local absorbBar = self.unitAbsorbs
+            if not absorbBar then return end
+            local maxHealth = UnitHealthMax(unit) or 0
+            if maxHealth == 0 or not absorb or absorb == 0 then absorbBar:Hide() return end
+            local overflowFactor = (self.HealthPrediction and self.HealthPrediction.maxOverflow) or 1.0
+            if type(overflowFactor) ~= "number" then overflowFactor = 1.0 end
+            local overflowLimit = maxHealth * overflowFactor
+            local shownAbsorb = math.min(absorb, overflowLimit)
+            absorbBar:SetValue(shownAbsorb)
+            absorbBar:Show()
+        end
     }
+    CreatePowerBar(self, Unit)
+    CreateCastBar(self, Unit)
+    CreatePortrait(self, Unit)
+    CreateBuffs(self, Unit)
+    CreateDebuffs(self, Unit)
+    CreateTextFields(self, Unit)
+    CreateIndicators(self, Unit)
+    ApplyScripts(self)
+end
 
-    -- Frame Size & Position
+local function UpdateFrame(FrameName)
+    local Unit = UUF.Frames[FrameName.unit] or "Boss"
+    local Frame = UUF.DB.profile[Unit].Frame
     if FrameName then
         FrameName:ClearAllPoints()
         FrameName:SetSize(Frame.Width, Frame.Height)
@@ -628,35 +654,18 @@ function UUF:UpdateUnitFrame(FrameName)
         FrameName:SetPoint(Frame.AnchorFrom, AnchorParent, Frame.AnchorTo, Frame.XPosition, Frame.YPosition)
     end
 
-    -- Frame Border
+end
+
+local function UpdateHealthBar(FrameName)
+    local Unit = UUF.Frames[FrameName.unit] or "Boss"
+    local Frame = UUF.DB.profile[Unit].Frame
+    local General = UUF.DB.profile.General
+    local Health = UUF.DB.profile[Unit].Health
+
     if FrameName.unitBorder then
         FrameName.unitBorder:SetBackdropBorderColor(unpack(General.BorderColour))
         FrameName.unitBorder:SetFrameLevel(1)
     end
-
-    if FrameName.unitIsTargetIndicator and not TargetIndicator.Enabled then
-        FrameName.unitIsTargetIndicator:Hide()
-    end
-
-    -- Frame Health Bar
-    if MouseoverHighlight.Enabled and FrameName.unitHighlight then
-        local MHR, MHG, MHB, MHA = unpack(MouseoverHighlight.Colour)
-        if MouseoverHighlight.Style == "BORDER" then
-            FrameName.unitHighlight:SetBackdrop({ bgFile = "Interface\\Buttons\\WHITE8X8", edgeFile = "Interface\\Buttons\\WHITE8X8", edgeSize = 1, insets = {left = 0, right = 0, top = 0, bottom = 0} })
-            FrameName.unitHighlight:SetBackdropColor(0, 0, 0, 0)
-            FrameName.unitHighlight:SetBackdropBorderColor(MHR, MHG, MHB, MHA)
-            FrameName.unitHighlight:SetFrameLevel(20)
-            FrameName.unitHighlight:Hide()
-        elseif MouseoverHighlight.Style == "HIGHLIGHT" then
-            FrameName.unitHighlight:SetBackdrop({ bgFile = "Interface\\Buttons\\WHITE8X8", edgeFile = "Interface\\Buttons\\WHITE8X8", edgeSize = 1, insets = {left = 0, right = 0, top = 0, bottom = 0} })
-            FrameName.unitHighlight:SetBackdropColor(MHR, MHG, MHB, MHA)
-            FrameName.unitHighlight:SetBackdropBorderColor(0, 0, 0, 0)
-            FrameName.unitHighlight:SetFrameLevel(20)
-            FrameName.unitHighlight:Hide()
-        end
-    end
-
-    -- Frame Health Bar
     if FrameName.unitHealthBar then
         FrameName.unitHealthBar:SetSize(Frame.Width - 2, Frame.Height - 2)
         FrameName.unitHealthBar:ClearAllPoints()
@@ -682,8 +691,14 @@ function UUF:UpdateUnitFrame(FrameName)
         FrameName.unitHealthBarBackground:SetAlpha(General.BackgroundColour[4])
         FrameName.unitHealthBar:ForceUpdate()
     end
+end
 
-    -- Frame Absorbs
+local function UpdateAbsorbBar(FrameName)
+    local Unit = UUF.Frames[FrameName.unit] or "Boss"
+    local General = UUF.DB.profile.General
+    local Health = UUF.DB.profile[Unit].Health
+    local HealthPrediction = UUF.DB.profile[Unit].Health.HealthPrediction
+    local Absorbs = HealthPrediction.Absorbs
     if FrameName.unitAbsorbs and Absorbs.Enabled then
         FrameName.unitAbsorbs:SetStatusBarTexture(General.ForegroundTexture)
         local HealthBarTexture = FrameName.unitHealthBar:GetStatusBarTexture()
@@ -703,8 +718,14 @@ function UUF:UpdateUnitFrame(FrameName)
         FrameName.unitAbsorbs:SetSize(FrameName:GetWidth() - 2, FrameName:GetHeight() - 2)
         FrameName.unitAbsorbs:SetFrameLevel(FrameName.unitHealthBar:GetFrameLevel() + 1)
     end
+end
 
-    -- Frame Heal Absorbs
+local function UpdateHealAbsorbBar(FrameName)
+    local Unit = UUF.Frames[FrameName.unit] or "Boss"
+    local General = UUF.DB.profile.General
+    local Health = UUF.DB.profile[Unit].Health
+    local HealthPrediction = UUF.DB.profile[Unit].Health.HealthPrediction
+    local HealAbsorbs = HealthPrediction.HealAbsorbs
     if FrameName.unitHealAbsorbs and HealAbsorbs.Enabled then
         FrameName.unitHealAbsorbs:SetStatusBarTexture(General.ForegroundTexture)
         local HealthBarTexture = FrameName.unitHealthBar:GetStatusBarTexture()
@@ -725,19 +746,62 @@ function UUF:UpdateUnitFrame(FrameName)
         FrameName.unitHealAbsorbs:SetSize(FrameName:GetWidth() - 2, FrameName:GetHeight() - 2)
         FrameName.unitHealAbsorbs:SetFrameLevel(FrameName.unitHealthBar:GetFrameLevel() + 1)
     end
+end
 
-    -- Frame Portrait
-    if FrameName.unitPortraitBackdrop and FrameName.unitPortrait and Portrait.Enabled then
-        FrameName.unitPortraitBackdrop:ClearAllPoints()
-        FrameName.unitPortraitBackdrop:SetSize(Portrait.Size, Portrait.Size)
-        FrameName.unitPortraitBackdrop:SetPoint(Portrait.AnchorFrom, FrameName, Portrait.AnchorTo, Portrait.XOffset, Portrait.YOffset)
-        FrameName.unitPortraitBackdrop:SetBackdrop(BackdropTemplate)
-        FrameName.unitPortraitBackdrop:SetBackdropColor(unpack(General.BackgroundColour))
-        FrameName.unitPortraitBackdrop:SetBackdropBorderColor(unpack(General.BorderColour))
-        FrameName.unitPortrait:SetSize(FrameName.unitPortraitBackdrop:GetHeight() - 2, FrameName.unitPortraitBackdrop:GetHeight() - 2)
-        FrameName.unitPortrait:SetPoint("CENTER", FrameName.unitPortraitBackdrop, "CENTER", 0, 0)
+local function UpdatePowerBar(FrameName)
+    local Unit = UUF.Frames[FrameName.unit] or "Boss"
+    local Frame = UUF.DB.profile[Unit].Frame
+    local General = UUF.DB.profile.General
+    local PowerBar = UUF.DB.profile[Unit].PowerBar
+    local BackdropTemplate = {
+        bgFile = General.BackgroundTexture,
+        edgeFile = General.BorderTexture,
+        edgeSize = General.BorderSize,
+        insets = { left = General.BorderInset, right = General.BorderInset, top = General.BorderInset, bottom = General.BorderInset },
+    }
+    if FrameName.unitPowerBar and PowerBar.Enabled then
+        -- Power Bar
+        FrameName.unitPowerBar:SetPoint("BOTTOMLEFT", FrameName, "BOTTOMLEFT", 0, 0)
+        FrameName.unitPowerBar:SetSize(Frame.Width, PowerBar.Height)
+        FrameName.unitPowerBar:SetStatusBarTexture(General.ForegroundTexture)
+        FrameName.unitPowerBar:SetStatusBarColor(unpack(PowerBar.Colour))
+        FrameName.unitPowerBar:SetMinMaxValues(0, 100)
+        FrameName.unitPowerBar.colorPower = PowerBar.ColourByType
+        FrameName.unitHealthBar:SetHeight(FrameName:GetHeight() - PowerBar.Height - 1)
+        FrameName.unitHealthBarBackground:SetHeight(FrameName:GetHeight() - PowerBar.Height - 1)
+        FrameName.unitPowerBar:SetAlpha(PowerBar.Colour[4])
+        if PowerBar.Direction == "RL" then
+            FrameName.unitPowerBar:SetReverseFill(true)
+        elseif PowerBar.Direction == "LR" then
+            FrameName.unitPowerBar:SetReverseFill(false)
+        end
+        -- Power Bar Background
+        FrameName.unitPowerBarBackground:ClearAllPoints()
+        FrameName.unitPowerBarBackground:SetAllPoints()
+        FrameName.unitPowerBarBackground:SetTexture(General.BackgroundTexture)
+        FrameName.unitPowerBarBackground:SetAlpha(PowerBar.BackgroundColour[4])
+        if PowerBar.ColourBackgroundByType then 
+            FrameName.unitPowerBarBackground.multiplier = PowerBar.BackgroundMultiplier
+            FrameName.unitPowerBar.bg = FrameName.unitPowerBarBackground
+        else
+            FrameName.unitPowerBarBackground:SetVertexColor(unpack(PowerBar.BackgroundColour))
+            FrameName.unitPowerBar.bg = nil
+        end
+        -- Power Bar Border
+        FrameName.unitPowerBarBorder:SetSize(Frame.Width, PowerBar.Height)
+        FrameName.unitPowerBarBorder:SetPoint("BOTTOMLEFT", FrameName, "BOTTOMLEFT", 0, 0)
+        FrameName.unitPowerBarBorder:SetBackdrop(BackdropTemplate)
+        FrameName.unitPowerBarBorder:SetBackdropColor(0,0,0,0)
+        FrameName.unitPowerBarBorder:SetBackdropBorderColor(unpack(General.BorderColour))
+        FrameName.unitPowerBarBorder:SetFrameLevel(4)
+        FrameName.unitPowerBar:ForceUpdate()
     end
-    
+end
+
+local function UpdateCastBar(FrameName)
+    local Unit = UUF.Frames[FrameName.unit] or "Boss"
+    local General = UUF.DB.profile.General
+    local CastBar = UUF.DB.profile[Unit].CastBar
     if Unit == "Player" or Unit == "Target" or Unit == "Boss" then
         if FrameName.unitCastBar and CastBar.Enabled then
             -- Frame Cast Bar
@@ -805,47 +869,11 @@ function UUF:UpdateUnitFrame(FrameName)
             FrameName.unitCastBarTime:SetJustifyH(UUF:GetFontJustification(CastBar.Texts.Time.AnchorTo))
         end 
     end
+end
 
-    -- Frame Power Bar
-    if FrameName.unitPowerBar and PowerBar.Enabled then
-        -- Power Bar
-        FrameName.unitPowerBar:SetPoint("BOTTOMLEFT", FrameName, "BOTTOMLEFT", 0, 0)
-        FrameName.unitPowerBar:SetSize(Frame.Width, PowerBar.Height)
-        FrameName.unitPowerBar:SetStatusBarTexture(General.ForegroundTexture)
-        FrameName.unitPowerBar:SetStatusBarColor(unpack(PowerBar.Colour))
-        FrameName.unitPowerBar:SetMinMaxValues(0, 100)
-        FrameName.unitPowerBar.colorPower = PowerBar.ColourByType
-        FrameName.unitHealthBar:SetHeight(FrameName:GetHeight() - PowerBar.Height - 1)
-        FrameName.unitHealthBarBackground:SetHeight(FrameName:GetHeight() - PowerBar.Height - 1)
-        FrameName.unitPowerBar:SetAlpha(PowerBar.Colour[4])
-        if PowerBar.Direction == "RL" then
-            FrameName.unitPowerBar:SetReverseFill(true)
-        elseif PowerBar.Direction == "LR" then
-            FrameName.unitPowerBar:SetReverseFill(false)
-        end
-        -- Power Bar Background
-        FrameName.unitPowerBarBackground:ClearAllPoints()
-        FrameName.unitPowerBarBackground:SetAllPoints()
-        FrameName.unitPowerBarBackground:SetTexture(General.BackgroundTexture)
-        FrameName.unitPowerBarBackground:SetAlpha(PowerBar.BackgroundColour[4])
-        if PowerBar.ColourBackgroundByType then 
-            FrameName.unitPowerBarBackground.multiplier = PowerBar.BackgroundMultiplier
-            FrameName.unitPowerBar.bg = FrameName.unitPowerBarBackground
-        else
-            FrameName.unitPowerBarBackground:SetVertexColor(unpack(PowerBar.BackgroundColour))
-            FrameName.unitPowerBar.bg = nil
-        end
-        -- Power Bar Border
-        FrameName.unitPowerBarBorder:SetSize(Frame.Width, PowerBar.Height)
-        FrameName.unitPowerBarBorder:SetPoint("BOTTOMLEFT", FrameName, "BOTTOMLEFT", 0, 0)
-        FrameName.unitPowerBarBorder:SetBackdrop(BackdropTemplate)
-        FrameName.unitPowerBarBorder:SetBackdropColor(0,0,0,0)
-        FrameName.unitPowerBarBorder:SetBackdropBorderColor(unpack(General.BorderColour))
-        FrameName.unitPowerBarBorder:SetFrameLevel(4)
-        FrameName.unitPowerBar:ForceUpdate()
-    end
-
-    -- Frame Buffs / Debuffs
+local function UpdateBuffs(FrameName)
+    local Unit = UUF.Frames[FrameName.unit] or "Boss"
+    local Buffs = UUF.DB.profile[Unit].Buffs
     if Buffs.Enabled then
         FrameName.unitBuffs:ClearAllPoints()
         FrameName.unitBuffs:SetSize(FrameName:GetWidth(), Buffs.Size)
@@ -866,7 +894,11 @@ function UUF:UpdateUnitFrame(FrameName)
             FrameName.unitBuffs:Hide()
         end
     end
+end
 
+local function UpdateDebuffs(FrameName)
+    local Unit = UUF.Frames[FrameName.unit] or "Boss"
+    local Debuffs = UUF.DB.profile[Unit].Debuffs
     if Debuffs.Enabled then
         FrameName.unitDebuffs:ClearAllPoints()
         FrameName.unitDebuffs:SetSize(FrameName:GetWidth(), Debuffs.Size)
@@ -887,8 +919,78 @@ function UUF:UpdateUnitFrame(FrameName)
             FrameName.unitDebuffs:Hide()
         end
     end
+end
 
-    -- Frame Texts
+local function UpdatePortrait(FrameName)
+    local Unit = UUF.Frames[FrameName.unit] or "Boss"
+    local General = UUF.DB.profile.General
+    local Portrait = UUF.DB.profile[Unit].Portrait
+    local BackdropTemplate = {
+        bgFile = General.BackgroundTexture,
+        edgeFile = General.BorderTexture,
+        edgeSize = General.BorderSize,
+        insets = { left = General.BorderInset, right = General.BorderInset, top = General.BorderInset, bottom = General.BorderInset },
+    }
+    if FrameName.unitPortraitBackdrop and FrameName.unitPortrait and Portrait.Enabled then
+        FrameName.unitPortraitBackdrop:ClearAllPoints()
+        FrameName.unitPortraitBackdrop:SetSize(Portrait.Size, Portrait.Size)
+        FrameName.unitPortraitBackdrop:SetPoint(Portrait.AnchorFrom, FrameName, Portrait.AnchorTo, Portrait.XOffset, Portrait.YOffset)
+        FrameName.unitPortraitBackdrop:SetBackdrop(BackdropTemplate)
+        FrameName.unitPortraitBackdrop:SetBackdropColor(unpack(General.BackgroundColour))
+        FrameName.unitPortraitBackdrop:SetBackdropBorderColor(unpack(General.BorderColour))
+        FrameName.unitPortrait:SetSize(FrameName.unitPortraitBackdrop:GetHeight() - 2, FrameName.unitPortraitBackdrop:GetHeight() - 2)
+        FrameName.unitPortrait:SetPoint("CENTER", FrameName.unitPortraitBackdrop, "CENTER", 0, 0)
+    end
+end
+
+local function UpdateIndicators(FrameName)
+    local Unit = UUF.Frames[FrameName.unit] or "Boss"
+    local TargetIndicator = UUF.DB.profile[Unit].TargetIndicator
+    local CombatIndicator = UUF.DB.profile[Unit].CombatIndicator
+    local LeaderIndicator = UUF.DB.profile[Unit].LeaderIndicator
+    local TargetMarker = UUF.DB.profile[Unit].TargetMarker
+
+    if FrameName.unitIsTargetIndicator and not TargetIndicator.Enabled then
+        FrameName.unitIsTargetIndicator:Hide()
+    end
+
+    if FrameName.unitTargetMarker and TargetMarker.Enabled then
+        FrameName.unitTargetMarker:ClearAllPoints()
+        FrameName.unitTargetMarker:SetSize(TargetMarker.Size, TargetMarker.Size)
+        FrameName.unitTargetMarker:SetPoint(TargetMarker.AnchorFrom, FrameName, TargetMarker.AnchorTo, TargetMarker.XOffset, TargetMarker.YOffset)
+    end
+
+    -- Frame Combat Indicator
+    if FrameName.unitCombatIndicator and Unit == "Player" and CombatIndicator.Enabled then
+        FrameName.unitCombatIndicator:Show()
+        if FrameName.unitCombatIndicator.hideTimer then
+            FrameName.unitCombatIndicator.hideTimer:Cancel()
+        end
+        FrameName.unitCombatIndicator.hideTimer = C_Timer.NewTimer(5, function()
+            if FrameName.unitCombatIndicator and FrameName.unitCombatIndicator:IsShown() then
+                FrameName.unitCombatIndicator:Hide()
+            end
+        end)
+        FrameName.unitCombatIndicator:ClearAllPoints()
+        FrameName.unitCombatIndicator:SetSize(CombatIndicator.Size, CombatIndicator.Size)
+        FrameName.unitCombatIndicator:SetPoint(CombatIndicator.AnchorFrom, FrameName, CombatIndicator.AnchorTo, CombatIndicator.XOffset, CombatIndicator.YOffset)
+    end
+
+    -- Frame Leader Indicator
+    if FrameName.unitLeaderIndicator and Unit == "Player" and LeaderIndicator.Enabled then
+        FrameName.unitLeaderIndicator:ClearAllPoints()
+        FrameName.unitLeaderIndicator:SetSize(LeaderIndicator.Size, LeaderIndicator.Size)
+        FrameName.unitLeaderIndicator:SetPoint(LeaderIndicator.AnchorFrom, FrameName, LeaderIndicator.AnchorTo, LeaderIndicator.XOffset, LeaderIndicator.YOffset)
+    end
+end
+
+local function UpdateTextFields(FrameName)
+    local Unit = UUF.Frames[FrameName.unit] or "Boss"
+    local Frame = UUF.DB.profile[Unit].Frame
+    local General = UUF.DB.profile.General
+    local FirstText = UUF.DB.profile[Unit].Texts.First
+    local SecondText = UUF.DB.profile[Unit].Texts.Second
+    local ThirdText = UUF.DB.profile[Unit].Texts.Third
     if FrameName.unitHighLevelFrame then
         FrameName.unitHighLevelFrame:ClearAllPoints()
         FrameName.unitHighLevelFrame:SetSize(Frame.Width, Frame.Height)
@@ -930,45 +1032,54 @@ function UUF:UpdateUnitFrame(FrameName)
 
         FrameName:UpdateTags()
     end
+end
 
-    -- Frame Target Marker
-    if FrameName.unitTargetMarker and TargetMarker.Enabled then
-        FrameName.unitTargetMarker:ClearAllPoints()
-        FrameName.unitTargetMarker:SetSize(TargetMarker.Size, TargetMarker.Size)
-        FrameName.unitTargetMarker:SetPoint(TargetMarker.AnchorFrom, FrameName, TargetMarker.AnchorTo, TargetMarker.XOffset, TargetMarker.YOffset)
-    end
-
-    -- Frame Combat Indicator
-    if FrameName.unitCombatIndicator and Unit == "Player" and CombatIndicator.Enabled then
-        FrameName.unitCombatIndicator:Show()
-        if FrameName.unitCombatIndicator.hideTimer then
-            FrameName.unitCombatIndicator.hideTimer:Cancel()
+local function UpdateMouseoverHighlight(FrameName)
+    local MouseoverHighlight = UUF.DB.profile.General.MouseoverHighlight
+    if MouseoverHighlight.Enabled and FrameName.unitHighlight then
+        local MHR, MHG, MHB, MHA = unpack(MouseoverHighlight.Colour)
+        if MouseoverHighlight.Style == "BORDER" then
+            FrameName.unitHighlight:SetBackdrop({ bgFile = "Interface\\Buttons\\WHITE8X8", edgeFile = "Interface\\Buttons\\WHITE8X8", edgeSize = 1, insets = {left = 0, right = 0, top = 0, bottom = 0} })
+            FrameName.unitHighlight:SetBackdropColor(0, 0, 0, 0)
+            FrameName.unitHighlight:SetBackdropBorderColor(MHR, MHG, MHB, MHA)
+            FrameName.unitHighlight:SetFrameLevel(20)
+            FrameName.unitHighlight:Hide()
+        elseif MouseoverHighlight.Style == "HIGHLIGHT" then
+            FrameName.unitHighlight:SetBackdrop({ bgFile = "Interface\\Buttons\\WHITE8X8", edgeFile = "Interface\\Buttons\\WHITE8X8", edgeSize = 1, insets = {left = 0, right = 0, top = 0, bottom = 0} })
+            FrameName.unitHighlight:SetBackdropColor(MHR, MHG, MHB, MHA)
+            FrameName.unitHighlight:SetBackdropBorderColor(0, 0, 0, 0)
+            FrameName.unitHighlight:SetFrameLevel(20)
+            FrameName.unitHighlight:Hide()
         end
-        FrameName.unitCombatIndicator.hideTimer = C_Timer.NewTimer(5, function()
-            if FrameName.unitCombatIndicator and FrameName.unitCombatIndicator:IsShown() then
-                FrameName.unitCombatIndicator:Hide()
-            end
-        end)
-        FrameName.unitCombatIndicator:ClearAllPoints()
-        FrameName.unitCombatIndicator:SetSize(CombatIndicator.Size, CombatIndicator.Size)
-        FrameName.unitCombatIndicator:SetPoint(CombatIndicator.AnchorFrom, FrameName, CombatIndicator.AnchorTo, CombatIndicator.XOffset, CombatIndicator.YOffset)
     end
+end
 
-    -- Frame Leader Indicator
-    if FrameName.unitLeaderIndicator and Unit == "Player" and LeaderIndicator.Enabled then
-        FrameName.unitLeaderIndicator:ClearAllPoints()
-        FrameName.unitLeaderIndicator:SetSize(LeaderIndicator.Size, LeaderIndicator.Size)
-        FrameName.unitLeaderIndicator:SetPoint(LeaderIndicator.AnchorFrom, FrameName, LeaderIndicator.AnchorTo, LeaderIndicator.XOffset, LeaderIndicator.YOffset)
-    end
-
-    -- Frame Range Alpha
+local function UpdateRange(FrameName)
+    local Unit = UUF.Frames[FrameName.unit] or "Boss"
+    local Range = UUF.DB.profile[Unit].Range
     if Range and Range.Enable then
         FrameName.__RangeAlphaSettings = Range
     else
         FrameName.__RangeAlphaSettings = nil
     end
+end
 
-    -- Display Frames for Testing
+function UUF:UpdateUnitFrame(FrameName)
+    if not FrameName then return end
+    if not FrameName.unit then return end
+    UpdateFrame(FrameName)
+    UpdateHealthBar(FrameName)
+    UpdatePowerBar(FrameName)
+    UpdateAbsorbBar(FrameName)
+    UpdateHealAbsorbBar(FrameName)
+    UpdateCastBar(FrameName)
+    UpdateBuffs(FrameName)
+    UpdateDebuffs(FrameName)
+    UpdatePortrait(FrameName)
+    UpdateIndicators(FrameName)
+    UpdateTextFields(FrameName)
+    UpdateMouseoverHighlight(FrameName)
+    UpdateRange(FrameName)
     if UUF.DB.profile.TestMode then UUF:DisplayBossFrames() end
 end
 
