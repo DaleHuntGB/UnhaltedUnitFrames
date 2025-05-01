@@ -114,7 +114,7 @@ local function ColourBackgroundByUnitStatus(self)
             self.unitHealthBar.bg = nil
         end
     elseif not UnitIsDead(unit) then
-        if General.ColourBackgroundByReaction then
+        if General.ColourBackgroundByForeground then
             self.unitHealthBarBackground.multiplier = General.BackgroundMultiplier
             self.unitHealthBar.bg = self.unitHealthBarBackground
         else
