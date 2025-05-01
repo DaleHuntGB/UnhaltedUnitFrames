@@ -117,6 +117,23 @@ local function ColourBackgroundByUnitStatus(self)
         if General.ColourBackgroundByForeground then
             self.unitHealthBarBackground.multiplier = General.BackgroundMultiplier
             self.unitHealthBar.bg = self.unitHealthBarBackground
+        elseif General.ColourBackgroundByClass then
+            local unitClass = select(2, UnitClass(unit))
+            local unitColor = RAID_CLASS_COLORS[unitClass]
+            if UnitIsPlayer(unit) then
+                self.unitHealthBarBackground:SetVertexColor(unitColor.r, unitColor.g, unitColor.b, General.BackgroundColour[4])
+                self.unitHealthBar.bg = nil
+            else
+                local reaction = UnitReaction(unit, "player")
+                if reaction then
+                    local r, g, b = unpack(oUF.colors.reaction[reaction])
+                    unitColor = { r = r, g = g, b = b }
+                end
+            end
+            if unitColor then
+                self.unitHealthBarBackground:SetVertexColor(unitColor.r, unitColor.g, unitColor.b, General.BackgroundColour[4])
+                self.unitHealthBar.bg = nil
+            end
         else
             self.unitHealthBarBackground:SetVertexColor(unpack(General.BackgroundColour))
             self.unitHealthBar.bg = nil
