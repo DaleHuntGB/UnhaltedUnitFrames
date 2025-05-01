@@ -347,76 +347,6 @@ local function CreatePowerBar(self, Unit)
     end
 end
 
-local function CreateCastBar(self, Unit)
-    local General = UUF.DB.profile.General
-    local CastBar = UUF.DB.profile[Unit].CastBar
-    local BackdropTemplate = {
-        bgFile = General.BackgroundTexture,
-        edgeFile = General.BorderTexture,
-        edgeSize = General.BorderSize,
-        insets = { left = General.BorderInset, right = General.BorderInset, top = General.BorderInset, bottom = General.BorderInset },
-    }
-    if Unit == "Player" or Unit == "Target" or Unit == "Boss" then
-        if not self.unitCastBar and CastBar.Enabled then
-            -- Frame Cast Bar
-            self.unitCastBar = CreateFrame("StatusBar", nil, self)
-            self.unitCastBar:SetStatusBarTexture(General.ForegroundTexture)
-            self.unitCastBar:SetStatusBarColor(unpack(CastBar.ForegroundColour))
-            self.Castbar = self.unitCastBar
-            -- Frame Cast Bar Border
-            self.unitCastBarBorder = CreateFrame("Frame", nil, self.unitCastBar, "BackdropTemplate")
-            self.unitCastBarBorder:SetSize(CastBar.Width, CastBar.Height)
-            self.unitCastBarBorder:SetPoint(CastBar.AnchorFrom, self, CastBar.AnchorTo, CastBar.XOffset, CastBar.YOffset)
-            self.unitCastBarBorder:SetBackdrop(BackdropTemplate)
-            self.unitCastBarBorder:SetBackdropColor(0, 0, 0, 0)
-            self.unitCastBarBorder:SetBackdropBorderColor(unpack(General.BorderColour))
-            self.unitCastBarBorder:SetFrameLevel(4)
-            -- Frame Cast Bar Icon  
-            if CastBar.Icon.Enabled then
-                self.unitCastBarIcon = self.unitCastBarBorder:CreateTexture(nil, "OVERLAY")
-                self.unitCastBarIcon:SetSize(CastBar.Height - 2, CastBar.Height - 2)
-                self.unitCastBarIcon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
-                if CastBar.Icon.Location == "LEFT" then
-                    self.unitCastBarIcon:SetPoint("LEFT", self.unitCastBarBorder, "LEFT", 1, 0)
-                    self.unitCastBar:SetPoint("LEFT", self.unitCastBarIcon, "RIGHT", 0, 0)
-                elseif CastBar.Icon.Location == "RIGHT" then
-                    self.unitCastBarIcon:SetPoint("RIGHT", self.unitCastBarBorder, "RIGHT", -1, 0)
-                    self.unitCastBar:SetPoint("RIGHT", self.unitCastBarIcon, "LEFT", 0, 0)
-                end
-                self.unitCastBar:SetSize((CastBar.Width - CastBar.Height), CastBar.Height - 2)
-                self.Castbar.Icon = self.unitCastBarIcon
-            else
-                self.unitCastBar:SetPoint("LEFT", self.unitCastBarBorder, "LEFT", 1, 0)
-                self.unitCastBar:SetSize(CastBar.Width - 2, CastBar.Height - 2)
-            end
-            -- Frame Cast Bar Background
-            self.unitCastBarBackground = self.unitCastBar:CreateTexture(nil, "BACKGROUND")
-            self.unitCastBarBackground:SetAllPoints()
-            self.unitCastBarBackground:SetTexture(General.BackgroundTexture)
-            self.unitCastBarBackground:SetVertexColor(unpack(CastBar.BackgroundColour))
-            -- Frame Cast Bar Spell Name
-            self.unitCastBarSpellName = self.unitCastBar:CreateFontString(nil, "OVERLAY")
-            self.unitCastBarSpellName:SetFont(General.Font, CastBar.Texts.SpellName.FontSize, General.FontFlag)
-            self.unitCastBarSpellName:SetShadowColor(General.FontShadowColour[1], General.FontShadowColour[2], General.FontShadowColour[3], General.FontShadowColour[4])
-            self.unitCastBarSpellName:SetShadowOffset(General.FontShadowXOffset, General.FontShadowYOffset)
-            self.unitCastBarSpellName:SetPoint(CastBar.Texts.SpellName.AnchorFrom, self.unitCastBar, CastBar.Texts.SpellName.AnchorTo, CastBar.Texts.SpellName.XOffset, CastBar.Texts.SpellName.YOffset)
-            self.unitCastBarSpellName:SetTextColor(CastBar.Texts.SpellName.Colour[1], CastBar.Texts.SpellName.Colour[2], CastBar.Texts.SpellName.Colour[3], CastBar.Texts.SpellName.Colour[4])
-            self.unitCastBarSpellName:SetJustifyH(UUF:GetFontJustification(CastBar.Texts.SpellName.AnchorTo))
-            self.Castbar.Text = self.unitCastBarSpellName
-            -- Frame Cast Bar Time
-            self.unitCastBarTime = self.unitCastBar:CreateFontString(nil, "OVERLAY")
-            self.unitCastBarTime:SetFont(General.Font, CastBar.Texts.Time.FontSize, General.FontFlag)
-            self.unitCastBarTime:SetShadowColor(General.FontShadowColour[1], General.FontShadowColour[2], General.FontShadowColour[3], General.FontShadowColour[4])
-            self.unitCastBarTime:SetShadowOffset(General.FontShadowXOffset, General.FontShadowYOffset)
-            self.unitCastBarTime:SetPoint(CastBar.Texts.Time.AnchorFrom, self.unitCastBar, CastBar.Texts.Time.AnchorTo, CastBar.Texts.Time.XOffset, CastBar.Texts.Time.YOffset)
-            self.unitCastBarTime:SetTextColor(CastBar.Texts.Time.Colour[1], CastBar.Texts.Time.Colour[2], CastBar.Texts.Time.Colour[3], CastBar.Texts.Time.Colour[4])
-            self.unitCastBarTime:SetJustifyH(UUF:GetFontJustification(CastBar.Texts.Time.AnchorTo))
-            self.Castbar.Time = self.unitCastBarTime
-        end
-        
-    end
-end
-
 local function CreateBuffs(self, Unit)
     local Buffs = UUF.DB.profile[Unit].Buffs
     if Buffs.Enabled and not self.unitBuffs then
@@ -635,7 +565,6 @@ function UUF:CreateUnitFrame(Unit)
         end
     }
     CreatePowerBar(self, Unit)
-    CreateCastBar(self, Unit)
     CreatePortrait(self, Unit)
     CreateBuffs(self, Unit)
     CreateDebuffs(self, Unit)
@@ -795,79 +724,6 @@ local function UpdatePowerBar(FrameName)
         FrameName.unitPowerBarBorder:SetBackdropBorderColor(unpack(General.BorderColour))
         FrameName.unitPowerBarBorder:SetFrameLevel(4)
         FrameName.unitPowerBar:ForceUpdate()
-    end
-end
-
-local function UpdateCastBar(FrameName)
-    local Unit = UUF.Frames[FrameName.unit] or "Boss"
-    local General = UUF.DB.profile.General
-    local CastBar = UUF.DB.profile[Unit].CastBar
-    if Unit == "Player" or Unit == "Target" or Unit == "Boss" then
-        if FrameName.unitCastBar and CastBar.Enabled then
-            -- Frame Cast Bar
-            FrameName.unitCastBar:SetStatusBarTexture(General.ForegroundTexture)
-            FrameName.unitCastBar:SetStatusBarColor(unpack(CastBar.ForegroundColour))
-            -- Frame Cast Bar Border
-            FrameName.unitCastBarBorder:ClearAllPoints()
-            FrameName.unitCastBarBorder:SetSize(CastBar.Width, CastBar.Height)
-            FrameName.unitCastBarBorder:SetPoint(CastBar.AnchorFrom, FrameName, CastBar.AnchorTo, CastBar.XOffset, CastBar.YOffset)
-            FrameName.unitCastBarBorder:SetBackdropBorderColor(unpack(General.BorderColour))
-            -- Frame Cast Bar Icon  
-            if CastBar.Icon.Enabled then
-                if not FrameName.unitCastBarIcon then 
-                    FrameName.unitCastBarIcon = FrameName.unitCastBarBorder:CreateTexture(nil, "OVERLAY")
-                    FrameName.unitCastBarIcon:SetSize(CastBar.Height - 2, CastBar.Height - 2)
-                    FrameName.unitCastBarIcon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
-                    FrameName.Castbar.Icon = FrameName.unitCastBarIcon
-                    FrameName.unitCastBar:ForceUpdate()
-                else
-                    FrameName.unitCastBarIcon:Show()
-                end
-                FrameName.unitCastBarIcon:SetSize(CastBar.Height - 2, CastBar.Height - 2)
-                if CastBar.Icon.Location == "LEFT" then
-                    FrameName.unitCastBarIcon:ClearAllPoints()
-                    FrameName.unitCastBarIcon:SetPoint("LEFT", FrameName.unitCastBarBorder, "LEFT", 1, 0)
-                    FrameName.unitCastBar:ClearAllPoints()
-                    FrameName.unitCastBar:SetPoint("LEFT", FrameName.unitCastBarIcon, "RIGHT", 0, 0)
-                elseif CastBar.Icon.Location == "RIGHT" then
-                    FrameName.unitCastBarIcon:ClearAllPoints()
-                    FrameName.unitCastBarIcon:SetPoint("RIGHT", FrameName.unitCastBarBorder, "RIGHT", -1, 0)
-                    FrameName.unitCastBar:ClearAllPoints()
-                    FrameName.unitCastBar:SetPoint("RIGHT", FrameName.unitCastBarIcon, "LEFT", 0, 0)
-                end
-                FrameName.unitCastBar:SetSize((CastBar.Width - CastBar.Height), CastBar.Height - 2)
-            else
-                if FrameName.unitCastBarIcon then 
-                    FrameName.unitCastBarIcon:Hide()
-                end
-                if FrameName.unitCastBar then
-                    FrameName.unitCastBar:ClearAllPoints()
-                    FrameName.unitCastBar:SetPoint("LEFT", FrameName.unitCastBarBorder, "LEFT", 1, 0)
-                    FrameName.unitCastBar:SetSize(CastBar.Width - 2, CastBar.Height - 2)
-                end
-            end
-            -- Frame Cast Bar Background
-            FrameName.unitCastBarBackground:ClearAllPoints()
-            FrameName.unitCastBarBackground:SetAllPoints()
-            FrameName.unitCastBarBackground:SetTexture(General.BackgroundTexture)
-            FrameName.unitCastBarBackground:SetVertexColor(unpack(CastBar.BackgroundColour))
-            -- Frame Cast Bar Spell Name
-            FrameName.unitCastBarSpellName:SetFont(General.Font, CastBar.Texts.SpellName.FontSize, General.FontFlag)
-            FrameName.unitCastBarSpellName:SetShadowColor(General.FontShadowColour[1], General.FontShadowColour[2], General.FontShadowColour[3], General.FontShadowColour[4])
-            FrameName.unitCastBarSpellName:SetShadowOffset(General.FontShadowXOffset, General.FontShadowYOffset)
-            FrameName.unitCastBarSpellName:ClearAllPoints()
-            FrameName.unitCastBarSpellName:SetPoint(CastBar.Texts.SpellName.AnchorFrom, FrameName.unitCastBar, CastBar.Texts.SpellName.AnchorTo, CastBar.Texts.SpellName.XOffset, CastBar.Texts.SpellName.YOffset)
-            FrameName.unitCastBarSpellName:SetTextColor(CastBar.Texts.SpellName.Colour[1], CastBar.Texts.SpellName.Colour[2], CastBar.Texts.SpellName.Colour[3], CastBar.Texts.SpellName.Colour[4])
-            FrameName.unitCastBarSpellName:SetJustifyH(UUF:GetFontJustification(CastBar.Texts.SpellName.AnchorTo))
-            -- Frame Cast Bar Time
-            FrameName.unitCastBarTime:SetFont(General.Font, CastBar.Texts.Time.FontSize, General.FontFlag)
-            FrameName.unitCastBarTime:SetShadowColor(General.FontShadowColour[1], General.FontShadowColour[2], General.FontShadowColour[3], General.FontShadowColour[4])
-            FrameName.unitCastBarTime:SetShadowOffset(General.FontShadowXOffset, General.FontShadowYOffset)
-            FrameName.unitCastBarTime:ClearAllPoints()
-            FrameName.unitCastBarTime:SetPoint(CastBar.Texts.Time.AnchorFrom, FrameName.unitCastBar, CastBar.Texts.Time.AnchorTo, CastBar.Texts.Time.XOffset, CastBar.Texts.Time.YOffset)
-            FrameName.unitCastBarTime:SetTextColor(CastBar.Texts.Time.Colour[1], CastBar.Texts.Time.Colour[2], CastBar.Texts.Time.Colour[3], CastBar.Texts.Time.Colour[4])
-            FrameName.unitCastBarTime:SetJustifyH(UUF:GetFontJustification(CastBar.Texts.Time.AnchorTo))
-        end 
     end
 end
 
@@ -1072,7 +928,6 @@ function UUF:UpdateUnitFrame(FrameName)
     UpdatePowerBar(FrameName)
     UpdateAbsorbBar(FrameName)
     UpdateHealAbsorbBar(FrameName)
-    UpdateCastBar(FrameName)
     UpdateBuffs(FrameName)
     UpdateDebuffs(FrameName)
     UpdatePortrait(FrameName)
