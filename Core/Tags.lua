@@ -249,6 +249,37 @@ if NSM then
     end
 end
 
+oUF.Tags.Methods["ClassColour"] = function(unit)
+    local _, class = UnitClass(unit)
+    if class then
+        local colour = RAID_CLASS_COLORS[class]
+        return string.format("|c%s", colour.colorStr)
+    end
+end
+
+oUF.Tags.Methods["ReactionColour"] = function(unit)
+    local reaction = UnitReaction(unit, "player")
+    if reaction then
+        local r, g, b = unpack(oUF.colors.reaction[reaction])
+        return string.format("|cff%02x%02x%02x", r * 255, g * 255, b * 255)
+    end
+end
+
+oUF.Tags.Methods["Coloured"] = function(unit)
+    local _, class = UnitClass(unit)
+    if class and UnitIsPlayer(unit) then
+        local colour = RAID_CLASS_COLORS[class]
+        return string.format("|cff%02x%02x%02x", colour.r * 255, colour.g * 255, colour.b * 255)
+    else
+        local reaction = UnitReaction(unit, "player")
+        if reaction then
+            local r, g, b = unpack(oUF.colors.reaction[reaction])
+            return string.format("|cff%02x%02x%02x", r * 255, g * 255, b * 255)
+        end
+    end
+end
+
+
 oUF.Tags.Methods["Power:CurPP"] = function(unit)
     local unitPower = UnitPower(unit)
     if unitPower <= 0 then return end
@@ -286,6 +317,9 @@ oUF.Tags.Events["Name:Short"] = "UNIT_NAME_UPDATE"
 oUF.Tags.Events["Name:Medium"] = "UNIT_NAME_UPDATE"
 oUF.Tags.Events["Name:Abbreviated"] = "UNIT_NAME_UPDATE"
 oUF.Tags.Events["Name:Abbreviated:Coloured"] = "UNIT_NAME_UPDATE"
+oUF.Tags.Events["ClassColour"] = "UNIT_CLASSIFICATION_CHANGED UNIT_NAME_UPDATE"
+oUF.Tags.Events["ReactionColour"] = "UNIT_NAME_UPDATE"
+oUF.Tags.Events["Coloured"] = "UNIT_CLASSIFICATION_CHANGED UNIT_NAME_UPDATE"
 
 oUF.Tags.Events["Health:CurHPwithPerHP"] = "UNIT_HEALTH UNIT_MAXHEALTH UNIT_CONNECTION UNIT_ABSORB_AMOUNT_CHANGED"
 oUF.Tags.Events["Health:CurHPwithPerHP:Clean"] = "UNIT_HEALTH UNIT_MAXHEALTH UNIT_CONNECTION UNIT_ABSORB_AMOUNT_CHANGED"
