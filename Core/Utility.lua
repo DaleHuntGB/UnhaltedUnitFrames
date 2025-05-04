@@ -233,6 +233,19 @@ local function CreateHealthBar(self, Unit)
         self.unitHealthBar.colorDisconnected = General.ColourIfDisconnected
         self.unitHealthBar.colorTapping = General.ColourIfTapped
         self.unitHealthBar.colorHealth = true
+        if Unit == "Pet" then
+            local ColourByPlayerClass = UUF.DB.profile.Pet.Health.ColourByPlayerClass
+            if ColourByPlayerClass then
+                self.unitHealthBar.colorClass = false
+                self.unitHealthBar.colorReaction = false
+                self.unitHealthBar.colorHealth = false
+                local unitClass = select(2, UnitClass("player"))
+                local unitColor = RAID_CLASS_COLORS[unitClass]
+                if unitColor then
+                    self.unitHealthBar:SetStatusBarColor(unitColor.r, unitColor.g, unitColor.b, General.ForegroundColour[4])
+                end
+            end
+        end
         self.unitHealthBar:SetMinMaxValues(0, 100)
         self.unitHealthBar:SetAlpha(General.ForegroundColour[4])
         self.unitHealthBar.PostUpdate = function() ColourBackgroundByUnitStatus(self) end
@@ -625,6 +638,20 @@ local function UpdateHealthBar(FrameName)
         FrameName.unitHealthBar.colorHealth = true
         FrameName.unitHealthBar:SetAlpha(General.ForegroundColour[4])
         FrameName.unitHealthBar.PostUpdateColor = function() ColourBackgroundByUnitStatus(FrameName) end
+        if Unit == "Pet" then
+            local ColourByPlayerClass = UUF.DB.profile.Pet.Health.ColourByPlayerClass
+            if ColourByPlayerClass then
+                FrameName.unitHealthBar.colorClass = false
+                FrameName.unitHealthBar.colorReaction = false
+                FrameName.unitHealthBar.colorHealth = false
+                local unitClass = select(2, UnitClass("player"))
+                local unitColor = RAID_CLASS_COLORS[unitClass]
+                if unitColor then
+                    FrameName.unitHealthBar:SetStatusBarColor(unitColor.r, unitColor.g, unitColor.b, General.ForegroundColour[4])
+                end
+            end
+            FrameName.unitHealthBar:ForceUpdate()
+        end
         if Health.Direction == "RL" then
             FrameName.unitHealthBar:SetReverseFill(true)
         elseif Health.Direction == "LR" then

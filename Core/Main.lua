@@ -749,6 +749,7 @@ UUF.Defaults = {
             },
             Health = {
                 Direction = "LR",
+                ColourByPlayerClass = false,
                 HealthPrediction = {
                     IncomingHeals = {},
                     HealAbsorbs = {

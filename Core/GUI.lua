@@ -632,6 +632,7 @@ function UUF:CreateGUI()
         ScrollableContainer:SetFullHeight(true)
         UUFGUI_Container:AddChild(ScrollableContainer)
 
+        local General = UUF.DB.profile.General
         local Frame = UUF.DB.profile[Unit].Frame
         local Portrait = UUF.DB.profile[Unit].Portrait
         local Health = UUF.DB.profile[Unit].Health
@@ -846,17 +847,38 @@ function UUF:CreateGUI()
             HealthOptionsContainer:SetLayout("Flow")
             HealthOptionsContainer:SetFullWidth(true)
 
-            local HealthGrowDirection = UUFGUI:Create("Dropdown")
-            HealthGrowDirection:SetLabel("Health Grow Direction")
-            HealthGrowDirection:SetList({
-                ["LR"] = "Left To Right",
-                ["RL"] = "Right To Left",
-            })
-            HealthGrowDirection:SetValue(Health.Direction)
-            HealthGrowDirection:SetCallback("OnValueChanged", function(widget, event, value) Health.Direction = value UUF:UpdateFrames() end)
-            HealthGrowDirection:SetFullWidth(true)
-            HealthOptionsContainer:AddChild(HealthGrowDirection)
+            if Unit == "Pet" then
+                local HealthGrowDirection = UUFGUI:Create("Dropdown")
+                HealthGrowDirection:SetLabel("Health Grow Direction")
+                HealthGrowDirection:SetList({
+                    ["LR"] = "Left To Right",
+                    ["RL"] = "Right To Left",
+                })
+                HealthGrowDirection:SetValue(Health.Direction)
+                HealthGrowDirection:SetCallback("OnValueChanged", function(widget, event, value) Health.Direction = value UUF:UpdateFrames() end)
+                HealthGrowDirection:SetRelativeWidth(0.5)
+                HealthOptionsContainer:AddChild(HealthGrowDirection)
 
+                local ColourHealthByClass = UUFGUI:Create("CheckBox")
+                ColourHealthByClass:SetLabel("Colour By Player Class")
+                ColourHealthByClass:SetValue(Health.ColourByPlayerClass)
+                ColourHealthByClass:SetCallback("OnValueChanged", function(widget, event, value) Health.ColourByPlayerClass = value UUF:UpdateFrames() end)
+                ColourHealthByClass:SetRelativeWidth(0.5)
+                ColourHealthByClass:SetDisabled(not General.ColourByClass)
+                HealthOptionsContainer:AddChild(ColourHealthByClass)
+            else
+                local HealthGrowDirection = UUFGUI:Create("Dropdown")
+                HealthGrowDirection:SetLabel("Health Grow Direction")
+                HealthGrowDirection:SetList({
+                    ["LR"] = "Left To Right",
+                    ["RL"] = "Right To Left",
+                })
+                HealthGrowDirection:SetValue(Health.Direction)
+                HealthGrowDirection:SetCallback("OnValueChanged", function(widget, event, value) Health.Direction = value UUF:UpdateFrames() end)
+                HealthGrowDirection:SetFullWidth(true)
+                HealthOptionsContainer:AddChild(HealthGrowDirection)
+            end
+            
             local AbsorbsContainer = UUFGUI:Create("InlineGroup")
             AbsorbsContainer:SetTitle("Health Prediction Options")
             AbsorbsContainer:SetLayout("Flow")
