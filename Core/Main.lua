@@ -6,6 +6,7 @@ UUF.Defaults = {
     global = {
         UIScaleEnabled = true,
         UIScale = 0.5333333333333,
+        TagUpdateInterval = 0.5,
     },
     profile = {
         TestMode = false,
@@ -1007,6 +1008,7 @@ end
 function UnhaltedUF:OnEnable()
     if UUF.DB.global.UIScaleEnabled then UIParent:SetScale(UUF.DB.global.UIScale) end
     if UUF.DB.profile.TestMode then UUF.DB.profile.TestMode = false end
+    UUF:SetTagUpdateInterval()
     UUF:LoadCustomColours()
     UUF:SpawnPlayerFrame()
     UUF:SpawnTargetFrame()

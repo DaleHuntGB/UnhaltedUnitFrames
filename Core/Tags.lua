@@ -2,8 +2,9 @@ local _, UUF = ...
 local oUF = UUF.oUF
 local NSM = C_AddOns.IsAddOnLoaded("NorthernSkyMedia") or C_AddOns.IsAddOnLoaded("NorthernSkyRaidTools")
 
-oUF.Tags:SetEventUpdateTimer(0.5)
-
+function UUF:SetTagUpdateInterval()
+    oUF.Tags:SetEventUpdateTimer(UUF.DB.global.TagUpdateInterval or 0.5)
+end
 oUF.Tags.Methods["Health:CurHPwithPerHP"] = function(unit)
     local unitHealth = UnitHealth(unit)
     local unitMaxHealth = UnitHealthMax(unit)

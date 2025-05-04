@@ -1789,6 +1789,14 @@ function UUF:CreateGUI()
         ScrollableContainer:SetFullHeight(true)
         UUFGUI_Container:AddChild(ScrollableContainer)
 
+        local TagUpdateInterval = UUFGUI:Create("Slider")
+        TagUpdateInterval:SetLabel("Tag Update Interval")
+        TagUpdateInterval:SetSliderValues(0, 1, 0.1)
+        TagUpdateInterval:SetValue(UUF.DB.global.TagUpdateInterval)
+        TagUpdateInterval:SetCallback("OnMouseUp", function(widget, event, value) UUF.DB.global.TagUpdateInterval = value UUF:SetTagUpdateInterval() end)
+        TagUpdateInterval:SetRelativeWidth(1)
+        ScrollableContainer:AddChild(TagUpdateInterval)
+
         local function DrawHealthTagContainer(UUFGUI_Container)
             local HealthTags = UUF:FetchHealthTagDescriptions()
 
