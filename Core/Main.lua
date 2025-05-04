@@ -109,6 +109,7 @@ UUF.Defaults = {
                 BackgroundMultiplier    = 0.25,
                 Colour                  = {0/255, 0/255, 1/255, 1},
                 BackgroundColour        = {26 / 255, 26 / 255, 26 / 255, 1},
+                Smooth = false,
             },
             Buffs = {
                 Enabled             = false,
@@ -249,6 +250,7 @@ UUF.Defaults = {
                 BackgroundMultiplier    = 0.25,
                 Colour                  = {0/255, 0/255, 1/255, 1},
                 BackgroundColour        = {26 / 255, 26 / 255, 26 / 255, 1},
+                Smooth = false,
             },
             Buffs = {
                 Enabled             = true,
@@ -378,6 +380,7 @@ UUF.Defaults = {
                 BackgroundMultiplier    = 0.25,
                 Colour                  = {0/255, 0/255, 1/255, 1},
                 BackgroundColour        = {26 / 255, 26 / 255, 26 / 255, 1},
+                Smooth = false,
             },
             Buffs = {
                 Enabled             = false,
@@ -507,6 +510,7 @@ UUF.Defaults = {
                 BackgroundMultiplier    = 0.25,
                 Colour                  = {0/255, 0/255, 1/255, 1},
                 BackgroundColour        = {26 / 255, 26 / 255, 26 / 255, 1},
+                Smooth = false,
             },
             Buffs = {
                 Enabled             = false,
@@ -636,6 +640,7 @@ UUF.Defaults = {
                 BackgroundMultiplier    = 0.25,
                 Colour                  = {0/255, 0/255, 1/255, 1},
                 BackgroundColour        = {26 / 255, 26 / 255, 26 / 255, 1},
+                Smooth = false,
             },
             Buffs = {
                 Enabled             = false,
@@ -765,6 +770,7 @@ UUF.Defaults = {
                 BackgroundMultiplier    = 0.25,
                 Colour                  = {0/255, 0/255, 1/255, 1},
                 BackgroundColour        = {26 / 255, 26 / 255, 26 / 255, 1},
+                Smooth = false,
             },
             Buffs = {
                 Enabled             = false,
@@ -896,6 +902,7 @@ UUF.Defaults = {
                 BackgroundMultiplier    = 0.25,
                 Colour                  = {0/255, 0/255, 1/255, 1},
                 BackgroundColour        = {26 / 255, 26 / 255, 26 / 255, 1},
+                Smooth = false,
             },
             Buffs = {
                 Enabled             = true,

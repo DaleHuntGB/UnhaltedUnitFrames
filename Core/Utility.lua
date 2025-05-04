@@ -332,6 +332,7 @@ local function CreatePowerBar(self, Unit)
         self.unitPowerBar:SetMinMaxValues(0, 100)
         self.unitPowerBar:SetAlpha(PowerBar.Colour[4])
         self.unitPowerBar.colorPower = PowerBar.ColourByType
+        self.unitPowerBar.frequentUpdates = PowerBar.Smooth
         if PowerBar.Direction == "RL" then
             self.unitPowerBar:SetReverseFill(true)
         elseif PowerBar.Direction == "LR" then
@@ -713,6 +714,7 @@ local function UpdatePowerBar(FrameName)
         FrameName.unitPowerBar:SetStatusBarColor(unpack(PowerBar.Colour))
         FrameName.unitPowerBar:SetMinMaxValues(0, 100)
         FrameName.unitPowerBar.colorPower = PowerBar.ColourByType
+        FrameName.unitPowerBar.frequentUpdates = PowerBar.Smooth
         FrameName.unitHealthBar:SetHeight(FrameName:GetHeight() - PowerBar.Height - 1)
         FrameName.unitHealthBarBackground:SetHeight(FrameName:GetHeight() - PowerBar.Height - 1)
         FrameName.unitPowerBar:SetAlpha(PowerBar.Colour[4])

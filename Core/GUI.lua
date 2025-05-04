@@ -916,6 +916,13 @@ function UUF:CreateGUI()
             PowerBarEnabled:SetRelativeWidth(0.33)
             PowerBarOptionsContainer:AddChild(PowerBarEnabled)
 
+            local PowerBarSmooth = UUFGUI:Create("CheckBox")
+            PowerBarSmooth:SetLabel("Smooth")
+            PowerBarSmooth:SetValue(PowerBar.Smooth)
+            PowerBarSmooth:SetCallback("OnValueChanged", function(widget, event, value) PowerBar.Smooth = value UUF:UpdateFrames() end)
+            PowerBarSmooth:SetRelativeWidth(0.33)
+            PowerBarOptionsContainer:AddChild(PowerBarSmooth)
+
             local PowerBarGrowthDirection = UUFGUI:Create("Dropdown")
             PowerBarGrowthDirection:SetLabel("Power Bar Growth Direction")
             PowerBarGrowthDirection:SetList({
