@@ -470,6 +470,13 @@ function UUF:CreateGUI()
         BackgroundColour:SetRelativeWidth(1)
         BackgroundColourOptions:AddChild(BackgroundColour)
 
+        local BackgroundColourMultiplier = UUFGUI:Create("Slider")
+        BackgroundColourMultiplier:SetLabel("Multiplier")
+        BackgroundColourMultiplier:SetSliderValues(0, 1, 0.01)
+        BackgroundColourMultiplier:SetValue(General.BackgroundMultiplier)
+        BackgroundColourMultiplier:SetCallback("OnMouseUp", function(widget, event, value) General.BackgroundMultiplier = value UUF:UpdateFrames() end)
+        BackgroundColourMultiplier:SetRelativeWidth(0.25)
+
         local BackgroundColourByForeground = UUFGUI:Create("CheckBox")
         BackgroundColourByForeground:SetLabel("Colour By Foreground")
         BackgroundColourByForeground:SetValue(General.ColourBackgroundByForeground)
@@ -477,12 +484,7 @@ function UUF:CreateGUI()
         BackgroundColourByForeground:SetRelativeWidth(0.25)
         BackgroundColourOptions:AddChild(BackgroundColourByForeground)
 
-        local BackgroundColourMultiplier = UUFGUI:Create("Slider")
-        BackgroundColourMultiplier:SetLabel("Multiplier")
-        BackgroundColourMultiplier:SetSliderValues(0, 1, 0.01)
-        BackgroundColourMultiplier:SetValue(General.BackgroundMultiplier)
-        BackgroundColourMultiplier:SetCallback("OnMouseUp", function(widget, event, value) General.BackgroundMultiplier = value UUF:UpdateFrames() end)
-        BackgroundColourMultiplier:SetRelativeWidth(0.25)
+
         BackgroundColourOptions:AddChild(BackgroundColourMultiplier)
 
         if General.ColourBackgroundByForeground then
@@ -963,10 +965,19 @@ function UUF:CreateGUI()
             PowerBarColourByType:SetRelativeWidth(0.25)
             PowerBarOptionsContainer:AddChild(PowerBarColourByType)
 
+            local BackgroundColourMultiplier = UUFGUI:Create("Slider")
+            BackgroundColourMultiplier:SetLabel("Multiplier")
+            BackgroundColourMultiplier:SetSliderValues(0, 1, 0.01)
+            BackgroundColourMultiplier:SetValue(PowerBar.BackgroundMultiplier)
+            BackgroundColourMultiplier:SetCallback("OnMouseUp", function(widget, event, value) PowerBar.BackgroundMultiplier = value UUF:UpdateFrames() end)
+            BackgroundColourMultiplier:SetRelativeWidth(0.5)
+
             local PowerBarBackdropColourByType = UUFGUI:Create("CheckBox")
             PowerBarBackdropColourByType:SetLabel("Colour Background By Type")
             PowerBarBackdropColourByType:SetValue(PowerBar.ColourBackgroundByType)
-            PowerBarBackdropColourByType:SetCallback("OnValueChanged", function(widget, event, value) PowerBar.ColourBackgroundByType = value UUF:UpdateFrames() end)
+            PowerBarBackdropColourByType:SetCallback("OnValueChanged", function(widget, event, value) PowerBar.ColourBackgroundByType = value 
+            if value then BackgroundColourMultiplier:SetDisabled(false) else BackgroundColourMultiplier:SetDisabled(true) end
+            UUF:UpdateFrames() end)
             PowerBarBackdropColourByType:SetRelativeWidth(0.25)
             PowerBarOptionsContainer:AddChild(PowerBarBackdropColourByType)
 
@@ -988,12 +999,7 @@ function UUF:CreateGUI()
             PowerBarBackdropColour:SetRelativeWidth(0.25)
             PowerBarOptionsContainer:AddChild(PowerBarBackdropColour)
 
-            local BackgroundColourMultiplier = UUFGUI:Create("Slider")
-            BackgroundColourMultiplier:SetLabel("Multiplier")
-            BackgroundColourMultiplier:SetSliderValues(0, 1, 0.01)
-            BackgroundColourMultiplier:SetValue(PowerBar.BackgroundMultiplier)
-            BackgroundColourMultiplier:SetCallback("OnMouseUp", function(widget, event, value) PowerBar.BackgroundMultiplier = value UUF:UpdateFrames() end)
-            BackgroundColourMultiplier:SetRelativeWidth(0.5)
+
             PowerBarOptionsContainer:AddChild(BackgroundColourMultiplier)
 
             local PowerBarHeight = UUFGUI:Create("Slider")
