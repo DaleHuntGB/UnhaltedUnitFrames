@@ -2138,7 +2138,7 @@ function UUF:CreateGUI()
         for i = 1, numSpecs do
             local _, specName = GetSpecializationInfo(i)
             SpecProfileDropdown[i] = UUFGUI:Create("Dropdown")
-            SpecProfileDropdown[i]:SetLabel(string.format("Profile for %s", specName or ("Spec %d"):format(i)))
+            SpecProfileDropdown[i]:SetLabel(string.format("%s", specName or ("Spec %d"):format(i)))
             SpecProfileDropdown[i]:SetList(profileKeys)
             SpecProfileDropdown[i]:SetValue(UUF.DB:GetDualSpecProfile(i))
             SpecProfileDropdown[i]:SetCallback("OnValueChanged", function(widget, event, value) UUF.DB:SetDualSpecProfile(value, i) end)
