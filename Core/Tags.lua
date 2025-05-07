@@ -167,7 +167,7 @@ end
 oUF.Tags.Methods["Name:TargetTarget:LastNameOnly:Coloured"] = function(unit)
     local unitTarget = UnitName(unit .. "target")
     if unitTarget and unitTarget ~= "" then
-        return UUF:WrapTextInColor(UUF:ShortenName(unitTarget, UUF.nameBlacklist), unit .. "target")
+        return string.format(" » %s", UUF:WrapTextInColor(UUF:ShortenName(unitTarget, UUF.nameBlacklist), unit .. "target"))
     end
 end
 
