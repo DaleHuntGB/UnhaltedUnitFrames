@@ -24,6 +24,17 @@ UUF.nameBlacklist = {
     ["Aspect"] = true
 }
 
+local function FilterAuras(auraType)
+    return function(_, _, data)
+        local auraID = data.spellId
+        local auraWhitelist = UUF.DB.global.AuraFilters[auraType].Whitelist
+        local auraBlacklist = UUF.DB.global.AuraFilters[auraType].Blacklist
+        if next(auraWhitelist) then return auraWhitelist[auraID] == true end
+        if auraBlacklist[auraID] then return false end
+        return true
+    end
+end
+
 -- This can be called globally by other AddOns that require a refresh of all tags.
 function UUFG:UpdateAllTags()
     for FrameName, Frame in pairs(_G) do
@@ -394,6 +405,7 @@ local function CreateBuffs(self, Unit)
         self.unitBuffs["growth-y"] = Buffs.GrowthY
         self.unitBuffs.filter = "HELPFUL"
         self.unitBuffs.PostCreateButton = function(_, button) PostCreateButton(_, button, Unit, "HELPFUL") end
+        self.unitBuffs.FilterAura = FilterAuras("Buffs")
         self.Buffs = self.unitBuffs
     end
 end
@@ -413,6 +425,7 @@ local function CreateDebuffs(self, Unit)
         self.unitDebuffs["growth-y"] = Debuffs.GrowthY
         self.unitDebuffs.filter = "HARMFUL"
         self.unitDebuffs.PostCreateButton = function(_, button) PostCreateButton(_, button, Unit, "HARMFUL") end
+        self.unitDebuffs.FilterAura = FilterAuras("Debuffs")
         self.Debuffs = self.unitDebuffs
     end
 end
@@ -791,6 +804,7 @@ local function UpdateBuffs(FrameName)
         FrameName.unitBuffs.filter = "HELPFUL"
         FrameName.unitBuffs:Show()
         FrameName.unitBuffs.PostUpdateButton = function(_, button) PostUpdateButton(_, button, Unit, "HELPFUL") end
+        FrameName.unitBuffs.FilterAura = FilterAuras("Buffs")
         FrameName.unitBuffs:ForceUpdate()
     else
         if FrameName.unitBuffs then
@@ -816,6 +830,7 @@ local function UpdateDebuffs(FrameName)
         FrameName.unitDebuffs.filter = "HARMFUL"
         FrameName.unitDebuffs:Show()
         FrameName.unitDebuffs.PostUpdateButton = function(_, button) PostUpdateButton(_, button, Unit, "HARMFUL") end
+        FrameName.unitDebuffs.FilterAura = FilterAuras("Debuffs")
         FrameName.unitDebuffs:ForceUpdate()
     else
         if FrameName.unitDebuffs then

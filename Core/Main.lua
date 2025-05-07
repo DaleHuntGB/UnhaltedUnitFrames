@@ -8,6 +8,20 @@ UUF.Defaults = {
         UIScaleEnabled = true,
         UIScale = 0.5333333333333,
         TagUpdateInterval = 0.5,
+        AuraFilters = {
+            Buffs = {
+                Whitelist = {},
+                Blacklist = {
+                    [440837] = true, -- "Fury of Xuen"
+                    [415603] = true, -- "Encapsulated Destiny"
+                    [404468] = true, -- "Flight Style: Steady"
+                },
+            },
+            Debuffs = {
+                Whitelist = {},
+                Blacklist = {},
+            },
+        }
     },
     profile = {
         TestMode = false,
