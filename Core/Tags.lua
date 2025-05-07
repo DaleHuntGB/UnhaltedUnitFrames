@@ -280,6 +280,18 @@ oUF.Tags.Methods["Coloured"] = function(unit)
     end
 end
 
+oUF.Tags.Methods["Group"] = function(unit)
+    if not IsInRaid() then return end
+    local name = GetUnitName(unit, true)
+    for i = 1, GetNumGroupMembers() do
+        local raidName, _, group = GetRaidRosterInfo(i)
+        if raidName == name then
+            return tostring(group)
+        end
+    end
+end
+
+
 
 oUF.Tags.Methods["Power:CurPP"] = function(unit)
     local unitPower = UnitPower(unit)
@@ -335,6 +347,8 @@ oUF.Tags.Events["Health:PerHP:Clean"] = "UNIT_HEALTH UNIT_MAXHEALTH"
 oUF.Tags.Events["Power:CurPP"] = "UNIT_POWER_UPDATE UNIT_MAXPOWER"
 oUF.Tags.Events["Power:PerPP"] = "UNIT_POWER_UPDATE UNIT_MAXPOWER"
 oUF.Tags.Events["Power:PerPP:Clean"] = "UNIT_POWER_UPDATE UNIT_MAXPOWER"
+
+oUF.Tags.Events["Group"] = "GROUP_ROSTER_UPDATE"
 
 local HealthTagsDescription = {
     ["Current Health with Percent Health"] = {Tag = "[Health:CurHPwithPerHP]", Desc = "Displays Current Health with Percent Health (Absorbs Included)"},
