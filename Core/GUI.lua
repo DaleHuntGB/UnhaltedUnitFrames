@@ -30,6 +30,14 @@ local function GetAuraInfo(auraID)
     end
 end
 
+local function FindSpellID(spellName)
+    local auraData = C_UnitAuras.GetAuraDataBySpellName("player", spellName)
+    if auraData then
+        local spellID = auraData.spellId
+        return spellID
+    end
+end
+
 local UUFGUI_Container = nil;
 
 local function GenerateSupportOptions()
