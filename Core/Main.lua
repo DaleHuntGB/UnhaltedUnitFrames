@@ -999,7 +999,7 @@ UUF.Defaults = {
 }
 
 function UnhaltedUF:OnInitialize()
-    UUF.DB = LibStub("AceDB-3.0"):New("UUFDB", UUF.Defaults, true)
+    UUF.DB = LibStub("AceDB-3.0"):New("UUFDB", UUF.Defaults, "Global")
     LDS:EnhanceDatabase(UUF.DB, "UnhaltedUF")
     UUF.DB.RegisterCallback(UUF, "OnProfileChanged", function() UUF:ReloadOnProfileSwap() end)
     for k, v in pairs(UUF.Defaults) do
