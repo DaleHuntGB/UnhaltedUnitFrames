@@ -662,6 +662,106 @@ function UUF:CreateGUI()
         ScrollableContainer:AddChild(ColouringOptionsContainer)
     end
 
+    local function DrawFiltersContainer(UUFGUI_Container)
+        local ScrollableContainer = UUFGUI:Create("ScrollFrame")
+        ScrollableContainer:SetLayout("Flow")
+        ScrollableContainer:SetFullWidth(true)
+        ScrollableContainer:SetFullHeight(true)
+        UUFGUI_Container:AddChild(ScrollableContainer)
+
+        local BuffFilterContainer = UUFGUI:Create("InlineGroup")
+        BuffFilterContainer:SetTitle("Buff Filters")
+        BuffFilterContainer:SetLayout("Flow")
+        BuffFilterContainer:SetFullWidth(true)
+        ScrollableContainer:AddChild(BuffFilterContainer)
+
+        local WhitelistBuffsEditBox = UUFGUI:Create("MultiLineEditBox")
+        WhitelistBuffsEditBox:SetLabel("Whitelist Buffs")
+        WhitelistBuffsEditBox:SetText(TableToList(UUF.DB.global.AuraFilters.Buffs.Whitelist))
+        WhitelistBuffsEditBox:SetCallback("OnEnterPressed", function(widget, event, value)
+            if not UUF.DB.global.AuraFilters then UUF.DB.global.AuraFilters = { Buffs = {}, Debuffs = {} } end
+            if not UUF.DB.global.AuraFilters.Buffs then UUF.DB.global.AuraFilters.Buffs = {} end
+            local buffWhitelist = {}
+            for id in string.gmatch(value, "[^,%s]+") do
+                local spellID = tonumber(id)
+                if spellID then
+                    buffWhitelist[spellID] = true
+                end
+            end
+            UUF.DB.global.AuraFilters.Buffs.Whitelist = buffWhitelist
+            UUF:UpdateFrames()
+        end)
+        WhitelistBuffsEditBox:SetRelativeWidth(0.5)
+        WhitelistBuffsEditBox:SetNumLines(10)
+        BuffFilterContainer:AddChild(WhitelistBuffsEditBox)
+
+        local BlacklistBuffsEditBox = UUFGUI:Create("MultiLineEditBox")
+        BlacklistBuffsEditBox:SetLabel("Blacklist Buffs")
+        BlacklistBuffsEditBox:SetText(TableToList(UUF.DB.global.AuraFilters.Buffs.Blacklist))
+        BlacklistBuffsEditBox:SetCallback("OnEnterPressed", function(widget, event, value)
+            if not UUF.DB.global.AuraFilters then UUF.DB.global.AuraFilters = { Buffs = {}, Debuffs = {} } end
+            if not UUF.DB.global.AuraFilters.Buffs then UUF.DB.global.AuraFilters.Buffs = {} end
+            local buffBlacklist = {}
+            for id in string.gmatch(value, "[^,%s]+") do
+                local spellID = tonumber(id)
+                if spellID then
+                    buffBlacklist[spellID] = true
+                end
+            end
+            UUF.DB.global.AuraFilters.Buffs.Blacklist = buffBlacklist
+            UUF:UpdateFrames()
+        end)
+        BlacklistBuffsEditBox:SetRelativeWidth(0.5)
+        BlacklistBuffsEditBox:SetNumLines(10)
+        BuffFilterContainer:AddChild(BlacklistBuffsEditBox)
+        
+        local DebuffFilterContainer = UUFGUI:Create("InlineGroup")
+        DebuffFilterContainer:SetTitle("Debuff Filters")
+        DebuffFilterContainer:SetLayout("Flow")
+        DebuffFilterContainer:SetFullWidth(true)
+        ScrollableContainer:AddChild(DebuffFilterContainer)
+
+        local WhitelistDebuffsEditBox = UUFGUI:Create("MultiLineEditBox")
+        WhitelistDebuffsEditBox:SetLabel("Whitelist Debuffs")
+        WhitelistDebuffsEditBox:SetText(TableToList(UUF.DB.global.AuraFilters.Debuffs.Whitelist))
+        WhitelistDebuffsEditBox:SetCallback("OnEnterPressed", function(widget, event, value)
+            if not UUF.DB.global.AuraFilters then UUF.DB.global.AuraFilters = { Buffs = {}, Debuffs = {} } end
+            if not UUF.DB.global.AuraFilters.Debuffs then UUF.DB.global.AuraFilters.Debuffs = {} end
+            local debuffWhitelist = {}
+            for id in string.gmatch(value, "[^,%s]+") do
+                local spellID = tonumber(id)
+                if spellID then
+                    debuffWhitelist[spellID] = true
+                end
+            end
+            UUF.DB.global.AuraFilters.Debuffs.Whitelist = debuffWhitelist
+            UUF:UpdateFrames()
+        end)
+        WhitelistDebuffsEditBox:SetRelativeWidth(0.5)
+        WhitelistDebuffsEditBox:SetNumLines(10)
+        DebuffFilterContainer:AddChild(WhitelistDebuffsEditBox)
+
+        local BlacklistDebuffsEditBox = UUFGUI:Create("MultiLineEditBox")
+        BlacklistDebuffsEditBox:SetLabel("Blacklist Debuffs")
+        BlacklistDebuffsEditBox:SetText(TableToList(UUF.DB.global.AuraFilters.Debuffs.Blacklist))
+        BlacklistDebuffsEditBox:SetCallback("OnEnterPressed", function(widget, event, value)
+            if not UUF.DB.global.AuraFilters then UUF.DB.global.AuraFilters = { Buffs = {}, Debuffs = {} } end
+            if not UUF.DB.global.AuraFilters.Debuffs then UUF.DB.global.AuraFilters.Debuffs = {} end
+            local debuffBlacklist = {}
+            for id in string.gmatch(value, "[^,%s]+") do
+                local spellID = tonumber(id)
+                if spellID then
+                    debuffBlacklist[spellID] = true
+                end
+            end
+            UUF.DB.global.AuraFilters.Debuffs.Blacklist = debuffBlacklist
+            UUF:UpdateFrames()
+        end)
+        BlacklistDebuffsEditBox:SetRelativeWidth(0.5)
+        BlacklistDebuffsEditBox:SetNumLines(10)
+        DebuffFilterContainer:AddChild(BlacklistDebuffsEditBox)
+    end
+
     local function DrawUnitContainer(UUFGUI_Container, Unit)
         local ScrollableContainer = UUFGUI:Create("ScrollFrame")
         ScrollableContainer:SetLayout("Flow")
@@ -2220,6 +2320,8 @@ function UUF:CreateGUI()
         UUFGUI_Container:ReleaseChildren()
         if Group == "General" then
             DrawGeneralContainer(UUFGUI_Container)
+        elseif Group == "Filters" then
+            DrawFiltersContainer(UUFGUI_Container)
         elseif Group == "Player" then
             DrawUnitContainer(UUFGUI_Container, Group)
         elseif Group == "Target" then
@@ -2245,6 +2347,7 @@ function UUF:CreateGUI()
     GUIContainerTabGroup:SetLayout("Flow")
     GUIContainerTabGroup:SetTabs({
         { text = "General",                         value = "General"},
+        { text = "Filters",                         value = "Filters"},
         { text = "Player",                          value = "Player" },
         { text = "Target",                          value = "Target" },
         { text = "Boss",                            value = "Boss" },
