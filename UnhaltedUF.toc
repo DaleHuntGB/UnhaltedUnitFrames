@@ -1,6 +1,6 @@
 ## Title: |cFF8080FFUnhalted|r Unit Frames
-## Interface: 110105
-## Version: 1.7
+## Interface: 110105, 110107
+## Version: 1.8
 ## Notes: Simple, efficient & aesthetic Unit Frames built on the oUF Framework.
 ## SavedVariables: UUFDB
 ## X-Wago-ID: 96do35NO
