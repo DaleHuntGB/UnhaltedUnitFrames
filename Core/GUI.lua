@@ -80,12 +80,13 @@ function UUF:GenerateLSMBorders()
     return LSMBorders
 end
 
-function UUF:GenerateLSMTextures()
-    local Textures = LSM:HashTable("statusbar")
-    for Path, Texture in pairs(Textures) do
-        LSMTextures[Texture] = Path
+local function GenerateTextureName(texturePath)
+    for key, val in pairs(LSM:HashTable("statusbar")) do
+        if val == texturePath then
+            return key
+        end
     end
-    return LSMTextures
+    return nil
 end
 
 function UUF:UpdateFrames()
@@ -223,7 +224,6 @@ function UUF:CreateGUI()
     if GUIActive then return end
     GUIActive = true
     UUF:GenerateLSMFonts()
-    UUF:GenerateLSMTextures()
     -- UUF:GenerateLSMBorders()
     UUFGUI_Container = UUFGUI:Create("Frame")
     UUFGUI_Container:SetTitle(GUI_TITLE)
@@ -364,19 +364,29 @@ function UUF:CreateGUI()
         TextureOptionsContainer:SetLayout("Flow")
         TextureOptionsContainer:SetFullWidth(true)
 
-        local ForegroundTexture = UUFGUI:Create("Dropdown")
+        local ForegroundTexture = UUFGUI:Create("LSM30_Statusbar")
         ForegroundTexture:SetLabel("Foreground Texture")
-        ForegroundTexture:SetList(LSMTextures)
-        ForegroundTexture:SetValue(General.ForegroundTexture)
-        ForegroundTexture:SetCallback("OnValueChanged", function(widget, event, value) General.ForegroundTexture = value UUF:UpdateFrames() end)
+        ForegroundTexture:SetList(LSM:HashTable("statusbar"))
+        ForegroundTexture:SetValue(GenerateTextureName(General.ForegroundTexture))
+        ForegroundTexture:SetCallback("OnValueChanged", function(widget, event, value)
+            local LSMStatusbar = LSM:Fetch("statusbar", value)
+            General.ForegroundTexture = LSMStatusbar
+            widget:SetValue(value)
+            UUF:UpdateFrames()
+        end)
         ForegroundTexture:SetRelativeWidth(0.5)
         TextureOptionsContainer:AddChild(ForegroundTexture)
 
-        local BackgroundTexture = UUFGUI:Create("Dropdown")
+        local BackgroundTexture = UUFGUI:Create("LSM30_Statusbar")
         BackgroundTexture:SetLabel("Background Texture")
-        BackgroundTexture:SetList(LSMTextures)
-        BackgroundTexture:SetValue(General.BackgroundTexture)
-        BackgroundTexture:SetCallback("OnValueChanged", function(widget, event, value) General.BackgroundTexture = value UUF:UpdateFrames() end)
+        BackgroundTexture:SetList(LSM:HashTable("statusbar"))
+        BackgroundTexture:SetValue(GenerateTextureName(General.BackgroundTexture))
+        BackgroundTexture:SetCallback("OnValueChanged", function(widget, event, value)
+            local LSMStatusbar = LSM:Fetch("statusbar", value)
+            General.BackgroundTexture = LSMStatusbar
+            widget:SetValue(value)
+            UUF:UpdateFrames()
+        end)
         BackgroundTexture:SetRelativeWidth(0.5)
         TextureOptionsContainer:AddChild(BackgroundTexture)
 

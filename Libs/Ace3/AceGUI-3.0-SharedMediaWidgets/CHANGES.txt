@@ -1,0 +1,12 @@
+------------------------------------------------------------------------
+r64 | nevcairiel | 2020-10-19 22:06:38 +0000 (Mon, 19 Oct 2020) | 1 line
+Changed paths:
+   M /trunk/AceGUI-3.0-SharedMediaWidgets/BorderWidget.lua
+   M /trunk/AceGUI-3.0-SharedMediaWidgets/FontWidget.lua
+   M /trunk/AceGUI-3.0-SharedMediaWidgets/SoundWidget.lua
+   M /trunk/AceGUI-3.0-SharedMediaWidgets/StatusbarWidget.lua
+   M /trunk/AceGUI-3.0-SharedMediaWidgets.toc
+
+Bump all widget versions to ensure the new prototype is used everywhere
+------------------------------------------------------------------------
+
