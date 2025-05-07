@@ -21,6 +21,15 @@ local function TableToList(tbl)
     return table.concat(lines, "\n")
 end
 
+local function GetAuraInfo(auraID)
+    local auraData = C_Spell.GetSpellInfo(auraID)
+    if auraData then
+        local auraName = auraData.name
+        local auraIcon = auraData.iconID
+        return string.format("|T%s:22:22|t %s (%d)", auraIcon, auraName, auraID)
+    end
+end
+
 local UUFGUI_Container = nil;
 
 local function GenerateSupportOptions()
