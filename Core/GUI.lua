@@ -64,12 +64,13 @@ local StatusNames = {
     [3] = "Disconnected - Foreground Only"
 }
 
-function UUF:GenerateLSMFonts()
-    local Fonts = LSM:HashTable("font")
-    for Path, Font in pairs(Fonts) do
-        LSMFonts[Font] = Path
+local function GenerateFontName(fontPath)
+    for key, val in pairs(LSM:HashTable("font")) do
+        if val == fontPath then
+            return key
+        end
     end
-    return LSMFonts
+    return nil
 end
 
 function UUF:GenerateLSMBorders()
@@ -223,7 +224,6 @@ end
 function UUF:CreateGUI()
     if GUIActive then return end
     GUIActive = true
-    UUF:GenerateLSMFonts()
     -- UUF:GenerateLSMBorders()
     UUFGUI_Container = UUFGUI:Create("Frame")
     UUFGUI_Container:SetTitle(GUI_TITLE)
@@ -302,11 +302,16 @@ function UUF:CreateGUI()
         FontOptionsContainer:SetLayout("Flow")
         FontOptionsContainer:SetFullWidth(true)
 
-        local Font = UUFGUI:Create("Dropdown")
+        local Font = UUFGUI:Create("LSM30_Font")
         Font:SetLabel("Font")
-        Font:SetList(LSMFonts)
-        Font:SetValue(General.Font)
-        Font:SetCallback("OnValueChanged", function(widget, event, value) General.Font = value UUF:CreateReloadPrompt() end)
+        Font:SetList(LSM:HashTable("font"))
+        Font:SetValue(GenerateFontName(General.Font))
+        Font:SetCallback("OnValueChanged", function(widget, event, value) General.Font = value 
+            local LSMFont = LSM:Fetch("font", value)
+            General.Font = LSMFont
+            widget:SetValue(value)
+            UUF:UpdateFrames()
+        end)
         Font:SetRelativeWidth(0.5)
         FontOptionsContainer:AddChild(Font)
         
