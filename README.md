@@ -20,10 +20,12 @@ If you have any issues / feedback, you can open them on [Github](https://github.
 ## Libraries
 
 - [Ace3](https://www.curseforge.com/wow/addons/ace3)
+- [AceGUI-3.0-SharedMediaWidgets](https://www.curseforge.com/wow/addons/ace-gui-3-0-shared-media-widgets)
 - [oUF Framework](https://www.curseforge.com/wow/addons/ouf)
 - [LibRangeCheck-3.0](https://www.curseforge.com/wow/addons/librangecheck-3-0)
 - [LibSharedMedia-3.0](https://www.curseforge.com/wow/addons/libsharedmedia-3-0)
 - [LibDeflate](https://www.curseforge.com/wow/addons/libdeflate)
+- [LibDualSpec-1.0](https://www.curseforge.com/wow/addons/libdualspec-1-0)
 
 
 ## Frames
@@ -60,6 +62,11 @@ If you have any issues / feedback, you can open them on [Github](https://github.
 - Multiple Text Areas with Custom Font Sizes / Tags / Anchors.
 - Toggleable Buff / Debuffs with Custom Anchor / Offset / Spacing / Sizing & Custom Count Anchor / Size / Colour.
 - Toggleable Target Marker Indicator with Custom Sizing / Anchor / Positioning.
+
+### Profiles
+- Import/Export.
+- Character Specific or Global Profile.
+- Specialization Based Profiles.
 
 ### Tags
 - Easy to understand & utilize all tags. A tab has been provided in the GUI to help users identify what tags are available without overwhelming them with selections.
