@@ -11,5 +11,6 @@
 	<Script file="LibDeflate/LibDeflate.lua"/>
 	<Script file="LibRangeCheck-3.0/LibRangeCheck-3.0.lua"/>
     <Include file="LibPlayerSpells-1.0/lib.xml"/>
+	<Script file="LibDualSpec-1.0/LibDualSpec-1.0.lua"/>
     <Include file="oUF/oUF.xml"/>
 </Ui>

@@ -3,12 +3,10 @@ local UUFGUI = LibStub("AceGUI-3.0")
 local GUI_WIDTH = 920
 local GUI_HEIGHT = 720
 local GUI_TITLE = C_AddOns.GetAddOnMetadata("UnhaltedUF", "Title")
-local GUI_VERSION = C_AddOns.GetAddOnMetadata("UnhaltedUF", "Version")
 local LSM = LibStub:GetLibrary("LibSharedMedia-3.0") or LibStub("LibSharedMedia-3.0")
 local NSM = C_AddOns.IsAddOnLoaded("NorthernSkyMedia") or C_AddOns.IsAddOnLoaded("NorthernSkyRaidTools")
+local LDS = LibStub("LibDualSpec-1.0", true)
 if LSM then LSM:Register("border", "WHITE8X8", [[Interface\Buttons\WHITE8X8]]) end
-local LSMFonts = {}
-local LSMTextures = {}
 local LSMBorders = {}
 local GUIActive = false
 local Supporters = {
@@ -115,7 +113,7 @@ end
 
 function UUF:CreateReloadPrompt()
     StaticPopupDialogs["UUF_RELOAD_PROMPT"] = {
-        text = "Reload is necessary for changes to take effect. Reload Now?",
+        text = "Reload UI to Apply Changes?",
         button1 = "Reload",
         button2 = "Later",
         OnAccept = function() ReloadUI() end,
@@ -125,6 +123,20 @@ function UUF:CreateReloadPrompt()
         preferredIndex = 3,
     }
     StaticPopup_Show("UUF_RELOAD_PROMPT")
+end
+
+function UUF:ReloadOnProfileSwap()
+    StaticPopupDialogs["UUF_PROFILE_SWAP"] = {
+        text = "Unit Frame Elements have been changed, please reload for changes to take effect.",
+        button1 = "Reload",
+        button2 = "Later",
+        OnAccept = function() ReloadUI() end,
+        timeout = 0,
+        whileDead = true,
+        hideOnEscape = true,
+        preferredIndex = 3,
+    }
+    StaticPopup_Show("UUF_PROFILE_SWAP")
 end
 
 function UUF:UpdateUIScale()
@@ -2030,7 +2042,7 @@ function UUF:CreateGUI()
         ScrollableContainer:AddChild(GUIContainerTabGroup)
     end
 
-    local function ProfileContainer(UUFGUI_Container)
+    local function DrawProfileContainer(UUFGUI_Container)
         local ScrollableContainer = UUFGUI:Create("ScrollFrame")
         ScrollableContainer:SetLayout("Flow")
         ScrollableContainer:SetFullWidth(true)
@@ -2100,6 +2112,41 @@ function UUF:CreateGUI()
          end)
         DeleteProfileDropdown:SetRelativeWidth(0.33)
         ProfileOptions:AddChild(DeleteProfileDropdown)
+
+        local SpecProfileContainer = UUFGUI:Create("InlineGroup")
+        SpecProfileContainer:SetTitle("Specialization Profiles")
+        SpecProfileContainer:SetLayout("Flow")
+        SpecProfileContainer:SetFullWidth(true)
+        ScrollableContainer:AddChild(SpecProfileContainer)
+
+        local SpecProfileDropdown = {}
+        local numSpecs = GetNumSpecializations()
+        local SpecToggle = UUFGUI:Create("CheckBox")
+        SpecToggle:SetLabel("Enable Specialization Profiles")
+        SpecToggle:SetValue(UUF.DB:IsDualSpecEnabled())
+        SpecToggle:SetCallback("OnValueChanged", function(widget, event, value)
+            UUF.DB:SetDualSpecEnabled(value)
+            for i = 1, numSpecs do
+                SpecProfileDropdown[i]:SetDisabled(not value)
+            end
+        end)
+        SpecToggle:SetRelativeWidth(1)
+        local Disclaimer = "You will need to reload after swapping specializations for the specified profile to take effect.\nThis is specifically due to the way that elements are created."
+        SpecToggle:SetCallback("OnEnter", function(widget, event, value) GameTooltip:SetOwner(widget.frame, "ANCHOR_TOPLEFT") GameTooltip:AddLine(Disclaimer) GameTooltip:Show() end)
+        SpecToggle:SetCallback("OnLeave", function(widget, event, value) GameTooltip:Hide() end)
+        SpecProfileContainer:AddChild(SpecToggle)
+
+        for i = 1, numSpecs do
+            local _, specName = GetSpecializationInfo(i)
+            SpecProfileDropdown[i] = UUFGUI:Create("Dropdown")
+            SpecProfileDropdown[i]:SetLabel(string.format("Profile for %s", specName or ("Spec %d"):format(i)))
+            SpecProfileDropdown[i]:SetList(profileKeys)
+            SpecProfileDropdown[i]:SetValue(UUF.DB:GetDualSpecProfile(i))
+            SpecProfileDropdown[i]:SetCallback("OnValueChanged", function(widget, event, value) UUF.DB:SetDualSpecProfile(value, i) end)
+            SpecProfileDropdown[i]:SetRelativeWidth(numSpecs == 2 and 0.5 or numSpecs == 3 and 0.33 or 0.25)
+            SpecProfileDropdown[i]:SetDisabled(not UUF.DB:IsDualSpecEnabled())
+            SpecProfileContainer:AddChild(SpecProfileDropdown[i])
+        end
 
         local ResetToDefault = UUFGUI:Create("Button")
         ResetToDefault:SetText("Reset Settings")
@@ -2183,7 +2230,7 @@ function UUF:CreateGUI()
         elseif Group == "Tags" then
             DrawTagsContainer(UUFGUI_Container)
         elseif Group == "Profiles" then
-            ProfileContainer(UUFGUI_Container)
+            DrawProfileContainer(UUFGUI_Container)
         end
     end
 

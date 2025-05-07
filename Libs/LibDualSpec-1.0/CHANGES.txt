@@ -1,0 +1,16 @@
+tag 13bf5586d3bf3ad96246e0e64ca1bfef160dd550 v1.25.0
+Author:	Kyle Buller <bullerk@gmail.com>
+Date:	Thu Mar 20 20:26:11 2025 -0500
+
+commit 88780e5efc6792e119a98ccb631d7e190a7a098f
+Author: Kyle Buller <bullerk@gmail.com>
+Date:   Thu Mar 20 20:25:20 2025 -0500
+
+    Bump minor version
+
+commit da9e7bbadde63f21550245a30825e5190a5df5b4
+Author: Kyle Buller <bullerk@gmail.com>
+Date:   Thu Mar 20 20:19:33 2025 -0500
+
+    Fix Wrath Classic options
+
