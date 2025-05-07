@@ -35,8 +35,6 @@ function UUF:ImportSavedVariables(EncodedInfo)
                 for k, v in pairs(InformationTable) do
                     UUF.DB.profile[k] = v
                 end
-
-                UUF:CreateReloadPrompt()
             else
                 print("Please enter a valid profile name.")
             end
