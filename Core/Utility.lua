@@ -198,6 +198,7 @@ function UUF:AbbreviateName(unitName)
 end
 
 function UUF:ResetDefaultSettings()
+    UUF.DB:SetProfile("Global")
     UUF.DB:ResetProfile()
     UUF:CreateReloadPrompt()
 end
