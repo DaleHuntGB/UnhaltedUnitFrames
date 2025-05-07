@@ -13,6 +13,14 @@ local Supporters = {
     [1] = {Supporter = "", Comment = ""},
 }
 
+local function TableToList(tbl)
+    local lines = {}
+    for spellID in pairs(tbl) do
+        table.insert(lines, tostring(spellID))
+    end
+    return table.concat(lines, "\n")
+end
+
 local UUFGUI_Container = nil;
 
 local function GenerateSupportOptions()
