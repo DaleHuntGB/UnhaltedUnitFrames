@@ -998,7 +998,7 @@ UUF.Defaults = {
 }
 
 function UnhaltedUF:OnInitialize()
-    UUF.DB = LibStub("AceDB-3.0"):New("UUFDB", UUF.Defaults)
+    UUF.DB = LibStub("AceDB-3.0"):New("UUFDB", UUF.Defaults, true)
     for k, v in pairs(UUF.Defaults) do
         if UUF.DB.profile[k] == nil then
             UUF.DB.profile[k] = v
