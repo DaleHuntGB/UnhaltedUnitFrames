@@ -18,6 +18,8 @@ local BuffBlacklist = {
     [415603] = true, -- Encapsulated Destiny
     [404468] = true, -- Flight Style: Steady
     [404464] = true, -- Flight Style: Skyriding
+    [341770] = true, -- Accursed
+    [245686] = true, -- Fashionable!
 }
 
 function UUF:FetchDebuffBlacklist()
