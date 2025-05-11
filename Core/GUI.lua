@@ -719,6 +719,7 @@ function UUF:CreateGUI()
                 end
             end
             UUF.DB.global.AuraFilters.Buffs.Whitelist = buffWhitelist
+            WhitelistBuffsEditBox:SetText(TableToList(UUF.DB.global.AuraFilters.Buffs.Whitelist))
             UUF:UpdateFrames()
         end)
         WhitelistBuffsEditBox:SetRelativeWidth(0.5)
@@ -739,6 +740,7 @@ function UUF:CreateGUI()
                 end
             end
             UUF.DB.global.AuraFilters.Buffs.Blacklist = buffBlacklist
+            BlacklistBuffsEditBox:SetText(TableToList(UUF.DB.global.AuraFilters.Buffs.Blacklist))
             UUF:UpdateFrames()
         end)
         BlacklistBuffsEditBox:SetRelativeWidth(0.5)
@@ -765,6 +767,7 @@ function UUF:CreateGUI()
                 end
             end
             UUF.DB.global.AuraFilters.Debuffs.Whitelist = debuffWhitelist
+            WhitelistDebuffsEditBox:SetText(TableToList(UUF.DB.global.AuraFilters.Debuffs.Whitelist))
             UUF:UpdateFrames()
         end)
         WhitelistDebuffsEditBox:SetRelativeWidth(0.5)
@@ -785,6 +788,7 @@ function UUF:CreateGUI()
                 end
             end
             UUF.DB.global.AuraFilters.Debuffs.Blacklist = debuffBlacklist
+            BlacklistDebuffsEditBox:SetText(TableToList(UUF.DB.global.AuraFilters.Debuffs.Blacklist))
             UUF:UpdateFrames()
         end)
         BlacklistDebuffsEditBox:SetRelativeWidth(0.5)
@@ -797,7 +801,6 @@ function UUF:CreateGUI()
             local RecommendedBuffBlacklist = UUF:FetchBuffBlacklist()
             for spellID in pairs(RecommendedBuffBlacklist) do
                 if not UUF.DB.global.AuraFilters.Buffs.Blacklist[spellID] then
-                    print("Adding " .. GetAuraInfo(spellID, false) .. " to Buff Blacklist")
                     UUF.DB.global.AuraFilters.Buffs.Blacklist[spellID] = true
                 end
             end
@@ -805,7 +808,6 @@ function UUF:CreateGUI()
             local RecommendedDebuffBlacklist = UUF:FetchDebuffBlacklist()
             for spellID in pairs(RecommendedDebuffBlacklist) do
                 if not UUF.DB.global.AuraFilters.Debuffs.Blacklist[spellID] then
-                    print("Adding " .. GetAuraInfo(spellID, false) .. " to Debuff Blacklist")
                     UUF.DB.global.AuraFilters.Debuffs.Blacklist[spellID] = true
                 end
             end
@@ -816,6 +818,29 @@ function UUF:CreateGUI()
         end)
         ApplyRecommendedBlacklists:SetRelativeWidth(1)
         ScrollableContainer:AddChild(ApplyRecommendedBlacklists)
+
+        local ResetFiltersButton = UUFGUI:Create("Button")
+        ResetFiltersButton:SetText("Reset Filters")
+        ResetFiltersButton:SetCallback("OnClick", function(widget, event, value)
+            UUF.DB.global.AuraFilters = {
+                Buffs = {
+                    Whitelist = {},
+                    Blacklist = {}
+                },
+                Debuffs = {
+                    Whitelist = {},
+                    Blacklist = {}
+                }
+            }
+            UUF:UpdateFrames()
+            WhitelistBuffsEditBox:SetText(TableToList(UUF.DB.global.AuraFilters.Buffs.Whitelist))
+            BlacklistBuffsEditBox:SetText(TableToList(UUF.DB.global.AuraFilters.Buffs.Blacklist))
+            WhitelistDebuffsEditBox:SetText(TableToList(UUF.DB.global.AuraFilters.Debuffs.Whitelist))
+            BlacklistDebuffsEditBox:SetText(TableToList(UUF.DB.global.AuraFilters.Debuffs.Blacklist))
+            print("|cFF8080FFUnhalted|rUnitFrames - Filters have been reset.")
+        end)
+        ResetFiltersButton:SetRelativeWidth(1)
+        ScrollableContainer:AddChild(ResetFiltersButton)
     end
 
     local function DrawUnitContainer(UUFGUI_Container, Unit)

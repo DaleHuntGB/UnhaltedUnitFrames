@@ -7,7 +7,7 @@ local DebuffBlacklist = {
     [57724] = true, -- Sated
     [95809] = true, -- Sated
     [206151] = true, -- Challenger's Burden
-    [392960] = true, -- Demonic Gateway
+    [113942] = true, -- Demonic Gateway
 }
 
 local BuffBlacklist = {
