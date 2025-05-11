@@ -777,6 +777,29 @@ function UUF:CreateGUI()
         BlacklistDebuffsEditBox:SetRelativeWidth(0.5)
         BlacklistDebuffsEditBox:SetNumLines(10)
         DebuffFilterContainer:AddChild(BlacklistDebuffsEditBox)
+
+        local ApplyRecommendedBlacklists = UUFGUI:Create("Button")
+        ApplyRecommendedBlacklists:SetText("Apply Recommended Blacklists")
+        ApplyRecommendedBlacklists:SetCallback("OnClick", function(widget, event, value)
+            local RecommendedBuffBlacklist = UUF:FetchBuffBlacklist()
+            for spellID in pairs(RecommendedBuffBlacklist) do
+                if not UUF.DB.global.AuraFilters.Buffs.Blacklist[spellID] then
+                    print("Adding " .. GetAuraInfo(spellID) .. " to Buff Blacklist")
+                    UUF.DB.global.AuraFilters.Buffs.Blacklist[spellID] = true
+                end
+            end
+
+            local RecommendedDebuffBlacklist = UUF:FetchDebuffBlacklist()
+            for spellID in pairs(RecommendedDebuffBlacklist) do
+                if not UUF.DB.global.AuraFilters.Debuffs.Blacklist[spellID] then
+                    print("Adding " .. GetAuraInfo(spellID) .. " to Debuff Blacklist")
+                    UUF.DB.global.AuraFilters.Debuffs.Blacklist[spellID] = true
+                end
+            end
+            UUF:UpdateFrames()
+        end)
+        ApplyRecommendedBlacklists:SetRelativeWidth(1)
+        ScrollableContainer:AddChild(ApplyRecommendedBlacklists)
     end
 
     local function DrawUnitContainer(UUFGUI_Container, Unit)
