@@ -797,6 +797,9 @@ function UUF:CreateGUI()
                 end
             end
             UUF:UpdateFrames()
+
+            BlacklistBuffsEditBox:SetText(TableToList(UUF.DB.global.AuraFilters.Buffs.Blacklist))
+            BlacklistDebuffsEditBox:SetText(TableToList(UUF.DB.global.AuraFilters.Debuffs.Blacklist))
         end)
         ApplyRecommendedBlacklists:SetRelativeWidth(1)
         ScrollableContainer:AddChild(ApplyRecommendedBlacklists)
