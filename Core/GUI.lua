@@ -15,6 +15,7 @@ local Supporters = {
 
 local function GetAuraInfo(auraID, nameOnly)
     local auraData = C_Spell.GetSpellInfo(auraID)
+    if nameOnly == nil then nameOnly = true end 
     if auraData then
         local auraName = auraData.name
         local auraIcon = auraData.iconID
@@ -26,13 +27,20 @@ local function GetAuraInfo(auraID, nameOnly)
     end
 end
 
-local function TableToList(tbl)
-    local lines = {}
-    for spellID in pairs(tbl) do
-        local spellName = GetAuraInfo(spellID, true)
-        table.insert(lines, string.format("%s (%s)", spellID, spellName))
+local function TableToList(data)
+    local dataContent = {}
+    for auraID in pairs(data) do
+        local auraName = GetAuraInfo(auraID, true)
+        if auraName then
+            -- Add auraName if we can find it.
+            table.insert(dataContent, string.format("%s (%s)", auraID, auraName))
+        else
+            -- Add auraID even if auraName can't be found.
+            table.insert(dataContent, string.format("%s", auraID))
+            print("Added" .. auraID .. " without a corresponding name, please ensure the auraID is correct!")
+        end
     end
-    return table.concat(lines, "\n")
+    return table.concat(dataContent, "\n")
 end
 
 local function FindSpellID(spellName)
