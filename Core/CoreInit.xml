@@ -4,5 +4,6 @@
   <Script file="Utility.lua"/>
   <Script file="Tags.lua"/>
   <Script file="Share.lua"/>
+  <Script file="Filters.lua"/>
   <Script file="GUI.lua"/>
 </Ui>
