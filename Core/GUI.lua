@@ -13,21 +13,26 @@ local Supporters = {
     [1] = {Supporter = "", Comment = ""},
 }
 
-local function TableToList(tbl)
-    local lines = {}
-    for spellID in pairs(tbl) do
-        table.insert(lines, tostring(spellID))
-    end
-    return table.concat(lines, "\n")
-end
-
-local function GetAuraInfo(auraID)
+local function GetAuraInfo(auraID, nameOnly)
     local auraData = C_Spell.GetSpellInfo(auraID)
     if auraData then
         local auraName = auraData.name
         local auraIcon = auraData.iconID
-        return string.format("|T%s:22:22|t %s (%d)", auraIcon, auraName, auraID)
+        if nameOnly then
+            return string.format("%s", auraName)
+        else
+            return string.format("|T%s:22:22|t %s (%d)", auraIcon, auraName, auraID)
+        end
     end
+end
+
+local function TableToList(tbl)
+    local lines = {}
+    for spellID in pairs(tbl) do
+        local spellName = GetAuraInfo(spellID, true)
+        table.insert(lines, string.format("%s (%s)", spellID, spellName))
+    end
+    return table.concat(lines, "\n")
 end
 
 local function FindSpellID(spellName)
@@ -784,7 +789,7 @@ function UUF:CreateGUI()
             local RecommendedBuffBlacklist = UUF:FetchBuffBlacklist()
             for spellID in pairs(RecommendedBuffBlacklist) do
                 if not UUF.DB.global.AuraFilters.Buffs.Blacklist[spellID] then
-                    print("Adding " .. GetAuraInfo(spellID) .. " to Buff Blacklist")
+                    print("Adding " .. GetAuraInfo(spellID, false) .. " to Buff Blacklist")
                     UUF.DB.global.AuraFilters.Buffs.Blacklist[spellID] = true
                 end
             end
@@ -792,7 +797,7 @@ function UUF:CreateGUI()
             local RecommendedDebuffBlacklist = UUF:FetchDebuffBlacklist()
             for spellID in pairs(RecommendedDebuffBlacklist) do
                 if not UUF.DB.global.AuraFilters.Debuffs.Blacklist[spellID] then
-                    print("Adding " .. GetAuraInfo(spellID) .. " to Debuff Blacklist")
+                    print("Adding " .. GetAuraInfo(spellID, false) .. " to Debuff Blacklist")
                     UUF.DB.global.AuraFilters.Debuffs.Blacklist[spellID] = true
                 end
             end
