@@ -483,8 +483,7 @@ local function CreateIndicators(self, Unit)
         self.RaidTargetIndicator = self.unitTargetMarker
     end
 
-    -- Frame Combat Indicator
-    if not self.unitCombatIndicator and (Unit == "Player" or Unit == "Target") and CombatIndicator.Enabled then
+    if not self.unitCombatIndicator and Unit == "Player" and CombatIndicator.Enabled then
         self.unitCombatIndicator = self.unitHighLevelFrame:CreateTexture(nil, "OVERLAY")
         self.unitCombatIndicator:SetSize(CombatIndicator.Size, CombatIndicator.Size)
         self.unitCombatIndicator:SetPoint(CombatIndicator.AnchorFrom, self.unitHighLevelFrame, CombatIndicator.AnchorTo, CombatIndicator.XOffset, CombatIndicator.YOffset)
@@ -889,7 +888,7 @@ local function UpdateIndicators(FrameName)
     end
 
     -- Frame Combat Indicator
-    if FrameName.unitCombatIndicator and (Unit == "Player" or Unit == "Target") and CombatIndicator.Enabled then
+    if FrameName.unitCombatIndicator and Unit == "Player" and CombatIndicator.Enabled then
         FrameName.unitCombatIndicator:Show()
         if FrameName.unitCombatIndicator.hideTimer then
             FrameName.unitCombatIndicator.hideTimer:Cancel()
@@ -904,7 +903,7 @@ local function UpdateIndicators(FrameName)
         FrameName.unitCombatIndicator:SetPoint(CombatIndicator.AnchorFrom, FrameName, CombatIndicator.AnchorTo, CombatIndicator.XOffset, CombatIndicator.YOffset)
     end
 
-    -- Frame Leader & assistant Indicator
+    -- Frame Leader & Assistant Indicator
     if FrameName.unitLeaderIndicator and (Unit == "Player" or Unit == "Target") and LeaderIndicator.Enabled then
         FrameName.unitLeaderIndicator:ClearAllPoints()
         FrameName.unitLeaderIndicator:SetSize(LeaderIndicator.Size, LeaderIndicator.Size)

@@ -1623,7 +1623,7 @@ function UUF:CreateGUI()
             TargetMarkerYOffset:SetRelativeWidth(0.33)
             TargetMarkerOptions:AddChild(TargetMarkerYOffset)
 
-            if Unit == "Player" or Unit == "Target" then
+            if Unit == "Player" then
                 local CombatIndicatorOptions = UUFGUI:Create("InlineGroup")
                 CombatIndicatorOptions:SetTitle("Combat Indicator Options")
                 CombatIndicatorOptions:SetLayout("Flow")
@@ -1676,8 +1676,9 @@ function UUF:CreateGUI()
                 CombatIndicatorYOffset:SetCallback("OnMouseUp", function(widget, event, value) CombatIndicator.YOffset = value UUF:UpdateFrames() end)
                 CombatIndicatorYOffset:SetRelativeWidth(0.33)
                 CombatIndicatorOptions:AddChild(CombatIndicatorYOffset)
-                
-                -- Leader Indicator
+            end
+
+            if Unit == "Player" or Unit == "Target" then
                 local LeaderIndicatorOptions = UUFGUI:Create("InlineGroup")
                 LeaderIndicatorOptions:SetTitle("Leader Indicator Options")
                 LeaderIndicatorOptions:SetLayout("Flow")
