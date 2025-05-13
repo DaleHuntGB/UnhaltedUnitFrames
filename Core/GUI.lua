@@ -2282,7 +2282,7 @@ function UUF:CreateGUI()
             selectedProfile = value
             if selectedProfile and selectedProfile ~= UUF.DB:GetCurrentProfile() then
                 StaticPopupDialogs["UUF_DELETE_PROFILE"] = {
-                text = "Delete " .. selectedProfile .. " Profile?",
+                text = "Delete '|cFFCC00" .. selectedProfile .. "|r' Profile?",
                 button1 = "Yes",
                 button2 = "No",
                 OnAccept = function()
