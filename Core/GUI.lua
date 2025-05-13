@@ -15,7 +15,7 @@ local Supporters = {
 
 local function GetAuraInfo(auraID, nameOnly)
     local auraData = C_Spell.GetSpellInfo(auraID)
-    if nameOnly == nil then nameOnly = true end 
+    if nameOnly == nil then nameOnly = true end
     if auraData then
         local auraName = auraData.name
         local auraIcon = auraData.iconID
@@ -41,14 +41,6 @@ local function TableToList(data)
         end
     end
     return table.concat(dataContent, "\n")
-end
-
-local function FindSpellID(spellName)
-    local auraData = C_UnitAuras.GetAuraDataBySpellName("player", spellName)
-    if auraData then
-        local spellID = auraData.spellId
-        return spellID
-    end
 end
 
 local UUFGUI_Container = nil;
