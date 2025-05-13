@@ -25,15 +25,19 @@ UUF.nameBlacklist = {
 }
 
 local function FilterAuras(auraType)
-    return function(_, _, data)
+    return function(element, unit, data)
         local auraID = data.spellId
         local auraWhitelist = UUF.DB.global.AuraFilters[auraType].Whitelist
         local auraBlacklist = UUF.DB.global.AuraFilters[auraType].Blacklist
         if next(auraWhitelist) then return auraWhitelist[auraID] == true end
+        -- Respect Only Show Player.
+        if element.onlyShowPlayer and not data.isPlayerAura then return false end
+        -- Filter by Whitelist and Blacklist.
         if auraBlacklist[auraID] then return false end
         return true
     end
 end
+
 
 -- This can be called globally by other AddOns that require a refresh of all tags.
 function UUFG:UpdateAllTags()
