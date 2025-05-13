@@ -503,6 +503,7 @@ UUF.Defaults = {
                 AnchorFrom          = "BOTTOMLEFT",
                 AnchorTo            = "TOPLEFT",
                 AnchorParent        = "UUF_Target",
+                ForceHideBlizzard   = false,
             },
             Portrait = {
                 Enabled         = false,
@@ -763,6 +764,7 @@ UUF.Defaults = {
                 AnchorFrom          = "TOPLEFT",
                 AnchorTo            = "BOTTOMLEFT",
                 AnchorParent        = "UUF_Player",
+                ForceHideBlizzard   = false,
             },
             Portrait = {
                 Enabled         = false,

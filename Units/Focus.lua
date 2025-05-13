@@ -2,7 +2,13 @@ local _, UUF = ...
 local oUF = UUF.oUF
 
 function UUF:SpawnFocusFrame()
-    if not UUF.DB.profile.Focus.Frame.Enabled then return end
+    if not UUF.DB.profile.Focus.Frame.Enabled then
+        if UUF.DB.profile.Focus.Frame.ForceHideBlizzard then
+            UUF:DisableBlizzard("Focus")
+        else
+            return
+        end
+    end
     local Frame = UUF.DB.profile.Focus.Frame
     oUF:RegisterStyle("UUF_Focus", function(self) UUF.CreateUnitFrame(self, "Focus") end)
     oUF:SetActiveStyle("UUF_Focus")

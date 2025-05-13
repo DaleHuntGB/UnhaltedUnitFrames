@@ -873,8 +873,24 @@ function UUF:CreateGUI()
             Enabled:SetLabel("Enable Frame")
             Enabled:SetValue(Frame.Enabled)
             Enabled:SetCallback("OnValueChanged", function(widget, event, value) Frame.Enabled = value UUF:CreateReloadPrompt() end)
-            Enabled:SetRelativeWidth(0.5)
+            if Unit == "Focus" or Unit == "Pet" then Enabled:SetRelativeWidth(0.33) else Enabled:SetRelativeWidth(0.5) end
             UUFGUI_Container:AddChild(Enabled)
+
+            if Unit == "Focus" or Unit == "Pet" then
+                local ForceHideBlizzard = UUFGUI:Create("CheckBox")
+                ForceHideBlizzard:SetLabel("Force Hide Blizzard Frame")
+                ForceHideBlizzard:SetValue(Frame.ForceHideBlizzard)
+                ForceHideBlizzard:SetCallback("OnValueChanged", function(widget, event, value)
+                    Frame.ForceHideBlizzard = value
+                    if value then
+                        UUF:DisableBlizzard(Unit)
+                    else
+                        UUF:CreateReloadPrompt()
+                    end
+                end)
+                ForceHideBlizzard:SetRelativeWidth(0.33)
+                UUFGUI_Container:AddChild(ForceHideBlizzard)
+            end
 
             if Unit == "Player" or Unit == "Target" or Unit == "Focus" or Unit == "FocusTarget" or Unit == "Pet" or Unit == "TargetTarget" then
                 local CopyFromDropdown = UUFGUI:Create("Dropdown")
@@ -891,7 +907,7 @@ function UUF:CreateGUI()
                     print("|cFF8080FFUnhalted|rUnitFrames: Copied settings from " .. value .. " to " .. Unit .. ".")
                     CopyFromDropdown:SetValue(nil)
                 end)
-                CopyFromDropdown:SetRelativeWidth(0.5)
+                if Unit == "Focus" or Unit == "Pet" then CopyFromDropdown:SetRelativeWidth(0.33) else CopyFromDropdown:SetRelativeWidth(0.5) end
                 UUFGUI_Container:AddChild(CopyFromDropdown)
                 if not Frame.Enabled then CopyFromDropdown:SetDisabled(true) end
             end

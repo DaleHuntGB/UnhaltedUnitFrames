@@ -170,3 +170,10 @@ function UUF:UpdateTargetHighlight(frame, unit)
         end
     end
 end
+
+function UUF:DisableBlizzard(unit)
+    local lowerUnit = unit:lower()
+    if oUF and oUF.DisableBlizzard then
+        oUF:DisableBlizzard(lowerUnit)
+    end
+end
