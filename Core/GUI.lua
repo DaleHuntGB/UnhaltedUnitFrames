@@ -157,7 +157,7 @@ end
 
 function UUF:ReloadOnProfileSwap()
     StaticPopupDialogs["UUF_PROFILE_SWAP"] = {
-        text = "Unit Frame Elements have been changed, please reload for changes to take effect.",
+        text = "Reload Required to Apply Profile Changes",
         button1 = "Reload",
         button2 = "Later",
         OnAccept = function() ReloadUI() end,
@@ -2281,15 +2281,27 @@ function UUF:CreateGUI()
         DeleteProfileDropdown:SetCallback("OnValueChanged", function(widget, event, value)
             selectedProfile = value
             if selectedProfile and selectedProfile ~= UUF.DB:GetCurrentProfile() then
-                UUF.DB:DeleteProfile(selectedProfile)
-                profileKeys = {}
-                for _, name in ipairs(UUF.DB:GetProfiles(profileList, true)) do
-                    profileKeys[name] = name
-                end
-                CopyProfileDropdown:SetList(profileKeys)
-                DeleteProfileDropdown:SetList(profileKeys)
-                ActiveProfileDropdown:SetList(profileKeys)
-                DeleteProfileDropdown:SetValue(nil)
+                StaticPopupDialogs["UUF_DELETE_PROFILE"] = {
+                text = "Delete " .. selectedProfile .. " Profile?",
+                button1 = "Yes",
+                button2 = "No",
+                OnAccept = function()
+                    UUF.DB:DeleteProfile(selectedProfile)
+                    profileKeys = {}
+                    for _, name in ipairs(UUF.DB:GetProfiles(profileList, true)) do
+                        profileKeys[name] = name
+                    end
+                    CopyProfileDropdown:SetList(profileKeys)
+                    DeleteProfileDropdown:SetList(profileKeys)
+                    ActiveProfileDropdown:SetList(profileKeys)
+                    DeleteProfileDropdown:SetValue(nil)
+                end,
+                timeout = 0,
+                whileDead = true,
+                hideOnEscape = true,
+                preferredIndex = 3,
+            }
+            StaticPopup_Show("UUF_DELETE_PROFILE")
             else
                 print("|cFF8080FFUnhalted Unit Frames|r: Unable to delete an active profile.")
             end
