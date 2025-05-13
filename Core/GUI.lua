@@ -814,14 +814,26 @@ function UUF:CreateGUI()
         local ResetFiltersButton = UUFGUI:Create("Button")
         ResetFiltersButton:SetText("Reset Filters")
         ResetFiltersButton:SetCallback("OnClick", function(widget, event, value)
-            UUF.DB.global.BlacklistAuras = { Buffs = {}, Debuffs = {} }
-            UUF.DB.profile.WhitelistAuras = { Buffs = {}, Debuffs = {} }
-            UUF:UpdateFrames()
-            WhitelistBuffsEditBox:SetText(TableToList(UUF.DB.profile.WhitelistAuras.Buffs))
-            BlacklistBuffsEditBox:SetText(TableToList(UUF.DB.global.BlacklistAuras.Buffs))
-            WhitelistDebuffsEditBox:SetText(TableToList(UUF.DB.profile.WhitelistAuras.Debuffs))
-            BlacklistDebuffsEditBox:SetText(TableToList(UUF.DB.global.BlacklistAuras.Debuffs))
-            print("|cFF8080FFUnhalted|rUnitFrames - Filters have been reset.")
+            StaticPopupDialogs["UUF_RESET_FILTERS"] = {
+                text = "Do you want to reset all filters?",
+                button1 = "Yes",
+                button2 = "No",
+                OnAccept = function()
+                    UUF.DB.global.BlacklistAuras = { Buffs = {}, Debuffs = {} }
+                    UUF.DB.profile.WhitelistAuras = { Buffs = {}, Debuffs = {} }
+                    UUF:UpdateFrames()
+                    WhitelistBuffsEditBox:SetText(TableToList(UUF.DB.profile.WhitelistAuras.Buffs))
+                    BlacklistBuffsEditBox:SetText(TableToList(UUF.DB.global.BlacklistAuras.Buffs))
+                    WhitelistDebuffsEditBox:SetText(TableToList(UUF.DB.profile.WhitelistAuras.Debuffs))
+                    BlacklistDebuffsEditBox:SetText(TableToList(UUF.DB.global.BlacklistAuras.Debuffs))
+                    print("|cFF8080FFUnhalted|rUnitFrames - Filters have been reset.")
+                end,
+                timeout = 0,
+                whileDead = true,
+                hideOnEscape = true,
+                preferredIndex = 3,
+            }
+            StaticPopup_Show("UUF_RESET_FILTERS")
         end)
         ResetFiltersButton:SetRelativeWidth(1)
         ScrollableContainer:AddChild(ResetFiltersButton)
@@ -2353,7 +2365,7 @@ function UUF:CreateGUI()
             }
             StaticPopup_Show("UUF_PROFILE_RESET_ALL")
         end)
-        local ProfileDisclaimer = "This will reset Unhalted Unit Frames. \nProfiles will be removed, and all settings will be reset to default.\n\nThis action cannot be undone."
+        local ProfileDisclaimer = "Reset Unhalted Unit Frames.\nAll profiles will be removed.\nAll settings will be reset to default."
         ResetToDefaultAll:SetCallback("OnEnter", function(widget, event, value) GameTooltip:SetOwner(widget.frame, "ANCHOR_TOPLEFT") GameTooltip:AddLine(ProfileDisclaimer) GameTooltip:Show() end)
         ResetToDefaultAll:SetCallback("OnLeave", function(widget, event, value) GameTooltip:Hide() end)
         ResetToDefaultAll:SetRelativeWidth(1)
