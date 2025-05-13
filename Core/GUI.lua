@@ -2353,7 +2353,7 @@ function UUF:CreateGUI()
             }
             StaticPopup_Show("UUF_PROFILE_RESET_ALL")
         end)
-        local ProfileDisclaimer = "This will reset all Unhalted Unit Frames settings to default.\nAll Profiles will be deleted\nAll Settings will be set to default."
+        local ProfileDisclaimer = "This will reset Unhalted Unit Frames. \nProfiles will be removed, and all settings will be reset to default.\n\nThis action cannot be undone."
         ResetToDefaultAll:SetCallback("OnEnter", function(widget, event, value) GameTooltip:SetOwner(widget.frame, "ANCHOR_TOPLEFT") GameTooltip:AddLine(ProfileDisclaimer) GameTooltip:Show() end)
         ResetToDefaultAll:SetCallback("OnLeave", function(widget, event, value) GameTooltip:Hide() end)
         ResetToDefaultAll:SetRelativeWidth(1)
