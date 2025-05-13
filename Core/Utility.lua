@@ -490,7 +490,7 @@ local function CreateIndicators(self, Unit)
     end
 
     -- Frame Combat Indicator
-    if not self.unitCombatIndicator and Unit == "Player" and CombatIndicator.Enabled then
+    if not self.unitCombatIndicator and (Unit == "Player" or Unit == "Target") and CombatIndicator.Enabled then
         self.unitCombatIndicator = self.unitHighLevelFrame:CreateTexture(nil, "OVERLAY")
         self.unitCombatIndicator:SetSize(CombatIndicator.Size, CombatIndicator.Size)
         self.unitCombatIndicator:SetPoint(CombatIndicator.AnchorFrom, self.unitHighLevelFrame, CombatIndicator.AnchorTo, CombatIndicator.XOffset, CombatIndicator.YOffset)
@@ -498,7 +498,7 @@ local function CreateIndicators(self, Unit)
     end
 
     -- Frame Leader Indicator
-    if not self.unitLeaderIndicator and Unit == "Player" and LeaderIndicator.Enabled then
+    if not self.unitLeaderIndicator and (Unit == "Player" or Unit == "Target") and LeaderIndicator.Enabled then
         self.unitLeaderIndicator = self.unitHighLevelFrame:CreateTexture(nil, "OVERLAY")
         self.unitLeaderIndicator:SetSize(LeaderIndicator.Size, LeaderIndicator.Size)
         self.unitLeaderIndicator:SetPoint(LeaderIndicator.AnchorFrom, self.unitHighLevelFrame, LeaderIndicator.AnchorTo, LeaderIndicator.XOffset, LeaderIndicator.YOffset)
@@ -889,7 +889,7 @@ local function UpdateIndicators(FrameName)
     end
 
     -- Frame Combat Indicator
-    if FrameName.unitCombatIndicator and Unit == "Player" and CombatIndicator.Enabled then
+    if FrameName.unitCombatIndicator and (Unit == "Player" or Unit == "Target") and CombatIndicator.Enabled then
         FrameName.unitCombatIndicator:Show()
         if FrameName.unitCombatIndicator.hideTimer then
             FrameName.unitCombatIndicator.hideTimer:Cancel()
@@ -905,7 +905,7 @@ local function UpdateIndicators(FrameName)
     end
 
     -- Frame Leader Indicator
-    if FrameName.unitLeaderIndicator and Unit == "Player" and LeaderIndicator.Enabled then
+    if FrameName.unitLeaderIndicator and (Unit == "Player" or Unit == "Target") and LeaderIndicator.Enabled then
         FrameName.unitLeaderIndicator:ClearAllPoints()
         FrameName.unitLeaderIndicator:SetSize(LeaderIndicator.Size, LeaderIndicator.Size)
         FrameName.unitLeaderIndicator:SetPoint(LeaderIndicator.AnchorFrom, FrameName, LeaderIndicator.AnchorTo, LeaderIndicator.XOffset, LeaderIndicator.YOffset)

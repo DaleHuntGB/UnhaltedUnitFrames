@@ -1627,7 +1627,7 @@ function UUF:CreateGUI()
             TargetMarkerYOffset:SetRelativeWidth(0.33)
             TargetMarkerOptions:AddChild(TargetMarkerYOffset)
 
-            if Unit == "Player" then
+            if Unit == "Player" or Unit == "Target" then
                 local CombatIndicatorOptions = UUFGUI:Create("InlineGroup")
                 CombatIndicatorOptions:SetTitle("Combat Indicator Options")
                 CombatIndicatorOptions:SetLayout("Flow")
