@@ -314,14 +314,6 @@ UUF.Defaults = {
                 AnchorFrom          = "RIGHT",
                 AnchorTo            = "TOPRIGHT",
             },
-            CombatIndicator = {
-                Enabled             = true,
-                Size                = 24,
-                XOffset             = 0,
-                YOffset             = 0,
-                AnchorFrom          = "CENTER",
-                AnchorTo            = "CENTER",
-            },
             LeaderIndicator = {
                 Enabled             = true,
                 Size                = 16,
