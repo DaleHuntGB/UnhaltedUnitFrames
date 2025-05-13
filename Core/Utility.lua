@@ -27,8 +27,8 @@ UUF.nameBlacklist = {
 local function FilterAuras(auraType)
     return function(element, unit, data)
         local auraID = data.spellId
-        local auraWhitelist = UUF.DB.global.AuraFilters[auraType].Whitelist
-        local auraBlacklist = UUF.DB.global.AuraFilters[auraType].Blacklist
+        local auraWhitelist = UUF.DB.profile.WhitelistAuras[auraType] or {}
+        local auraBlacklist = UUF.DB.global.BlacklistAuras[auraType] or {}
         if next(auraWhitelist) then return auraWhitelist[auraID] == true end
         -- Respect Only Show Player.
         if element.onlyShowPlayer and not data.isPlayerAura then return false end
@@ -37,7 +37,6 @@ local function FilterAuras(auraType)
         return true
     end
 end
-
 
 -- This can be called globally by other AddOns that require a refresh of all tags.
 function UUFG:UpdateAllTags()
@@ -212,9 +211,16 @@ function UUF:AbbreviateName(unitName)
     return table.concat(unitNameParts, " ")
 end
 
-function UUF:ResetDefaultSettings()
-    UUF.DB:SetProfile("Global")
-    UUF.DB:ResetProfile()
+function UUF:ResetDefaultSettings(resetAll)
+    if resetAll == nil then resetAll = false end
+    if resetAll then
+        for k in pairs(UUFDB) do
+            UUFDB[k] = nil
+        end
+        UUF.DB = LibStub("AceDB-3.0"):New("UUFDB", UUF.Defaults, "Global")
+    else
+        UUF.DB:ResetProfile()
+    end
     UUF:CreateReloadPrompt()
 end
 
@@ -409,7 +415,7 @@ local function CreateBuffs(self, Unit)
         self.unitBuffs["growth-y"] = Buffs.GrowthY
         self.unitBuffs.filter = "HELPFUL"
         self.unitBuffs.PostCreateButton = function(_, button) PostCreateButton(_, button, Unit, "HELPFUL") end
-        self.unitBuffs.FilterAura = FilterAuras("Buffs")
+        self.unitBuffs.FilterAura = FilterAuras("Buffs", Unit)
         self.Buffs = self.unitBuffs
     end
 end
@@ -429,7 +435,7 @@ local function CreateDebuffs(self, Unit)
         self.unitDebuffs["growth-y"] = Debuffs.GrowthY
         self.unitDebuffs.filter = "HARMFUL"
         self.unitDebuffs.PostCreateButton = function(_, button) PostCreateButton(_, button, Unit, "HARMFUL") end
-        self.unitDebuffs.FilterAura = FilterAuras("Debuffs")
+        self.unitDebuffs.FilterAura = FilterAuras("Debuffs", Unit)
         self.Debuffs = self.unitDebuffs
     end
 end
@@ -808,7 +814,7 @@ local function UpdateBuffs(FrameName)
         FrameName.unitBuffs.filter = "HELPFUL"
         FrameName.unitBuffs:Show()
         FrameName.unitBuffs.PostUpdateButton = function(_, button) PostUpdateButton(_, button, Unit, "HELPFUL") end
-        FrameName.unitBuffs.FilterAura = FilterAuras("Buffs")
+        FrameName.unitBuffs.FilterAura = FilterAuras("Buffs", Unit)
         FrameName.unitBuffs:ForceUpdate()
     else
         if FrameName.unitBuffs then
@@ -834,7 +840,7 @@ local function UpdateDebuffs(FrameName)
         FrameName.unitDebuffs.filter = "HARMFUL"
         FrameName.unitDebuffs:Show()
         FrameName.unitDebuffs.PostUpdateButton = function(_, button) PostUpdateButton(_, button, Unit, "HARMFUL") end
-        FrameName.unitDebuffs.FilterAura = FilterAuras("Debuffs")
+        FrameName.unitDebuffs.FilterAura = FilterAuras("Debuffs", Unit)
         FrameName.unitDebuffs:ForceUpdate()
     else
         if FrameName.unitDebuffs then

@@ -8,19 +8,17 @@ UUF.Defaults = {
         UIScaleEnabled = true,
         UIScale = 0.5333333333333,
         TagUpdateInterval = 0.5,
-        AuraFilters = {
-            Buffs = {
-                Whitelist = {},
-                Blacklist = {},
-            },
-            Debuffs = {
-                Whitelist = {},
-                Blacklist = {},
-            },
-        }
+        BlacklistAuras = {
+            Buffs = {},
+            Debuffs = {},
+        },
     },
     profile = {
         TestMode = false,
+        WhitelistAuras = {
+            Buffs = {},
+            Debuffs = {},
+        },
         General = {
             Font                              = "Fonts\\FRIZQT__.TTF",
             FontFlag                          = "OUTLINE",

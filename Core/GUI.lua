@@ -699,10 +699,10 @@ function UUF:CreateGUI()
 
         local WhitelistBuffsEditBox = UUFGUI:Create("MultiLineEditBox")
         WhitelistBuffsEditBox:SetLabel("Whitelist Buffs")
-        WhitelistBuffsEditBox:SetText(TableToList(UUF.DB.global.AuraFilters.Buffs.Whitelist))
+        WhitelistBuffsEditBox:SetText(TableToList(UUF.DB.profile.WhitelistAuras.Buffs))
         WhitelistBuffsEditBox:SetCallback("OnEnterPressed", function(widget, event, value)
-            if not UUF.DB.global.AuraFilters then UUF.DB.global.AuraFilters = { Buffs = {}, Debuffs = {} } end
-            if not UUF.DB.global.AuraFilters.Buffs then UUF.DB.global.AuraFilters.Buffs = {} end
+            if not UUF.DB.profile.WhitelistAuras then UUF.DB.profile.WhitelistAuras = { Buffs = {}, Debuffs = {} } end
+            if not UUF.DB.profile.WhitelistAuras.Buffs then UUF.DB.profile.WhitelistAuras.Buffs = {} end
             local buffWhitelist = {}
             for id in string.gmatch(value, "[^,%s]+") do
                 local spellID = tonumber(id)
@@ -710,8 +710,8 @@ function UUF:CreateGUI()
                     buffWhitelist[spellID] = true
                 end
             end
-            UUF.DB.global.AuraFilters.Buffs.Whitelist = buffWhitelist
-            WhitelistBuffsEditBox:SetText(TableToList(UUF.DB.global.AuraFilters.Buffs.Whitelist))
+            UUF.DB.profile.WhitelistAuras.Buffs = buffWhitelist
+            WhitelistBuffsEditBox:SetText(TableToList(UUF.DB.profile.WhitelistAuras.Buffs))
             UUF:UpdateFrames()
         end)
         WhitelistBuffsEditBox:SetRelativeWidth(0.5)
@@ -720,10 +720,10 @@ function UUF:CreateGUI()
 
         local BlacklistBuffsEditBox = UUFGUI:Create("MultiLineEditBox")
         BlacklistBuffsEditBox:SetLabel("Blacklist Buffs")
-        BlacklistBuffsEditBox:SetText(TableToList(UUF.DB.global.AuraFilters.Buffs.Blacklist))
+        BlacklistBuffsEditBox:SetText(TableToList(UUF.DB.global.BlacklistAuras.Buffs))
         BlacklistBuffsEditBox:SetCallback("OnEnterPressed", function(widget, event, value)
-            if not UUF.DB.global.AuraFilters then UUF.DB.global.AuraFilters = { Buffs = {}, Debuffs = {} } end
-            if not UUF.DB.global.AuraFilters.Buffs then UUF.DB.global.AuraFilters.Buffs = {} end
+            if not UUF.DB.global.BlacklistAuras then UUF.DB.global.BlacklistAuras = { Buffs = {}, Debuffs = {} } end
+            if not UUF.DB.global.BlacklistAuras.Buffs then UUF.DB.global.BlacklistAuras.Buffs = {} end
             local buffBlacklist = {}
             for id in string.gmatch(value, "[^,%s]+") do
                 local spellID = tonumber(id)
@@ -731,8 +731,8 @@ function UUF:CreateGUI()
                     buffBlacklist[spellID] = true
                 end
             end
-            UUF.DB.global.AuraFilters.Buffs.Blacklist = buffBlacklist
-            BlacklistBuffsEditBox:SetText(TableToList(UUF.DB.global.AuraFilters.Buffs.Blacklist))
+            UUF.DB.global.BlacklistAuras.Buffs = buffBlacklist
+            BlacklistBuffsEditBox:SetText(TableToList(UUF.DB.global.BlacklistAuras.Buffs))
             UUF:UpdateFrames()
         end)
         BlacklistBuffsEditBox:SetRelativeWidth(0.5)
@@ -747,10 +747,10 @@ function UUF:CreateGUI()
 
         local WhitelistDebuffsEditBox = UUFGUI:Create("MultiLineEditBox")
         WhitelistDebuffsEditBox:SetLabel("Whitelist Debuffs")
-        WhitelistDebuffsEditBox:SetText(TableToList(UUF.DB.global.AuraFilters.Debuffs.Whitelist))
+        WhitelistDebuffsEditBox:SetText(TableToList(UUF.DB.profile.WhitelistAuras.Debuffs))
         WhitelistDebuffsEditBox:SetCallback("OnEnterPressed", function(widget, event, value)
-            if not UUF.DB.global.AuraFilters then UUF.DB.global.AuraFilters = { Buffs = {}, Debuffs = {} } end
-            if not UUF.DB.global.AuraFilters.Debuffs then UUF.DB.global.AuraFilters.Debuffs = {} end
+            if not UUF.DB.profile.WhitelistAuras then UUF.DB.profile.WhitelistAuras = { Buffs = {}, Debuffs = {} } end
+            if not UUF.DB.profile.WhitelistAuras.Debuffs then UUF.DB.profile.WhitelistAuras.Debuffs = {} end
             local debuffWhitelist = {}
             for id in string.gmatch(value, "[^,%s]+") do
                 local spellID = tonumber(id)
@@ -758,8 +758,8 @@ function UUF:CreateGUI()
                     debuffWhitelist[spellID] = true
                 end
             end
-            UUF.DB.global.AuraFilters.Debuffs.Whitelist = debuffWhitelist
-            WhitelistDebuffsEditBox:SetText(TableToList(UUF.DB.global.AuraFilters.Debuffs.Whitelist))
+            UUF.DB.profile.WhitelistAuras.Debuffs = debuffWhitelist
+            WhitelistDebuffsEditBox:SetText(TableToList(UUF.DB.profile.WhitelistAuras.Debuffs))
             UUF:UpdateFrames()
         end)
         WhitelistDebuffsEditBox:SetRelativeWidth(0.5)
@@ -768,10 +768,10 @@ function UUF:CreateGUI()
 
         local BlacklistDebuffsEditBox = UUFGUI:Create("MultiLineEditBox")
         BlacklistDebuffsEditBox:SetLabel("Blacklist Debuffs")
-        BlacklistDebuffsEditBox:SetText(TableToList(UUF.DB.global.AuraFilters.Debuffs.Blacklist))
+        BlacklistDebuffsEditBox:SetText(TableToList(UUF.DB.global.BlacklistAuras.Debuffs))
         BlacklistDebuffsEditBox:SetCallback("OnEnterPressed", function(widget, event, value)
-            if not UUF.DB.global.AuraFilters then UUF.DB.global.AuraFilters = { Buffs = {}, Debuffs = {} } end
-            if not UUF.DB.global.AuraFilters.Debuffs then UUF.DB.global.AuraFilters.Debuffs = {} end
+            if not UUF.DB.global.BlacklistAuras then UUF.DB.global.BlacklistAuras = { Buffs = {}, Debuffs = {} } end
+            if not UUF.DB.global.BlacklistAuras.Debuffs then UUF.DB.global.BlacklistAuras.Debuffs = {} end
             local debuffBlacklist = {}
             for id in string.gmatch(value, "[^,%s]+") do
                 local spellID = tonumber(id)
@@ -779,8 +779,8 @@ function UUF:CreateGUI()
                     debuffBlacklist[spellID] = true
                 end
             end
-            UUF.DB.global.AuraFilters.Debuffs.Blacklist = debuffBlacklist
-            BlacklistDebuffsEditBox:SetText(TableToList(UUF.DB.global.AuraFilters.Debuffs.Blacklist))
+            UUF.DB.global.BlacklistAuras.Debuffs = debuffBlacklist
+            BlacklistDebuffsEditBox:SetText(TableToList(UUF.DB.global.BlacklistAuras.Debuffs))
             UUF:UpdateFrames()
         end)
         BlacklistDebuffsEditBox:SetRelativeWidth(0.5)
@@ -792,21 +792,21 @@ function UUF:CreateGUI()
         ApplyRecommendedBlacklists:SetCallback("OnClick", function(widget, event, value)
             local RecommendedBuffBlacklist = UUF:FetchBuffBlacklist()
             for spellID in pairs(RecommendedBuffBlacklist) do
-                if not UUF.DB.global.AuraFilters.Buffs.Blacklist[spellID] then
-                    UUF.DB.global.AuraFilters.Buffs.Blacklist[spellID] = true
+                if not UUF.DB.global.BlacklistAuras.Buffs[spellID] then
+                    UUF.DB.global.BlacklistAuras.Buffs[spellID] = true
                 end
             end
 
             local RecommendedDebuffBlacklist = UUF:FetchDebuffBlacklist()
             for spellID in pairs(RecommendedDebuffBlacklist) do
-                if not UUF.DB.global.AuraFilters.Debuffs.Blacklist[spellID] then
-                    UUF.DB.global.AuraFilters.Debuffs.Blacklist[spellID] = true
+                if not UUF.DB.global.BlacklistAuras.Debuffs[spellID] then
+                    UUF.DB.global.BlacklistAuras.Debuffs[spellID] = true
                 end
             end
             UUF:UpdateFrames()
 
-            BlacklistBuffsEditBox:SetText(TableToList(UUF.DB.global.AuraFilters.Buffs.Blacklist))
-            BlacklistDebuffsEditBox:SetText(TableToList(UUF.DB.global.AuraFilters.Debuffs.Blacklist))
+            BlacklistBuffsEditBox:SetText(TableToList(UUF.DB.global.BlacklistAuras.Buffs))
+            BlacklistDebuffsEditBox:SetText(TableToList(UUF.DB.global.BlacklistAuras.Debuffs))
         end)
         ApplyRecommendedBlacklists:SetRelativeWidth(1)
         ScrollableContainer:AddChild(ApplyRecommendedBlacklists)
@@ -814,21 +814,13 @@ function UUF:CreateGUI()
         local ResetFiltersButton = UUFGUI:Create("Button")
         ResetFiltersButton:SetText("Reset Filters")
         ResetFiltersButton:SetCallback("OnClick", function(widget, event, value)
-            UUF.DB.global.AuraFilters = {
-                Buffs = {
-                    Whitelist = {},
-                    Blacklist = {}
-                },
-                Debuffs = {
-                    Whitelist = {},
-                    Blacklist = {}
-                }
-            }
+            UUF.DB.global.BlacklistAuras = { Buffs = {}, Debuffs = {} }
+            UUF.DB.profile.WhitelistAuras = { Buffs = {}, Debuffs = {} }
             UUF:UpdateFrames()
-            WhitelistBuffsEditBox:SetText(TableToList(UUF.DB.global.AuraFilters.Buffs.Whitelist))
-            BlacklistBuffsEditBox:SetText(TableToList(UUF.DB.global.AuraFilters.Buffs.Blacklist))
-            WhitelistDebuffsEditBox:SetText(TableToList(UUF.DB.global.AuraFilters.Debuffs.Whitelist))
-            BlacklistDebuffsEditBox:SetText(TableToList(UUF.DB.global.AuraFilters.Debuffs.Blacklist))
+            WhitelistBuffsEditBox:SetText(TableToList(UUF.DB.profile.WhitelistAuras.Buffs))
+            BlacklistBuffsEditBox:SetText(TableToList(UUF.DB.global.BlacklistAuras.Buffs))
+            WhitelistDebuffsEditBox:SetText(TableToList(UUF.DB.profile.WhitelistAuras.Debuffs))
+            BlacklistDebuffsEditBox:SetText(TableToList(UUF.DB.global.BlacklistAuras.Debuffs))
             print("|cFF8080FFUnhalted|rUnitFrames - Filters have been reset.")
         end)
         ResetFiltersButton:SetRelativeWidth(1)
@@ -2329,10 +2321,43 @@ function UUF:CreateGUI()
         end
 
         local ResetToDefault = UUFGUI:Create("Button")
-        ResetToDefault:SetText("Reset Settings")
-        ResetToDefault:SetCallback("OnClick", function(widget, event, value) UUF:ResetDefaultSettings() end)
+        ResetToDefault:SetText("Reset Settings (" .. UUF.DB:GetCurrentProfile() .. ")")
+        ResetToDefault:SetCallback("OnClick", function(widget, event, value)
+            StaticPopupDialogs["UUF_PROFILE_RESET"] = {
+                text = "Do you want to reset the current profile to default? \nReload will happen automatically.",
+                button1 = "Yes",
+                button2 = "No",
+                OnAccept = function() UUF:ResetDefaultSettings(false) ReloadUI() end,
+                timeout = 0,
+                whileDead = true,
+                hideOnEscape = true,
+                preferredIndex = 3,
+            }
+            StaticPopup_Show("UUF_PROFILE_RESET")
+        end)
         ResetToDefault:SetRelativeWidth(1)
         ProfileOptions:AddChild(ResetToDefault)
+
+        local ResetToDefaultAll = UUFGUI:Create("Button")
+        ResetToDefaultAll:SetText("Reset Unhalted Unit Frames")
+        ResetToDefaultAll:SetCallback("OnClick", function(widget, event, value)
+            StaticPopupDialogs["UUF_PROFILE_RESET_ALL"] = {
+                text = "Do you want to reset Unhalted Unit Frames to Default? \nReload will happen automatically.",
+                button1 = "Yes",
+                button2 = "No",
+                OnAccept = function() UUF:ResetDefaultSettings(true) ReloadUI() end,
+                timeout = 0,
+                whileDead = true,
+                hideOnEscape = true,
+                preferredIndex = 3,
+            }
+            StaticPopup_Show("UUF_PROFILE_RESET_ALL")
+        end)
+        local ProfileDisclaimer = "This will reset all Unhalted Unit Frames settings to default.\n\nThis includes all profiles and settings."
+        ResetToDefaultAll:SetCallback("OnEnter", function(widget, event, value) GameTooltip:SetOwner(widget.frame, "ANCHOR_TOPLEFT") GameTooltip:AddLine(ProfileDisclaimer) GameTooltip:Show() end)
+        ResetToDefaultAll:SetCallback("OnLeave", function(widget, event, value) GameTooltip:Hide() end)
+        ResetToDefaultAll:SetRelativeWidth(1)
+        ProfileOptions:AddChild(ResetToDefaultAll)
     
         -- Sharing Options Section
         local SharingOptionsContainer = UUFGUI:Create("InlineGroup")
