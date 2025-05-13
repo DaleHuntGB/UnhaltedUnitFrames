@@ -484,19 +484,25 @@ local function CreateIndicators(self, Unit)
     end
 
     -- Frame Combat Indicator
-    if not self.unitCombatIndicator and Unit == "Player" and CombatIndicator.Enabled then
+    if not self.unitCombatIndicator and (Unit == "Player" or Unit == "Target") and CombatIndicator.Enabled then
         self.unitCombatIndicator = self.unitHighLevelFrame:CreateTexture(nil, "OVERLAY")
         self.unitCombatIndicator:SetSize(CombatIndicator.Size, CombatIndicator.Size)
         self.unitCombatIndicator:SetPoint(CombatIndicator.AnchorFrom, self.unitHighLevelFrame, CombatIndicator.AnchorTo, CombatIndicator.XOffset, CombatIndicator.YOffset)
         self.CombatIndicator = self.unitCombatIndicator
     end
 
-    -- Frame Leader Indicator
-    if not self.unitLeaderIndicator and Unit == "Player" and LeaderIndicator.Enabled then
+    -- Frame Leader & Assistant Indicator
+    if not self.unitLeaderIndicator and (Unit == "Player" or Unit == "Target") and LeaderIndicator.Enabled then
         self.unitLeaderIndicator = self.unitHighLevelFrame:CreateTexture(nil, "OVERLAY")
         self.unitLeaderIndicator:SetSize(LeaderIndicator.Size, LeaderIndicator.Size)
         self.unitLeaderIndicator:SetPoint(LeaderIndicator.AnchorFrom, self.unitHighLevelFrame, LeaderIndicator.AnchorTo, LeaderIndicator.XOffset, LeaderIndicator.YOffset)
         self.LeaderIndicator = self.unitLeaderIndicator
+    end
+    if not self.unitAssistantIndicator and (Unit == "Player" or Unit == "Target") and LeaderIndicator.Enabled then
+        self.unitAssistantIndicator = self.unitHighLevelFrame:CreateTexture(nil, "OVERLAY")
+        self.unitAssistantIndicator:SetSize(LeaderIndicator.Size, LeaderIndicator.Size)
+        self.unitAssistantIndicator:SetPoint(LeaderIndicator.AnchorFrom, self.unitHighLevelFrame, LeaderIndicator.AnchorTo, LeaderIndicator.XOffset, LeaderIndicator.YOffset)
+        self.AssistantIndicator = self.unitAssistantIndicator
     end
 end
 
@@ -883,7 +889,7 @@ local function UpdateIndicators(FrameName)
     end
 
     -- Frame Combat Indicator
-    if FrameName.unitCombatIndicator and Unit == "Player" and CombatIndicator.Enabled then
+    if FrameName.unitCombatIndicator and (Unit == "Player" or Unit == "Target") and CombatIndicator.Enabled then
         FrameName.unitCombatIndicator:Show()
         if FrameName.unitCombatIndicator.hideTimer then
             FrameName.unitCombatIndicator.hideTimer:Cancel()
@@ -898,11 +904,16 @@ local function UpdateIndicators(FrameName)
         FrameName.unitCombatIndicator:SetPoint(CombatIndicator.AnchorFrom, FrameName, CombatIndicator.AnchorTo, CombatIndicator.XOffset, CombatIndicator.YOffset)
     end
 
-    -- Frame Leader Indicator
-    if FrameName.unitLeaderIndicator and Unit == "Player" and LeaderIndicator.Enabled then
+    -- Frame Leader & assistant Indicator
+    if FrameName.unitLeaderIndicator and (Unit == "Player" or Unit == "Target") and LeaderIndicator.Enabled then
         FrameName.unitLeaderIndicator:ClearAllPoints()
         FrameName.unitLeaderIndicator:SetSize(LeaderIndicator.Size, LeaderIndicator.Size)
         FrameName.unitLeaderIndicator:SetPoint(LeaderIndicator.AnchorFrom, FrameName, LeaderIndicator.AnchorTo, LeaderIndicator.XOffset, LeaderIndicator.YOffset)
+    end
+    if FrameName.unitAssistantIndicator and (Unit == "Player" or Unit == "Target") and LeaderIndicator.Enabled then
+        FrameName.unitAssistantIndicator:ClearAllPoints()
+        FrameName.unitAssistantIndicator:SetSize(LeaderIndicator.Size, LeaderIndicator.Size)
+        FrameName.unitAssistantIndicator:SetPoint(LeaderIndicator.AnchorFrom, FrameName, LeaderIndicator.AnchorTo, LeaderIndicator.XOffset, LeaderIndicator.YOffset)
     end
 end
 
