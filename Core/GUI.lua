@@ -2345,10 +2345,10 @@ function UUF:CreateGUI()
         end
 
         local ResetToDefault = UUFGUI:Create("Button")
-        ResetToDefault:SetText("Reset Settings (" .. UUF.DB:GetCurrentProfile() .. ")")
+        ResetToDefault:SetText("Reset '" .. UUF.DB:GetCurrentProfile() .. "' to Default Settings")
         ResetToDefault:SetCallback("OnClick", function(widget, event, value)
             StaticPopupDialogs["UUF_PROFILE_RESET"] = {
-                text = "Do you want to reset the current profile to default? \nReload will happen automatically.",
+                text = "Do you want to reset '" .. UUF.DB:GetCurrentProfile() .. "' to Default?\nReload will happen automatically.",
                 button1 = "Yes",
                 button2 = "No",
                 OnAccept = function() UUF:ResetDefaultSettings(false) ReloadUI() end,
@@ -2366,7 +2366,7 @@ function UUF:CreateGUI()
         ResetToDefaultAll:SetText("Reset Unhalted Unit Frames")
         ResetToDefaultAll:SetCallback("OnClick", function(widget, event, value)
             StaticPopupDialogs["UUF_PROFILE_RESET_ALL"] = {
-                text = "Do you want to reset Unhalted Unit Frames to Default? \nReload will happen automatically.",
+                text = "Do you want to reset Unhalted Unit Frames to Default?\nReload will happen automatically.",
                 button1 = "Yes",
                 button2 = "No",
                 OnAccept = function() UUF:ResetDefaultSettings(true) ReloadUI() end,
