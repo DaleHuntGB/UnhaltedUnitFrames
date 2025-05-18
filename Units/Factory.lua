@@ -18,42 +18,17 @@ local UnitMap = {
     boss8 = "Boss",
 }
 
--- local function FilterAuras(auraType)
---     return function(element, unit, data)
---         local auraID = data.spellId
---         local auraWhitelist = UUF.DB.profile.WhitelistAuras[auraType] or {}
---         local auraBlacklist = UUF.DB.global.BlacklistAuras[auraType] or {}
---         if next(auraWhitelist) then return auraWhitelist[auraID] == true end
---         -- Respect Only Show Player.
---         if element.onlyShowPlayer and not data.isPlayerAura then return false end
---         -- Filter by Whitelist and Blacklist.
---         if auraBlacklist[auraID] then return false end
---         return true
---     end
--- end
-
 local function FilterAuras(auraType)
     return function(element, unit, data)
         local auraID = data.spellId
         local unitKey = UnitMap[unit]
         local UnitsBeingFiltered = UUF.DB.global.UnitsBeingFiltered
+        if element.onlyShowPlayer and not data.isPlayerAura then return false end
         if not unitKey or not UnitsBeingFiltered[unitKey] then return true end
-
         local auraWhitelist = UUF.DB.profile.WhitelistAuras[auraType] or {}
         local auraBlacklist = UUF.DB.global.BlacklistAuras[auraType] or {}
-
-        if next(auraWhitelist) then
-            return auraWhitelist[auraID] == true
-        end
-
-        if element.onlyShowPlayer and not data.isPlayerAura then
-            return false
-        end
-
-        if auraBlacklist[auraID] then
-            return false
-        end
-
+        if next(auraWhitelist) then return auraWhitelist[auraID] == true end
+        if auraBlacklist[auraID] then return false end
         return true
     end
 end
