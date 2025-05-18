@@ -2327,7 +2327,23 @@ function UUF:CreateGUI()
         local CopyProfileDropdown = UUFGUI:Create("Dropdown")
         CopyProfileDropdown:SetLabel("Copy From Profile")
         CopyProfileDropdown:SetList(profileKeys)
-        CopyProfileDropdown:SetCallback("OnValueChanged", function(widget, event, value) selectedProfile = value UUF.DB:CopyProfile(selectedProfile) end)
+        CopyProfileDropdown:SetCallback("OnValueChanged", function(widget, event, value) selectedProfile = value
+        StaticPopupDialogs["UUF_COPY_PROFILE"] = {
+            text = "Copy '" .. selectedProfile .. "' Profile?",
+            button1 = "Yes",
+            button2 = "No",
+            OnAccept = function()
+                UUF.DB:CopyProfile(selectedProfile)
+                UUF:UpdateFrames(_, true)
+                UUF:CreateReloadPrompt()
+            end,
+            timeout = 0,
+            whileDead = true,
+            hideOnEscape = true,
+            preferredIndex = 3,
+        }
+        StaticPopup_Show("UUF_COPY_PROFILE")
+        end)
         CopyProfileDropdown:SetRelativeWidth(0.33)
         ProfileOptions:AddChild(CopyProfileDropdown)
 
@@ -2378,6 +2394,7 @@ function UUF:CreateGUI()
         GlobalProfileDropdown:SetCallback("OnValueChanged", function(widget, event, value)
             UUF.DB.global.GlobalProfile = value
             UUF:UpdateFrames(_, true)
+            UUF:CreateReloadPrompt()
         end)
         GlobalProfileDropdown:SetRelativeWidth(0.5)
 
@@ -2393,6 +2410,7 @@ function UUF:CreateGUI()
         UseGlobalProfile:SetCallback("OnValueChanged", function(widget, event, value)
             UUF.DB.global.UseGlobalProfile = value
             UUF:UpdateFrames(_, true)
+            UUF:CreateReloadPrompt()
             if value then
                 ActiveProfileDropdown:SetDisabled(true)
                 GlobalProfileDropdown:SetDisabled(false)
