@@ -2318,6 +2318,12 @@ function UUF:CreateGUI()
         ActiveProfileDropdown:SetRelativeWidth(0.33)
         ProfileOptions:AddChild(ActiveProfileDropdown)
 
+        if UUF.DB.global.UseGlobalProfile then
+            ActiveProfileDropdown:SetDisabled(true)
+        else
+            ActiveProfileDropdown:SetDisabled(false)
+        end
+
         local CopyProfileDropdown = UUFGUI:Create("Dropdown")
         CopyProfileDropdown:SetLabel("Copy From Profile")
         CopyProfileDropdown:SetList(profileKeys)
@@ -2332,7 +2338,7 @@ function UUF:CreateGUI()
             selectedProfile = value
             if selectedProfile and selectedProfile ~= UUF.DB:GetCurrentProfile() then
                 StaticPopupDialogs["UUF_DELETE_PROFILE"] = {
-                text = "Delete '|cFFCC00" .. selectedProfile .. "|r' Profile?",
+                text = "Delete '" .. selectedProfile .. "' Profile?",
                 button1 = "Yes",
                 button2 = "No",
                 OnAccept = function()
@@ -2358,6 +2364,46 @@ function UUF:CreateGUI()
          end)
         DeleteProfileDropdown:SetRelativeWidth(0.33)
         ProfileOptions:AddChild(DeleteProfileDropdown)
+
+        local GlobalProfileContainer = UUFGUI:Create("InlineGroup")
+        GlobalProfileContainer:SetTitle("Global Profile Options")
+        GlobalProfileContainer:SetLayout("Flow")
+        GlobalProfileContainer:SetFullWidth(true)
+        ProfileOptions:AddChild(GlobalProfileContainer)
+
+        local GlobalProfileDropdown = UUFGUI:Create("Dropdown")
+        GlobalProfileDropdown:SetLabel("Global Profile")
+        GlobalProfileDropdown:SetList(profileKeys)
+        GlobalProfileDropdown:SetValue(UUF.DB.global.GlobalProfile)
+        GlobalProfileDropdown:SetCallback("OnValueChanged", function(widget, event, value)
+            UUF.DB.global.GlobalProfile = value
+            UUF:UpdateFrames(_, true)
+        end)
+        GlobalProfileDropdown:SetRelativeWidth(0.5)
+
+        if UUF.DB.global.UseGlobalProfile then
+            GlobalProfileDropdown:SetDisabled(false)
+        else
+            GlobalProfileDropdown:SetDisabled(true)
+        end
+
+        local UseGlobalProfile = UUFGUI:Create("CheckBox")
+        UseGlobalProfile:SetLabel("Use Global Profile")
+        UseGlobalProfile:SetValue(UUF.DB.global.UseGlobalProfile)
+        UseGlobalProfile:SetCallback("OnValueChanged", function(widget, event, value)
+            UUF.DB.global.UseGlobalProfile = value
+            UUF:UpdateFrames(_, true)
+            if value then
+                ActiveProfileDropdown:SetDisabled(true)
+                GlobalProfileDropdown:SetDisabled(false)
+            else
+                ActiveProfileDropdown:SetDisabled(false)
+                GlobalProfileDropdown:SetDisabled(true)
+            end
+        end)
+        UseGlobalProfile:SetRelativeWidth(0.5)
+        GlobalProfileContainer:AddChild(UseGlobalProfile)
+        GlobalProfileContainer:AddChild(GlobalProfileDropdown)
 
         local SpecProfileContainer = UUFGUI:Create("InlineGroup")
         SpecProfileContainer:SetTitle("Specialization Profiles")

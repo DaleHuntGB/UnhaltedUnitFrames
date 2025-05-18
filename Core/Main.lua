@@ -21,6 +21,8 @@ UUF.Defaults = {
             Buffs = {},
             Debuffs = {},
         },
+        GlobalProfile = "Global",
+        UseGlobalProfile = false,
     },
     profile = {
         TestMode = false,
@@ -1036,6 +1038,12 @@ UUF.Defaults = {
 function UnhaltedUF:OnInitialize()
     UUF.DB = LibStub("AceDB-3.0"):New("UUFDB", UUF.Defaults, "Global")
     LDS:EnhanceDatabase(UUF.DB, "UnhaltedUF")
+    if UUF.DB.global.UseGlobalProfile and UUF.DB.global.GlobalProfile then
+        local currentProfile = UUF.DB:GetCurrentProfile()
+        if currentProfile ~= UUF.DB.global.GlobalProfile then
+            UUF.DB:SetProfile(UUF.DB.global.GlobalProfile)
+        end
+    end
     UUF.DB.RegisterCallback(UUF, "OnProfileChanged", function() UUF:ReloadOnProfileSwap() end)
     for k, v in pairs(UUF.Defaults) do
         if UUF.DB.profile[k] == nil then
