@@ -1,16 +1,59 @@
 local _, UUF = ...
 local oUF = UUF.oUF
 
+local UnitMap = {
+    player = "Player",
+    target = "Target",
+    targettarget = "TargetTarget",
+    focus = "Focus",
+    focustarget = "FocusTarget",
+    pet = "Pet",
+    boss1 = "Boss",
+    boss2 = "Boss",
+    boss3 = "Boss",
+    boss4 = "Boss",
+    boss5 = "Boss",
+    boss6 = "Boss",
+    boss7 = "Boss",
+    boss8 = "Boss",
+}
+
+-- local function FilterAuras(auraType)
+--     return function(element, unit, data)
+--         local auraID = data.spellId
+--         local auraWhitelist = UUF.DB.profile.WhitelistAuras[auraType] or {}
+--         local auraBlacklist = UUF.DB.global.BlacklistAuras[auraType] or {}
+--         if next(auraWhitelist) then return auraWhitelist[auraID] == true end
+--         -- Respect Only Show Player.
+--         if element.onlyShowPlayer and not data.isPlayerAura then return false end
+--         -- Filter by Whitelist and Blacklist.
+--         if auraBlacklist[auraID] then return false end
+--         return true
+--     end
+-- end
+
 local function FilterAuras(auraType)
     return function(element, unit, data)
         local auraID = data.spellId
+        local unitKey = UnitMap[unit]
+        local UnitsBeingFiltered = UUF.DB.global.UnitsBeingFiltered
+        if not unitKey or not UnitsBeingFiltered[unitKey] then return true end
+
         local auraWhitelist = UUF.DB.profile.WhitelistAuras[auraType] or {}
         local auraBlacklist = UUF.DB.global.BlacklistAuras[auraType] or {}
-        if next(auraWhitelist) then return auraWhitelist[auraID] == true end
-        -- Respect Only Show Player.
-        if element.onlyShowPlayer and not data.isPlayerAura then return false end
-        -- Filter by Whitelist and Blacklist.
-        if auraBlacklist[auraID] then return false end
+
+        if next(auraWhitelist) then
+            return auraWhitelist[auraID] == true
+        end
+
+        if element.onlyShowPlayer and not data.isPlayerAura then
+            return false
+        end
+
+        if auraBlacklist[auraID] then
+            return false
+        end
+
         return true
     end
 end

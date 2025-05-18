@@ -789,6 +789,37 @@ function UUF:CreateGUI()
         BlacklistDebuffsEditBox:SetNumLines(10)
         DebuffFilterContainer:AddChild(BlacklistDebuffsEditBox)
 
+        local UnitsToFilterContainer = UUFGUI:Create("InlineGroup")
+        UnitsToFilterContainer:SetTitle("Units to Filter")
+        UnitsToFilterContainer:SetLayout("Flow")
+        UnitsToFilterContainer:SetFullWidth(true)
+        ScrollableContainer:AddChild(UnitsToFilterContainer)
+
+        local UnitsToFilter = {
+            "Player",
+            "Target",
+            "Boss",
+            "TargetTarget",
+            "Focus",
+            "FocusTarget",
+            "Pet",
+        }
+
+        for _, unit in ipairs(UnitsToFilter) do
+            local UnitCheckBox = UUFGUI:Create("CheckBox")
+            UnitCheckBox:SetLabel(unit)
+            UnitCheckBox:SetRelativeWidth(0.14)
+            UnitCheckBox:SetValue(UUF.DB.global.UnitsBeingFiltered[unit] == true)
+
+            UnitCheckBox:SetCallback("OnValueChanged", function(_, _, value)
+                UUF.DB.global.UnitsBeingFiltered[unit] = value
+                UUF:UpdateFrames(_, true)
+            end)
+
+            UnitsToFilterContainer:AddChild(UnitCheckBox)
+        end
+
+
         local ApplyRecommendedBlacklists = UUFGUI:Create("Button")
         ApplyRecommendedBlacklists:SetText("Apply Recommended Blacklists")
         ApplyRecommendedBlacklists:SetCallback("OnClick", function(widget, event, value)
