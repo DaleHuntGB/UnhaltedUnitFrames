@@ -19,18 +19,24 @@ local UnitMap = {
 }
 
 local function FilterAuras(auraType)
-    return function(element, unit, data)
-        local auraID = data.spellId
-        local unitKey = UnitMap[unit]
-        local UnitsBeingFiltered = UUF.DB.global.UnitsBeingFiltered
-        if element.onlyShowPlayer and not data.isPlayerAura then return false end
-        if not unitKey or not UnitsBeingFiltered[unitKey] then return true end
-        local auraWhitelist = UUF.DB.profile.WhitelistAuras[auraType] or {}
-        local auraBlacklist = UUF.DB.global.BlacklistAuras[auraType] or {}
-        if next(auraWhitelist) then return auraWhitelist[auraID] == true end
-        if auraBlacklist[auraID] then return false end
-        return true
-    end
+	local whitelistCache = UUF.DB.profile.WhitelistAuras[auraType] or {}
+	local blacklistCache = UUF.DB.global.BlacklistAuras[auraType] or {}
+	local unitsToFilter = UUF.DB.global.UnitsBeingFiltered
+	local filterByWhitelist = next(whitelistCache) ~= nil
+
+	return function(element, unit, data)
+		if element.onlyShowPlayer and not data.isPlayerAura then return false end
+
+		if auraType == "Debuffs" and filterByWhitelist and not data.isPlayerAura then return false end
+        
+		local unitKey = UnitMap[unit]
+		if not unitKey or not unitsToFilter[unitKey] then return true end
+		local auraID = data.spellId
+		if filterByWhitelist then return whitelistCache[auraID] == true end
+
+		if blacklistCache[auraID] then return false end
+		return true
+	end
 end
 
 local function PostCreateButton(_, button, Unit, AuraType)
