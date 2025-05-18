@@ -26,9 +26,7 @@ local function FilterAuras(auraType)
 
 	return function(element, unit, data)
 		if element.onlyShowPlayer and not data.isPlayerAura then return false end
-
 		if auraType == "Debuffs" and filterByWhitelist and not data.isPlayerAura then return false end
-        
 		local unitKey = UnitMap[unit]
 		if not unitKey or not unitsToFilter[unitKey] then return true end
 		local auraID = data.spellId
