@@ -5,9 +5,8 @@ function UUF:SpawnPetFrame()
     if not UUF.DB.profile.Pet.Frame.Enabled then
         if UUF.DB.profile.Pet.Frame.ForceHideBlizzard then
             UUF:DisableBlizzard("Pet")
-        else
-            return
         end
+        return
     end
     local Frame = UUF.DB.profile.Pet.Frame
     oUF:RegisterStyle("UUF_Pet", function(self) UUF.CreateUnitFrame(self, "Pet") end)
