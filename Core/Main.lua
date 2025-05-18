@@ -9,13 +9,13 @@ UUF.Defaults = {
         UIScale = 0.5333333333333,
         TagUpdateInterval = 0.5,
         UnitsBeingFiltered = {
-            ["Player"] = true,
-            ["Target"] = true,
+            ["Player"] = false,
+            ["Target"] = false,
             ["TargetTarget"] = false,
-            ["Focus"] = true,
+            ["Focus"] = false,
             ["FocusTarget"] = false,
             ["Pet"] = false,
-            ["Boss"] = true,
+            ["Boss"] = false,
         },
         BlacklistAuras = {
             Buffs = {},
