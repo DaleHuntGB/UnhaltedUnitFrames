@@ -191,7 +191,7 @@ local function CreateHealthBar(self, Unit)
         end
         self.unitHealthBar:SetMinMaxValues(0, 100)
         self.unitHealthBar:SetAlpha(General.ForegroundColour[4])
-        self.unitHealthBar.PostUpdate = function() ColourBackgroundByUnitStatus(self) end
+        self.unitHealthBar.PostUpdateColor = function() ColourBackgroundByUnitStatus(self) end
         if Health.Direction == "RL" then
             self.unitHealthBar:SetReverseFill(true)
         elseif Health.Direction == "LR" then
@@ -391,6 +391,7 @@ local function CreateIndicators(self, Unit)
     local CombatIndicator = UUF.DB.profile[Unit].CombatIndicator
     local LeaderIndicator = UUF.DB.profile[Unit].LeaderIndicator
     local TargetMarker = UUF.DB.profile[Unit].TargetMarker
+    local ThreatIndicator = UUF.DB.profile[Unit].ThreatIndicator
 
     if not self.unitIsTargetIndicator and Unit == "Boss" and TargetIndicator.Enabled then
         self.unitIsTargetIndicator = CreateFrame("Frame", nil, self, "BackdropTemplate")
@@ -424,6 +425,41 @@ local function CreateIndicators(self, Unit)
         self.unitLeaderIndicator:SetSize(LeaderIndicator.Size, LeaderIndicator.Size)
         self.unitLeaderIndicator:SetPoint(LeaderIndicator.AnchorFrom, self.unitHighLevelFrame, LeaderIndicator.AnchorTo, LeaderIndicator.XOffset, LeaderIndicator.YOffset)
         self.LeaderIndicator = self.unitLeaderIndicator
+    end
+
+    -- Frame Threat Indicator
+    if not self.unitThreatIndicator and Unit == "Player" and ThreatIndicator.Enabled then
+        self.unitThreatIndicator = CreateFrame("Frame", nil, self, "BackdropTemplate")
+        self.unitThreatIndicator:SetSize(1, 1)
+        self.unitThreatIndicator.TopTexture = self.unitThreatIndicator:CreateTexture(nil, "OVERLAY")
+        self.unitThreatIndicator.TopTexture:SetBlendMode("BLEND")
+        self.unitThreatIndicator.TopTexture:SetTexture("Interface\\Buttons\\WHITE8X8")
+		self.unitThreatIndicator.TopTexture:SetPoint("TOPLEFT", self, 0, 0)
+		self.unitThreatIndicator.TopTexture:SetPoint("TOPRIGHT", self, 0, 0)
+        self.unitThreatIndicator.TopTexture:SetHeight(1)
+        self.unitThreatIndicator.TopTexture:SetVertexColor(1, 0, 0, 1)
+        self.unitThreatIndicator.BottomTexture = self.unitThreatIndicator:CreateTexture(nil, "OVERLAY")
+        self.unitThreatIndicator.BottomTexture:SetBlendMode("BLEND")
+        self.unitThreatIndicator.BottomTexture:SetTexture("Interface\\Buttons\\WHITE8X8")
+		self.unitThreatIndicator.BottomTexture:SetPoint("BOTTOMLEFT", self, 0, 0)
+		self.unitThreatIndicator.BottomTexture:SetPoint("BOTTOMRIGHT", self, 0, 0)
+		self.unitThreatIndicator.BottomTexture:SetHeight(1)
+        self.unitThreatIndicator.BottomTexture:SetVertexColor(1, 0, 0, 1)
+        self.unitThreatIndicator.LeftTexture = self.unitThreatIndicator:CreateTexture(nil, "OVERLAY")
+        self.unitThreatIndicator.LeftTexture:SetBlendMode("BLEND")
+        self.unitThreatIndicator.LeftTexture:SetTexture("Interface\\Buttons\\WHITE8X8")
+		self.unitThreatIndicator.LeftTexture:SetPoint("TOPLEFT", self, 0, 0)
+		self.unitThreatIndicator.LeftTexture:SetPoint("BOTTOMLEFT", self, 0, 0)
+		self.unitThreatIndicator.LeftTexture:SetWidth(1)
+        self.unitThreatIndicator.LeftTexture:SetVertexColor(1, 0, 0, 1)
+        self.unitThreatIndicator.RightTexture = self.unitThreatIndicator:CreateTexture(nil, "OVERLAY")
+        self.unitThreatIndicator.RightTexture:SetBlendMode("BLEND")
+        self.unitThreatIndicator.RightTexture:SetTexture("Interface\\Buttons\\WHITE8X8")
+		self.unitThreatIndicator.RightTexture:SetPoint("TOPRIGHT", self, 0, 0)
+		self.unitThreatIndicator.RightTexture:SetPoint("BOTTOMRIGHT", self, 0, 0)
+        self.unitThreatIndicator.RightTexture:SetWidth(1)
+        self.unitThreatIndicator.RightTexture:SetVertexColor(1, 0, 0, 1)
+        self.ThreatIndicator = self.unitThreatIndicator
     end
 end
 
@@ -798,6 +834,7 @@ local function UpdateIndicators(FrameName)
     local CombatIndicator = UUF.DB.profile[Unit].CombatIndicator
     local LeaderIndicator = UUF.DB.profile[Unit].LeaderIndicator
     local TargetMarker = UUF.DB.profile[Unit].TargetMarker
+    local ThreatIndicator = UUF.DB.profile[Unit].ThreatIndicator
 
     if FrameName.unitIsTargetIndicator and not TargetIndicator.Enabled then
         FrameName.unitIsTargetIndicator:Hide()

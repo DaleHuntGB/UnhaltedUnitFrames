@@ -119,7 +119,7 @@ UUF.Defaults = {
                         Colour          = {255/255, 205/255, 0/255, 1},
                         ColourByType    = true,
                     },
-                }
+                },
             },
             PowerBar = {
                 Direction               = "LR",
@@ -197,6 +197,9 @@ UUF.Defaults = {
                 YOffset             = 0,
                 AnchorFrom          = "LEFT",
                 AnchorTo            = "TOPLEFT",
+            },
+            ThreatIndicator = {
+                Enabled             = false,
             },
             Texts = {
                 First = {

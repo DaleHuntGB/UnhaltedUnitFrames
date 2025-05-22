@@ -894,6 +894,7 @@ function UUF:CreateGUI()
         local CombatIndicator = UUF.DB.profile[Unit].CombatIndicator
         local LeaderIndicator = UUF.DB.profile[Unit].LeaderIndicator
         local TargetIndicator = UUF.DB.profile[Unit].TargetIndicator
+        local ThreatIndicator = UUF.DB.profile[Unit].ThreatIndicator
         local FirstText = UUF.DB.profile[Unit].Texts.First
         local SecondText = UUF.DB.profile[Unit].Texts.Second
         local ThirdText = UUF.DB.profile[Unit].Texts.Third
@@ -1784,6 +1785,21 @@ function UUF:CreateGUI()
                 LeaderIndicatorYOffset:SetCallback("OnMouseUp", function(widget, event, value) LeaderIndicator.YOffset = value UUF:UpdateFrames(Unit) end)
                 LeaderIndicatorYOffset:SetRelativeWidth(0.33)
                 LeaderIndicatorOptions:AddChild(LeaderIndicatorYOffset)
+            end
+
+            if Unit == "Player" then
+                local ThreatIndicatorOptions = UUFGUI:Create("InlineGroup")
+                ThreatIndicatorOptions:SetTitle("Threat Indicator Options")
+                ThreatIndicatorOptions:SetLayout("Flow")
+                ThreatIndicatorOptions:SetFullWidth(true)
+                IndicatorOptions:AddChild(ThreatIndicatorOptions)
+
+                local ThreatIndicatorEnabled = UUFGUI:Create("CheckBox")
+                ThreatIndicatorEnabled:SetLabel("Enable Threat Indicator")
+                ThreatIndicatorEnabled:SetValue(ThreatIndicator.Enabled)
+                ThreatIndicatorEnabled:SetCallback("OnValueChanged", function(widget, event, value) ThreatIndicator.Enabled = value UUF:CreateReloadPrompt() end)
+                ThreatIndicatorEnabled:SetRelativeWidth(1)
+                ThreatIndicatorOptions:AddChild(ThreatIndicatorEnabled)
             end
 
             if Unit == "Boss" then
