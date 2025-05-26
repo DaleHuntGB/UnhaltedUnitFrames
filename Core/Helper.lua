@@ -102,6 +102,29 @@ function UUF:ResetDefaultSettings(resetAll)
     UUF:CreateReloadPrompt()
 end
 
+function UUF:ResetAnchors()
+    if not UUFDB.profileKeys then return end
+
+    local currentCharacter = UnitName("player") .. " - " .. GetRealmName()
+    local profileName = UUFDB.profileKeys[currentCharacter]
+    if not profileName then print("No profile assigned for current character.") return end
+
+    local profile = UUFDB.profiles[profileName]
+    if not profile then print("Profile not found: " .. profileName) return end
+
+    for unit, config in pairs(profile) do
+        if type(config) == "table" and config.Frame and config.Frame.AnchorParent then
+            if UUF.Defaults.profile[unit] and UUF.Defaults.profile[unit].Frame then
+                local defaultParent = UUF.Defaults.profile[unit].Frame.AnchorParent
+                if config.Frame.AnchorParent ~= defaultParent then
+                    config.Frame.AnchorParent = defaultParent
+                end
+            end
+        end
+    end
+    UUF:CreateReloadPrompt()
+end
+
 function UUF:GetFontJustification(AnchorTo)
     if AnchorTo == "TOPLEFT" or AnchorTo == "BOTTOMLEFT" or AnchorTo == "LEFT" then return "LEFT" end
     if AnchorTo == "TOPRIGHT" or AnchorTo == "BOTTOMRIGHT" or AnchorTo == "RIGHT" then return "RIGHT" end
@@ -117,6 +140,8 @@ function UUF:SetupSlashCommands()
             UUF:CreateGUI()
         elseif msg == "reset" then
             UUF:ResetDefaultSettings()
+        elseif msg == "resetanchors" then
+            UUF:ResetAnchors()
         elseif msg == "help" then
             print(C_AddOns.GetAddOnMetadata("UnhaltedUF", "Title") .. " Slash Commands.")
             print("|cFF8080FF/uuf|r: Opens the GUI")
