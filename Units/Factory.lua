@@ -326,7 +326,7 @@ local function CreateBuffs(self, Unit)
     if Buffs.Enabled and not self.unitBuffs then
         local buffPerRow = Buffs.PerRow or Buffs.Num
         local buffRows = math.ceil(Buffs.Num / buffPerRow)
-        local buffContainerWidth = (Buffs.Size + Buffs.Spacing) * buffRows - Buffs.Spacing
+        local buffContainerWidth = (Buffs.Size + Buffs.Spacing) * buffPerRow - Buffs.Spacing
         local buffContainerHeight = (Buffs.Size + Buffs.Spacing) * buffRows - Buffs.Spacing
         self.unitBuffs = CreateFrame("Frame", nil, self)
         self.unitBuffs:SetSize(buffContainerWidth, buffContainerHeight)
