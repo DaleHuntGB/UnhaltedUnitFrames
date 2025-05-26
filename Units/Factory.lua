@@ -324,8 +324,12 @@ end
 local function CreateBuffs(self, Unit)
     local Buffs = UUF.DB.profile[Unit].Buffs
     if Buffs.Enabled and not self.unitBuffs then
+        local buffPerRow = Buffs.PerRow or Buffs.Num
+        local buffRows = math.ceil(Buffs.Num / buffPerRow)
+        local buffContainerWidth = (Buffs.Size + Buffs.Spacing) * buffRows - Buffs.Spacing
+        local buffContainerHeight = (Buffs.Size + Buffs.Spacing) * buffRows - Buffs.Spacing
         self.unitBuffs = CreateFrame("Frame", nil, self)
-        self.unitBuffs:SetSize(self:GetWidth(), Buffs.Size)
+        self.unitBuffs:SetSize(buffContainerWidth, buffContainerHeight)
         self.unitBuffs:SetPoint(Buffs.AnchorFrom, self, Buffs.AnchorTo, Buffs.XOffset, Buffs.YOffset)
         self.unitBuffs.size = Buffs.Size
         self.unitBuffs.spacing = Buffs.Spacing
@@ -344,8 +348,12 @@ end
 local function CreateDebuffs(self, Unit)
     local Debuffs = UUF.DB.profile[Unit].Debuffs
     if Debuffs.Enabled and not self.unitDebuffs then
+        local debuffsPerRow = Debuffs.PerRow or Debuffs.Num
+        local debuffRows = math.ceil(Debuffs.Num / debuffsPerRow)
+        local debuffContainerWidth = (Debuffs.Size + Debuffs.Spacing) * debuffsPerRow - Debuffs.Spacing
+        local debuffContainerHeight = (Debuffs.Size + Debuffs.Spacing) * debuffRows - Debuffs.Spacing
         self.unitDebuffs = CreateFrame("Frame", nil, self)
-        self.unitDebuffs:SetSize(self:GetWidth(), Debuffs.Size)
+        self.unitDebuffs:SetSize(debuffContainerWidth, debuffContainerHeight)
         self.unitDebuffs:SetPoint(Debuffs.AnchorFrom, self, Debuffs.AnchorTo, Debuffs.XOffset, Debuffs.YOffset)
         self.unitDebuffs.size = Debuffs.Size
         self.unitDebuffs.spacing = Debuffs.Spacing
@@ -758,8 +766,12 @@ local function UpdateBuffs(FrameName)
     local Unit = UUF.Frames[FrameName.unit] or "Boss"
     local Buffs = UUF.DB.profile[Unit].Buffs
     if Buffs.Enabled then
+        local buffsPerRow = Buffs.PerRow or Buffs.Num
+        local buffRows = math.ceil(Buffs.Num / buffsPerRow)
+        local buffContainerWidth = (Buffs.Size + Buffs.Spacing) * buffsPerRow - Buffs.Spacing
+        local buffContainerHeight = (Buffs.Size + Buffs.Spacing) * buffRows - Buffs.Spacing
         FrameName.unitBuffs:ClearAllPoints()
-        FrameName.unitBuffs:SetSize(FrameName:GetWidth(), Buffs.Size)
+        FrameName.unitBuffs:SetSize(buffContainerWidth, buffContainerHeight)
         FrameName.unitBuffs:SetPoint(Buffs.AnchorFrom, FrameName, Buffs.AnchorTo, Buffs.XOffset, Buffs.YOffset)
         FrameName.unitBuffs.size = Buffs.Size
         FrameName.unitBuffs.spacing = Buffs.Spacing
@@ -769,14 +781,12 @@ local function UpdateBuffs(FrameName)
         FrameName.unitBuffs["growth-x"] = Buffs.GrowthX
         FrameName.unitBuffs["growth-y"] = Buffs.GrowthY
         FrameName.unitBuffs.filter = "HELPFUL"
-        FrameName.unitBuffs:Show()
         FrameName.unitBuffs.PostUpdateButton = function(_, button) PostUpdateButton(_, button, Unit, "HELPFUL") end
         FrameName.unitBuffs.FilterAura = FilterAuras("Buffs")
+        FrameName.unitBuffs:Show()
         FrameName.unitBuffs:ForceUpdate()
-    else
-        if FrameName.unitBuffs then
-            FrameName.unitBuffs:Hide()
-        end
+    elseif FrameName.unitBuffs then
+        FrameName.unitBuffs:Hide()
     end
 end
 
@@ -784,8 +794,12 @@ local function UpdateDebuffs(FrameName)
     local Unit = UUF.Frames[FrameName.unit] or "Boss"
     local Debuffs = UUF.DB.profile[Unit].Debuffs
     if Debuffs.Enabled then
+        local debuffPerRow = Debuffs.PerRow or Debuffs.Num
+        local debuffRows = math.ceil(Debuffs.Num / debuffPerRow)
+        local debuffContainerWidth = (Debuffs.Size + Debuffs.Spacing) * debuffPerRow - Debuffs.Spacing
+        local debuffContainerHeight = (Debuffs.Size + Debuffs.Spacing) * debuffRows - Debuffs.Spacing
         FrameName.unitDebuffs:ClearAllPoints()
-        FrameName.unitDebuffs:SetSize(FrameName:GetWidth(), Debuffs.Size)
+        FrameName.unitDebuffs:SetSize(debuffContainerWidth, debuffContainerHeight)
         FrameName.unitDebuffs:SetPoint(Debuffs.AnchorFrom, FrameName, Debuffs.AnchorTo, Debuffs.XOffset, Debuffs.YOffset)
         FrameName.unitDebuffs.size = Debuffs.Size
         FrameName.unitDebuffs.spacing = Debuffs.Spacing
@@ -795,14 +809,12 @@ local function UpdateDebuffs(FrameName)
         FrameName.unitDebuffs["growth-x"] = Debuffs.GrowthX
         FrameName.unitDebuffs["growth-y"] = Debuffs.GrowthY
         FrameName.unitDebuffs.filter = "HARMFUL"
-        FrameName.unitDebuffs:Show()
         FrameName.unitDebuffs.PostUpdateButton = function(_, button) PostUpdateButton(_, button, Unit, "HARMFUL") end
         FrameName.unitDebuffs.FilterAura = FilterAuras("Debuffs")
+        FrameName.unitDebuffs:Show()
         FrameName.unitDebuffs:ForceUpdate()
-    else
-        if FrameName.unitDebuffs then
-            FrameName.unitDebuffs:Hide()
-        end
+    elseif FrameName.unitDebuffs then
+        FrameName.unitDebuffs:Hide()
     end
 end
 
