@@ -387,8 +387,24 @@ local HealthTagsDescription = {
     ["Percent Health"] = {Tag = "[Health:PerHP]", Desc = "Displays Percent Health"},
 }
 
+local AvailableHealthTags = {
+    ["[Health:CurHPwithPerHP]"] = "Current Health with Percent Health (Absorbs Included)",
+    ["[Health:CurHPwithPerHP:Clean]"] = "Current Health with Percent Health (Absorbs Included) - No `%`Sign",
+    ["[Health:PerHPwithAbsorbs]"] = "Percent Health with Absorbs",
+    ["[Health:PerHPwithAbsorbs:Clean]"] = "Percent Health with Absorbs - No `%`Sign",
+    ["[Health:CurHP]"] = "Current Health",
+    ["[Health:CurAbsorbs]"] = "Current Absorbs",
+    ["[Health:CurHPwithAbsorbs]"] = "Current Health with Absorbs",
+    ["[Health:PerHP]"] = "Percent Health",
+    ["[Health:PerHP:Clean]"] = "Percent Health - No `%`Sign"
+}
+
 function UUF:FetchHealthTagDescriptions()
     return HealthTagsDescription
+end
+
+function UUF:FetchAvailableHealthTags()
+    return AvailableHealthTags
 end
 
 local NameTagsDescription = {
@@ -410,8 +426,31 @@ local NameTagsDescription = {
     ["Abbreviated Name (Coloured)"] = {Tag = "[Name:Abbreviated:Coloured]", Desc = "Displays Abbreviated Name (Reaction / Class Coloured)"},
 }
 
+local AvailableNameTags = {
+    ["[Name:NamewithTargetTarget]"] = "Name with Target's Target",
+    ["[Name:TargetTarget]"] = "Target's Target",
+    ["[Name:NamewithTargetTarget:Coloured]"] = "Name with Target's Target (Coloured)",
+    ["[Name:TargetTarget:Coloured]"] = "Target's Target (Coloured)",
+    ["[Name:LastNameOnly]"] = "Last Name Only",
+    ["[Name:LastNameOnly:Coloured]"] = "Last Name Only (Coloured)",
+    ["[Name:TargetTarget:LastNameOnly]"] = "Target's Target Last Name Only",
+    ["[Name:TargetTarget:LastNameOnly:Coloured]"] = "Target's Target Last Name Only (Coloured)",
+    ["[Name:NamewithTargetTarget:LastNameOnly]"] = "Name with Target's Target Last Name Only",
+    ["[Name:NamewithTargetTarget:LastNameOnly:Coloured]"] = "Name with Target's Target Last Name Only (Coloured)",
+    ["[name]"] = "Full Name",
+    ["[Name:VeryShort]"] = "Very Short Name (5 Characters)",
+    ["[Name:Short]"] = "Short Name (8 Characters)",
+    ["[Name:Medium]"] = "Medium Name (10 Characters)",
+    ["[Name:Abbreviated]"] = "Abbreviated Name",
+    ["[Name:Abbreviated:Coloured]"] = "Abbreviated Name (Coloured)"
+}
+
 function UUF:FetchNameTagDescriptions()
     return NameTagsDescription
+end
+
+function UUF:FetchAvailableNameTags()
+    return AvailableNameTags
 end
 
 local PowerTagsDescription = {
@@ -420,8 +459,18 @@ local PowerTagsDescription = {
     ["Colour Power"] = {Tag = "[powercolor]", Desc = "Colour Power. Put infront of Power Tag to colour it."},
 }
 
+local AvailablePowerTags = {
+    ["[Power:CurPP]"] = "Current Power",
+    ["[Power:PerPP]"] = "Percent Power",
+    ["[powercolor]"] = "Colour Power"
+}
+
 function UUF:FetchPowerTagDescriptions()
     return PowerTagsDescription
+end
+
+function UUF:FetchAvailablePowerTags()
+    return AvailablePowerTags
 end
 
 local MiscTagsDescription = {
@@ -432,8 +481,20 @@ local MiscTagsDescription = {
     ["Status"] = {Tag = "[status]", Desc = "Return the current status (Dead, Offline) of the unit."}
 }
 
+local AvailableMiscTags = {
+    ["[classification]"] = "Classification",
+    ["[shortclassification]"] = "Short Classification",
+    ["[group]"] = "Group",
+    ["[level]"] = "Level",
+    ["[status]"] = "Status"
+}
+
 function UUF:FetchMiscTagDescriptions()
     return MiscTagsDescription
+end
+
+function UUF:FetchAvailableMiscTags()
+    return AvailableMiscTags
 end
 
 local NSMediaTags = {

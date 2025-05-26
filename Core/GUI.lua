@@ -1902,57 +1902,77 @@ function UUF:CreateGUI()
             FirstTextTag:SetRelativeWidth(1)
             FirstTextOptions:AddChild(FirstTextTag)
 
-            local HealthTagsDropdown = UUFGUI:Create("Dropdown")
-            HealthTagsDropdown:SetLabel("Health Tags")
-            HealthTagsDropdown:SetList(UUF:FetchAvailableHealthTags())
-            HealthTagsDropdown:SetValue(nil)
-            HealthTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value) 
-                FirstText.Tag = value 
-                UUF:UpdateFrames(Unit) 
-                FirstTextTag:SetText(value)
-                HealthTagsDropdown:SetValue(nil)
+            local FirstTextTag_HealthTagsDropdown = UUFGUI:Create("Dropdown")
+            FirstTextTag_HealthTagsDropdown:SetLabel("Health Tags")
+            FirstTextTag_HealthTagsDropdown:SetList(UUF:FetchAvailableHealthTags())
+            FirstTextTag_HealthTagsDropdown:SetValue(nil)
+            FirstTextTag_HealthTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value) 
+                if FirstTextTag:GetText() == "" then 
+                    FirstText.Tag = value
+                    FirstTextTag:SetText(value)
+                else
+                    FirstText.Tag = FirstTextTag:GetText() .. "" .. value
+                    FirstTextTag:SetText(FirstTextTag:GetText() .. "" .. value)
+                end
+                FirstTextTag_HealthTagsDropdown:SetValue(nil)
+                UUF:UpdateFrames(Unit)
             end)
-            HealthTagsDropdown:SetRelativeWidth(0.25)
-            FirstTextOptions:AddChild(HealthTagsDropdown)
+            FirstTextTag_HealthTagsDropdown:SetRelativeWidth(0.5)
+            FirstTextOptions:AddChild(FirstTextTag_HealthTagsDropdown)
  
-            local NameTagsDropdown = UUFGUI:Create("Dropdown")
-            NameTagsDropdown:SetLabel("Name Tags")
-            NameTagsDropdown:SetList(UUF:FetchAvailableNameTags())
-            NameTagsDropdown:SetValue(nil)
-            NameTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value) 
-                FirstText.Tag = value 
-                UUF:UpdateFrames(Unit) 
-                FirstTextTag:SetText(value)
-                NameTagsDropdown:SetValue(nil)
+            local FirstTextTag_NameTagsDropdown = UUFGUI:Create("Dropdown")
+            FirstTextTag_NameTagsDropdown:SetLabel("Name Tags")
+            FirstTextTag_NameTagsDropdown:SetList(UUF:FetchAvailableNameTags())
+            FirstTextTag_NameTagsDropdown:SetValue(nil)
+            FirstTextTag_NameTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value) 
+                if FirstTextTag:GetText() == "" then 
+                    FirstText.Tag = value
+                    FirstTextTag:SetText(value)
+                else
+                    FirstText.Tag = FirstTextTag:GetText() .. "" .. value
+                    FirstTextTag:SetText(FirstTextTag:GetText() .. "" .. value)
+                end
+                FirstTextTag_NameTagsDropdown:SetValue(nil)
+                UUF:UpdateFrames(Unit)
             end)
-            NameTagsDropdown:SetRelativeWidth(0.25)
-            FirstTextOptions:AddChild(NameTagsDropdown)
+            FirstTextTag_NameTagsDropdown:SetRelativeWidth(0.5)
+            FirstTextOptions:AddChild(FirstTextTag_NameTagsDropdown)
 
-            local PowerTagsDropdown = UUFGUI:Create("Dropdown")
-            PowerTagsDropdown:SetLabel("Power Tags")
-            PowerTagsDropdown:SetList(UUF:FetchAvailablePowerTags())
-            PowerTagsDropdown:SetValue(nil)
-            PowerTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value) 
-                FirstText.Tag = value 
-                UUF:UpdateFrames(Unit) 
-                FirstTextTag:SetText(value)
-                PowerTagsDropdown:SetValue(nil)
+            local FirstTextTag_PowerTagsDropdown = UUFGUI:Create("Dropdown")
+            FirstTextTag_PowerTagsDropdown:SetLabel("Power Tags")
+            FirstTextTag_PowerTagsDropdown:SetList(UUF:FetchAvailablePowerTags())
+            FirstTextTag_PowerTagsDropdown:SetValue(nil)
+            FirstTextTag_PowerTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value) 
+                if FirstTextTag:GetText() == "" then 
+                    FirstText.Tag = value
+                    FirstTextTag:SetText(value)
+                else
+                    FirstText.Tag = FirstTextTag:GetText() .. "" .. value
+                    FirstTextTag:SetText(FirstTextTag:GetText() .. "" .. value)
+                end
+                FirstTextTag_PowerTagsDropdown:SetValue(nil)
+                UUF:UpdateFrames(Unit)
             end)
-            PowerTagsDropdown:SetRelativeWidth(0.25)
-            FirstTextOptions:AddChild(PowerTagsDropdown)
+            FirstTextTag_PowerTagsDropdown:SetRelativeWidth(0.5)
+            FirstTextOptions:AddChild(FirstTextTag_PowerTagsDropdown)
 
-            local MiscTagsDropdown = UUFGUI:Create("Dropdown")
-            MiscTagsDropdown:SetLabel("Miscellaneous Tags")
-            MiscTagsDropdown:SetList(UUF:FetchAvailableMiscTags())
-            MiscTagsDropdown:SetValue(nil)
-            MiscTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value) 
-                FirstText.Tag = value 
-                UUF:UpdateFrames(Unit) 
-                FirstTextTag:SetText(value)
-                MiscTagsDropdown:SetValue(nil)
+            local FirstTextTag_MiscTagsDropdown = UUFGUI:Create("Dropdown")
+            FirstTextTag_MiscTagsDropdown:SetLabel("Miscellaneous Tags")
+            FirstTextTag_MiscTagsDropdown:SetList(UUF:FetchAvailableMiscTags())
+            FirstTextTag_MiscTagsDropdown:SetValue(nil)
+            FirstTextTag_MiscTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value) 
+                if FirstTextTag:GetText() == "" then 
+                    FirstText.Tag = value
+                    FirstTextTag:SetText(value)
+                else
+                    FirstText.Tag = FirstTextTag:GetText() .. "" .. value
+                    FirstTextTag:SetText(FirstTextTag:GetText() .. "" .. value)
+                end
+                FirstTextTag_MiscTagsDropdown:SetValue(nil)
+                UUF:UpdateFrames(Unit)
             end)
-            MiscTagsDropdown:SetRelativeWidth(0.25)
-            FirstTextOptions:AddChild(MiscTagsDropdown)
+            FirstTextTag_MiscTagsDropdown:SetRelativeWidth(0.5)
+            FirstTextOptions:AddChild(FirstTextTag_MiscTagsDropdown)
 
             local SecondTextOptions = UUFGUI:Create("InlineGroup")
             SecondTextOptions:SetTitle("Second Text Options")
@@ -2016,6 +2036,78 @@ function UUF:CreateGUI()
             SecondTextTag:SetRelativeWidth(1)
             SecondTextOptions:AddChild(SecondTextTag)
 
+            local SecondTextTag_HealthTagsDropdown = UUFGUI:Create("Dropdown")
+            SecondTextTag_HealthTagsDropdown:SetLabel("Health Tags")
+            SecondTextTag_HealthTagsDropdown:SetList(UUF:FetchAvailableHealthTags())
+            SecondTextTag_HealthTagsDropdown:SetValue(nil)
+            SecondTextTag_HealthTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value) 
+                if SecondTextTag:GetText() == "" then 
+                    SecondText.Tag = value
+                    SecondTextTag:SetText(value)
+                else
+                    SecondText.Tag = SecondTextTag:GetText() .. "" .. value
+                    SecondTextTag:SetText(SecondTextTag:GetText() .. "" .. value)
+                end
+                SecondTextTag_HealthTagsDropdown:SetValue(nil)
+                UUF:UpdateFrames(Unit)
+            end)
+            SecondTextTag_HealthTagsDropdown:SetRelativeWidth(0.5)
+            SecondTextOptions:AddChild(SecondTextTag_HealthTagsDropdown)
+            
+            local SecondTextTag_NameTagsDropdown = UUFGUI:Create("Dropdown")
+            SecondTextTag_NameTagsDropdown:SetLabel("Name Tags")
+            SecondTextTag_NameTagsDropdown:SetList(UUF:FetchAvailableNameTags())
+            SecondTextTag_NameTagsDropdown:SetValue(nil)
+            SecondTextTag_NameTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value) 
+                if SecondTextTag:GetText() == "" then 
+                    SecondText.Tag = value
+                    SecondTextTag:SetText(value)
+                else
+                    SecondText.Tag = SecondTextTag:GetText() .. "" .. value
+                    SecondTextTag:SetText(SecondTextTag:GetText() .. "" .. value)
+                end
+                SecondTextTag_NameTagsDropdown:SetValue(nil)
+                UUF:UpdateFrames(Unit)
+            end)
+            SecondTextTag_NameTagsDropdown:SetRelativeWidth(0.5)
+            SecondTextOptions:AddChild(SecondTextTag_NameTagsDropdown)
+
+            local SecondTextTag_PowerTagsDropdown = UUFGUI:Create("Dropdown")
+            SecondTextTag_PowerTagsDropdown:SetLabel("Power Tags")
+            SecondTextTag_PowerTagsDropdown:SetList(UUF:FetchAvailablePowerTags())
+            SecondTextTag_PowerTagsDropdown:SetValue(nil)
+            SecondTextTag_PowerTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value) 
+                if SecondTextTag:GetText() == "" then 
+                    SecondText.Tag = value
+                    SecondTextTag:SetText(value)
+                else
+                    SecondText.Tag = SecondTextTag:GetText() .. "" .. value
+                    SecondTextTag:SetText(SecondTextTag:GetText() .. "" .. value)
+                end
+                SecondTextTag_PowerTagsDropdown:SetValue(nil)
+                UUF:UpdateFrames(Unit)
+            end)
+            SecondTextTag_PowerTagsDropdown:SetRelativeWidth(0.5)
+            SecondTextOptions:AddChild(SecondTextTag_PowerTagsDropdown)
+
+            local SecondTextTag_MiscTagsDropdown = UUFGUI:Create("Dropdown")
+            SecondTextTag_MiscTagsDropdown:SetLabel("Miscellaneous Tags")
+            SecondTextTag_MiscTagsDropdown:SetList(UUF:FetchAvailableMiscTags())
+            SecondTextTag_MiscTagsDropdown:SetValue(nil)
+            SecondTextTag_MiscTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value) 
+                if SecondTextTag:GetText() == "" then 
+                    SecondText.Tag = value
+                    SecondTextTag:SetText(value)
+                else
+                    SecondText.Tag = SecondTextTag:GetText() .. "" .. value
+                    SecondTextTag:SetText(SecondTextTag:GetText() .. "" .. value)
+                end
+                SecondTextTag_MiscTagsDropdown:SetValue(nil)
+                UUF:UpdateFrames(Unit)
+            end)
+            SecondTextTag_MiscTagsDropdown:SetRelativeWidth(0.5)
+            SecondTextOptions:AddChild(SecondTextTag_MiscTagsDropdown)
+
             local ThirdTextOptions = UUFGUI:Create("InlineGroup")
             ThirdTextOptions:SetTitle("Third Text Options")
             ThirdTextOptions:SetLayout("Flow")
@@ -2077,7 +2169,78 @@ function UUF:CreateGUI()
             ThirdTextTag:SetCallback("OnEnterPressed", function(widget, event, value) ThirdText.Tag = value UUF:UpdateFrames(Unit) end)
             ThirdTextTag:SetRelativeWidth(1)
             ThirdTextOptions:AddChild(ThirdTextTag)
-            
+
+            local ThirdTextTag_HealthTagsDropdown = UUFGUI:Create("Dropdown")
+            ThirdTextTag_HealthTagsDropdown:SetLabel("Health Tags")
+            ThirdTextTag_HealthTagsDropdown:SetList(UUF:FetchAvailableHealthTags())
+            ThirdTextTag_HealthTagsDropdown:SetValue(nil)
+            ThirdTextTag_HealthTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value) 
+                if ThirdTextTag:GetText() == "" then 
+                    ThirdText.Tag = value
+                    ThirdTextTag:SetText(value)
+                else
+                    ThirdText.Tag = ThirdTextTag:GetText() .. "" .. value
+                    ThirdTextTag:SetText(ThirdTextTag:GetText() .. "" .. value)
+                end
+                ThirdTextTag_HealthTagsDropdown:SetValue(nil)
+                UUF:UpdateFrames(Unit)
+            end)
+            ThirdTextTag_HealthTagsDropdown:SetRelativeWidth(0.5)
+            ThirdTextOptions:AddChild(ThirdTextTag_HealthTagsDropdown)
+
+            local ThirdTextTag_NameTagsDropdown = UUFGUI:Create("Dropdown")
+            ThirdTextTag_NameTagsDropdown:SetLabel("Name Tags")
+            ThirdTextTag_NameTagsDropdown:SetList(UUF:FetchAvailableNameTags())
+            ThirdTextTag_NameTagsDropdown:SetValue(nil)
+            ThirdTextTag_NameTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value) 
+                if ThirdTextTag:GetText() == "" then 
+                    ThirdText.Tag = value
+                    ThirdTextTag:SetText(value)
+                else
+                    ThirdText.Tag = ThirdTextTag:GetText() .. "" .. value
+                    ThirdTextTag:SetText(ThirdTextTag:GetText() .. "" .. value)
+                end
+                ThirdTextTag_NameTagsDropdown:SetValue(nil)
+                UUF:UpdateFrames(Unit)
+            end)
+            ThirdTextTag_NameTagsDropdown:SetRelativeWidth(0.5)
+            ThirdTextOptions:AddChild(ThirdTextTag_NameTagsDropdown)
+
+            local ThirdTextTag_PowerTagsDropdown = UUFGUI:Create("Dropdown")
+            ThirdTextTag_PowerTagsDropdown:SetLabel("Power Tags")
+            ThirdTextTag_PowerTagsDropdown:SetList(UUF:FetchAvailablePowerTags())
+            ThirdTextTag_PowerTagsDropdown:SetValue(nil)
+            ThirdTextTag_PowerTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value) 
+                if ThirdTextTag:GetText() == "" then 
+                    ThirdText.Tag = value
+                    ThirdTextTag:SetText(value)
+                else
+                    ThirdText.Tag = ThirdTextTag:GetText() .. "" .. value
+                    ThirdTextTag:SetText(ThirdTextTag:GetText() .. "" .. value)
+                end
+                ThirdTextTag_PowerTagsDropdown:SetValue(nil)
+                UUF:UpdateFrames(Unit)
+            end)
+            ThirdTextTag_PowerTagsDropdown:SetRelativeWidth(0.5)
+            ThirdTextOptions:AddChild(ThirdTextTag_PowerTagsDropdown)
+
+            local ThirdTextTag_MiscTagsDropdown = UUFGUI:Create("Dropdown")
+            ThirdTextTag_MiscTagsDropdown:SetLabel("Miscellaneous Tags")
+            ThirdTextTag_MiscTagsDropdown:SetList(UUF:FetchAvailableMiscTags())
+            ThirdTextTag_MiscTagsDropdown:SetValue(nil)
+            ThirdTextTag_MiscTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value) 
+                if ThirdTextTag:GetText() == "" then 
+                    ThirdText.Tag = value
+                    ThirdTextTag:SetText(value)
+                else
+                    ThirdText.Tag = ThirdTextTag:GetText() .. "" .. value
+                    ThirdTextTag:SetText(ThirdTextTag:GetText() .. "" .. value)
+                end
+                ThirdTextTag_MiscTagsDropdown:SetValue(nil)
+                UUF:UpdateFrames(Unit)
+            end)
+            ThirdTextTag_MiscTagsDropdown:SetRelativeWidth(0.5)
+            ThirdTextOptions:AddChild(ThirdTextTag_MiscTagsDropdown)            
         end
 
         local function DrawRangeContainer(UUFGUI_Container)
@@ -2211,7 +2374,7 @@ function UUF:CreateGUI()
 
             for Title, TableData in pairs(PowerTags) do
                 local Tag, Desc = TableData.Tag, TableData.Desc
-                PowerTagTitle = UUFGUI:Create("Label")
+                PowerTagTitle = UUFGUI:Create("Heading")
                 PowerTagTitle:SetText(Title)
                 PowerTagTitle:SetRelativeWidth(1)
                 PowerTagOptions:AddChild(PowerTagTitle)
