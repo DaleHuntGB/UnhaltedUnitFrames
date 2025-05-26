@@ -765,7 +765,7 @@ end
 local function UpdateBuffs(FrameName)
     local Unit = UUF.Frames[FrameName.unit] or "Boss"
     local Buffs = UUF.DB.profile[Unit].Buffs
-    if Buffs.Enabled then
+    if Buffs.Enabled and FrameName.unitBuffs then
         local buffsPerRow = Buffs.PerRow or Buffs.Num
         local buffRows = math.ceil(Buffs.Num / buffsPerRow)
         local buffContainerWidth = (Buffs.Size + Buffs.Spacing) * buffsPerRow - Buffs.Spacing
@@ -793,7 +793,7 @@ end
 local function UpdateDebuffs(FrameName)
     local Unit = UUF.Frames[FrameName.unit] or "Boss"
     local Debuffs = UUF.DB.profile[Unit].Debuffs
-    if Debuffs.Enabled then
+    if Debuffs.Enabled and FrameName.unitDebuffs then
         local debuffPerRow = Debuffs.PerRow or Debuffs.Num
         local debuffRows = math.ceil(Debuffs.Num / debuffPerRow)
         local debuffContainerWidth = (Debuffs.Size + Debuffs.Spacing) * debuffPerRow - Debuffs.Spacing
