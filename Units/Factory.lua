@@ -1026,9 +1026,6 @@ function UUF:UpdateBossFrames()
     end
 end
 
-
-
-
 function UUF:DisplayBossFrames()
     local General = UUF.DB.profile.General
     local Frame = UUF.DB.profile.Boss.Frame
