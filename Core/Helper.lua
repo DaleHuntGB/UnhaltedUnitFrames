@@ -146,6 +146,7 @@ function UUF:SetupSlashCommands()
             print(C_AddOns.GetAddOnMetadata("UnhaltedUF", "Title") .. " Slash Commands.")
             print("|cFF8080FF/uuf|r: Opens the GUI")
             print("|cFF8080FF/uuf reset|r: Resets To Default")
+            print("|cFF8080FF/uuf resetanchors|r: Resets All Unit Anchors")
         end
     end
 end
