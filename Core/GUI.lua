@@ -220,11 +220,14 @@ end
 local function CopyUnit(sourceUnit, targetUnit)
     if type(sourceUnit) ~= "table" or type(targetUnit) ~= "table" then return end
     for key, targetValue in pairs(targetUnit) do
-        local sourceValue = sourceUnit[key]
-        if type(targetValue) == "table" and type(sourceValue) == "table" then
-            CopyUnit(sourceValue, targetValue)
-        elseif sourceValue ~= nil then
-            targetUnit[key] = sourceValue
+        if key ~= "AnchorParent" then
+            local sourceValue = sourceUnit[key]
+            if type(targetValue) == "table" and type(sourceValue) == "table" then
+                DevTool:AddData(sourceValue)
+                CopyUnit(sourceValue, targetValue)
+            elseif sourceValue ~= nil then
+                targetUnit[key] = sourceValue
+            end
         end
     end
     UUF:UpdateFrames(_, true)
