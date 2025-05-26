@@ -223,7 +223,6 @@ local function CopyUnit(sourceUnit, targetUnit)
         if key ~= "AnchorParent" then
             local sourceValue = sourceUnit[key]
             if type(targetValue) == "table" and type(sourceValue) == "table" then
-                DevTool:AddData(sourceValue)
                 CopyUnit(sourceValue, targetValue)
             elseif sourceValue ~= nil then
                 targetUnit[key] = sourceValue
