@@ -1262,7 +1262,6 @@ function UUF:CreateGUI()
             PowerBarBackdropColour:SetRelativeWidth(0.25)
             PowerBarOptionsContainer:AddChild(PowerBarBackdropColour)
 
-
             PowerBarOptionsContainer:AddChild(BackgroundColourMultiplier)
 
             local PowerBarHeight = UUFGUI:Create("Slider")
