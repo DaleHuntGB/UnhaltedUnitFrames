@@ -107,6 +107,13 @@ oUF.Tags.Methods["Name:TargetTarget"] = function(unit)
     end
 end
 
+oUF.Tags.Methods["Name:TargetTarget:Clean"] = function(unit)
+    local unitTarget = UnitName(unit .. "target")
+    if unitTarget and unitTarget ~= "" then
+        return string.format("%s", unitTarget)
+    end
+end
+
 oUF.Tags.Methods["Name:NamewithTargetTarget:Coloured"] = function(unit)
     local unitName = UnitName(unit)
     local unitTarget = UnitName(unit .. "target")
@@ -122,6 +129,13 @@ oUF.Tags.Methods["Name:TargetTarget:Coloured"] = function(unit)
     local unitTarget = UnitName(unit .. "target")
     if unitTarget and unitTarget ~= "" then
         return string.format(" » %s", UUF:WrapTextInColor(unitTarget, unit .. "target"))
+    end
+end
+
+oUF.Tags.Methods["Name:TargetTarget:Coloured:Clean"] = function(unit)
+    local unitTarget = UnitName(unit .. "target")
+    if unitTarget and unitTarget ~= "" then
+        return string.format("%s", UUF:WrapTextInColor(unitTarget, unit .. "target"))
     end
 end
 
@@ -160,7 +174,14 @@ end
 oUF.Tags.Methods["Name:TargetTarget:LastNameOnly"] = function(unit)
     local unitTarget = UnitName(unit .. "target")
     if unitTarget and unitTarget ~= "" then
-        return UUF:ShortenName(unitTarget, UUF.nameBlacklist)
+        return string.format(" » %s", UUF:ShortenName(unitTarget, UUF.nameBlacklist))
+    end
+end
+
+oUF.Tags.Methods["Name:TargetTarget:LastNameOnly:Clean"] = function(unit)
+    local unitTarget = UnitName(unit .. "target")
+    if unitTarget and unitTarget ~= "" then
+        return string.format("%s", UUF:ShortenName(unitTarget, UUF.nameBlacklist))
     end
 end
 
@@ -168,6 +189,13 @@ oUF.Tags.Methods["Name:TargetTarget:LastNameOnly:Coloured"] = function(unit)
     local unitTarget = UnitName(unit .. "target")
     if unitTarget and unitTarget ~= "" then
         return string.format(" » %s", UUF:WrapTextInColor(UUF:ShortenName(unitTarget, UUF.nameBlacklist), unit .. "target"))
+    end
+end
+
+oUF.Tags.Methods["Name:TargetTarget:LastNameOnly:Coloured:Clean"] = function(unit)
+    local unitTarget = UnitName(unit .. "target")
+    if unitTarget and unitTarget ~= "" then
+        return string.format("%s", UUF:WrapTextInColor(UUF:ShortenName(unitTarget, UUF.nameBlacklist), unit .. "target"))
     end
 end
 
