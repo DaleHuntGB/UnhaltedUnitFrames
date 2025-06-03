@@ -595,14 +595,14 @@ function UUF:CreateUnitFrame(Unit)
     self.HealthPrediction.Override = function(self, event, unit)
         if self.unit ~= unit then return end
 
-        local element = self.HealthPrediction
+        local healthPrediction = self.HealthPrediction
         local absorb = UnitGetTotalAbsorbs(unit) or 0
         local healAbsorb = UnitGetTotalHealAbsorbs(unit) or 0
         local health = UnitHealth(unit)
         local maxHealth = UnitHealthMax(unit)
 
         local overflowAbsorb = 0
-        if not element.showRawAbsorb then
+        if not healthPrediction.showRawAbsorb then
             if health >= maxHealth and absorb > 0 then
                 overflowAbsorb = absorb
                 absorb = 0
@@ -612,27 +612,27 @@ function UUF:CreateUnitFrame(Unit)
             end
         end
 
-        if element.absorbBar then
-            element.absorbBar:SetMinMaxValues(0, maxHealth)
-            element.absorbBar:SetValue(absorb)
-            if absorb > 0 then element.absorbBar:Show() else element.absorbBar:Hide() end
+        if healthPrediction.absorbBar then
+            healthPrediction.absorbBar:SetMinMaxValues(0, maxHealth)
+            healthPrediction.absorbBar:SetValue(absorb)
+            if absorb > 0 then healthPrediction.absorbBar:Show() else healthPrediction.absorbBar:Hide() end
         end
 
-        if element.overAbsorbBar then
-            element.overAbsorbBar:SetMinMaxValues(0, maxHealth)
-            element.overAbsorbBar:SetValue(overflowAbsorb)
+        if healthPrediction.overAbsorbBar then
+            healthPrediction.overAbsorbBar:SetMinMaxValues(0, maxHealth)
+            healthPrediction.overAbsorbBar:SetValue(overflowAbsorb)
             if overflowAbsorb > 0 and health >= maxHealth then
-                element.overAbsorbBar:Show()
+                healthPrediction.overAbsorbBar:Show()
             else
-                element.overAbsorbBar:Hide()
+                healthPrediction.overAbsorbBar:Hide()
             end
         end
 
-        if element.healAbsorbBar then
+        if healthPrediction.healAbsorbBar then
             local clampedHealAbsorb = math.min(healAbsorb, health)
-            element.healAbsorbBar:SetMinMaxValues(0, maxHealth)
-            element.healAbsorbBar:SetValue(clampedHealAbsorb)
-            if clampedHealAbsorb > 0 then element.healAbsorbBar:Show() else element.healAbsorbBar:Hide() end
+            healthPrediction.healAbsorbBar:SetMinMaxValues(0, maxHealth)
+            healthPrediction.healAbsorbBar:SetValue(clampedHealAbsorb)
+            if clampedHealAbsorb > 0 then healthPrediction.healAbsorbBar:Show() else healthPrediction.healAbsorbBar:Hide() end
         end
     end
 
