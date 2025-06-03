@@ -118,6 +118,9 @@ UUF.Defaults = {
                         Enabled         = true,
                         Colour          = {255/255, 205/255, 0/255, 1},
                         ColourByType    = true,
+                        Overflow = {
+                            Enabled = false,
+                        }
                     },
                 },
             },
@@ -264,6 +267,9 @@ UUF.Defaults = {
                         Enabled         = true,
                         Colour          = {255/255, 205/255, 0/255, 1},
                         ColourByType    = true,
+                        Overflow = {
+                            Enabled = false,
+                        }                
                     }
                 }
             },
@@ -412,6 +418,9 @@ UUF.Defaults = {
                         Enabled         = false,
                         Colour          = {255/255, 205/255, 0/255, 1},
                         ColourByType    = true,
+                        Overflow = {
+                            Enabled = false,
+                        }
                     }
                 }
             },
@@ -545,6 +554,9 @@ UUF.Defaults = {
                         Enabled         = false,
                         Colour          = {255/255, 205/255, 0/255, 1},
                         ColourByType    = true,
+                        Overflow = {
+                            Enabled = false,
+                        }
                     }
                 }
             },
@@ -677,6 +689,9 @@ UUF.Defaults = {
                         Enabled         = false,
                         Colour          = {255/255, 205/255, 0/255, 1},
                         ColourByType    = true,
+                        Overflow = {
+                            Enabled = false,
+                        }
                     }
                 }
             },
@@ -811,6 +826,9 @@ UUF.Defaults = {
                         Enabled         = false,
                         Colour          = {255/255, 205/255, 0/255, 1},
                         ColourByType    = true,
+                        Overflow = {
+                            Enabled = false,
+                        }
                     }
                 }
             },
@@ -945,6 +963,9 @@ UUF.Defaults = {
                         Enabled         = true,
                         Colour          = {255/255, 205/255, 0/255, 1},
                         ColourByType    = true,
+                        Overflow = {
+                            Enabled = false,
+                        }
                     }
                 }
             },

@@ -235,6 +235,26 @@ local function CreateAbsorbBar(self, Unit)
         self.unitAbsorbs:SetStatusBarColor(UAR, UAG, UAB, UAA)
         self.unitAbsorbs:SetFrameLevel(self.unitHealthBar:GetFrameLevel() + 1)
         self.unitAbsorbs:Hide()
+        if Absorbs.Overflow.Enabled then
+            self.unitOverAbsorbs = CreateFrame("StatusBar", nil, self.unitHealthBar)
+            self.unitOverAbsorbs:SetStatusBarTexture(General.ForegroundTexture)
+            self.unitOverAbsorbs:SetStatusBarColor(UAR, UAG, UAB, UAA)
+            self.unitOverAbsorbs:SetSize(self:GetWidth() - 2, self:GetHeight() - 2)
+            self.unitOverAbsorbs:SetFrameLevel(self.unitHealthBar:GetFrameLevel() + 2)
+            if HealthBarTexture then
+                self.unitOverAbsorbs:ClearAllPoints()
+                if Health.Direction == "RL" then
+                    self.unitOverAbsorbs:SetReverseFill(false)
+                    self.unitOverAbsorbs:SetPoint("TOPLEFT", HealthBarTexture, "TOPLEFT", 0, 0)
+                    self.unitOverAbsorbs:SetPoint("BOTTOMLEFT", HealthBarTexture, "BOTTOMLEFT", 0, 0)
+                elseif Health.Direction == "LR" then
+                    self.unitOverAbsorbs:SetReverseFill(true)
+                    self.unitOverAbsorbs:SetPoint("TOPRIGHT", HealthBarTexture, "TOPRIGHT", 0, 0)
+                    self.unitOverAbsorbs:SetPoint("BOTTOMRIGHT", HealthBarTexture, "BOTTOMRIGHT", 0, 0)
+                end
+            end
+            self.unitOverAbsorbs:Hide()
+        end
     end
 end
 
@@ -263,7 +283,7 @@ local function CreateHealAbsorbBar(self, Unit)
         self.unitHealAbsorbs:SetSize(self:GetWidth() - 2, self:GetHeight() - 2)
         local UHAR, UHAG, UHAB, UHAA = unpack(HealAbsorbs.Colour)
         self.unitHealAbsorbs:SetStatusBarColor(UHAR, UHAG, UHAB, UHAA)
-        self.unitHealAbsorbs:SetFrameLevel(self.unitHealthBar:GetFrameLevel() + 1)
+        self.unitHealAbsorbs:SetFrameLevel(self.unitHealthBar:GetFrameLevel() + 3)
         self.unitHealAbsorbs:Hide()
     end
 end
@@ -569,21 +589,53 @@ function UUF:CreateUnitFrame(Unit)
         otherBar = nil,
         absorbBar = Absorbs.Enabled and self.unitAbsorbs or nil,
         healAbsorbBar = HealAbsorbs.Enabled and self.unitHealAbsorbs or nil,
+        overAbsorbBar = Absorbs.Overflow.Enabled and self.unitOverAbsorbs or nil,
         maxOverflow = 1,
-        PostUpdate = function(_, unit, _, _, absorb, _, _, _)
-            if not unit then return end
-            local absorbBar = self.unitAbsorbs
-            if not absorbBar then return end
-            local maxHealth = UnitHealthMax(unit) or 0
-            if maxHealth == 0 or not absorb or absorb == 0 then absorbBar:Hide() return end
-            local overflowFactor = (self.HealthPrediction and self.HealthPrediction.maxOverflow) or 1.0
-            if type(overflowFactor) ~= "number" then overflowFactor = 1.0 end
-            local overflowLimit = maxHealth * overflowFactor
-            local shownAbsorb = math.min(absorb, overflowLimit)
-            absorbBar:SetValue(shownAbsorb)
-            absorbBar:Show()
-        end
     }
+    self.HealthPrediction.Override = function(self, event, unit)
+        if self.unit ~= unit then return end
+
+        local element = self.HealthPrediction
+        local absorb = UnitGetTotalAbsorbs(unit) or 0
+        local healAbsorb = UnitGetTotalHealAbsorbs(unit) or 0
+        local health = UnitHealth(unit)
+        local maxHealth = UnitHealthMax(unit)
+
+        local overflowAbsorb = 0
+        if not element.showRawAbsorb then
+            if health >= maxHealth and absorb > 0 then
+                overflowAbsorb = absorb
+                absorb = 0
+            elseif health + absorb > maxHealth then
+                overflowAbsorb = absorb - (maxHealth - health)
+                absorb = maxHealth - health
+            end
+        end
+
+        if element.absorbBar then
+            element.absorbBar:SetMinMaxValues(0, maxHealth)
+            element.absorbBar:SetValue(absorb)
+            if absorb > 0 then element.absorbBar:Show() else element.absorbBar:Hide() end
+        end
+
+        if element.overAbsorbBar then
+            element.overAbsorbBar:SetMinMaxValues(0, maxHealth)
+            element.overAbsorbBar:SetValue(overflowAbsorb)
+            if overflowAbsorb > 0 and health >= maxHealth then
+                element.overAbsorbBar:Show()
+            else
+                element.overAbsorbBar:Hide()
+            end
+        end
+
+        if element.healAbsorbBar then
+            local clampedHealAbsorb = math.min(healAbsorb, health)
+            element.healAbsorbBar:SetMinMaxValues(0, maxHealth)
+            element.healAbsorbBar:SetValue(clampedHealAbsorb)
+            if clampedHealAbsorb > 0 then element.healAbsorbBar:Show() else element.healAbsorbBar:Hide() end
+        end
+    end
+
     CreatePowerBar(self, Unit)
     CreatePortrait(self, Unit)
     CreateBuffs(self, Unit)
@@ -680,6 +732,23 @@ local function UpdateAbsorbBar(FrameName)
         FrameName.unitAbsorbs:SetStatusBarColor(UHAR, UHAG, UHAB, UHAA)
         FrameName.unitAbsorbs:SetSize(FrameName:GetWidth() - 2, FrameName:GetHeight() - 2)
         FrameName.unitAbsorbs:SetFrameLevel(FrameName.unitHealthBar:GetFrameLevel() + 1)
+        if FrameName.unitOverAbsorbs and Absorbs.Overflow.Enabled then
+            FrameName.unitOverAbsorbs:SetStatusBarTexture(General.ForegroundTexture)
+            if HealthBarTexture then
+                FrameName.unitOverAbsorbs:SetReverseFill(Health.Direction ~= "RL")
+                FrameName.unitOverAbsorbs:ClearAllPoints()
+                if Health.Direction == "RL" then
+                    FrameName.unitOverAbsorbs:SetPoint("TOPLEFT", HealthBarTexture, "TOPLEFT")
+                    FrameName.unitOverAbsorbs:SetPoint("BOTTOMLEFT", HealthBarTexture, "BOTTOMLEFT")
+                else
+                    FrameName.unitOverAbsorbs:SetPoint("TOPRIGHT", HealthBarTexture, "TOPRIGHT")
+                    FrameName.unitOverAbsorbs:SetPoint("BOTTOMRIGHT", HealthBarTexture, "BOTTOMRIGHT")
+                end
+            end
+            FrameName.unitOverAbsorbs:SetStatusBarColor(UHAR, UHAG, UHAB, UHAA)
+            FrameName.unitOverAbsorbs:SetSize(FrameName:GetWidth() - 2, FrameName:GetHeight() - 2)
+            FrameName.unitOverAbsorbs:SetFrameLevel(FrameName.unitHealthBar:GetFrameLevel() + 2)
+        end
     end
 end
 
@@ -707,7 +776,7 @@ local function UpdateHealAbsorbBar(FrameName)
         local UHAR, UHAG, UHAB, UHAA = unpack(HealAbsorbs.Colour)
         FrameName.unitHealAbsorbs:SetStatusBarColor(UHAR, UHAG, UHAB, UHAA)
         FrameName.unitHealAbsorbs:SetSize(FrameName:GetWidth() - 2, FrameName:GetHeight() - 2)
-        FrameName.unitHealAbsorbs:SetFrameLevel(FrameName.unitHealthBar:GetFrameLevel() + 1)
+        FrameName.unitHealAbsorbs:SetFrameLevel(FrameName.unitHealthBar:GetFrameLevel() + 3)
     end
 end
 
