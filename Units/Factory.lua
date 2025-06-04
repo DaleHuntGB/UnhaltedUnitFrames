@@ -189,6 +189,8 @@ local function CreateHealthBar(self, Unit)
                 end
             end
         end
+        if Unit == "Player" or Unit == "Target" and Health.ColourIfDispellable then
+        end
         self.unitHealthBar:SetMinMaxValues(0, 100)
         self.unitHealthBar:SetAlpha(General.ForegroundColour[4])
         self.unitHealthBar.PostUpdateColor = function() ColourBackgroundByUnitStatus(self) end
