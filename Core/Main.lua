@@ -108,7 +108,6 @@ UUF.Defaults = {
             },
             Health = {
                 Direction = "LR",
-                ColourIfDispellable = false,
                 HealthPrediction = {
                     IncomingHeals = {},
                     HealAbsorbs = {
@@ -258,7 +257,6 @@ UUF.Defaults = {
             },
             Health = {
                 Direction = "LR",
-                ColourIfDispellable = false,
                 HealthPrediction = {
                     IncomingHeals = {},
                     HealAbsorbs = {

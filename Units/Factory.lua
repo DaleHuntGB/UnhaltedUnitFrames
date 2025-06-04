@@ -189,8 +189,6 @@ local function CreateHealthBar(self, Unit)
                 end
             end
         end
-        if Unit == "Player" or Unit == "Target" and Health.ColourIfDispellable then
-        end
         self.unitHealthBar:SetMinMaxValues(0, 100)
         self.unitHealthBar:SetAlpha(General.ForegroundColour[4])
         self.unitHealthBar.PostUpdateColor = function() ColourBackgroundByUnitStatus(self) end
@@ -602,6 +600,7 @@ function UUF:CreateUnitFrame(Unit)
         local healAbsorb = UnitGetTotalHealAbsorbs(unit) or 0
         local health = UnitHealth(unit)
         local maxHealth = UnitHealthMax(unit)
+        local clampedHealAbsorb = math.min(healAbsorb, health)
 
         local overflowAbsorb = 0
         if not healthPrediction.showRawAbsorb then
@@ -631,7 +630,6 @@ function UUF:CreateUnitFrame(Unit)
         end
 
         if healthPrediction.healAbsorbBar then
-            local clampedHealAbsorb = math.min(healAbsorb, health)
             healthPrediction.healAbsorbBar:SetMinMaxValues(0, maxHealth)
             healthPrediction.healAbsorbBar:SetValue(clampedHealAbsorb)
             if clampedHealAbsorb > 0 then healthPrediction.healAbsorbBar:Show() else healthPrediction.healAbsorbBar:Hide() end
