@@ -442,8 +442,21 @@ local AvailableNameTags = {
     ["[Name:Short]"] = "Short Name (8 Characters)",
     ["[Name:Medium]"] = "Medium Name (10 Characters)",
     ["[Name:Abbreviated]"] = "Abbreviated Name",
-    ["[Name:Abbreviated:Coloured]"] = "Abbreviated Name (Coloured)"
+    ["[Name:Abbreviated:Coloured]"] = "Abbreviated Name (Coloured)",
+    ["[Name:TargetTarget:LastNameOnly:Clean]"] = "Target's Target Last Name Only - No `»` Sign",
+    ["[Name:TargetTarget:LastNameOnly:Coloured:Clean]"] = "Target's Target Last Name Only (Coloured) - No `»` Sign",
+
 }
+
+if NSM then
+    AvailableNameTags["[NSNickName]"] = "Nickname"
+    AvailableNameTags["[NSNickName:veryshort]"] = "Nickname Very Short (5 Characters)"
+    AvailableNameTags["[NSNickName:short]"] = "Nickname Short (8 Characters)"
+    AvailableNameTags["[NSNickName:medium]"] = "Nickname Medium (10 Characters)"
+    for i = 1, 12 do
+        AvailableNameTags["[NSNickName:" .. i .. "]"] = "Nickname Length (" .. i .. " Characters)"
+    end
+end
 
 function UUF:FetchNameTagDescriptions()
     return NameTagsDescription
@@ -462,7 +475,7 @@ local PowerTagsDescription = {
 local AvailablePowerTags = {
     ["[Power:CurPP]"] = "Current Power",
     ["[Power:PerPP]"] = "Percent Power",
-    ["[powercolor]"] = "Colour Power"
+    ["[powercolor]"] = "Colour Power - Prefix Tag to Colour by Power"
 }
 
 function UUF:FetchPowerTagDescriptions()
@@ -476,7 +489,7 @@ end
 local MiscTagsDescription = {
     ["Classification"] = {Tag = "[classification]", Desc = "Returns the current classification (Elite, Rare, Rare Elite) of the unit."},
     ["Short Classification"] = {Tag = "[shortclassification]", Desc = "Returns the current classification (Elite, Rare, Rare Elite) of the unit, shortened."},
-    ["Group"] = {Tag = "[group]", Desc = "Returns the current group number of the unit."},
+    ["Group"] = {Tag = "[Group]", Desc = "Returns the current group number of the unit."},
     ["Level"] = {Tag = "[level]", Desc = "Returns the current level of the unit."},
     ["Status"] = {Tag = "[status]", Desc = "Return the current status (Dead, Offline) of the unit."}
 }
@@ -484,9 +497,12 @@ local MiscTagsDescription = {
 local AvailableMiscTags = {
     ["[classification]"] = "Classification",
     ["[shortclassification]"] = "Short Classification",
-    ["[group]"] = "Group",
+    ["[Group]"] = "Group",
     ["[level]"] = "Level",
-    ["[status]"] = "Status"
+    ["[status]"] = "Status",
+    ["[ClassColour]"] = "Prefix Tag to Colour by Class",
+    ["[ReactionColour]"] = "Prefix Tag to Colour by Reaction",
+    ["[Coloured]"] = "Prefix Tag to Colour by Class / Reaction"
 }
 
 function UUF:FetchMiscTagDescriptions()
