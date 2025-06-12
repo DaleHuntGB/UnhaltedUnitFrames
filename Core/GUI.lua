@@ -900,6 +900,7 @@ function UUF:CreateGUI()
         local FirstText = UUF.DB.profile[Unit].Texts.First
         local SecondText = UUF.DB.profile[Unit].Texts.Second
         local ThirdText = UUF.DB.profile[Unit].Texts.Third
+        local FourthText = UUF.DB.profile[Unit].Texts.Fourth
         local Range = UUF.DB.profile[Unit].Range
 
         local function DrawFrameContainer(UUFGUI_Container)
@@ -1845,411 +1846,577 @@ function UUF:CreateGUI()
         local function DrawTextsContainer(UUFGUI_Container)
             local TextOptions = UUFGUI:Create("InlineGroup")
             TextOptions:SetTitle("Text Options")
-            TextOptions:SetLayout("Flow")
+            TextOptions:SetLayout("List")
             TextOptions:SetFullWidth(true)
             UUFGUI_Container:AddChild(TextOptions)
 
-            local FirstTextOptions = UUFGUI:Create("InlineGroup")
-            FirstTextOptions:SetTitle("First Text Options")
-            FirstTextOptions:SetLayout("Flow")
-            FirstTextOptions:SetFullWidth(true)
-            TextOptions:AddChild(FirstTextOptions)
+            local function DrawFirstTextContainer(TextOptions)
+                local FirstTextOptions = UUFGUI:Create("InlineGroup")
+                FirstTextOptions:SetTitle("First Text Options")
+                FirstTextOptions:SetLayout("Flow")
+                FirstTextOptions:SetFullWidth(true)
+                TextOptions:AddChild(FirstTextOptions)
 
-            local FirstTextAnchorTo = UUFGUI:Create("Dropdown")
-            FirstTextAnchorTo:SetLabel("Anchor From")
-            FirstTextAnchorTo:SetList(AnchorPoints)
-            FirstTextAnchorTo:SetValue(FirstText.AnchorFrom)
-            FirstTextAnchorTo:SetCallback("OnValueChanged", function(widget, event, value) FirstText.AnchorFrom = value UUF:UpdateFrames(Unit) end)
-            FirstTextAnchorTo:SetRelativeWidth(0.5)
-            FirstTextOptions:AddChild(FirstTextAnchorTo)
+                local FirstTextAnchorTo = UUFGUI:Create("Dropdown")
+                FirstTextAnchorTo:SetLabel("Anchor From")
+                FirstTextAnchorTo:SetList(AnchorPoints)
+                FirstTextAnchorTo:SetValue(FirstText.AnchorFrom)
+                FirstTextAnchorTo:SetCallback("OnValueChanged", function(widget, event, value) FirstText.AnchorFrom = value UUF:UpdateFrames(Unit) end)
+                FirstTextAnchorTo:SetRelativeWidth(0.5)
+                FirstTextOptions:AddChild(FirstTextAnchorTo)
 
-            local FirstTextAnchorFrom = UUFGUI:Create("Dropdown")
-            FirstTextAnchorFrom:SetLabel("Anchor To")
-            FirstTextAnchorFrom:SetList(AnchorPoints)
-            FirstTextAnchorFrom:SetValue(FirstText.AnchorTo)
-            FirstTextAnchorFrom:SetCallback("OnValueChanged", function(widget, event, value) FirstText.AnchorTo = value UUF:UpdateFrames(Unit) end)
-            FirstTextAnchorFrom:SetRelativeWidth(0.5)
-            FirstTextOptions:AddChild(FirstTextAnchorFrom)
+                local FirstTextAnchorFrom = UUFGUI:Create("Dropdown")
+                FirstTextAnchorFrom:SetLabel("Anchor To")
+                FirstTextAnchorFrom:SetList(AnchorPoints)
+                FirstTextAnchorFrom:SetValue(FirstText.AnchorTo)
+                FirstTextAnchorFrom:SetCallback("OnValueChanged", function(widget, event, value) FirstText.AnchorTo = value UUF:UpdateFrames(Unit) end)
+                FirstTextAnchorFrom:SetRelativeWidth(0.5)
+                FirstTextOptions:AddChild(FirstTextAnchorFrom)
 
-            local FirstTextXOffset = UUFGUI:Create("Slider")
-            FirstTextXOffset:SetLabel("X Offset")
-            FirstTextXOffset:SetSliderValues(-64, 64, 1)
-            FirstTextXOffset:SetValue(FirstText.XOffset)
-            FirstTextXOffset:SetCallback("OnValueChanged", function(widget, event, value) FirstText.XOffset = value UUF:UpdateFrames(Unit) end)
-            FirstTextXOffset:SetRelativeWidth(0.25)
-            FirstTextOptions:AddChild(FirstTextXOffset)
+                local FirstTextXOffset = UUFGUI:Create("Slider")
+                FirstTextXOffset:SetLabel("X Offset")
+                FirstTextXOffset:SetSliderValues(-64, 64, 1)
+                FirstTextXOffset:SetValue(FirstText.XOffset)
+                FirstTextXOffset:SetCallback("OnValueChanged", function(widget, event, value) FirstText.XOffset = value UUF:UpdateFrames(Unit) end)
+                FirstTextXOffset:SetRelativeWidth(0.25)
+                FirstTextOptions:AddChild(FirstTextXOffset)
 
-            local FirstTextYOffset = UUFGUI:Create("Slider")
-            FirstTextYOffset:SetLabel("Y Offset")
-            FirstTextYOffset:SetSliderValues(-64, 64, 1)
-            FirstTextYOffset:SetValue(FirstText.YOffset)
-            FirstTextYOffset:SetCallback("OnValueChanged", function(widget, event, value) FirstText.YOffset = value UUF:UpdateFrames(Unit) end)
-            FirstTextYOffset:SetRelativeWidth(0.25)
-            FirstTextOptions:AddChild(FirstTextYOffset)
+                local FirstTextYOffset = UUFGUI:Create("Slider")
+                FirstTextYOffset:SetLabel("Y Offset")
+                FirstTextYOffset:SetSliderValues(-64, 64, 1)
+                FirstTextYOffset:SetValue(FirstText.YOffset)
+                FirstTextYOffset:SetCallback("OnValueChanged", function(widget, event, value) FirstText.YOffset = value UUF:UpdateFrames(Unit) end)
+                FirstTextYOffset:SetRelativeWidth(0.25)
+                FirstTextOptions:AddChild(FirstTextYOffset)
 
-            local FirstTextFontSize = UUFGUI:Create("Slider")
-            FirstTextFontSize:SetLabel("Font Size")
-            FirstTextFontSize:SetSliderValues(1, 64, 1)
-            FirstTextFontSize:SetValue(FirstText.FontSize)
-            FirstTextFontSize:SetCallback("OnValueChanged", function(widget, event, value) FirstText.FontSize = value UUF:UpdateFrames(Unit) end)
-            FirstTextFontSize:SetRelativeWidth(0.25)
-            FirstTextOptions:AddChild(FirstTextFontSize)
+                local FirstTextFontSize = UUFGUI:Create("Slider")
+                FirstTextFontSize:SetLabel("Font Size")
+                FirstTextFontSize:SetSliderValues(1, 64, 1)
+                FirstTextFontSize:SetValue(FirstText.FontSize)
+                FirstTextFontSize:SetCallback("OnValueChanged", function(widget, event, value) FirstText.FontSize = value UUF:UpdateFrames(Unit) end)
+                FirstTextFontSize:SetRelativeWidth(0.25)
+                FirstTextOptions:AddChild(FirstTextFontSize)
 
-            local FirstTextColourPicker = UUFGUI:Create("ColorPicker")
-            FirstTextColourPicker:SetLabel("Colour")
-            local FTR, FTG, FTB, FTA = unpack(FirstText.Colour)
-            FirstTextColourPicker:SetColor(FTR, FTG, FTB, FTA)
-            FirstTextColourPicker:SetCallback("OnValueChanged", function(widget, event, r, g, b, a) FirstText.Colour = {r, g, b, a} UUF:UpdateFrames(Unit) end)
-            FirstTextColourPicker:SetHasAlpha(true)
-            FirstTextColourPicker:SetRelativeWidth(0.25)
-            FirstTextOptions:AddChild(FirstTextColourPicker)
+                local FirstTextColourPicker = UUFGUI:Create("ColorPicker")
+                FirstTextColourPicker:SetLabel("Colour")
+                local FTR, FTG, FTB, FTA = unpack(FirstText.Colour)
+                FirstTextColourPicker:SetColor(FTR, FTG, FTB, FTA)
+                FirstTextColourPicker:SetCallback("OnValueChanged", function(widget, event, r, g, b, a) FirstText.Colour = {r, g, b, a} UUF:UpdateFrames(Unit) end)
+                FirstTextColourPicker:SetHasAlpha(true)
+                FirstTextColourPicker:SetRelativeWidth(0.25)
+                FirstTextOptions:AddChild(FirstTextColourPicker)
 
-            local FirstTextTag = UUFGUI:Create("EditBox")
-            FirstTextTag:SetLabel("Tag")
-            FirstTextTag:SetText(FirstText.Tag)
-            FirstTextTag:SetCallback("OnEnterPressed", function(widget, event, value) FirstText.Tag = value UUF:UpdateFrames(Unit) end)
-            FirstTextTag:SetRelativeWidth(1)
-            FirstTextOptions:AddChild(FirstTextTag)
+                local FirstTextTag = UUFGUI:Create("EditBox")
+                FirstTextTag:SetLabel("Tag")
+                FirstTextTag:SetText(FirstText.Tag)
+                FirstTextTag:SetCallback("OnEnterPressed", function(widget, event, value) FirstText.Tag = value UUF:UpdateFrames(Unit) end)
+                FirstTextTag:SetRelativeWidth(1)
+                FirstTextOptions:AddChild(FirstTextTag)
 
-            local FirstTextTag_HealthTagsDropdown = UUFGUI:Create("Dropdown")
-            FirstTextTag_HealthTagsDropdown:SetLabel("Health Tags")
-            FirstTextTag_HealthTagsDropdown:SetList(UUF:FetchAvailableHealthTags())
-            FirstTextTag_HealthTagsDropdown:SetValue(nil)
-            FirstTextTag_HealthTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value) 
-                if FirstTextTag:GetText() == "" then 
-                    FirstText.Tag = value
-                    FirstTextTag:SetText(value)
-                else
-                    FirstText.Tag = FirstTextTag:GetText() .. "" .. value
-                    FirstTextTag:SetText(FirstTextTag:GetText() .. "" .. value)
-                end
+                local FirstTextTag_HealthTagsDropdown = UUFGUI:Create("Dropdown")
+                FirstTextTag_HealthTagsDropdown:SetLabel("Health Tags")
+                FirstTextTag_HealthTagsDropdown:SetList(UUF:FetchAvailableHealthTags())
                 FirstTextTag_HealthTagsDropdown:SetValue(nil)
-                UUF:UpdateFrames(Unit)
-            end)
-            FirstTextTag_HealthTagsDropdown:SetRelativeWidth(0.5)
-            FirstTextOptions:AddChild(FirstTextTag_HealthTagsDropdown)
- 
-            local FirstTextTag_NameTagsDropdown = UUFGUI:Create("Dropdown")
-            FirstTextTag_NameTagsDropdown:SetLabel("Name Tags")
-            FirstTextTag_NameTagsDropdown:SetList(UUF:FetchAvailableNameTags())
-            FirstTextTag_NameTagsDropdown:SetValue(nil)
-            FirstTextTag_NameTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value) 
-                if FirstTextTag:GetText() == "" then 
-                    FirstText.Tag = value
-                    FirstTextTag:SetText(value)
-                else
-                    FirstText.Tag = FirstTextTag:GetText() .. "" .. value
-                    FirstTextTag:SetText(FirstTextTag:GetText() .. "" .. value)
-                end
+                FirstTextTag_HealthTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value) 
+                    if FirstTextTag:GetText() == "" then 
+                        FirstText.Tag = value
+                        FirstTextTag:SetText(value)
+                    else
+                        FirstText.Tag = FirstTextTag:GetText() .. "" .. value
+                        FirstTextTag:SetText(FirstTextTag:GetText() .. "" .. value)
+                    end
+                    FirstTextTag_HealthTagsDropdown:SetValue(nil)
+                    UUF:UpdateFrames(Unit)
+                end)
+                FirstTextTag_HealthTagsDropdown:SetRelativeWidth(0.5)
+                FirstTextOptions:AddChild(FirstTextTag_HealthTagsDropdown)
+    
+                local FirstTextTag_NameTagsDropdown = UUFGUI:Create("Dropdown")
+                FirstTextTag_NameTagsDropdown:SetLabel("Name Tags")
+                FirstTextTag_NameTagsDropdown:SetList(UUF:FetchAvailableNameTags())
                 FirstTextTag_NameTagsDropdown:SetValue(nil)
-                UUF:UpdateFrames(Unit)
-            end)
-            FirstTextTag_NameTagsDropdown:SetRelativeWidth(0.5)
-            FirstTextOptions:AddChild(FirstTextTag_NameTagsDropdown)
+                FirstTextTag_NameTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value) 
+                    if FirstTextTag:GetText() == "" then 
+                        FirstText.Tag = value
+                        FirstTextTag:SetText(value)
+                    else
+                        FirstText.Tag = FirstTextTag:GetText() .. "" .. value
+                        FirstTextTag:SetText(FirstTextTag:GetText() .. "" .. value)
+                    end
+                    FirstTextTag_NameTagsDropdown:SetValue(nil)
+                    UUF:UpdateFrames(Unit)
+                end)
+                FirstTextTag_NameTagsDropdown:SetRelativeWidth(0.5)
+                FirstTextOptions:AddChild(FirstTextTag_NameTagsDropdown)
 
-            local FirstTextTag_PowerTagsDropdown = UUFGUI:Create("Dropdown")
-            FirstTextTag_PowerTagsDropdown:SetLabel("Power Tags")
-            FirstTextTag_PowerTagsDropdown:SetList(UUF:FetchAvailablePowerTags())
-            FirstTextTag_PowerTagsDropdown:SetValue(nil)
-            FirstTextTag_PowerTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value) 
-                if FirstTextTag:GetText() == "" then 
-                    FirstText.Tag = value
-                    FirstTextTag:SetText(value)
-                else
-                    FirstText.Tag = FirstTextTag:GetText() .. "" .. value
-                    FirstTextTag:SetText(FirstTextTag:GetText() .. "" .. value)
-                end
+                local FirstTextTag_PowerTagsDropdown = UUFGUI:Create("Dropdown")
+                FirstTextTag_PowerTagsDropdown:SetLabel("Power Tags")
+                FirstTextTag_PowerTagsDropdown:SetList(UUF:FetchAvailablePowerTags())
                 FirstTextTag_PowerTagsDropdown:SetValue(nil)
-                UUF:UpdateFrames(Unit)
-            end)
-            FirstTextTag_PowerTagsDropdown:SetRelativeWidth(0.5)
-            FirstTextOptions:AddChild(FirstTextTag_PowerTagsDropdown)
+                FirstTextTag_PowerTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value) 
+                    if FirstTextTag:GetText() == "" then 
+                        FirstText.Tag = value
+                        FirstTextTag:SetText(value)
+                    else
+                        FirstText.Tag = FirstTextTag:GetText() .. "" .. value
+                        FirstTextTag:SetText(FirstTextTag:GetText() .. "" .. value)
+                    end
+                    FirstTextTag_PowerTagsDropdown:SetValue(nil)
+                    UUF:UpdateFrames(Unit)
+                end)
+                FirstTextTag_PowerTagsDropdown:SetRelativeWidth(0.5)
+                FirstTextOptions:AddChild(FirstTextTag_PowerTagsDropdown)
 
-            local FirstTextTag_MiscTagsDropdown = UUFGUI:Create("Dropdown")
-            FirstTextTag_MiscTagsDropdown:SetLabel("Miscellaneous Tags")
-            FirstTextTag_MiscTagsDropdown:SetList(UUF:FetchAvailableMiscTags())
-            FirstTextTag_MiscTagsDropdown:SetValue(nil)
-            FirstTextTag_MiscTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value) 
-                if FirstTextTag:GetText() == "" then 
-                    FirstText.Tag = value
-                    FirstTextTag:SetText(value)
-                else
-                    FirstText.Tag = FirstTextTag:GetText() .. "" .. value
-                    FirstTextTag:SetText(FirstTextTag:GetText() .. "" .. value)
-                end
+                local FirstTextTag_MiscTagsDropdown = UUFGUI:Create("Dropdown")
+                FirstTextTag_MiscTagsDropdown:SetLabel("Miscellaneous Tags")
+                FirstTextTag_MiscTagsDropdown:SetList(UUF:FetchAvailableMiscTags())
                 FirstTextTag_MiscTagsDropdown:SetValue(nil)
-                UUF:UpdateFrames(Unit)
-            end)
-            FirstTextTag_MiscTagsDropdown:SetRelativeWidth(0.5)
-            FirstTextOptions:AddChild(FirstTextTag_MiscTagsDropdown)
+                FirstTextTag_MiscTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value) 
+                    if FirstTextTag:GetText() == "" then 
+                        FirstText.Tag = value
+                        FirstTextTag:SetText(value)
+                    else
+                        FirstText.Tag = FirstTextTag:GetText() .. "" .. value
+                        FirstTextTag:SetText(FirstTextTag:GetText() .. "" .. value)
+                    end
+                    FirstTextTag_MiscTagsDropdown:SetValue(nil)
+                    UUF:UpdateFrames(Unit)
+                end)
+                FirstTextTag_MiscTagsDropdown:SetRelativeWidth(0.5)
+                FirstTextOptions:AddChild(FirstTextTag_MiscTagsDropdown)
+            end
 
-            local SecondTextOptions = UUFGUI:Create("InlineGroup")
-            SecondTextOptions:SetTitle("Second Text Options")
-            SecondTextOptions:SetLayout("Flow")
-            SecondTextOptions:SetFullWidth(true)
-            TextOptions:AddChild(SecondTextOptions)
+            local function DrawSecondTextContainer(TextOptions)
+                local SecondTextOptions = UUFGUI:Create("InlineGroup")
+                SecondTextOptions:SetTitle("Second Text Options")
+                SecondTextOptions:SetLayout("Flow")
+                SecondTextOptions:SetFullWidth(true)
+                TextOptions:AddChild(SecondTextOptions)
 
-            local SecondTextAnchorTo = UUFGUI:Create("Dropdown")
-            SecondTextAnchorTo:SetLabel("Anchor From")
-            SecondTextAnchorTo:SetList(AnchorPoints)
-            SecondTextAnchorTo:SetValue(SecondText.AnchorFrom)
-            SecondTextAnchorTo:SetCallback("OnValueChanged", function(widget, event, value) SecondText.AnchorFrom = value UUF:UpdateFrames(Unit) end)
-            SecondTextAnchorTo:SetRelativeWidth(0.5)
-            SecondTextOptions:AddChild(SecondTextAnchorTo)
+                local SecondTextAnchorTo = UUFGUI:Create("Dropdown")
+                SecondTextAnchorTo:SetLabel("Anchor From")
+                SecondTextAnchorTo:SetList(AnchorPoints)
+                SecondTextAnchorTo:SetValue(SecondText.AnchorFrom)
+                SecondTextAnchorTo:SetCallback("OnValueChanged", function(widget, event, value) SecondText.AnchorFrom = value UUF:UpdateFrames(Unit) end)
+                SecondTextAnchorTo:SetRelativeWidth(0.5)
+                SecondTextOptions:AddChild(SecondTextAnchorTo)
 
-            local SecondTextAnchorFrom = UUFGUI:Create("Dropdown")
-            SecondTextAnchorFrom:SetLabel("Anchor To")
-            SecondTextAnchorFrom:SetList(AnchorPoints)
-            SecondTextAnchorFrom:SetValue(SecondText.AnchorTo)
-            SecondTextAnchorFrom:SetCallback("OnValueChanged", function(widget, event, value) SecondText.AnchorTo = value UUF:UpdateFrames(Unit) end)
-            SecondTextAnchorFrom:SetRelativeWidth(0.5)
-            SecondTextOptions:AddChild(SecondTextAnchorFrom)
+                local SecondTextAnchorFrom = UUFGUI:Create("Dropdown")
+                SecondTextAnchorFrom:SetLabel("Anchor To")
+                SecondTextAnchorFrom:SetList(AnchorPoints)
+                SecondTextAnchorFrom:SetValue(SecondText.AnchorTo)
+                SecondTextAnchorFrom:SetCallback("OnValueChanged", function(widget, event, value) SecondText.AnchorTo = value UUF:UpdateFrames(Unit) end)
+                SecondTextAnchorFrom:SetRelativeWidth(0.5)
+                SecondTextOptions:AddChild(SecondTextAnchorFrom)
 
-            local SecondTextXOffset = UUFGUI:Create("Slider")
-            SecondTextXOffset:SetLabel("X Offset")
-            SecondTextXOffset:SetSliderValues(-64, 64, 1)
-            SecondTextXOffset:SetValue(SecondText.XOffset)
-            SecondTextXOffset:SetCallback("OnValueChanged", function(widget, event, value) SecondText.XOffset = value UUF:UpdateFrames(Unit) end)
-            SecondTextXOffset:SetRelativeWidth(0.25)
-            SecondTextOptions:AddChild(SecondTextXOffset)
+                local SecondTextXOffset = UUFGUI:Create("Slider")
+                SecondTextXOffset:SetLabel("X Offset")
+                SecondTextXOffset:SetSliderValues(-64, 64, 1)
+                SecondTextXOffset:SetValue(SecondText.XOffset)
+                SecondTextXOffset:SetCallback("OnValueChanged", function(widget, event, value) SecondText.XOffset = value UUF:UpdateFrames(Unit) end)
+                SecondTextXOffset:SetRelativeWidth(0.25)
+                SecondTextOptions:AddChild(SecondTextXOffset)
 
-            local SecondTextYOffset = UUFGUI:Create("Slider")
-            SecondTextYOffset:SetLabel("Y Offset")
-            SecondTextYOffset:SetSliderValues(-64, 64, 1)
-            SecondTextYOffset:SetValue(SecondText.YOffset)
-            SecondTextYOffset:SetCallback("OnValueChanged", function(widget, event, value) SecondText.YOffset = value UUF:UpdateFrames(Unit) end)
-            SecondTextYOffset:SetRelativeWidth(0.25)
-            SecondTextOptions:AddChild(SecondTextYOffset)
+                local SecondTextYOffset = UUFGUI:Create("Slider")
+                SecondTextYOffset:SetLabel("Y Offset")
+                SecondTextYOffset:SetSliderValues(-64, 64, 1)
+                SecondTextYOffset:SetValue(SecondText.YOffset)
+                SecondTextYOffset:SetCallback("OnValueChanged", function(widget, event, value) SecondText.YOffset = value UUF:UpdateFrames(Unit) end)
+                SecondTextYOffset:SetRelativeWidth(0.25)
+                SecondTextOptions:AddChild(SecondTextYOffset)
 
-            local SecondTextFontSize = UUFGUI:Create("Slider")
-            SecondTextFontSize:SetLabel("Font Size")
-            SecondTextFontSize:SetSliderValues(1, 64, 1)
-            SecondTextFontSize:SetValue(SecondText.FontSize)
-            SecondTextFontSize:SetCallback("OnValueChanged", function(widget, event, value) SecondText.FontSize = value UUF:UpdateFrames(Unit) end)
-            SecondTextFontSize:SetRelativeWidth(0.25)
-            SecondTextOptions:AddChild(SecondTextFontSize)
+                local SecondTextFontSize = UUFGUI:Create("Slider")
+                SecondTextFontSize:SetLabel("Font Size")
+                SecondTextFontSize:SetSliderValues(1, 64, 1)
+                SecondTextFontSize:SetValue(SecondText.FontSize)
+                SecondTextFontSize:SetCallback("OnValueChanged", function(widget, event, value) SecondText.FontSize = value UUF:UpdateFrames(Unit) end)
+                SecondTextFontSize:SetRelativeWidth(0.25)
+                SecondTextOptions:AddChild(SecondTextFontSize)
 
-            local SecondTextColourPicker = UUFGUI:Create("ColorPicker")
-            SecondTextColourPicker:SetLabel("Colour")
-            local STR, STG, STB, STA = unpack(SecondText.Colour)
-            SecondTextColourPicker:SetColor(STR, STG, STB, STA)
-            SecondTextColourPicker:SetCallback("OnValueChanged", function(widget, event, r, g, b, a) SecondText.Colour = {r, g, b, a} UUF:UpdateFrames(Unit) end)
-            SecondTextColourPicker:SetHasAlpha(true)
-            SecondTextColourPicker:SetRelativeWidth(0.25)
-            SecondTextOptions:AddChild(SecondTextColourPicker)
+                local SecondTextColourPicker = UUFGUI:Create("ColorPicker")
+                SecondTextColourPicker:SetLabel("Colour")
+                local STR, STG, STB, STA = unpack(SecondText.Colour)
+                SecondTextColourPicker:SetColor(STR, STG, STB, STA)
+                SecondTextColourPicker:SetCallback("OnValueChanged", function(widget, event, r, g, b, a) SecondText.Colour = {r, g, b, a} UUF:UpdateFrames(Unit) end)
+                SecondTextColourPicker:SetHasAlpha(true)
+                SecondTextColourPicker:SetRelativeWidth(0.25)
+                SecondTextOptions:AddChild(SecondTextColourPicker)
 
-            local SecondTextTag = UUFGUI:Create("EditBox")
-            SecondTextTag:SetLabel("Tag")
-            SecondTextTag:SetText(SecondText.Tag)
-            SecondTextTag:SetCallback("OnEnterPressed", function(widget, event, value) SecondText.Tag = value UUF:UpdateFrames(Unit) end)
-            SecondTextTag:SetRelativeWidth(1)
-            SecondTextOptions:AddChild(SecondTextTag)
+                local SecondTextTag = UUFGUI:Create("EditBox")
+                SecondTextTag:SetLabel("Tag")
+                SecondTextTag:SetText(SecondText.Tag)
+                SecondTextTag:SetCallback("OnEnterPressed", function(widget, event, value) SecondText.Tag = value UUF:UpdateFrames(Unit) end)
+                SecondTextTag:SetRelativeWidth(1)
+                SecondTextOptions:AddChild(SecondTextTag)
 
-            local SecondTextTag_HealthTagsDropdown = UUFGUI:Create("Dropdown")
-            SecondTextTag_HealthTagsDropdown:SetLabel("Health Tags")
-            SecondTextTag_HealthTagsDropdown:SetList(UUF:FetchAvailableHealthTags())
-            SecondTextTag_HealthTagsDropdown:SetValue(nil)
-            SecondTextTag_HealthTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value) 
-                if SecondTextTag:GetText() == "" then 
-                    SecondText.Tag = value
-                    SecondTextTag:SetText(value)
-                else
-                    SecondText.Tag = SecondTextTag:GetText() .. "" .. value
-                    SecondTextTag:SetText(SecondTextTag:GetText() .. "" .. value)
-                end
+                local SecondTextTag_HealthTagsDropdown = UUFGUI:Create("Dropdown")
+                SecondTextTag_HealthTagsDropdown:SetLabel("Health Tags")
+                SecondTextTag_HealthTagsDropdown:SetList(UUF:FetchAvailableHealthTags())
                 SecondTextTag_HealthTagsDropdown:SetValue(nil)
-                UUF:UpdateFrames(Unit)
-            end)
-            SecondTextTag_HealthTagsDropdown:SetRelativeWidth(0.5)
-            SecondTextOptions:AddChild(SecondTextTag_HealthTagsDropdown)
-            
-            local SecondTextTag_NameTagsDropdown = UUFGUI:Create("Dropdown")
-            SecondTextTag_NameTagsDropdown:SetLabel("Name Tags")
-            SecondTextTag_NameTagsDropdown:SetList(UUF:FetchAvailableNameTags())
-            SecondTextTag_NameTagsDropdown:SetValue(nil)
-            SecondTextTag_NameTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value) 
-                if SecondTextTag:GetText() == "" then 
-                    SecondText.Tag = value
-                    SecondTextTag:SetText(value)
-                else
-                    SecondText.Tag = SecondTextTag:GetText() .. "" .. value
-                    SecondTextTag:SetText(SecondTextTag:GetText() .. "" .. value)
-                end
+                SecondTextTag_HealthTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value) 
+                    if SecondTextTag:GetText() == "" then 
+                        SecondText.Tag = value
+                        SecondTextTag:SetText(value)
+                    else
+                        SecondText.Tag = SecondTextTag:GetText() .. "" .. value
+                        SecondTextTag:SetText(SecondTextTag:GetText() .. "" .. value)
+                    end
+                    SecondTextTag_HealthTagsDropdown:SetValue(nil)
+                    UUF:UpdateFrames(Unit)
+                end)
+                SecondTextTag_HealthTagsDropdown:SetRelativeWidth(0.5)
+                SecondTextOptions:AddChild(SecondTextTag_HealthTagsDropdown)
+                
+                local SecondTextTag_NameTagsDropdown = UUFGUI:Create("Dropdown")
+                SecondTextTag_NameTagsDropdown:SetLabel("Name Tags")
+                SecondTextTag_NameTagsDropdown:SetList(UUF:FetchAvailableNameTags())
                 SecondTextTag_NameTagsDropdown:SetValue(nil)
-                UUF:UpdateFrames(Unit)
-            end)
-            SecondTextTag_NameTagsDropdown:SetRelativeWidth(0.5)
-            SecondTextOptions:AddChild(SecondTextTag_NameTagsDropdown)
+                SecondTextTag_NameTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value) 
+                    if SecondTextTag:GetText() == "" then 
+                        SecondText.Tag = value
+                        SecondTextTag:SetText(value)
+                    else
+                        SecondText.Tag = SecondTextTag:GetText() .. "" .. value
+                        SecondTextTag:SetText(SecondTextTag:GetText() .. "" .. value)
+                    end
+                    SecondTextTag_NameTagsDropdown:SetValue(nil)
+                    UUF:UpdateFrames(Unit)
+                end)
+                SecondTextTag_NameTagsDropdown:SetRelativeWidth(0.5)
+                SecondTextOptions:AddChild(SecondTextTag_NameTagsDropdown)
 
-            local SecondTextTag_PowerTagsDropdown = UUFGUI:Create("Dropdown")
-            SecondTextTag_PowerTagsDropdown:SetLabel("Power Tags")
-            SecondTextTag_PowerTagsDropdown:SetList(UUF:FetchAvailablePowerTags())
-            SecondTextTag_PowerTagsDropdown:SetValue(nil)
-            SecondTextTag_PowerTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value) 
-                if SecondTextTag:GetText() == "" then 
-                    SecondText.Tag = value
-                    SecondTextTag:SetText(value)
-                else
-                    SecondText.Tag = SecondTextTag:GetText() .. "" .. value
-                    SecondTextTag:SetText(SecondTextTag:GetText() .. "" .. value)
-                end
+                local SecondTextTag_PowerTagsDropdown = UUFGUI:Create("Dropdown")
+                SecondTextTag_PowerTagsDropdown:SetLabel("Power Tags")
+                SecondTextTag_PowerTagsDropdown:SetList(UUF:FetchAvailablePowerTags())
                 SecondTextTag_PowerTagsDropdown:SetValue(nil)
-                UUF:UpdateFrames(Unit)
-            end)
-            SecondTextTag_PowerTagsDropdown:SetRelativeWidth(0.5)
-            SecondTextOptions:AddChild(SecondTextTag_PowerTagsDropdown)
+                SecondTextTag_PowerTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value) 
+                    if SecondTextTag:GetText() == "" then 
+                        SecondText.Tag = value
+                        SecondTextTag:SetText(value)
+                    else
+                        SecondText.Tag = SecondTextTag:GetText() .. "" .. value
+                        SecondTextTag:SetText(SecondTextTag:GetText() .. "" .. value)
+                    end
+                    SecondTextTag_PowerTagsDropdown:SetValue(nil)
+                    UUF:UpdateFrames(Unit)
+                end)
+                SecondTextTag_PowerTagsDropdown:SetRelativeWidth(0.5)
+                SecondTextOptions:AddChild(SecondTextTag_PowerTagsDropdown)
 
-            local SecondTextTag_MiscTagsDropdown = UUFGUI:Create("Dropdown")
-            SecondTextTag_MiscTagsDropdown:SetLabel("Miscellaneous Tags")
-            SecondTextTag_MiscTagsDropdown:SetList(UUF:FetchAvailableMiscTags())
-            SecondTextTag_MiscTagsDropdown:SetValue(nil)
-            SecondTextTag_MiscTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value) 
-                if SecondTextTag:GetText() == "" then 
-                    SecondText.Tag = value
-                    SecondTextTag:SetText(value)
-                else
-                    SecondText.Tag = SecondTextTag:GetText() .. "" .. value
-                    SecondTextTag:SetText(SecondTextTag:GetText() .. "" .. value)
-                end
+                local SecondTextTag_MiscTagsDropdown = UUFGUI:Create("Dropdown")
+                SecondTextTag_MiscTagsDropdown:SetLabel("Miscellaneous Tags")
+                SecondTextTag_MiscTagsDropdown:SetList(UUF:FetchAvailableMiscTags())
                 SecondTextTag_MiscTagsDropdown:SetValue(nil)
-                UUF:UpdateFrames(Unit)
-            end)
-            SecondTextTag_MiscTagsDropdown:SetRelativeWidth(0.5)
-            SecondTextOptions:AddChild(SecondTextTag_MiscTagsDropdown)
+                SecondTextTag_MiscTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value) 
+                    if SecondTextTag:GetText() == "" then 
+                        SecondText.Tag = value
+                        SecondTextTag:SetText(value)
+                    else
+                        SecondText.Tag = SecondTextTag:GetText() .. "" .. value
+                        SecondTextTag:SetText(SecondTextTag:GetText() .. "" .. value)
+                    end
+                    SecondTextTag_MiscTagsDropdown:SetValue(nil)
+                    UUF:UpdateFrames(Unit)
+                end)
+                SecondTextTag_MiscTagsDropdown:SetRelativeWidth(0.5)
+                SecondTextOptions:AddChild(SecondTextTag_MiscTagsDropdown)
+            end
 
-            local ThirdTextOptions = UUFGUI:Create("InlineGroup")
-            ThirdTextOptions:SetTitle("Third Text Options")
-            ThirdTextOptions:SetLayout("Flow")
-            ThirdTextOptions:SetFullWidth(true)
-            TextOptions:AddChild(ThirdTextOptions)
+            local function DrawThirdTextContainer(TextOptions)
+                local ThirdTextOptions = UUFGUI:Create("InlineGroup")
+                ThirdTextOptions:SetTitle("Third Text Options")
+                ThirdTextOptions:SetLayout("Flow")
+                ThirdTextOptions:SetFullWidth(true)
+                TextOptions:AddChild(ThirdTextOptions)
 
-            local ThirdTextAnchorTo = UUFGUI:Create("Dropdown")
-            ThirdTextAnchorTo:SetLabel("Anchor From")
-            ThirdTextAnchorTo:SetList(AnchorPoints)
-            ThirdTextAnchorTo:SetValue(ThirdText.AnchorFrom)
-            ThirdTextAnchorTo:SetCallback("OnValueChanged", function(widget, event, value) ThirdText.AnchorFrom = value UUF:UpdateFrames(Unit) end)
-            ThirdTextAnchorTo:SetRelativeWidth(0.5)
-            ThirdTextOptions:AddChild(ThirdTextAnchorTo)
+                local ThirdTextAnchorTo = UUFGUI:Create("Dropdown")
+                ThirdTextAnchorTo:SetLabel("Anchor From")
+                ThirdTextAnchorTo:SetList(AnchorPoints)
+                ThirdTextAnchorTo:SetValue(ThirdText.AnchorFrom)
+                ThirdTextAnchorTo:SetCallback("OnValueChanged", function(widget, event, value) ThirdText.AnchorFrom = value UUF:UpdateFrames(Unit) end)
+                ThirdTextAnchorTo:SetRelativeWidth(0.5)
+                ThirdTextOptions:AddChild(ThirdTextAnchorTo)
 
-            local ThirdTextAnchorFrom = UUFGUI:Create("Dropdown")
-            ThirdTextAnchorFrom:SetLabel("Anchor To")
-            ThirdTextAnchorFrom:SetList(AnchorPoints)
-            ThirdTextAnchorFrom:SetValue(ThirdText.AnchorTo)
-            ThirdTextAnchorFrom:SetCallback("OnValueChanged", function(widget, event, value) ThirdText.AnchorTo = value UUF:UpdateFrames(Unit) end)
-            ThirdTextAnchorFrom:SetRelativeWidth(0.5)
-            ThirdTextOptions:AddChild(ThirdTextAnchorFrom)
+                local ThirdTextAnchorFrom = UUFGUI:Create("Dropdown")
+                ThirdTextAnchorFrom:SetLabel("Anchor To")
+                ThirdTextAnchorFrom:SetList(AnchorPoints)
+                ThirdTextAnchorFrom:SetValue(ThirdText.AnchorTo)
+                ThirdTextAnchorFrom:SetCallback("OnValueChanged", function(widget, event, value) ThirdText.AnchorTo = value UUF:UpdateFrames(Unit) end)
+                ThirdTextAnchorFrom:SetRelativeWidth(0.5)
+                ThirdTextOptions:AddChild(ThirdTextAnchorFrom)
 
-            local ThirdTextXOffset = UUFGUI:Create("Slider")
-            ThirdTextXOffset:SetLabel("X Offset")
-            ThirdTextXOffset:SetSliderValues(-64, 64, 1)
-            ThirdTextXOffset:SetValue(ThirdText.XOffset)
-            ThirdTextXOffset:SetCallback("OnValueChanged", function(widget, event, value) ThirdText.XOffset = value UUF:UpdateFrames(Unit) end)
-            ThirdTextXOffset:SetRelativeWidth(0.25)
-            ThirdTextOptions:AddChild(ThirdTextXOffset)
+                local ThirdTextXOffset = UUFGUI:Create("Slider")
+                ThirdTextXOffset:SetLabel("X Offset")
+                ThirdTextXOffset:SetSliderValues(-64, 64, 1)
+                ThirdTextXOffset:SetValue(ThirdText.XOffset)
+                ThirdTextXOffset:SetCallback("OnValueChanged", function(widget, event, value) ThirdText.XOffset = value UUF:UpdateFrames(Unit) end)
+                ThirdTextXOffset:SetRelativeWidth(0.25)
+                ThirdTextOptions:AddChild(ThirdTextXOffset)
 
-            local ThirdTextYOffset = UUFGUI:Create("Slider")
-            ThirdTextYOffset:SetLabel("Y Offset")
-            ThirdTextYOffset:SetSliderValues(-64, 64, 1)
-            ThirdTextYOffset:SetValue(ThirdText.YOffset)
-            ThirdTextYOffset:SetCallback("OnValueChanged", function(widget, event, value) ThirdText.YOffset = value UUF:UpdateFrames(Unit) end)
-            ThirdTextYOffset:SetRelativeWidth(0.25)
-            ThirdTextOptions:AddChild(ThirdTextYOffset)
+                local ThirdTextYOffset = UUFGUI:Create("Slider")
+                ThirdTextYOffset:SetLabel("Y Offset")
+                ThirdTextYOffset:SetSliderValues(-64, 64, 1)
+                ThirdTextYOffset:SetValue(ThirdText.YOffset)
+                ThirdTextYOffset:SetCallback("OnValueChanged", function(widget, event, value) ThirdText.YOffset = value UUF:UpdateFrames(Unit) end)
+                ThirdTextYOffset:SetRelativeWidth(0.25)
+                ThirdTextOptions:AddChild(ThirdTextYOffset)
 
-            local ThirdTextFontSize = UUFGUI:Create("Slider")
-            ThirdTextFontSize:SetLabel("Font Size")
-            ThirdTextFontSize:SetSliderValues(1, 64, 1)
-            ThirdTextFontSize:SetValue(ThirdText.FontSize)
-            ThirdTextFontSize:SetCallback("OnValueChanged", function(widget, event, value) ThirdText.FontSize = value UUF:UpdateFrames(Unit) end)
-            ThirdTextFontSize:SetRelativeWidth(0.25)
-            ThirdTextOptions:AddChild(ThirdTextFontSize)
+                local ThirdTextFontSize = UUFGUI:Create("Slider")
+                ThirdTextFontSize:SetLabel("Font Size")
+                ThirdTextFontSize:SetSliderValues(1, 64, 1)
+                ThirdTextFontSize:SetValue(ThirdText.FontSize)
+                ThirdTextFontSize:SetCallback("OnValueChanged", function(widget, event, value) ThirdText.FontSize = value UUF:UpdateFrames(Unit) end)
+                ThirdTextFontSize:SetRelativeWidth(0.25)
+                ThirdTextOptions:AddChild(ThirdTextFontSize)
 
-            local ThirdTextColourPicker = UUFGUI:Create("ColorPicker")
-            ThirdTextColourPicker:SetLabel("Colour")
-            local TRTR, TRTG, TRTB, TRTA = unpack(ThirdText.Colour)
-            ThirdTextColourPicker:SetColor(TRTR, TRTG, TRTB, TRTA)
-            ThirdTextColourPicker:SetCallback("OnValueChanged", function(widget, event, r, g, b, a) ThirdText.Colour = {r, g, b, a} UUF:UpdateFrames(Unit) end)
-            ThirdTextColourPicker:SetHasAlpha(true)
-            ThirdTextColourPicker:SetRelativeWidth(0.25)
-            ThirdTextOptions:AddChild(ThirdTextColourPicker)
+                local ThirdTextColourPicker = UUFGUI:Create("ColorPicker")
+                ThirdTextColourPicker:SetLabel("Colour")
+                local TRTR, TRTG, TRTB, TRTA = unpack(ThirdText.Colour)
+                ThirdTextColourPicker:SetColor(TRTR, TRTG, TRTB, TRTA)
+                ThirdTextColourPicker:SetCallback("OnValueChanged", function(widget, event, r, g, b, a) ThirdText.Colour = {r, g, b, a} UUF:UpdateFrames(Unit) end)
+                ThirdTextColourPicker:SetHasAlpha(true)
+                ThirdTextColourPicker:SetRelativeWidth(0.25)
+                ThirdTextOptions:AddChild(ThirdTextColourPicker)
 
-            local ThirdTextTag = UUFGUI:Create("EditBox")
-            ThirdTextTag:SetLabel("Tag")
-            ThirdTextTag:SetText(ThirdText.Tag)
-            ThirdTextTag:SetCallback("OnEnterPressed", function(widget, event, value) ThirdText.Tag = value UUF:UpdateFrames(Unit) end)
-            ThirdTextTag:SetRelativeWidth(1)
-            ThirdTextOptions:AddChild(ThirdTextTag)
+                local ThirdTextTag = UUFGUI:Create("EditBox")
+                ThirdTextTag:SetLabel("Tag")
+                ThirdTextTag:SetText(ThirdText.Tag)
+                ThirdTextTag:SetCallback("OnEnterPressed", function(widget, event, value) ThirdText.Tag = value UUF:UpdateFrames(Unit) end)
+                ThirdTextTag:SetRelativeWidth(1)
+                ThirdTextOptions:AddChild(ThirdTextTag)
 
-            local ThirdTextTag_HealthTagsDropdown = UUFGUI:Create("Dropdown")
-            ThirdTextTag_HealthTagsDropdown:SetLabel("Health Tags")
-            ThirdTextTag_HealthTagsDropdown:SetList(UUF:FetchAvailableHealthTags())
-            ThirdTextTag_HealthTagsDropdown:SetValue(nil)
-            ThirdTextTag_HealthTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value) 
-                if ThirdTextTag:GetText() == "" then 
-                    ThirdText.Tag = value
-                    ThirdTextTag:SetText(value)
-                else
-                    ThirdText.Tag = ThirdTextTag:GetText() .. "" .. value
-                    ThirdTextTag:SetText(ThirdTextTag:GetText() .. "" .. value)
-                end
+                local ThirdTextTag_HealthTagsDropdown = UUFGUI:Create("Dropdown")
+                ThirdTextTag_HealthTagsDropdown:SetLabel("Health Tags")
+                ThirdTextTag_HealthTagsDropdown:SetList(UUF:FetchAvailableHealthTags())
                 ThirdTextTag_HealthTagsDropdown:SetValue(nil)
-                UUF:UpdateFrames(Unit)
-            end)
-            ThirdTextTag_HealthTagsDropdown:SetRelativeWidth(0.5)
-            ThirdTextOptions:AddChild(ThirdTextTag_HealthTagsDropdown)
+                ThirdTextTag_HealthTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value) 
+                    if ThirdTextTag:GetText() == "" then 
+                        ThirdText.Tag = value
+                        ThirdTextTag:SetText(value)
+                    else
+                        ThirdText.Tag = ThirdTextTag:GetText() .. "" .. value
+                        ThirdTextTag:SetText(ThirdTextTag:GetText() .. "" .. value)
+                    end
+                    ThirdTextTag_HealthTagsDropdown:SetValue(nil)
+                    UUF:UpdateFrames(Unit)
+                end)
+                ThirdTextTag_HealthTagsDropdown:SetRelativeWidth(0.5)
+                ThirdTextOptions:AddChild(ThirdTextTag_HealthTagsDropdown)
 
-            local ThirdTextTag_NameTagsDropdown = UUFGUI:Create("Dropdown")
-            ThirdTextTag_NameTagsDropdown:SetLabel("Name Tags")
-            ThirdTextTag_NameTagsDropdown:SetList(UUF:FetchAvailableNameTags())
-            ThirdTextTag_NameTagsDropdown:SetValue(nil)
-            ThirdTextTag_NameTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value) 
-                if ThirdTextTag:GetText() == "" then 
-                    ThirdText.Tag = value
-                    ThirdTextTag:SetText(value)
-                else
-                    ThirdText.Tag = ThirdTextTag:GetText() .. "" .. value
-                    ThirdTextTag:SetText(ThirdTextTag:GetText() .. "" .. value)
-                end
+                local ThirdTextTag_NameTagsDropdown = UUFGUI:Create("Dropdown")
+                ThirdTextTag_NameTagsDropdown:SetLabel("Name Tags")
+                ThirdTextTag_NameTagsDropdown:SetList(UUF:FetchAvailableNameTags())
                 ThirdTextTag_NameTagsDropdown:SetValue(nil)
-                UUF:UpdateFrames(Unit)
-            end)
-            ThirdTextTag_NameTagsDropdown:SetRelativeWidth(0.5)
-            ThirdTextOptions:AddChild(ThirdTextTag_NameTagsDropdown)
+                ThirdTextTag_NameTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value) 
+                    if ThirdTextTag:GetText() == "" then 
+                        ThirdText.Tag = value
+                        ThirdTextTag:SetText(value)
+                    else
+                        ThirdText.Tag = ThirdTextTag:GetText() .. "" .. value
+                        ThirdTextTag:SetText(ThirdTextTag:GetText() .. "" .. value)
+                    end
+                    ThirdTextTag_NameTagsDropdown:SetValue(nil)
+                    UUF:UpdateFrames(Unit)
+                end)
+                ThirdTextTag_NameTagsDropdown:SetRelativeWidth(0.5)
+                ThirdTextOptions:AddChild(ThirdTextTag_NameTagsDropdown)
 
-            local ThirdTextTag_PowerTagsDropdown = UUFGUI:Create("Dropdown")
-            ThirdTextTag_PowerTagsDropdown:SetLabel("Power Tags")
-            ThirdTextTag_PowerTagsDropdown:SetList(UUF:FetchAvailablePowerTags())
-            ThirdTextTag_PowerTagsDropdown:SetValue(nil)
-            ThirdTextTag_PowerTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value) 
-                if ThirdTextTag:GetText() == "" then 
-                    ThirdText.Tag = value
-                    ThirdTextTag:SetText(value)
-                else
-                    ThirdText.Tag = ThirdTextTag:GetText() .. "" .. value
-                    ThirdTextTag:SetText(ThirdTextTag:GetText() .. "" .. value)
-                end
+                local ThirdTextTag_PowerTagsDropdown = UUFGUI:Create("Dropdown")
+                ThirdTextTag_PowerTagsDropdown:SetLabel("Power Tags")
+                ThirdTextTag_PowerTagsDropdown:SetList(UUF:FetchAvailablePowerTags())
                 ThirdTextTag_PowerTagsDropdown:SetValue(nil)
-                UUF:UpdateFrames(Unit)
-            end)
-            ThirdTextTag_PowerTagsDropdown:SetRelativeWidth(0.5)
-            ThirdTextOptions:AddChild(ThirdTextTag_PowerTagsDropdown)
+                ThirdTextTag_PowerTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value) 
+                    if ThirdTextTag:GetText() == "" then 
+                        ThirdText.Tag = value
+                        ThirdTextTag:SetText(value)
+                    else
+                        ThirdText.Tag = ThirdTextTag:GetText() .. "" .. value
+                        ThirdTextTag:SetText(ThirdTextTag:GetText() .. "" .. value)
+                    end
+                    ThirdTextTag_PowerTagsDropdown:SetValue(nil)
+                    UUF:UpdateFrames(Unit)
+                end)
+                ThirdTextTag_PowerTagsDropdown:SetRelativeWidth(0.5)
+                ThirdTextOptions:AddChild(ThirdTextTag_PowerTagsDropdown)
 
-            local ThirdTextTag_MiscTagsDropdown = UUFGUI:Create("Dropdown")
-            ThirdTextTag_MiscTagsDropdown:SetLabel("Miscellaneous Tags")
-            ThirdTextTag_MiscTagsDropdown:SetList(UUF:FetchAvailableMiscTags())
-            ThirdTextTag_MiscTagsDropdown:SetValue(nil)
-            ThirdTextTag_MiscTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value) 
-                if ThirdTextTag:GetText() == "" then 
-                    ThirdText.Tag = value
-                    ThirdTextTag:SetText(value)
-                else
-                    ThirdText.Tag = ThirdTextTag:GetText() .. "" .. value
-                    ThirdTextTag:SetText(ThirdTextTag:GetText() .. "" .. value)
-                end
+                local ThirdTextTag_MiscTagsDropdown = UUFGUI:Create("Dropdown")
+                ThirdTextTag_MiscTagsDropdown:SetLabel("Miscellaneous Tags")
+                ThirdTextTag_MiscTagsDropdown:SetList(UUF:FetchAvailableMiscTags())
                 ThirdTextTag_MiscTagsDropdown:SetValue(nil)
-                UUF:UpdateFrames(Unit)
+                ThirdTextTag_MiscTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value) 
+                    if ThirdTextTag:GetText() == "" then 
+                        ThirdText.Tag = value
+                        ThirdTextTag:SetText(value)
+                    else
+                        ThirdText.Tag = ThirdTextTag:GetText() .. "" .. value
+                        ThirdTextTag:SetText(ThirdTextTag:GetText() .. "" .. value)
+                    end
+                    ThirdTextTag_MiscTagsDropdown:SetValue(nil)
+                    UUF:UpdateFrames(Unit)
+                end)
+                ThirdTextTag_MiscTagsDropdown:SetRelativeWidth(0.5)
+                ThirdTextOptions:AddChild(ThirdTextTag_MiscTagsDropdown)
+            end
+
+            local function DrawFourthTextContainer(TextOptions)
+                local FourthTextOptions = UUFGUI:Create("InlineGroup")
+                FourthTextOptions:SetTitle("Fourth Text Options")
+                FourthTextOptions:SetLayout("Flow")
+                FourthTextOptions:SetFullWidth(true)
+                TextOptions:AddChild(FourthTextOptions)
+
+                local FourthTextAnchorTo = UUFGUI:Create("Dropdown")
+                FourthTextAnchorTo:SetLabel("Anchor From")
+                FourthTextAnchorTo:SetList(AnchorPoints)
+                FourthTextAnchorTo:SetValue(FourthText.AnchorFrom)
+                FourthTextAnchorTo:SetCallback("OnValueChanged", function(widget, event, value) FourthText.AnchorFrom = value UUF:UpdateFrames(Unit) end)
+                FourthTextAnchorTo:SetRelativeWidth(0.5)
+                FourthTextOptions:AddChild(FourthTextAnchorTo)
+
+                local FourthTextAnchorFrom = UUFGUI:Create("Dropdown")
+                FourthTextAnchorFrom:SetLabel("Anchor To")
+                FourthTextAnchorFrom:SetList(AnchorPoints)
+                FourthTextAnchorFrom:SetValue(FourthText.AnchorTo)
+                FourthTextAnchorFrom:SetCallback("OnValueChanged", function(widget, event, value) FourthText.AnchorTo = value UUF:UpdateFrames(Unit) end)
+                FourthTextAnchorFrom:SetRelativeWidth(0.5)
+                FourthTextOptions:AddChild(FourthTextAnchorFrom)
+
+                local FourthTextXOffset = UUFGUI:Create("Slider")
+                FourthTextXOffset:SetLabel("X Offset")
+                FourthTextXOffset:SetSliderValues(-64, 64, 1)
+                FourthTextXOffset:SetValue(FourthText.XOffset)
+                FourthTextXOffset:SetCallback("OnValueChanged", function(widget, event, value) FourthText.XOffset = value UUF:UpdateFrames(Unit) end)
+                FourthTextXOffset:SetRelativeWidth(0.25)
+                FourthTextOptions:AddChild(FourthTextXOffset)
+
+                local FourthTextYOffset = UUFGUI:Create("Slider")
+                FourthTextYOffset:SetLabel("Y Offset")
+                FourthTextYOffset:SetSliderValues(-64, 64, 1)
+                FourthTextYOffset:SetValue(FourthText.YOffset)
+                FourthTextYOffset:SetCallback("OnValueChanged", function(widget, event, value) FourthText.YOffset = value UUF:UpdateFrames(Unit) end)
+                FourthTextYOffset:SetRelativeWidth(0.25)
+                FourthTextOptions:AddChild(FourthTextYOffset)
+
+                local FourthTextFontSize = UUFGUI:Create("Slider")
+                FourthTextFontSize:SetLabel("Font Size")
+                FourthTextFontSize:SetSliderValues(1, 64, 1)
+                FourthTextFontSize:SetValue(FourthText.FontSize)
+                FourthTextFontSize:SetCallback("OnValueChanged", function(widget, event, value) FourthText.FontSize = value UUF:UpdateFrames(Unit) end)
+                FourthTextFontSize:SetRelativeWidth(0.25)
+                FourthTextOptions:AddChild(FourthTextFontSize)
+
+                local FourthTextColourPicker = UUFGUI:Create("ColorPicker")
+                FourthTextColourPicker:SetLabel("Colour")
+                local FRTR, FRTG, FRTB, FRTA = unpack(FourthText.Colour)
+                FourthTextColourPicker:SetColor(FRTR, FRTG, FRTB, FRTA)
+                FourthTextColourPicker:SetCallback("OnValueChanged", function(widget, event, r, g, b, a) FourthText.Colour = {r, g, b, a} UUF:UpdateFrames(Unit) end)
+                FourthTextColourPicker:SetHasAlpha(true)
+                FourthTextColourPicker:SetRelativeWidth(0.25)
+                FourthTextOptions:AddChild(FourthTextColourPicker)
+
+                local FourthTextTag = UUFGUI:Create("EditBox")
+                FourthTextTag:SetLabel("Tag")
+                FourthTextTag:SetText(FourthText.Tag)
+                FourthTextTag:SetCallback("OnEnterPressed", function(widget, event, value) FourthText.Tag = value UUF:UpdateFrames(Unit) end)
+                FourthTextTag:SetRelativeWidth(1)
+                FourthTextOptions:AddChild(FourthTextTag)
+
+                local FourthTextTag_HealthTagsDropdown = UUFGUI:Create("Dropdown")
+                FourthTextTag_HealthTagsDropdown:SetLabel("Health Tags")
+                FourthTextTag_HealthTagsDropdown:SetList(UUF:FetchAvailableHealthTags())
+                FourthTextTag_HealthTagsDropdown:SetValue(nil)
+                FourthTextTag_HealthTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value) 
+                    if FourthTextTag:GetText() == "" then 
+                        FourthText.Tag = value
+                        FourthTextTag:SetText(value)
+                    else
+                        FourthText.Tag = FourthTextTag:GetText() .. "" .. value
+                        FourthTextTag:SetText(FourthTextTag:GetText() .. "" .. value)
+                    end
+                    FourthTextTag_HealthTagsDropdown:SetValue(nil)
+                    UUF:UpdateFrames(Unit)
+                end)
+                FourthTextTag_HealthTagsDropdown:SetRelativeWidth(0.5)
+                FourthTextOptions:AddChild(FourthTextTag_HealthTagsDropdown)
+
+                local FourthTextTag_NameTagsDropdown = UUFGUI:Create("Dropdown")
+                FourthTextTag_NameTagsDropdown:SetLabel("Name Tags")
+                FourthTextTag_NameTagsDropdown:SetList(UUF:FetchAvailableNameTags())
+                FourthTextTag_NameTagsDropdown:SetValue(nil)
+                FourthTextTag_NameTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value) 
+                    if FourthTextTag:GetText() == "" then 
+                        FourthText.Tag = value
+                        FourthTextTag:SetText(value)
+                    else
+                        FourthText.Tag = FourthTextTag:GetText() .. "" .. value
+                        FourthTextTag:SetText(FourthTextTag:GetText() .. "" .. value)
+                    end
+                    FourthTextTag_NameTagsDropdown:SetValue(nil)
+                    UUF:UpdateFrames(Unit)
+                end)
+                FourthTextTag_NameTagsDropdown:SetRelativeWidth(0.5)
+                FourthTextOptions:AddChild(FourthTextTag_NameTagsDropdown)
+
+                local FourthTextTag_PowerTagsDropdown = UUFGUI:Create("Dropdown")
+                FourthTextTag_PowerTagsDropdown:SetLabel("Power Tags")
+                FourthTextTag_PowerTagsDropdown:SetList(UUF:FetchAvailablePowerTags())
+                FourthTextTag_PowerTagsDropdown:SetValue(nil)
+                FourthTextTag_PowerTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value) 
+                    if FourthTextTag:GetText() == "" then 
+                        FourthText.Tag = value
+                        FourthTextTag:SetText(value)
+                    else
+                        FourthText.Tag = FourthTextTag:GetText() .. "" .. value
+                        FourthTextTag:SetText(FourthTextTag:GetText() .. "" .. value)
+                    end
+                    FourthTextTag_PowerTagsDropdown:SetValue(nil)
+                    UUF:UpdateFrames(Unit)
+                end)
+                FourthTextTag_PowerTagsDropdown:SetRelativeWidth(0.5)
+                FourthTextOptions:AddChild(FourthTextTag_PowerTagsDropdown)
+
+                local FourthTextTag_MiscTagsDropdown = UUFGUI:Create("Dropdown")
+                FourthTextTag_MiscTagsDropdown:SetLabel("Miscellaneous Tags")
+                FourthTextTag_MiscTagsDropdown:SetList(UUF:FetchAvailableMiscTags())
+                FourthTextTag_MiscTagsDropdown:SetValue(nil)
+                FourthTextTag_MiscTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value) 
+                    if FourthTextTag:GetText() == "" then 
+                        FourthText.Tag = value
+                        FourthTextTag:SetText(value)
+                    else
+                        FourthText.Tag = FourthTextTag:GetText() .. "" .. value
+                        FourthTextTag:SetText(FourthTextTag:GetText() .. "" .. value)
+                    end
+                    FourthTextTag_MiscTagsDropdown:SetValue(nil)
+                    UUF:UpdateFrames(Unit)
+                end)
+                FourthTextTag_MiscTagsDropdown:SetRelativeWidth(0.5)
+                FourthTextOptions:AddChild(FourthTextTag_MiscTagsDropdown)
+            end
+
+            local TextTabGroup = UUFGUI:Create("TabGroup")
+            TextTabGroup:SetLayout("Flow")
+            TextTabGroup:SetTabs({
+                { text = "First Text",   value = "FirstText" },
+                { text = "Second Text",  value = "SecondText" },
+                { text = "Third Text",   value = "ThirdText" },
+                { text = "Fourth Text",  value = "FourthText" },
+            })
+            TextTabGroup:SetCallback("OnGroupSelected", function(container, event, group)
+                container:ReleaseChildren()
+                if group == "FirstText" then
+                    DrawFirstTextContainer(container)
+                elseif group == "SecondText" then
+                    DrawSecondTextContainer(container)
+                elseif group == "ThirdText" then
+                    DrawThirdTextContainer(container)
+                elseif group == "FourthText" then
+                    DrawFourthTextContainer(container)
+                end
             end)
-            ThirdTextTag_MiscTagsDropdown:SetRelativeWidth(0.5)
-            ThirdTextOptions:AddChild(ThirdTextTag_MiscTagsDropdown)            
+            TextTabGroup:SelectTab("FirstText")
+            TextTabGroup:SetFullWidth(true)
+            TextOptions:AddChild(TextTabGroup)
         end
 
         local function DrawRangeContainer(UUFGUI_Container)

@@ -497,6 +497,7 @@ local function CreateTextFields(self, Unit)
     local FirstText = UUF.DB.profile[Unit].Texts.First
     local SecondText = UUF.DB.profile[Unit].Texts.Second
     local ThirdText = UUF.DB.profile[Unit].Texts.Third
+    local FourthText = UUF.DB.profile[Unit].Texts.Fourth
     if not self.unitHighLevelFrame then 
         self.unitHighLevelFrame = CreateFrame("Frame", nil, self)
         self.unitHighLevelFrame:SetSize(Frame.Width, Frame.Height)
@@ -534,6 +535,17 @@ local function CreateTextFields(self, Unit)
             self.unitThirdText:SetTextColor(ThirdText.Colour[1], ThirdText.Colour[2], ThirdText.Colour[3], ThirdText.Colour[4])
             self.unitThirdText:SetJustifyH(UUF:GetFontJustification(ThirdText.AnchorTo))
             self:Tag(self.unitThirdText, ThirdText.Tag)
+        end
+
+        if not self.unitFourthText then
+            self.unitFourthText = self.unitHighLevelFrame:CreateFontString(nil, "OVERLAY")
+            self.unitFourthText:SetFont(General.Font, FourthText.FontSize, General.FontFlag)
+            self.unitFourthText:SetShadowColor(General.FontShadowColour[1], General.FontShadowColour[2], General.FontShadowColour[3], General.FontShadowColour[4])
+            self.unitFourthText:SetShadowOffset(General.FontShadowXOffset, General.FontShadowYOffset)
+            self.unitFourthText:SetPoint(FourthText.AnchorFrom, self.unitHighLevelFrame, FourthText.AnchorTo, FourthText.XOffset, FourthText.YOffset)
+            self.unitFourthText:SetTextColor(FourthText.Colour[1], FourthText.Colour[2], FourthText.Colour[3], FourthText.Colour[4])
+            self.unitFourthText:SetJustifyH(UUF:GetFontJustification(FourthText.AnchorTo))
+            self:Tag(self.unitFourthText, FourthText.Tag)
         end
     end
 end
@@ -958,6 +970,7 @@ local function UpdateTextFields(FrameName)
     local FirstText = UUF.DB.profile[Unit].Texts.First
     local SecondText = UUF.DB.profile[Unit].Texts.Second
     local ThirdText = UUF.DB.profile[Unit].Texts.Third
+    local FourthText = UUF.DB.profile[Unit].Texts.Fourth
     if FrameName.unitHighLevelFrame then
         FrameName.unitHighLevelFrame:ClearAllPoints()
         FrameName.unitHighLevelFrame:SetSize(Frame.Width, Frame.Height)
@@ -995,6 +1008,17 @@ local function UpdateTextFields(FrameName)
             FrameName.unitThirdText:SetTextColor(ThirdText.Colour[1], ThirdText.Colour[2], ThirdText.Colour[3], ThirdText.Colour[4])
             FrameName.unitThirdText:SetJustifyH(UUF:GetFontJustification(ThirdText.AnchorTo)) -- Always Ensure Alignment Is Either Left/Right/Center based on AnchorTo.
             FrameName:Tag(FrameName.unitThirdText, ThirdText.Tag)
+        end
+
+        if FrameName.unitFourthText then
+            FrameName.unitFourthText:ClearAllPoints()
+            FrameName.unitFourthText:SetFont(General.Font, FourthText.FontSize, General.FontFlag)
+            FrameName.unitFourthText:SetShadowColor(General.FontShadowColour[1], General.FontShadowColour[2], General.FontShadowColour[3], General.FontShadowColour[4])
+            FrameName.unitFourthText:SetShadowOffset(General.FontShadowXOffset, General.FontShadowYOffset)
+            FrameName.unitFourthText:SetPoint(FourthText.AnchorFrom, FrameName.unitHighLevelFrame, FourthText.AnchorTo, FourthText.XOffset, FourthText.YOffset)
+            FrameName.unitFourthText:SetTextColor(FourthText.Colour[1], FourthText.Colour[2], FourthText.Colour[3], FourthText.Colour[4])
+            FrameName.unitFourthText:SetJustifyH(UUF:GetFontJustification(FourthText.AnchorTo)) -- Always Ensure Alignment Is Either Left/Right/Center based on AnchorTo.
+            FrameName:Tag(FrameName.unitFourthText, FourthText.Tag)
         end
 
         FrameName:UpdateTags()
