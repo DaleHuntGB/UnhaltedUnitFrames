@@ -2402,16 +2402,16 @@ function UUF:CreateGUI()
                 { text = "Third Text",   value = "ThirdText" },
                 { text = "Fourth Text",  value = "FourthText" },
             })
-            TextTabGroup:SetCallback("OnGroupSelected", function(container, event, group)
-                container:ReleaseChildren()
-                if group == "FirstText" then
-                    DrawFirstTextContainer(container)
-                elseif group == "SecondText" then
-                    DrawSecondTextContainer(container)
-                elseif group == "ThirdText" then
-                    DrawThirdTextContainer(container)
-                elseif group == "FourthText" then
-                    DrawFourthTextContainer(container)
+            TextTabGroup:SetCallback("OnGroupSelected", function(TextContainer, _, TextGroup)
+                TextContainer:ReleaseChildren()
+                if TextGroup == "FirstText" then
+                    DrawFirstTextContainer(TextContainer)
+                elseif TextGroup == "SecondText" then
+                    DrawSecondTextContainer(TextContainer)
+                elseif TextGroup == "ThirdText" then
+                    DrawThirdTextContainer(TextContainer)
+                elseif TextGroup == "FourthText" then
+                    DrawFourthTextContainer(TextContainer)
                 end
             end)
             TextTabGroup:SelectTab("FirstText")
