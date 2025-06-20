@@ -7,4 +7,6 @@
 - Removed `Anchor Parents` from being copied across units.
 - Minor code improvements.
 - Added Over Absorb Bar.
-- Added an extra text field.
+- Added an Text Field #4.
+
+## V2.0
