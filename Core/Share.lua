@@ -3,7 +3,11 @@ local Serialize = LibStub:GetLibrary("AceSerializer-3.0")
 local Compress = LibStub:GetLibrary("LibDeflate")
 
 function UUF:ExportSavedVariables()
-    local SerializedInfo = Serialize:Serialize(UUF.DB.profile)
+    local profileData = {
+        global = UUF.DB.global,
+        profile = UUF.DB.profile,
+    }
+    local SerializedInfo = Serialize:Serialize(profileData)
     local CompressedInfo = Compress:CompressDeflate(SerializedInfo)
     local EncodedInfo = Compress:EncodeForPrint(CompressedInfo)
     return EncodedInfo
@@ -29,11 +33,13 @@ function UUF:ImportSavedVariables(EncodedInfo)
             local newProfileName = self.EditBox:GetText()
             if newProfileName and newProfileName ~= "" then
                 UUF.DB:SetProfile(newProfileName)
-                for k in pairs(UUF.DB.profile) do
-                    UUF.DB.profile[k] = nil
+
+                wipe(UUF.DB.profile)
+                for key, value in pairs(InformationTable.profile) do
+                    UUF.DB.profile[key] = value
                 end
-                for k, v in pairs(InformationTable) do
-                    UUF.DB.profile[k] = v
+                for key, value in pairs(InformationTable.global) do
+                    UUF.DB.global[key] = value
                 end
             else
                 print("Please enter a valid profile name.")
@@ -47,7 +53,13 @@ end
 function UUFG:ExportUUF(profileKey)
     local profile = UUF.DB.profiles[profileKey]
     if not profile then return nil end
-    local SerializedInfo = Serialize:Serialize(profile)
+
+    local profileData = {
+        global = profile.global,
+        profile = profile.profile,
+    }
+
+    local SerializedInfo = Serialize:Serialize(profileData)
     local CompressedInfo = Compress:CompressDeflate(SerializedInfo)
     local EncodedInfo = Compress:EncodeForPrint(CompressedInfo)
     return EncodedInfo
@@ -57,8 +69,15 @@ function UUFG:ImportUUF(importString, profileKey)
     local DecodedInfo = Compress:DecodeForPrint(importString)
     local DecompressedInfo = Compress:DecompressDeflate(DecodedInfo)
     local success, profileData = Serialize:Deserialize(DecompressedInfo)
-    if success and type(profileData) == "table" then
-        UUF.DB.profiles[profileKey] = profileData
+
+    if success and type(profileData.profile) == "table" then
+        UUF.DB.profiles[profileKey] = profileData.profile
         UUF.DB:SetProfile(profileKey)
+    end
+
+    if type(profileData.global) == "table" then
+        for key, value in pairs(profileData.global) do
+            UUF.DB.global[key] = value
+        end
     end
 end
