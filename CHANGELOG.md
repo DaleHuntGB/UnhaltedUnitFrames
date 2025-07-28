@@ -10,3 +10,5 @@
 - Added an Text Field #4.
 
 ## V2.0
+- Allow for Importing / Exporting Global Settings.
+-
