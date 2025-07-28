@@ -584,12 +584,54 @@ local function ApplyScripts(self)
     self:HookScript("OnLeave", function() if not MouseoverHighlight.Enabled then return end self.unitHighlight:Hide() end)
 end
 
+function ValidateMedia()
+    local General = UUF.DB.profile and UUF.DB.profile.General
+    if not General then return end
+
+    local changed = false
+
+    do
+        local fontTest = UIParent:CreateFontString(nil, "OVERLAY")
+        if type(General.Font) ~= "string" or not fontTest:SetFont(General.Font, 12) then
+            print("|cFF8080FFUnhalted|r Unit Frames: Font Not Found, Default Font Applied.")
+            General.Font = "Fonts\\FRIZQT__.TTF"
+            changed = true
+        end
+        fontTest:Hide()
+    end
+
+    do
+        local tex = UIParent:CreateTexture(nil, "OVERLAY")
+        tex:SetTexture(General.BackgroundTexture)
+        if type(General.BackgroundTexture) ~= "string" or not tex:GetTexture() then
+            print("|cFF8080FFUnhalted|r Unit Frames: Texture Not Found, Default Texture Applied.")
+            General.BackgroundTexture = "Interface\\Buttons\\WHITE8x8"
+            changed = true
+        end
+        tex:Hide()
+    end
+
+    do
+        local tex = UIParent:CreateTexture(nil, "OVERLAY")
+        tex:SetTexture(General.ForegroundTexture)
+        if type(General.ForegroundTexture) ~= "string" or not tex:GetTexture() then
+            print("|cFF8080FFUnhalted|r Unit Frames: Texture Not Found, Default Texture Applied.")
+            General.ForegroundTexture = "Interface\\Buttons\\WHITE8x8"
+            changed = true
+        end
+        tex:Hide()
+    end
+end
+
+
 function UUF:CreateUnitFrame(Unit)
     local Frame = UUF.DB.profile[Unit].Frame
     local Health = UUF.DB.profile[Unit].Health
     local HealthPrediction = Health.HealthPrediction
     local Absorbs = HealthPrediction.Absorbs
     local HealAbsorbs = HealthPrediction.HealAbsorbs
+
+    ValidateMedia()
 
     self:SetSize(Frame.Width, Frame.Height)
     CreateHealthBar(self, Unit)
