@@ -78,7 +78,7 @@ UUF.Defaults = {
                 },
                 Status = {
                     [1] = {255/255, 64/255, 64/255},           -- Dead
-                    [2] = {153/255, 153/255, 153/255}, -- Tapped 
+                    [2] = {153/255, 153/255, 153/255}, -- Tapped
                     [3] = {0.6, 0.6, 0.6}, -- Disconnected
                 }
             },
@@ -279,7 +279,7 @@ UUF.Defaults = {
                         ColourByType    = true,
                         Overflow = {
                             Enabled = false,
-                        }                
+                        }
                     }
                 }
             },
@@ -398,7 +398,7 @@ UUF.Defaults = {
                     XOffset         = 0,
                     YOffset         = 0,
                     Tag             = "",
-                },                
+                },
             },
             Range = {
                 Enable = true,
@@ -542,7 +542,7 @@ UUF.Defaults = {
                     XOffset         = 0,
                     YOffset         = 0,
                     Tag             = "",
-                },                
+                },
             },
             Range = {
                 Enable = false,
@@ -687,7 +687,7 @@ UUF.Defaults = {
                     XOffset         = 0,
                     YOffset         = 0,
                     Tag             = "",
-                },                
+                },
             },
             Range = {
                 Enable = true,
@@ -831,7 +831,7 @@ UUF.Defaults = {
                     XOffset         = 0,
                     YOffset         = 0,
                     Tag             = "",
-                },                
+                },
             },
             Range = {
                 Enable = true,
@@ -977,7 +977,7 @@ UUF.Defaults = {
                     XOffset         = 0,
                     YOffset         = 0,
                     Tag             = "",
-                },                
+                },
             },
             Range = {
                 Enable = false,
@@ -1126,7 +1126,7 @@ UUF.Defaults = {
                     XOffset         = 0,
                     YOffset         = 0,
                     Tag             = "",
-                },                
+                },
             },
             Range = {
                 Enable = true,
@@ -1157,6 +1157,7 @@ end
 function UnhaltedUF:OnEnable()
     if UUF.DB.global.UIScaleEnabled then UIParent:SetScale(UUF.DB.global.UIScale) end
     if UUF.DB.profile.TestMode then UUF.DB.profile.TestMode = false end
+    UUF.DP = UUF.DB.profile.General.DecimalPlaces
     UUF:SetTagUpdateInterval()
     UUF:LoadCustomColours()
     UUF:SpawnPlayerFrame()

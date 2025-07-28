@@ -2513,7 +2513,11 @@ function UUF:CreateGUI()
         NumberDecimalPlaces:SetLabel("Decimal Places")
         NumberDecimalPlaces:SetSliderValues(0, 3, 1)
         NumberDecimalPlaces:SetValue(UUF.DB.profile.General.DecimalPlaces)
-        NumberDecimalPlaces:SetCallback("OnValueChanged", function(widget, event, value) UUF.DB.profile.General.DecimalPlaces = value UUFG:UpdateAllTags() end)
+        NumberDecimalPlaces:SetCallback("OnValueChanged", function(widget, event, value)
+            UUF.DB.profile.General.DecimalPlaces = value
+            UUF.DP = value
+            UUFG:UpdateAllTags()
+        end)
         NumberDecimalPlaces:SetRelativeWidth(0.5)
         ScrollableContainer:AddChild(NumberDecimalPlaces)
 
