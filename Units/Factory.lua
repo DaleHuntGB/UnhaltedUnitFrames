@@ -506,7 +506,7 @@ local function CreateTextFields(self, Unit)
 
         if not self.unitFirstText then
             self.unitFirstText = self.unitHighLevelFrame:CreateFontString(nil, "OVERLAY")
-            self.unitFirstText:SetFont(General.Font or "Fonts\\FRIZQT__.TTF", FirstText.FontSize, General.FontFlag)
+            self.unitFirstText:SetFont(General.Font, FirstText.FontSize, General.FontFlag)
             self.unitFirstText:SetShadowColor(General.FontShadowColour[1], General.FontShadowColour[2], General.FontShadowColour[3], General.FontShadowColour[4])
             self.unitFirstText:SetShadowOffset(General.FontShadowXOffset, General.FontShadowYOffset)
             self.unitFirstText:SetPoint(FirstText.AnchorFrom, self.unitHighLevelFrame, FirstText.AnchorTo, FirstText.XOffset, FirstText.YOffset)
@@ -517,7 +517,7 @@ local function CreateTextFields(self, Unit)
 
         if not self.unitSecondText then
             self.unitSecondText = self.unitHighLevelFrame:CreateFontString(nil, "OVERLAY")
-            self.unitSecondText:SetFont(General.Font or "Fonts\\FRIZQT__.TTF", SecondText.FontSize, General.FontFlag)
+            self.unitSecondText:SetFont(General.Font, SecondText.FontSize, General.FontFlag)
             self.unitSecondText:SetShadowColor(General.FontShadowColour[1], General.FontShadowColour[2], General.FontShadowColour[3], General.FontShadowColour[4])
             self.unitSecondText:SetShadowOffset(General.FontShadowXOffset, General.FontShadowYOffset)
             self.unitSecondText:SetPoint(SecondText.AnchorFrom, self.unitHighLevelFrame, SecondText.AnchorTo, SecondText.XOffset, SecondText.YOffset)
@@ -528,7 +528,7 @@ local function CreateTextFields(self, Unit)
 
         if not self.unitThirdText then
             self.unitThirdText = self.unitHighLevelFrame:CreateFontString(nil, "OVERLAY")
-            self.unitThirdText:SetFont(General.Font or "Fonts\\FRIZQT__.TTF", ThirdText.FontSize, General.FontFlag)
+            self.unitThirdText:SetFont(General.Font, ThirdText.FontSize, General.FontFlag)
             self.unitThirdText:SetShadowColor(General.FontShadowColour[1], General.FontShadowColour[2], General.FontShadowColour[3], General.FontShadowColour[4])
             self.unitThirdText:SetShadowOffset(General.FontShadowXOffset, General.FontShadowYOffset)
             self.unitThirdText:SetPoint(ThirdText.AnchorFrom, self.unitHighLevelFrame, ThirdText.AnchorTo, ThirdText.XOffset, ThirdText.YOffset)
@@ -539,7 +539,7 @@ local function CreateTextFields(self, Unit)
 
         if not self.unitFourthText then
             self.unitFourthText = self.unitHighLevelFrame:CreateFontString(nil, "OVERLAY")
-            self.unitFourthText:SetFont(General.Font or "Fonts\\FRIZQT__.TTF", FourthText.FontSize, General.FontFlag)
+            self.unitFourthText:SetFont(General.Font, FourthText.FontSize, General.FontFlag)
             self.unitFourthText:SetShadowColor(General.FontShadowColour[1], General.FontShadowColour[2], General.FontShadowColour[3], General.FontShadowColour[4])
             self.unitFourthText:SetShadowOffset(General.FontShadowXOffset, General.FontShadowYOffset)
             self.unitFourthText:SetPoint(FourthText.AnchorFrom, self.unitHighLevelFrame, FourthText.AnchorTo, FourthText.XOffset, FourthText.YOffset)
