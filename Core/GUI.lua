@@ -2579,6 +2579,7 @@ function UUF:CreateGUI()
                 PowerTagDescription:SetRelativeWidth(0.7)
                 PowerTagOptions:AddChild(PowerTagDescription)
             end
+            ScrollableContainer:DoLayout()
         end
 
         local function DrawNameTagsContainer(UUFGUI_Container)
@@ -2609,6 +2610,7 @@ function UUF:CreateGUI()
                 NameTagDescription:SetRelativeWidth(0.7)
                 NameTagOptions:AddChild(NameTagDescription)
             end
+            ScrollableContainer:DoLayout()
         end
 
         local function NSMediaTagsContainer(UUFGUI_Container)
@@ -2639,6 +2641,7 @@ function UUF:CreateGUI()
                 NSMediaTagDescription:SetRelativeWidth(0.7)
                 NSMediaTagOptions:AddChild(NSMediaTagDescription)
             end
+            ScrollableContainer:DoLayout()
         end
 
         local function DrawMiscTagsContainer(UUFGUI_Container)
@@ -2986,6 +2989,8 @@ function UUF:CreateGUI()
         end)
         ExportButton:SetRelativeWidth(1)
         ExportOptionsContainer:AddChild(ExportButton)
+
+        ScrollableContainer:DoLayout()
     end
 
     function SelectedGroup(UUFGUI_Container, Event, Group)
