@@ -30,7 +30,7 @@ function UUF:ImportSavedVariables(EncodedInfo)
         hideOnEscape = true,
         preferredIndex = 3,
         OnAccept = function(self)
-            local newProfileName = self.EditBox:GetText()
+            local newProfileName = self.EditBox:GetText() or self.editBox:GetText()
             if newProfileName and newProfileName ~= "" then
                 UUF.DB:SetProfile(newProfileName)
 
