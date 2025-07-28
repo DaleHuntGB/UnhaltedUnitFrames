@@ -18,7 +18,7 @@ function UUF:ImportSavedVariables(EncodedInfo)
     local DecompressedInfo = Compress:DecompressDeflate(DecodedInfo)
     local success, data = Serialize:Deserialize(DecompressedInfo)
     if not success or type(data) ~= "table" then
-        print("Failed to import: invalid or corrupted string.")
+        print("|cFF8080FFUnhalted|r Unit Frames: Invalid Import String.")
         return
     end
 
@@ -49,7 +49,7 @@ function UUF:ImportSavedVariables(EncodedInfo)
                         UUF.DB.profile[key] = value
                     end
                 end
-                print("|cFF8080FFUnhalted|r Unit Frames: You have imported a legacy profile. Some options may not be configured correctly.")
+                print("|cFF8080FFUnhalted|r Unit Frames: Imported Legacy Profile. Configuration May Be Incomplete.")
             elseif type(data.profile) == "table" then
                 for key, value in pairs(data.profile) do
                     UUF.DB.profile[key] = value
@@ -90,7 +90,7 @@ function UUFG:ImportUUF(importString, profileKey)
     local success, profileData = Serialize:Deserialize(DecompressedInfo)
 
     if not success or type(profileData) ~= "table" then
-        print("Failed to import: invalid or corrupted string.")
+        print("|cFF8080FFUnhalted|r Unit Frames: Invalid Import String.")
         return
     end
 
@@ -99,7 +99,7 @@ function UUFG:ImportUUF(importString, profileKey)
     if profileData.Player or profileData.Target then
         UUF.DB.profiles[profileKey] = profileData
         UUF.DB:SetProfile(profileKey)
-        print("|cFF8080FFUnhalted|r Unit Frames: You have imported a legacy profile. Some options may not be configured correctly.")
+        print("|cFF8080FFUnhalted|r Unit Frames: Imported Legacy Profile. Configuration May Be Incomplete.")
         return
     end
 
