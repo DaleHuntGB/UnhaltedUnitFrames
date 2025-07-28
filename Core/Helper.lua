@@ -34,16 +34,17 @@ function UUFG:UpdateAllTags()
 end
 
 function UUF:FormatLargeNumber(value)
+    local decimalPlaces = UUF.DB.profile.General.DecimalPlaces or 1
     if value < 999 then
         return value
     elseif value < 999999 then
-        return string.format("%.1fk", value / 1000)
+        return string.format("%." .. decimalPlaces .. "fk", value / 1000)
     elseif value < 99999999 then
-        return string.format("%.2fm", value / 1000000)
+        return string.format("%." .. decimalPlaces .. "fm", value / 1000000)
     elseif value < 999999999 then
-        return string.format("%.1fm", value / 1000000)
+        return string.format("%." .. decimalPlaces .. "fm", value / 1000000)
     elseif value < 99999999999 then
-        return string.format("%.2fb", value / 1000000000)
+        return string.format("%." .. decimalPlaces .. "fb", value / 1000000000)
     end
     return string.format("%db", value / 1000000000)
 end

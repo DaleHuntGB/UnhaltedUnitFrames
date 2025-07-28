@@ -52,6 +52,7 @@ UUF.Defaults = {
             ColourBackgroundByClass           = false,
             ColourBackgroundIfDead            = false,
             BackgroundMultiplier              = 0.25,
+            DecimalPlaces                     = 1,
             CustomColours = {
                 Reaction = {
                     [1] = {255/255, 64/255, 64/255},            -- Hated
