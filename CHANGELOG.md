@@ -11,4 +11,5 @@
 
 ## V2.0
 - Allow for Importing / Exporting Global Settings.
--
+- Allow for adjusting Decimals in Values.
+- Ensure there is a fallback for missing media / fonts.
