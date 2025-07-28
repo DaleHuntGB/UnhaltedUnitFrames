@@ -2510,7 +2510,7 @@ function UUF:CreateGUI()
         ScrollableContainer:AddChild(TagUpdateInterval)
 
         local NumberDecimalPlaces = UUFGUI:Create("Slider")
-        NumberDecimalPlaces:SetLabel("Number Decimal Places")
+        NumberDecimalPlaces:SetLabel("Decimal Places")
         NumberDecimalPlaces:SetSliderValues(0, 3, 1)
         NumberDecimalPlaces:SetValue(UUF.DB.profile.General.DecimalPlaces)
         NumberDecimalPlaces:SetCallback("OnValueChanged", function(widget, event, value) UUF.DB.profile.General.DecimalPlaces = value UUFG:UpdateAllTags() end)
