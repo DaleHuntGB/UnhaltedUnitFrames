@@ -2848,6 +2848,7 @@ function UUF:CreateGUI()
             if value then
                 ActiveProfileDropdown:SetDisabled(true)
                 GlobalProfileDropdown:SetDisabled(false)
+                UUF.DB:SetDualSpecEnabled(false)
             else
                 ActiveProfileDropdown:SetDisabled(false)
                 GlobalProfileDropdown:SetDisabled(true)
@@ -2868,6 +2869,7 @@ function UUF:CreateGUI()
         local SpecToggle = UUFGUI:Create("CheckBox")
         SpecToggle:SetLabel("Enable Specialization Profiles")
         SpecToggle:SetValue(UUF.DB:IsDualSpecEnabled())
+        SpecToggle:SetDisabled(UUF.DB.global.UseGlobalProfile)
         SpecToggle:SetCallback("OnValueChanged", function(widget, event, value)
             UUF.DB:SetDualSpecEnabled(value)
             for i = 1, numSpecs do
@@ -2888,7 +2890,7 @@ function UUF:CreateGUI()
             SpecProfileDropdown[i]:SetValue(UUF.DB:GetDualSpecProfile(i))
             SpecProfileDropdown[i]:SetCallback("OnValueChanged", function(widget, event, value) UUF.DB:SetDualSpecProfile(value, i) end)
             SpecProfileDropdown[i]:SetRelativeWidth(numSpecs == 2 and 0.5 or numSpecs == 3 and 0.33 or 0.25)
-            SpecProfileDropdown[i]:SetDisabled(not UUF.DB:IsDualSpecEnabled())
+            SpecProfileDropdown[i]:SetDisabled(not UUF.DB:IsDualSpecEnabled() or UUF.DB.global.UseGlobalProfile)
             SpecProfileContainer:AddChild(SpecProfileDropdown[i])
         end
 
