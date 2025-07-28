@@ -261,7 +261,7 @@ local function ResetColours()
         },
         Status = {
             [1] = {255/255, 64/255, 64/255},           -- Dead
-            [2] = {153/255, 153/255, 153/255}, -- Tapped 
+            [2] = {153/255, 153/255, 153/255}, -- Tapped
             [3] = {0.6, 0.6, 0.6}, -- Disconnected
         }
     }
@@ -297,10 +297,10 @@ function UUF:CreateGUI()
         UIScale:SetLabel("UI Scale")
         UIScale:SetSliderValues(0.4, 2, 0.01)
         UIScale:SetValue(UUF.DB.global.UIScale)
-        UIScale:SetCallback("OnValueChanged", function(widget, event, value) 
-            if value > 2 then value = 1 print("|cFF8080FFUnhalted|rUnitFrames: UIScale reset. Maximum of 2 for UIScale.") end 
+        UIScale:SetCallback("OnValueChanged", function(widget, event, value)
+            if value > 2 then value = 1 print("|cFF8080FFUnhalted|rUnitFrames: UIScale reset. Maximum of 2 for UIScale.") end
             UUF.DB.global.UIScale = value
-            UUF:UpdateUIScale() 
+            UUF:UpdateUIScale()
             UIScale:SetValue(value)
         end)
         UIScale:SetRelativeWidth(0.25)
@@ -339,7 +339,7 @@ function UUF:CreateGUI()
         UIScaleContainer:AddChild(TenEightyP)
         UIScaleContainer:AddChild(FourteenFortyP)
         UIScaleContainer:AddChild(ApplyUIScale)
-        
+
         ScrollableContainer:AddChild(UIScaleContainer)
 
         -- Font Options
@@ -352,15 +352,15 @@ function UUF:CreateGUI()
         Font:SetLabel("Font")
         Font:SetList(LSM:HashTable("font"))
         Font:SetValue(GenerateFontName(General.Font))
-        Font:SetCallback("OnValueChanged", function(widget, event, value) General.Font = value 
+        Font:SetCallback("OnValueChanged", function(widget, event, value) General.Font = value
             local LSMFont = LSM:Fetch("font", value)
-            General.Font = LSMFont
+            General.Font = LSMFont or "Fonts\\FRIZQT__.TTF"
             widget:SetValue(value)
             UUF:UpdateFrames(_, true)
         end)
         Font:SetRelativeWidth(0.5)
         FontOptionsContainer:AddChild(Font)
-        
+
         local FontFlag = UUFGUI:Create("Dropdown")
         FontFlag:SetLabel("Font Flag")
         FontFlag:SetList({
@@ -372,7 +372,7 @@ function UUF:CreateGUI()
             ["THICKOUTLINE, MONOCHROME"] = "Thick Outline, Monochrome",
         })
         FontFlag:SetValue(General.FontFlag)
-        FontFlag:SetCallback("OnValueChanged", function(widget, event, value) General.FontFlag = value             UUF:UpdateFrames(_, true) end)
+        FontFlag:SetCallback("OnValueChanged", function(widget, event, value) General.FontFlag = value UUF:UpdateFrames(_, true) end)
         FontFlag:SetRelativeWidth(0.5)
         FontOptionsContainer:AddChild(FontFlag)
 
@@ -398,7 +398,7 @@ function UUF:CreateGUI()
         FontShadowOffsetX:SetCallback("OnValueChanged", function(_, _, value) General.FontShadowXOffset = value             UUF:UpdateFrames(_, true) end)
         FontShadowOffsetX:SetRelativeWidth(0.33)
         FontShadowContainer:AddChild(FontShadowOffsetX)
-        
+
         local FontShadowOffsetY = UUFGUI:Create("Slider")
         FontShadowOffsetY:SetLabel("Shadow Offset Y")
         FontShadowOffsetY:SetValue(General.FontShadowYOffset)
@@ -421,7 +421,7 @@ function UUF:CreateGUI()
         ForegroundTexture:SetValue(GenerateTextureName(General.ForegroundTexture))
         ForegroundTexture:SetCallback("OnValueChanged", function(widget, event, value)
             local LSMStatusbar = LSM:Fetch("statusbar", value)
-            General.ForegroundTexture = LSMStatusbar
+            General.ForegroundTexture = LSMStatusbar or "Interface\\Buttons\\WHITE8X8"
             widget:SetValue(value)
             UUF:UpdateFrames(_, true)
         end)
@@ -434,7 +434,7 @@ function UUF:CreateGUI()
         BackgroundTexture:SetValue(GenerateTextureName(General.BackgroundTexture))
         BackgroundTexture:SetCallback("OnValueChanged", function(widget, event, value)
             local LSMStatusbar = LSM:Fetch("statusbar", value)
-            General.BackgroundTexture = LSMStatusbar
+            General.BackgroundTexture = LSMStatusbar or "Interface\\RaidFrame\\Raid-Bar-Hp-Fill"
             widget:SetValue(value)
             UUF:UpdateFrames(_, true)
         end)
@@ -464,7 +464,7 @@ function UUF:CreateGUI()
         -- BorderInset:SetCallback("OnValueChanged", function(widget, event, value) General.BorderInset = value UUF:UpdateFrames(Unit) end)
         -- BorderInset:SetRelativeWidth(0.5)
         -- TextureOptionsContainer:AddChild(BorderInset)
-        
+
         ScrollableContainer:AddChild(TextureOptionsContainer)
 
         -- Colouring Options
@@ -684,7 +684,7 @@ function UUF:CreateGUI()
             StatusColour:SetRelativeWidth(0.33)
             StatusColours:AddChild(StatusColour)
         end
-        
+
         ScrollableContainer:AddChild(ColouringOptionsContainer)
     end
 
@@ -742,7 +742,7 @@ function UUF:CreateGUI()
         BlacklistBuffsEditBox:SetRelativeWidth(0.5)
         BlacklistBuffsEditBox:SetNumLines(10)
         BuffFilterContainer:AddChild(BlacklistBuffsEditBox)
-        
+
         local DebuffFilterContainer = UUFGUI:Create("InlineGroup")
         DebuffFilterContainer:SetTitle("Debuff Filters")
         DebuffFilterContainer:SetLayout("Flow")
@@ -1146,7 +1146,7 @@ function UUF:CreateGUI()
                 HealthGrowDirection:SetFullWidth(true)
                 HealthOptionsContainer:AddChild(HealthGrowDirection)
             end
-            
+
             local AbsorbsContainer = UUFGUI:Create("InlineGroup")
             AbsorbsContainer:SetTitle("Health Prediction Options")
             AbsorbsContainer:SetLayout("Flow")
@@ -1165,7 +1165,7 @@ function UUF:CreateGUI()
             AbsorbsOverflowEnabled:SetValue(Absorbs.Overflow.Enabled)
             AbsorbsOverflowEnabled:SetCallback("OnValueChanged", function(widget, event, value) Absorbs.Overflow.Enabled = value UUF:CreateReloadPrompt() end)
             AbsorbsOverflowEnabled:SetRelativeWidth(0.33)
-            AbsorbsContainer:AddChild(AbsorbsOverflowEnabled)     
+            AbsorbsContainer:AddChild(AbsorbsOverflowEnabled)
 
             local AbsorbsColourPicker = UUFGUI:Create("ColorPicker")
             AbsorbsColourPicker:SetLabel("Colour")
@@ -1248,7 +1248,7 @@ function UUF:CreateGUI()
             local PowerBarBackdropColourByType = UUFGUI:Create("CheckBox")
             PowerBarBackdropColourByType:SetLabel("Colour Background By Type")
             PowerBarBackdropColourByType:SetValue(PowerBar.ColourBackgroundByType)
-            PowerBarBackdropColourByType:SetCallback("OnValueChanged", function(widget, event, value) PowerBar.ColourBackgroundByType = value 
+            PowerBarBackdropColourByType:SetCallback("OnValueChanged", function(widget, event, value) PowerBar.ColourBackgroundByType = value
             if value then BackgroundColourMultiplier:SetDisabled(false) else BackgroundColourMultiplier:SetDisabled(true) end
             UUF:UpdateFrames(Unit) end)
             PowerBarBackdropColourByType:SetRelativeWidth(0.25)
@@ -1335,7 +1335,7 @@ function UUF:CreateGUI()
             BuffOptions:SetLayout("Flow")
             BuffOptions:SetFullWidth(true)
             UUFGUI_Container:AddChild(BuffOptions)
-    
+
             local BuffsEnabled = UUFGUI:Create("CheckBox")
             BuffsEnabled:SetLabel("Enable Buffs")
             BuffsEnabled:SetValue(Buffs.Enabled)
@@ -1357,7 +1357,7 @@ function UUF:CreateGUI()
             BuffAnchorFrom:SetCallback("OnValueChanged", function(widget, event, value) Buffs.AnchorFrom = value UUF:UpdateFrames(Unit) end)
             BuffAnchorFrom:SetRelativeWidth(0.5)
             BuffOptions:AddChild(BuffAnchorFrom)
-    
+
             local BuffAnchorTo = UUFGUI:Create("Dropdown")
             BuffAnchorTo:SetLabel("Anchor To")
             BuffAnchorTo:SetList(AnchorPoints)
@@ -1365,7 +1365,7 @@ function UUF:CreateGUI()
             BuffAnchorTo:SetCallback("OnValueChanged", function(widget, event, value) Buffs.AnchorTo = value UUF:UpdateFrames(Unit) end)
             BuffAnchorTo:SetRelativeWidth(0.5)
             BuffOptions:AddChild(BuffAnchorTo)
-    
+
             local BuffGrowthX = UUFGUI:Create("Dropdown")
             BuffGrowthX:SetLabel("Growth Direction X")
             BuffGrowthX:SetList(GrowthX)
@@ -1373,7 +1373,7 @@ function UUF:CreateGUI()
             BuffGrowthX:SetCallback("OnValueChanged", function(widget, event, value) Buffs.GrowthX = value UUF:UpdateFrames(Unit) end)
             BuffGrowthX:SetRelativeWidth(0.5)
             BuffOptions:AddChild(BuffGrowthX)
-    
+
             local BuffGrowthY = UUFGUI:Create("Dropdown")
             BuffGrowthY:SetLabel("Growth Direction Y")
             BuffGrowthY:SetList(GrowthY)
@@ -1413,7 +1413,7 @@ function UUF:CreateGUI()
             BuffWrapNum:SetCallback("OnValueChanged", function(widget, event, value) Buffs.PerRow = value UUF:UpdateFrames(Unit) end)
             BuffWrapNum:SetRelativeWidth(0.5)
             BuffOptions:AddChild(BuffWrapNum)
-    
+
             local BuffXOffset = UUFGUI:Create("Slider")
             BuffXOffset:SetLabel("Buff X Offset")
             BuffXOffset:SetSliderValues(-64, 64, 0.1)
@@ -1421,7 +1421,7 @@ function UUF:CreateGUI()
             BuffXOffset:SetCallback("OnValueChanged", function(widget, event, value) Buffs.XOffset = value UUF:UpdateFrames(Unit) end)
             BuffXOffset:SetRelativeWidth(0.5)
             BuffOptions:AddChild(BuffXOffset)
-    
+
             local BuffYOffset = UUFGUI:Create("Slider")
             BuffYOffset:SetLabel("Buff Y Offset")
             BuffYOffset:SetSliderValues(-64, 64, 0.1)
@@ -1492,7 +1492,7 @@ function UUF:CreateGUI()
             DebuffOptions:SetLayout("Flow")
             DebuffOptions:SetFullWidth(true)
             UUFGUI_Container:AddChild(DebuffOptions)
-    
+
             local DebuffsEnabled = UUFGUI:Create("CheckBox")
             DebuffsEnabled:SetLabel("Enable Debuffs")
             DebuffsEnabled:SetValue(Debuffs.Enabled)
@@ -1514,7 +1514,7 @@ function UUF:CreateGUI()
             DebuffAnchorFrom:SetCallback("OnValueChanged", function(widget, event, value) Debuffs.AnchorFrom = value UUF:UpdateFrames(Unit) end)
             DebuffAnchorFrom:SetRelativeWidth(0.5)
             DebuffOptions:AddChild(DebuffAnchorFrom)
-    
+
             local DebuffAnchorTo = UUFGUI:Create("Dropdown")
             DebuffAnchorTo:SetLabel("Anchor To")
             DebuffAnchorTo:SetList(AnchorPoints)
@@ -1522,7 +1522,7 @@ function UUF:CreateGUI()
             DebuffAnchorTo:SetCallback("OnValueChanged", function(widget, event, value) Debuffs.AnchorTo = value UUF:UpdateFrames(Unit) end)
             DebuffAnchorTo:SetRelativeWidth(0.5)
             DebuffOptions:AddChild(DebuffAnchorTo)
-    
+
             local DebuffGrowthX = UUFGUI:Create("Dropdown")
             DebuffGrowthX:SetLabel("Growth Direction X")
             DebuffGrowthX:SetList(GrowthX)
@@ -1530,7 +1530,7 @@ function UUF:CreateGUI()
             DebuffGrowthX:SetCallback("OnValueChanged", function(widget, event, value) Debuffs.GrowthX = value UUF:UpdateFrames(Unit) end)
             DebuffGrowthX:SetRelativeWidth(0.5)
             DebuffOptions:AddChild(DebuffGrowthX)
-    
+
             local DebuffGrowthY = UUFGUI:Create("Dropdown")
             DebuffGrowthY:SetLabel("Growth Direction Y")
             DebuffGrowthY:SetList(GrowthY)
@@ -1570,7 +1570,7 @@ function UUF:CreateGUI()
             DebuffWrapNum:SetCallback("OnValueChanged", function(widget, event, value) Debuffs.PerRow = value UUF:UpdateFrames(Unit) end)
             DebuffWrapNum:SetRelativeWidth(0.5)
             DebuffOptions:AddChild(DebuffWrapNum)
-    
+
             local DebuffXOffset = UUFGUI:Create("Slider")
             DebuffXOffset:SetLabel("Debuff X Offset")
             DebuffXOffset:SetSliderValues(-64, 64, 0.1)
@@ -1578,7 +1578,7 @@ function UUF:CreateGUI()
             DebuffXOffset:SetCallback("OnValueChanged", function(widget, event, value) Debuffs.XOffset = value UUF:UpdateFrames(Unit) end)
             DebuffXOffset:SetRelativeWidth(0.5)
             DebuffOptions:AddChild(DebuffXOffset)
-    
+
             local DebuffYOffset = UUFGUI:Create("Slider")
             DebuffYOffset:SetLabel("Debuff Y Offset")
             DebuffYOffset:SetSliderValues(-64, 64, 0.1)
@@ -1756,7 +1756,7 @@ function UUF:CreateGUI()
                 CombatIndicatorYOffset:SetCallback("OnValueChanged", function(widget, event, value) CombatIndicator.YOffset = value UUF:UpdateFrames(Unit) end)
                 CombatIndicatorYOffset:SetRelativeWidth(0.33)
                 CombatIndicatorOptions:AddChild(CombatIndicatorYOffset)
-                
+
                 -- Leader Indicator
                 local LeaderIndicatorOptions = UUFGUI:Create("InlineGroup")
                 LeaderIndicatorOptions:SetTitle("Leader Indicator Options")
@@ -1917,8 +1917,8 @@ function UUF:CreateGUI()
                 FirstTextTag_HealthTagsDropdown:SetLabel("Health Tags")
                 FirstTextTag_HealthTagsDropdown:SetList(UUF:FetchAvailableHealthTags())
                 FirstTextTag_HealthTagsDropdown:SetValue(nil)
-                FirstTextTag_HealthTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value) 
-                    if FirstTextTag:GetText() == "" then 
+                FirstTextTag_HealthTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value)
+                    if FirstTextTag:GetText() == "" then
                         FirstText.Tag = value
                         FirstTextTag:SetText(value)
                     else
@@ -1930,13 +1930,13 @@ function UUF:CreateGUI()
                 end)
                 FirstTextTag_HealthTagsDropdown:SetRelativeWidth(0.5)
                 FirstTextOptions:AddChild(FirstTextTag_HealthTagsDropdown)
-    
+
                 local FirstTextTag_NameTagsDropdown = UUFGUI:Create("Dropdown")
                 FirstTextTag_NameTagsDropdown:SetLabel("Name Tags")
                 FirstTextTag_NameTagsDropdown:SetList(UUF:FetchAvailableNameTags())
                 FirstTextTag_NameTagsDropdown:SetValue(nil)
-                FirstTextTag_NameTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value) 
-                    if FirstTextTag:GetText() == "" then 
+                FirstTextTag_NameTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value)
+                    if FirstTextTag:GetText() == "" then
                         FirstText.Tag = value
                         FirstTextTag:SetText(value)
                     else
@@ -1953,8 +1953,8 @@ function UUF:CreateGUI()
                 FirstTextTag_PowerTagsDropdown:SetLabel("Power Tags")
                 FirstTextTag_PowerTagsDropdown:SetList(UUF:FetchAvailablePowerTags())
                 FirstTextTag_PowerTagsDropdown:SetValue(nil)
-                FirstTextTag_PowerTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value) 
-                    if FirstTextTag:GetText() == "" then 
+                FirstTextTag_PowerTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value)
+                    if FirstTextTag:GetText() == "" then
                         FirstText.Tag = value
                         FirstTextTag:SetText(value)
                     else
@@ -1971,8 +1971,8 @@ function UUF:CreateGUI()
                 FirstTextTag_MiscTagsDropdown:SetLabel("Miscellaneous Tags")
                 FirstTextTag_MiscTagsDropdown:SetList(UUF:FetchAvailableMiscTags())
                 FirstTextTag_MiscTagsDropdown:SetValue(nil)
-                FirstTextTag_MiscTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value) 
-                    if FirstTextTag:GetText() == "" then 
+                FirstTextTag_MiscTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value)
+                    if FirstTextTag:GetText() == "" then
                         FirstText.Tag = value
                         FirstTextTag:SetText(value)
                     else
@@ -2053,8 +2053,8 @@ function UUF:CreateGUI()
                 SecondTextTag_HealthTagsDropdown:SetLabel("Health Tags")
                 SecondTextTag_HealthTagsDropdown:SetList(UUF:FetchAvailableHealthTags())
                 SecondTextTag_HealthTagsDropdown:SetValue(nil)
-                SecondTextTag_HealthTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value) 
-                    if SecondTextTag:GetText() == "" then 
+                SecondTextTag_HealthTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value)
+                    if SecondTextTag:GetText() == "" then
                         SecondText.Tag = value
                         SecondTextTag:SetText(value)
                     else
@@ -2066,13 +2066,13 @@ function UUF:CreateGUI()
                 end)
                 SecondTextTag_HealthTagsDropdown:SetRelativeWidth(0.5)
                 SecondTextOptions:AddChild(SecondTextTag_HealthTagsDropdown)
-                
+
                 local SecondTextTag_NameTagsDropdown = UUFGUI:Create("Dropdown")
                 SecondTextTag_NameTagsDropdown:SetLabel("Name Tags")
                 SecondTextTag_NameTagsDropdown:SetList(UUF:FetchAvailableNameTags())
                 SecondTextTag_NameTagsDropdown:SetValue(nil)
-                SecondTextTag_NameTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value) 
-                    if SecondTextTag:GetText() == "" then 
+                SecondTextTag_NameTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value)
+                    if SecondTextTag:GetText() == "" then
                         SecondText.Tag = value
                         SecondTextTag:SetText(value)
                     else
@@ -2089,8 +2089,8 @@ function UUF:CreateGUI()
                 SecondTextTag_PowerTagsDropdown:SetLabel("Power Tags")
                 SecondTextTag_PowerTagsDropdown:SetList(UUF:FetchAvailablePowerTags())
                 SecondTextTag_PowerTagsDropdown:SetValue(nil)
-                SecondTextTag_PowerTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value) 
-                    if SecondTextTag:GetText() == "" then 
+                SecondTextTag_PowerTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value)
+                    if SecondTextTag:GetText() == "" then
                         SecondText.Tag = value
                         SecondTextTag:SetText(value)
                     else
@@ -2107,8 +2107,8 @@ function UUF:CreateGUI()
                 SecondTextTag_MiscTagsDropdown:SetLabel("Miscellaneous Tags")
                 SecondTextTag_MiscTagsDropdown:SetList(UUF:FetchAvailableMiscTags())
                 SecondTextTag_MiscTagsDropdown:SetValue(nil)
-                SecondTextTag_MiscTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value) 
-                    if SecondTextTag:GetText() == "" then 
+                SecondTextTag_MiscTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value)
+                    if SecondTextTag:GetText() == "" then
                         SecondText.Tag = value
                         SecondTextTag:SetText(value)
                     else
@@ -2189,8 +2189,8 @@ function UUF:CreateGUI()
                 ThirdTextTag_HealthTagsDropdown:SetLabel("Health Tags")
                 ThirdTextTag_HealthTagsDropdown:SetList(UUF:FetchAvailableHealthTags())
                 ThirdTextTag_HealthTagsDropdown:SetValue(nil)
-                ThirdTextTag_HealthTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value) 
-                    if ThirdTextTag:GetText() == "" then 
+                ThirdTextTag_HealthTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value)
+                    if ThirdTextTag:GetText() == "" then
                         ThirdText.Tag = value
                         ThirdTextTag:SetText(value)
                     else
@@ -2207,8 +2207,8 @@ function UUF:CreateGUI()
                 ThirdTextTag_NameTagsDropdown:SetLabel("Name Tags")
                 ThirdTextTag_NameTagsDropdown:SetList(UUF:FetchAvailableNameTags())
                 ThirdTextTag_NameTagsDropdown:SetValue(nil)
-                ThirdTextTag_NameTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value) 
-                    if ThirdTextTag:GetText() == "" then 
+                ThirdTextTag_NameTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value)
+                    if ThirdTextTag:GetText() == "" then
                         ThirdText.Tag = value
                         ThirdTextTag:SetText(value)
                     else
@@ -2225,8 +2225,8 @@ function UUF:CreateGUI()
                 ThirdTextTag_PowerTagsDropdown:SetLabel("Power Tags")
                 ThirdTextTag_PowerTagsDropdown:SetList(UUF:FetchAvailablePowerTags())
                 ThirdTextTag_PowerTagsDropdown:SetValue(nil)
-                ThirdTextTag_PowerTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value) 
-                    if ThirdTextTag:GetText() == "" then 
+                ThirdTextTag_PowerTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value)
+                    if ThirdTextTag:GetText() == "" then
                         ThirdText.Tag = value
                         ThirdTextTag:SetText(value)
                     else
@@ -2243,8 +2243,8 @@ function UUF:CreateGUI()
                 ThirdTextTag_MiscTagsDropdown:SetLabel("Miscellaneous Tags")
                 ThirdTextTag_MiscTagsDropdown:SetList(UUF:FetchAvailableMiscTags())
                 ThirdTextTag_MiscTagsDropdown:SetValue(nil)
-                ThirdTextTag_MiscTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value) 
-                    if ThirdTextTag:GetText() == "" then 
+                ThirdTextTag_MiscTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value)
+                    if ThirdTextTag:GetText() == "" then
                         ThirdText.Tag = value
                         ThirdTextTag:SetText(value)
                     else
@@ -2325,8 +2325,8 @@ function UUF:CreateGUI()
                 FourthTextTag_HealthTagsDropdown:SetLabel("Health Tags")
                 FourthTextTag_HealthTagsDropdown:SetList(UUF:FetchAvailableHealthTags())
                 FourthTextTag_HealthTagsDropdown:SetValue(nil)
-                FourthTextTag_HealthTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value) 
-                    if FourthTextTag:GetText() == "" then 
+                FourthTextTag_HealthTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value)
+                    if FourthTextTag:GetText() == "" then
                         FourthText.Tag = value
                         FourthTextTag:SetText(value)
                     else
@@ -2343,8 +2343,8 @@ function UUF:CreateGUI()
                 FourthTextTag_NameTagsDropdown:SetLabel("Name Tags")
                 FourthTextTag_NameTagsDropdown:SetList(UUF:FetchAvailableNameTags())
                 FourthTextTag_NameTagsDropdown:SetValue(nil)
-                FourthTextTag_NameTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value) 
-                    if FourthTextTag:GetText() == "" then 
+                FourthTextTag_NameTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value)
+                    if FourthTextTag:GetText() == "" then
                         FourthText.Tag = value
                         FourthTextTag:SetText(value)
                     else
@@ -2361,8 +2361,8 @@ function UUF:CreateGUI()
                 FourthTextTag_PowerTagsDropdown:SetLabel("Power Tags")
                 FourthTextTag_PowerTagsDropdown:SetList(UUF:FetchAvailablePowerTags())
                 FourthTextTag_PowerTagsDropdown:SetValue(nil)
-                FourthTextTag_PowerTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value) 
-                    if FourthTextTag:GetText() == "" then 
+                FourthTextTag_PowerTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value)
+                    if FourthTextTag:GetText() == "" then
                         FourthText.Tag = value
                         FourthTextTag:SetText(value)
                     else
@@ -2379,8 +2379,8 @@ function UUF:CreateGUI()
                 FourthTextTag_MiscTagsDropdown:SetLabel("Miscellaneous Tags")
                 FourthTextTag_MiscTagsDropdown:SetList(UUF:FetchAvailableMiscTags())
                 FourthTextTag_MiscTagsDropdown:SetValue(nil)
-                FourthTextTag_MiscTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value) 
-                    if FourthTextTag:GetText() == "" then 
+                FourthTextTag_MiscTagsDropdown:SetCallback("OnValueChanged", function(widget, event, value)
+                    if FourthTextTag:GetText() == "" then
                         FourthText.Tag = value
                         FourthTextTag:SetText(value)
                     else
@@ -2487,7 +2487,7 @@ function UUF:CreateGUI()
             end
         end
         GUIContainerTabGroup:SetTabs(ContainerTabs)
-        
+
         GUIContainerTabGroup:SetCallback("OnGroupSelected", SelectedGroup)
         GUIContainerTabGroup:SelectTab("Frame")
         GUIContainerTabGroup:SetFullWidth(true)
@@ -2700,7 +2700,7 @@ function UUF:CreateGUI()
                 { text = "Misc",                                value = "Misc" },
             })
         end
-        
+
         GUIContainerTabGroup:SetCallback("OnGroupSelected", SelectedGroup)
         GUIContainerTabGroup:SelectTab("Health")
         GUIContainerTabGroup:SetFullWidth(true)
@@ -2713,18 +2713,18 @@ function UUF:CreateGUI()
         ScrollableContainer:SetFullWidth(true)
         ScrollableContainer:SetFullHeight(true)
         UUFGUI_Container:AddChild(ScrollableContainer)
-    
+
         -- Profile Options Section
         local ProfileOptions = UUFGUI:Create("InlineGroup")
         ProfileOptions:SetTitle("Profile Options")
         ProfileOptions:SetLayout("Flow")
         ProfileOptions:SetFullWidth(true)
         ScrollableContainer:AddChild(ProfileOptions)
-    
+
         local selectedProfile = nil
         local profileList = {}
         local profileKeys = {}
-    
+
         for _, name in ipairs(UUF.DB:GetProfiles(profileList, true)) do
             profileKeys[name] = name
         end
@@ -2739,7 +2739,7 @@ function UUF:CreateGUI()
             end
         end)
         ProfileOptions:AddChild(NewProfileBox)
-    
+
         local ActiveProfileDropdown = UUFGUI:Create("Dropdown")
         ActiveProfileDropdown:SetLabel("Active Profile")
         ActiveProfileDropdown:SetList(profileKeys)
@@ -2926,28 +2926,28 @@ function UUF:CreateGUI()
         ResetToDefaultAll:SetCallback("OnLeave", function(widget, event, value) GameTooltip:Hide() end)
         ResetToDefaultAll:SetRelativeWidth(1)
         ProfileOptions:AddChild(ResetToDefaultAll)
-    
+
         -- Sharing Options Section
         local SharingOptionsContainer = UUFGUI:Create("InlineGroup")
         SharingOptionsContainer:SetTitle("Sharing Options")
         SharingOptionsContainer:SetLayout("Flow")
         SharingOptionsContainer:SetFullWidth(true)
         ScrollableContainer:AddChild(SharingOptionsContainer)
-    
+
         -- Import Section
         local ImportOptionsContainer = UUFGUI:Create("InlineGroup")
         ImportOptionsContainer:SetTitle("Import Options")
         ImportOptionsContainer:SetLayout("Flow")
         ImportOptionsContainer:SetFullWidth(true)
         SharingOptionsContainer:AddChild(ImportOptionsContainer)
-    
+
         local ImportEditBox = UUFGUI:Create("MultiLineEditBox")
         ImportEditBox:SetLabel("Import String")
         ImportEditBox:SetNumLines(5)
         ImportEditBox:SetFullWidth(true)
         ImportEditBox:DisableButton(true)
         ImportOptionsContainer:AddChild(ImportEditBox)
-    
+
         local ImportButton = UUFGUI:Create("Button")
         ImportButton:SetText("Import")
         ImportButton:SetCallback("OnClick", function()
@@ -2956,21 +2956,21 @@ function UUF:CreateGUI()
         end)
         ImportButton:SetRelativeWidth(1)
         ImportOptionsContainer:AddChild(ImportButton)
-    
+
         -- Export Section
         local ExportOptionsContainer = UUFGUI:Create("InlineGroup")
         ExportOptionsContainer:SetTitle("Export Options")
         ExportOptionsContainer:SetLayout("Flow")
         ExportOptionsContainer:SetFullWidth(true)
         SharingOptionsContainer:AddChild(ExportOptionsContainer)
-    
+
         local ExportEditBox = UUFGUI:Create("MultiLineEditBox")
         ExportEditBox:SetLabel("Export String")
         ExportEditBox:SetFullWidth(true)
         ExportEditBox:SetNumLines(5)
         ExportEditBox:DisableButton(true)
         ExportOptionsContainer:AddChild(ExportEditBox)
-    
+
         local ExportButton = UUFGUI:Create("Button")
         ExportButton:SetText("Export")
         ExportButton:SetCallback("OnClick", function()
