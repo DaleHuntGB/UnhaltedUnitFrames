@@ -7,6 +7,8 @@ local LSM = LibStub:GetLibrary("LibSharedMedia-3.0") or LibStub("LibSharedMedia-
 local NSM = C_AddOns.IsAddOnLoaded("NorthernSkyMedia") or C_AddOns.IsAddOnLoaded("NorthernSkyRaidTools")
 local LDS = LibStub("LibDualSpec-1.0", true)
 if LSM then LSM:Register("border", "WHITE8X8", [[Interface\Buttons\WHITE8X8]]) end
+if LSM then LSM:Register("statusbar", "Dragonflight", [[Interface\AddOns\UnhaltedUF\Media\Dragonflight.tga]]) end
+if LSM then LSM:Register("background", "Dragonflight", [[Interface\AddOns\UnhaltedUF\Media\Dragonflight_BG.tga]]) end
 local LSMBorders = {}
 local GUIActive = false
 local Supporters = {
