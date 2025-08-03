@@ -32,7 +32,8 @@ function UUF:ImportSavedVariables(EncodedInfo)
         hideOnEscape = true,
         preferredIndex = 3,
         OnAccept = function(self)
-            local newProfileName = self.EditBox:GetText() or self.editBox:GetText()
+            local editBox = self.editBox or self.EditBox
+            local newProfileName = editBox:GetText()
             if not newProfileName or newProfileName == "" then
                 print("Please enter a valid profile name.")
                 return
@@ -49,7 +50,7 @@ function UUF:ImportSavedVariables(EncodedInfo)
                         UUF.DB.profile[key] = value
                     end
                 end
-                print("|cFF8080FFUnhalted|r Unit Frames: Imported Legacy Profile. Configuration May Be Incomplete.")
+                print("|cFF8080FFUnhalted|r Unit Frames: Imported Legacy Profile.")
             elseif type(data.profile) == "table" then
                 for key, value in pairs(data.profile) do
                     UUF.DB.profile[key] = value
