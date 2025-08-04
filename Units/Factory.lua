@@ -263,7 +263,7 @@ local function CreateHealAbsorbBar(self, Unit)
     local Health = UUF.DB.profile[Unit].Health
     local HealthPrediction = UUF.DB.profile[Unit].Health.HealthPrediction
     local HealAbsorbs = HealthPrediction.HealAbsorbs
-    
+
     if HealAbsorbs.Enabled and not self.unitHealAbsorbs then
         self.unitHealAbsorbs = CreateFrame("StatusBar", nil, self.unitHealthBar)
         self.unitHealAbsorbs:SetStatusBarTexture(General.ForegroundTexture)
@@ -323,7 +323,7 @@ local function CreatePowerBar(self, Unit)
         self.unitPowerBarBackground:SetAllPoints()
         self.unitPowerBarBackground:SetTexture(General.BackgroundTexture)
         self.unitPowerBarBackground:SetAlpha(PowerBar.BackgroundColour[4])
-        if PowerBar.ColourBackgroundByType then 
+        if PowerBar.ColourBackgroundByType then
             self.unitPowerBarBackground.multiplier = PowerBar.BackgroundMultiplier
             self.unitPowerBar.bg = self.unitPowerBarBackground
         else
@@ -405,7 +405,7 @@ local function CreatePortrait(self, Unit)
         self.unitPortraitBackdrop:SetBackdrop(BackdropTemplate)
         self.unitPortraitBackdrop:SetBackdropColor(unpack(General.BackgroundColour))
         self.unitPortraitBackdrop:SetBackdropBorderColor(unpack(General.BorderColour))
-        
+
         self.unitPortrait = self.unitPortraitBackdrop:CreateTexture(nil, "OVERLAY")
         self.unitPortrait:SetSize(self.unitPortraitBackdrop:GetHeight() - 2, self.unitPortraitBackdrop:GetHeight() - 2)
         self.unitPortrait:SetPoint("CENTER", self.unitPortraitBackdrop, "CENTER", 0, 0)
@@ -498,7 +498,7 @@ local function CreateTextFields(self, Unit)
     local SecondText = UUF.DB.profile[Unit].Texts.Second
     local ThirdText = UUF.DB.profile[Unit].Texts.Third
     local FourthText = UUF.DB.profile[Unit].Texts.Fourth
-    if not self.unitHighLevelFrame then 
+    if not self.unitHighLevelFrame then
         self.unitHighLevelFrame = CreateFrame("Frame", nil, self)
         self.unitHighLevelFrame:SetSize(Frame.Width, Frame.Height)
         self.unitHighLevelFrame:SetPoint("CENTER", 0, 0)
@@ -584,13 +584,13 @@ local function ApplyScripts(self)
     self:HookScript("OnLeave", function() if not MouseoverHighlight.Enabled then return end self.unitHighlight:Hide() end)
 end
 
-function ValidateMedia()
+function UUF:ValidateMedia()
     local General = UUF.DB.profile and UUF.DB.profile.General
     if not General then return end
 
     local changed = false
 
-    do
+    C_Timer.After(0, function()
         local fontTest = UIParent:CreateFontString(nil, "OVERLAY")
         if type(General.Font) ~= "string" or not fontTest:SetFont(General.Font, 12) then
             print("|cFF8080FFUnhalted|r Unit Frames: Font Not Found, Default Font Applied.")
@@ -598,9 +598,7 @@ function ValidateMedia()
             changed = true
         end
         fontTest:Hide()
-    end
 
-    do
         local tex = UIParent:CreateTexture(nil, "OVERLAY")
         tex:SetTexture(General.BackgroundTexture)
         if type(General.BackgroundTexture) ~= "string" or not tex:GetTexture() then
@@ -609,9 +607,7 @@ function ValidateMedia()
             changed = true
         end
         tex:Hide()
-    end
 
-    do
         local tex = UIParent:CreateTexture(nil, "OVERLAY")
         tex:SetTexture(General.ForegroundTexture)
         if type(General.ForegroundTexture) ~= "string" or not tex:GetTexture() then
@@ -620,9 +616,8 @@ function ValidateMedia()
             changed = true
         end
         tex:Hide()
-    end
+    end)
 end
-
 
 function UUF:CreateUnitFrame(Unit)
     local Frame = UUF.DB.profile[Unit].Frame
@@ -630,8 +625,6 @@ function UUF:CreateUnitFrame(Unit)
     local HealthPrediction = Health.HealthPrediction
     local Absorbs = HealthPrediction.Absorbs
     local HealAbsorbs = HealthPrediction.HealAbsorbs
-
-    ValidateMedia()
 
     self:SetSize(Frame.Width, Frame.Height)
     CreateHealthBar(self, Unit)
@@ -867,7 +860,7 @@ local function UpdatePowerBar(FrameName)
         FrameName.unitPowerBarBackground:SetAllPoints()
         FrameName.unitPowerBarBackground:SetTexture(General.BackgroundTexture)
         FrameName.unitPowerBarBackground:SetAlpha(PowerBar.BackgroundColour[4])
-        if PowerBar.ColourBackgroundByType then 
+        if PowerBar.ColourBackgroundByType then
             FrameName.unitPowerBarBackground.multiplier = PowerBar.BackgroundMultiplier
             FrameName.unitPowerBar.bg = FrameName.unitPowerBarBackground
         else
@@ -1137,7 +1130,7 @@ function UUF:UpdateBossFrames()
                     offsetY = -(BossContainerHeight - BossFrame:GetHeight()) / 2
                 end
             end
-            local adjustedAnchorFrom = Frame.AnchorFrom 
+            local adjustedAnchorFrom = Frame.AnchorFrom
             if Frame.AnchorFrom == "TOPLEFT" and not growDown then
                 adjustedAnchorFrom = "BOTTOMLEFT"
             elseif Frame.AnchorFrom == "TOP" and not growDown then
@@ -1178,9 +1171,9 @@ function UUF:DisplayBossFrames()
     }
 
     if not UUF.BossFrames then return end
-    
+
     for _, BossFrame in ipairs(UUF.BossFrames) do
-        
+
         if BossFrame.unitBorder then
             BossFrame.unitBorder:SetAllPoints()
             BossFrame.unitBorder:SetBackdrop(BackdropTemplate)
@@ -1193,7 +1186,7 @@ function UUF:DisplayBossFrames()
             local PlayerClassColour = RAID_CLASS_COLORS[select(2, UnitClass("player"))]
             if General.ColourByClass then
                 BF:SetStatusBarColor(PlayerClassColour.r, PlayerClassColour.g, PlayerClassColour.b)
-            else 
+            else
                 BF:SetStatusBarColor(unpack(General.ForegroundColour))
             end
             BF:SetMinMaxValues(0, 100)
@@ -1254,7 +1247,7 @@ function UUF:DisplayBossFrames()
             }
             BF:SetTexture("Interface\\ICONS\\" .. PortraitOptions[math.random(1, #PortraitOptions)])
         end
-        
+
         if BossFrame.unitFirstText then
             local BF = BossFrame.unitFirstText
             BF:SetText("Boss " .. _)

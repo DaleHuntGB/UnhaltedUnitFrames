@@ -1158,6 +1158,7 @@ function UnhaltedUF:OnEnable()
     if UUF.DB.global.UIScaleEnabled then UIParent:SetScale(UUF.DB.global.UIScale) end
     if UUF.DB.profile.TestMode then UUF.DB.profile.TestMode = false end
     UUF.DP = UUF.DB.profile.General.DecimalPlaces
+    UUF:ValidateMedia()
     UUF:SetTagUpdateInterval()
     UUF:LoadCustomColours()
     UUF:SpawnPlayerFrame()
