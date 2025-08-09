@@ -73,6 +73,25 @@ function UUF:ShortenName(name, nameBlacklist)
     return nameBlacklist[words[2]] and words[1] or words[#words] or name
 end
 
+local function getFirstUTF8Char(str)
+    if not str or str == "" then return "" end
+    
+    if string.utf8sub then
+        return string.utf8sub(str, 1, 1)
+    end
+
+    -- Hash map of locale to number of bytes for first UTF-8 character
+    local localeFirstCharBytes = {
+        koKR = 3, -- Korean
+        zhCN = 3, -- Simplified Chinese
+        zhTW = 3, -- Traditional Chinese
+        ruRU = 2, -- Russian
+        jaJP = 3, -- Japanese (if supported)
+    }
+    
+    return string.sub(str, 1, localeFirstCharBytes[GetLocale()] or 1)
+end
+
 function UUF:AbbreviateName(unitName)
     local unitNameParts = {}
     for word in unitName:gmatch("%S+") do
@@ -81,7 +100,7 @@ function UUF:AbbreviateName(unitName)
 
     local last = table.remove(unitNameParts)
     for i, word in ipairs(unitNameParts) do
-        unitNameParts[i] = (string.utf8sub or string.sub)(word, 1, 1) .. "."
+        unitNameParts[i] = getFirstUTF8Char(word) .. "."
     end
 
     table.insert(unitNameParts, last)
