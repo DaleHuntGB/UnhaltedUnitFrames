@@ -202,21 +202,21 @@ end
 oUF.Tags.Methods["Name:VeryShort"] = function(unit)
     local name = UnitName(unit)
     if name then 
-        return string.sub(name, 1, 5)
+        return UUF:Substring(name, 1, 5)
     end
 end
 
 oUF.Tags.Methods["Name:Short"] = function(unit)
     local name = UnitName(unit)
     if name then 
-        return string.sub(name, 1, 8)
+        return UUF:Substring(name, 1, 8)
     end
 end
 
 oUF.Tags.Methods["Name:Medium"] = function(unit)
     local name = UnitName(unit)
     if name then 
-        return string.sub(name, 1, 10)
+        return UUF:Substring(name, 1, 10)
     end
 end
 
@@ -243,19 +243,19 @@ if NSM then
 	oUF.Tags.Methods['NSNickName:veryshort'] = function(unit)
 		local name = UnitName(unit)
 		name = name and NSAPI and NSAPI:GetName(name, "Unhalted") or name
-		return string.sub(name, 1, 5)
+		return UUF:Substring(name, 1, 5)
 	end
 
 	oUF.Tags.Methods['NSNickName:short'] = function(unit)
 		local name = UnitName(unit)
 		name = name and NSAPI and NSAPI:GetName(name, "Unhalted") or name
-		return string.sub(name, 1, 8)
+		return UUF:Substring(name, 1, 8)
 	end
 
 	oUF.Tags.Methods['NSNickName:medium'] = function(unit)
 		local name = UnitName(unit)
 		name = name and NSAPI and NSAPI:GetName(name, "Unhalted") or name
-		return string.sub(name, 1, 10)
+		return UUF:Substring(name, 1, 10)
 	end
 
     for i = 1, 12 do
@@ -264,7 +264,7 @@ if NSM then
             local name = UnitName(unit)
             name = name and NSAPI and NSAPI:GetName(name, "Unhalted") or name
             if name and unit then
-                return string.sub(name, 1, i)
+                return UUF:Substring(name, 1, i)
             end
         end
     end

@@ -73,25 +73,6 @@ function UUF:ShortenName(name, nameBlacklist)
     return nameBlacklist[words[2]] and words[1] or words[#words] or name
 end
 
-local function getFirstUTF8Char(str)
-    if not str or str == "" then return "" end
-    
-    if string.utf8sub then
-        return string.utf8sub(str, 1, 1)
-    end
-
-    -- Hash map of locale to number of bytes for first UTF-8 character
-    local localeFirstCharBytes = {
-        koKR = 3, -- Korean
-        zhCN = 3, -- Simplified Chinese
-        zhTW = 3, -- Traditional Chinese
-        ruRU = 2, -- Russian
-        jaJP = 3, -- Japanese (if supported)
-    }
-    
-    return string.sub(str, 1, localeFirstCharBytes[GetLocale()] or 1)
-end
-
 function UUF:AbbreviateName(unitName)
     local unitNameParts = {}
     for word in unitName:gmatch("%S+") do
@@ -100,7 +81,7 @@ function UUF:AbbreviateName(unitName)
 
     local last = table.remove(unitNameParts)
     for i, word in ipairs(unitNameParts) do
-        unitNameParts[i] = getFirstUTF8Char(word) .. "."
+        unitNameParts[i] = UUF:substring(word, 1, 1) .. "."
     end
 
     table.insert(unitNameParts, last)
@@ -220,4 +201,38 @@ function UUF:DisableBlizzard(unit)
     if oUF and oUF.DisableBlizzard then
         oUF:DisableBlizzard(lowerUnit)
     end
+end
+
+function UUF:Substring(str, start, length)
+    local localeFirstCharBytes = {
+        koKR = 3, -- Korean
+        zhCN = 3, -- Simplified Chinese
+        zhTW = 3, -- Traditional Chinese
+        ruRU = 2, -- Russian
+        jaJP = 3, -- Japanese (if supported)
+    }
+    local bytesPerChar = localeFirstCharBytes[GetLocale()] or 1;
+    local finalLength = length * bytesPerChar;
+    if bytesPerChar > 1 then
+        local oneByteSymbols = CountOneByteSymbols(str, start, length * bytesPerChar);
+        finalLength = oneByteSymbols + (length - oneByteSymbols) * bytesPerChar;
+    end
+    if string.utf8sub then
+        return string.utf8sub(str, start, finalLength)
+    end
+    return string.sub(str, start, finalLength)
+end
+
+function CountOneByteSymbols(str, start, length)
+    if not str then return 0 end
+    local endPos = start + length - 1
+    local count = 0
+    for i = start, endPos do
+        local char = str:sub(i, i)
+        -- Count characters that have a weight of exactly 1 byte (ASCII range 0-127)
+        if string.byte(char) <= 127 then
+            count = count + 1
+        end
+    end
+    return count
 end
