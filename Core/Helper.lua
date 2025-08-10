@@ -81,7 +81,7 @@ function UUF:AbbreviateName(unitName)
 
     local last = table.remove(unitNameParts)
     for i, word in ipairs(unitNameParts) do
-        unitNameParts[i] = (string.utf8sub or string.sub)(word, 1, 1) .. "."
+        unitNameParts[i] = UUF:substring(word, 1, 1) .. "."
     end
 
     table.insert(unitNameParts, last)
@@ -201,4 +201,46 @@ function UUF:DisableBlizzard(unit)
     if oUF and oUF.DisableBlizzard then
         oUF:DisableBlizzard(lowerUnit)
     end
+end
+
+function UUF:Substring(str, start, length)
+    local localeFirstCharBytes = {
+        koKR = 3, -- Korean
+        zhCN = 3, -- Simplified Chinese
+        zhTW = 3, -- Traditional Chinese
+        ruRU = 2, -- Russian
+        jaJP = 3, -- Japanese (if supported)
+    }
+    local bytesPerChar = localeFirstCharBytes[GetLocale()] or 1;
+    local finalLength = length * bytesPerChar;
+    if bytesPerChar > 1 then
+        local oneByteSymbols = CountOneByteSymbols(str, start, length, bytesPerChar);
+        finalLength = oneByteSymbols + (length - oneByteSymbols) * bytesPerChar;
+    end
+    if string.utf8sub then
+        return string.utf8sub(str, start, finalLength)
+    end
+    return string.sub(str, start, finalLength)
+end
+
+function CountOneByteSymbols(str, start, length, bytesPerChar)
+    if not str then return 0 end
+    local endPos = math.min(start + length * bytesPerChar - 1, #str)
+    local count = 0
+    local lettersCount = 0
+    for i = start, endPos do
+        local char = str:sub(i, i)
+        -- Count characters that have a weight of exactly 1 byte (ASCII range 0-127)
+        if string.byte(char) <= 127 then
+            count = count + 1
+            lettersCount = lettersCount + 1
+        else
+            lettersCount = lettersCount + 1 / bytesPerChar
+        end
+        if lettersCount >= length then
+            break
+        end
+    end
+
+    return count
 end
