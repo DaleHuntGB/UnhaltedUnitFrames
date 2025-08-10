@@ -225,7 +225,7 @@ end
 
 function CountOneByteSymbols(str, start, length)
     if not str then return 0 end
-    local endPos = start + length - 1
+    local endPos = math.min(start + length - 1, #str)
     local count = 0
     for i = start, endPos do
         local char = str:sub(i, i)
