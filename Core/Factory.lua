@@ -1543,34 +1543,33 @@ function UUF:UpdateFrame(frameName, unit)
         self.Party:SetAttribute("showPlayer", Frame.ShowPlayer)
         self.Party:SetAttribute("groupingOrder", table.concat(Frame.SortOrder, ","))
 
-            for i = 1, self.Party:GetNumChildren() do
-                local child = select(i, self.Party:GetChildren())
-                local unitToken = "party"..i
-                if child and UnitExists(unitToken) then
-                    child:SetSize(Frame.Width, Frame.Height)
-                    UpdateColours(child, unitToken)
-                    UpdateTransparency(child, unitToken)
-                    UpdateHealthBar(child, unitToken)
-                    UpdatePowerBar(child, unitToken)
-                    UpdateHealthPrediction(child, unitToken)
-                    UpdateAuras(child, unitToken)
-                    UpdateIndicators(child, unitToken)
-                    UpdatePortrait(child, unitToken)
-                    UpdateRange(child, unitToken)
-                    UpdateTags(child, unitToken)
-                    child:UpdateAllElements("UUF_UPDATE")
-                end
+        for i = 1, self.Party:GetNumChildren() do
+            local child = select(i, self.Party:GetChildren())
+            local unitToken = "party"..i
+            if child and UnitExists(unitToken) then
+                child:SetSize(Frame.Width, Frame.Height)
+                UpdateColours(child, unitToken)
+                UpdateTransparency(child, unitToken)
+                UpdateHealthBar(child, unitToken)
+                UpdatePowerBar(child, unitToken)
+                UpdateHealthPrediction(child, unitToken)
+                UpdateAuras(child, unitToken)
+                UpdateIndicators(child, unitToken)
+                UpdatePortrait(child, unitToken)
+                UpdateRange(child, unitToken)
+                UpdateTags(child, unitToken)
+                child:UpdateAllElements("UUF_UPDATE")
             end
-
-            self.Party:ClearAllPoints()
-            self.Party:SetPoint(
-                Frame.AnchorFrom,
-                UIParent,
-                Frame.AnchorTo,
-                Frame.XPosition,
-                Frame.YPosition
-            )
         end
+
+        self.Party:ClearAllPoints()
+        self.Party:SetPoint(
+            Frame.AnchorFrom,
+            UIParent,
+            Frame.AnchorTo,
+            Frame.XPosition,
+            Frame.YPosition
+        )
         return
     end
 
