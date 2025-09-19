@@ -1,0 +1,38 @@
+{
+    "Lua.runtime.version": "Lua 5.1",
+    "Lua.runtime.builtin": {
+        "basic": "disable",
+        "debug": "disable",
+        "io": "disable",
+        "math": "disable",
+        "os": "disable",
+        "package": "disable",
+        "string": "disable",
+        "table": "disable",
+        "utf8": "disable"
+    },
+    "Lua.workspace.library": [
+        "~/.vscode/extensions/ketho.wow-api-0.21.0/Annotations/Core"
+    ],
+    "Lua.diagnostics.globals": [
+        "UnitFrame_OnEnter",
+        "UnitFrame_OnLeave",
+        "RAID_CLASS_COLORS",
+        "STANDARD_TEXT_FONT",
+        "StaticPopupDialogs",
+        "SlashCmdList",
+        "StaticPopup_Show",
+        "ACCEPT",
+        "CANCEL",
+        "ReloadUI",
+        "NORMAL_FONT_COLOR_CODE",
+        "FONT_COLOR_CODE_CLOSE",
+        "CLOSE",
+        "PanelTemplates_TabResize",
+        "PanelTemplates_SetDisabledTabState",
+        "PanelTemplates_SelectTab",
+        "PanelTemplates_DeselectTab",
+        "SetDesaturation",
+        "ColorPickerFrame"
+    ]
+}

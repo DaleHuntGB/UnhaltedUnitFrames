@@ -1,0 +1,31 @@
+## Title: |cFF8080FFUnhalted|r Unit Frames
+## Interface: 110200, 120000
+## Version: 2.0
+## Notes: Simple, efficient & aesthetic Unit Frames built on the oUF Framework.
+## Author: |cFF8080FFUnhalted|r
+## X-oUF: UnhaltedUnitFrames
+## Category-enUS: Unit Frames
+## SavedVariables: UnhaltedUFDB
+## IconTexture: Interface\AddOns\UnhaltedUnitFrames\Media\Logo.tga
+
+Libs/Libs.xml
+
+Core/Globals.lua
+Core/Config.lua
+Core/Utility.lua
+Core/Factory.lua
+Core/Share.lua
+
+Units/Modules/Tags.lua
+Units/Modules/Range.lua
+Units/Modules/TargetIndicator.lua
+Units/Player.lua
+Units/Target.lua
+Units/TargetTarget.lua
+Units/Focus.lua
+Units/FocusTarget.lua
+Units/Pet.lua
+Units/Boss.lua
+Units/Party.lua
+
+Core/Main.lua
