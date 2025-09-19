@@ -1570,7 +1570,85 @@ function UUF:UpdateFrame(frameName, unit)
             Frame.XPosition,
             Frame.YPosition
         )
+        self.Party:SetAttribute("showParty", false)
+        self.Party:SetAttribute("showParty", true)
         return
+    end
+
+    if normalizedUnit == "raid" then
+        if not self.Raid then return end
+        local groups = {}
+        for i = 1, Frame.GroupsToShow do
+            groups[#groups+1] = tostring(i)
+        end
+        local groupString = table.concat(groups, ",")
+
+        local point, xOffset, yOffset
+        if Frame.RowGrowth == "UP" then
+            point, xOffset, yOffset = "BOTTOM", 0, Frame.Spacing
+        elseif Frame.RowGrowth == "DOWN" then
+            point, xOffset, yOffset = "TOP", 0, -Frame.Spacing
+        elseif Frame.RowGrowth == "LEFT" then
+            point, xOffset, yOffset = "RIGHT", -Frame.Spacing, 0
+        else
+            point, xOffset, yOffset = "LEFT", Frame.Spacing, 0
+        end
+
+        local columnAnchorPoint
+        if Frame.ColumnGrowth == "LEFT" then
+            columnAnchorPoint = "LEFT"
+        elseif Frame.ColumnGrowth == "RIGHT" then
+            columnAnchorPoint = "RIGHT"
+        elseif Frame.ColumnGrowth == "UP" then
+            columnAnchorPoint = "TOP"
+        else
+            columnAnchorPoint = "BOTTOM"
+        end
+
+        self.Raid:SetAttribute("showRaid", Frame.Enabled)
+        self.Raid:SetAttribute("showSolo", Frame.ShowSolo)
+        self.Raid:SetAttribute("showPlayer", Frame.ShowPlayer)
+        self.Raid:SetAttribute("groupBy", Frame.GroupBy or "GROUP")
+        self.Raid:SetAttribute("groupFilter", groupString)
+        self.Raid:SetAttribute("groupingOrder", table.concat(Frame.SortOrder or {}, ","))
+        self.Raid:SetAttribute("maxColumns", Frame.MaxColumns or Frame.GroupsToShow)
+        self.Raid:SetAttribute("unitsPerColumn", Frame.UnitsPerColumn)
+        self.Raid:SetAttribute("point", point)
+        self.Raid:SetAttribute("xOffset", xOffset)
+        self.Raid:SetAttribute("yOffset", yOffset)
+        self.Raid:SetAttribute("columnSpacing", Frame.ColumnSpacing or Frame.Spacing)
+        self.Raid:SetAttribute("columnAnchorPoint", columnAnchorPoint)
+
+        for i = 1, self.Raid:GetNumChildren() do
+            local child = select(i, self.Raid:GetChildren())
+            local unitToken = "raid"..i
+            if child and UnitExists(unitToken) then
+                child:SetSize(Frame.Width, Frame.Height)
+                UpdateColours(child, unitToken)
+                UpdateTransparency(child, unitToken)
+                UpdateHealthBar(child, unitToken)
+                UpdatePowerBar(child, unitToken)
+                UpdateHealthPrediction(child, unitToken)
+                UpdateAuras(child, unitToken)
+                UpdateIndicators(child, unitToken)
+                UpdatePortrait(child, unitToken)
+                UpdateRange(child, unitToken)
+                UpdateTags(child, unitToken)
+                child:UpdateAllElements("UUF_UPDATE")
+            end
+        end
+
+        self.Raid:ClearAllPoints()
+        self.Raid:SetPoint(
+            Frame.AnchorFrom,
+            UIParent,
+            Frame.AnchorTo,
+            Frame.XPosition,
+            Frame.YPosition
+        )
+
+        self.Raid:SetAttribute("showRaid", false)
+        self.Raid:SetAttribute("showRaid", true)
     end
 
     local unitFrame = type(frameName) == "table" and frameName or _G[frameName]

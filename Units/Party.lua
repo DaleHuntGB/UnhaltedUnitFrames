@@ -42,4 +42,3 @@ function UUF:SpawnPartyFrames()
         Frame.YPosition
     )
 end
-

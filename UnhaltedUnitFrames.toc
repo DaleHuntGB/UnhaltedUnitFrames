@@ -27,5 +27,6 @@ Units/FocusTarget.lua
 Units/Pet.lua
 Units/Boss.lua
 Units/Party.lua
+Units/Raid.lua
 
 Core/Main.lua

@@ -31,4 +31,5 @@ function UnhaltedUF:OnEnable()
     UUF:SpawnPetFrame()
     UUF:SpawnBossFrames()
     UUF:SpawnPartyFrames()
+    UUF:SpawnRaidFrames()
 end

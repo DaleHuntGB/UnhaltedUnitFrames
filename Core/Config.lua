@@ -2858,7 +2858,7 @@ function UUF:CreateGUI()
                     end
                 end
 
-                if unit == "party" then
+                if unit == "party" or unit == "raid" then
                     local RoleIcons = Indicators.RoleIcons
 
                     local RoleIconsContainer = AG:Create("InlineGroup")
@@ -3376,8 +3376,8 @@ function UUF:CreateGUI()
             DrawUnitContainer(GUIContainer, "boss")
         elseif mainGroup == "Party" then
             DrawUnitContainer(GUIContainer, "party")
-        -- elseif mainGroup == "Raid" then
-        --     DrawUnitContainer(GUIContainer, "raid")
+        elseif mainGroup == "Raid" then
+            DrawUnitContainer(GUIContainer, "raid")
         elseif mainGroup == "Tags" then
             DrawTagsContainer(GUIContainer)
         elseif mainGroup == "Profiles" then
@@ -3399,7 +3399,7 @@ function UUF:CreateGUI()
         { text = "Pet", value = "Pet"},
         { text = "Boss", value = "Boss"},
         { text = "Party", value = "Party"},
-        -- { text = "Raid", value = "Raid"},
+        { text = "Raid", value = "Raid"},
         { text = "Tags", value = "Tags"},
         { text = "Profiles", value = "Profiles"},
     })
@@ -4921,7 +4921,7 @@ UUF.Defaults = {
                 },
                 ReadyCheck = {
                     Enabled = true,
-                    Size = 24,
+                    Size = 18,
                     AnchorFrom = "CENTER",
                     AnchorTo = "CENTER",
                     OffsetX = 0,
