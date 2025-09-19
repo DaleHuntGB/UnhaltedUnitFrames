@@ -3233,6 +3233,54 @@ function UUF:CreateGUI()
             ProfileContainer:AddChild(CreateProfileButton)
 
             RefreshProfiles()
+
+            local GlobalProfileHeading = AG:Create("Heading")
+            GlobalProfileHeading:SetText("Global Profile Settings")
+            GlobalProfileHeading:SetFullWidth(true)
+            ProfileContainer:AddChild(GlobalProfileHeading)
+
+            local UseGlobalProfileToggle = AG:Create("CheckBox")
+            local GlobalProfileDropdown = AG:Create("Dropdown")
+            UseGlobalProfileToggle:SetLabel("Use Global Profile Settings")
+            UseGlobalProfileToggle:SetValue(UUF.db.global.UseGlobalProfile)
+            UseGlobalProfileToggle:SetRelativeWidth(0.5)
+            UseGlobalProfileToggle:SetCallback("OnValueChanged", function(_, _, value)
+                UUF.db.global.UseGlobalProfile = value
+
+                if value and UUF.db.global.GlobalProfile and UUF.db.global.GlobalProfile ~= "" then
+                    UUF.db:SetProfile(UUF.db.global.GlobalProfile)
+                    UIParent:SetScale(UUF.db.profile.General.UIScale or 1)
+                    for unitFrameName, unit in pairs(UnitFrames) do
+                        UUF:UpdateFrame(unitFrameName, unit)
+                    end
+                end
+
+                GlobalProfileDropdown:SetDisabled(not value)
+
+                for _, child in ipairs(ProfileContainer.children) do
+                    if child ~= UseGlobalProfileToggle and child ~= GlobalProfileDropdown then
+                        DeepDisable(child, value)
+                    end
+                end
+
+                RefreshProfiles()
+            end)
+            ProfileContainer:AddChild(UseGlobalProfileToggle)
+
+            GlobalProfileDropdown:SetLabel("Global Profile...")
+            GlobalProfileDropdown:SetRelativeWidth(0.5)
+            GlobalProfileDropdown:SetList(profileKeys)
+            GlobalProfileDropdown:SetValue(UUF.db.global.GlobalProfile)
+            GlobalProfileDropdown:SetCallback("OnValueChanged", function(_, _, value)
+                UUF.db:SetProfile(value)
+                UUF.db.global.GlobalProfile = value
+                UIParent:SetScale(UUF.db.profile.General.UIScale or 1)
+                for unitFrameName, unit in pairs(UnitFrames) do
+                    UUF:UpdateFrame(unitFrameName, unit)
+                end
+                RefreshProfiles()
+            end)
+            ProfileContainer:AddChild(GlobalProfileDropdown)
             ProfileContainer:DoLayout()
 
             local SharingContainer = AG:Create("InlineGroup")
@@ -3284,6 +3332,17 @@ function UUF:CreateGUI()
             ImportProfileButton:SetFullWidth(true)
             ImportProfileButton:SetCallback("OnClick", function() UUF:ImportSavedVariables(ImportingEditBox:GetText()) ImportingEditBox:SetText("") end)
             SharingContainer:AddChild(ImportProfileButton)
+
+            GlobalProfileDropdown:SetDisabled(not UUF.db.global.UseGlobalProfile)
+
+            if UUF.db.global.UseGlobalProfile then
+                for _, child in ipairs(ProfileContainer.children) do
+                    if child ~= UseGlobalProfileToggle and child ~= GlobalProfileDropdown then
+                        DeepDisable(child, true)
+                    end
+                end
+            else
+            end
         end
 
         if mainGroup == "General" then
@@ -3341,7 +3400,10 @@ function UUF:CreateGUI()
 end
 
 UUF.Defaults = {
-    global = {},
+    global = {
+        UseGlobalProfile = false,
+        GlobalProfile = "Default",
+    },
     profile = {
         General = {
             AllowUIScaling = true,
