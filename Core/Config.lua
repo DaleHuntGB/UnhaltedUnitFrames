@@ -778,6 +778,10 @@ function UUF:CreateGUI()
             TexturesContainer:SetFullWidth(true)
             ScrollFrame:AddChild(TexturesContainer)
 
+            local TexturesInfoTag = CreateInfoTag("|cFF8080FFTextures|r are applied globally to all elements & unit frames, where appropriate.")
+            TexturesInfoTag:SetRelativeWidth(1)
+            TexturesContainer:AddChild(TexturesInfoTag)
+
             local ForegroundTextureDropdown = AG:Create("Dropdown")
             ForegroundTextureDropdown:SetList(GenerateTextureList())
             ForegroundTextureDropdown:SetLabel("Foreground Texture")
