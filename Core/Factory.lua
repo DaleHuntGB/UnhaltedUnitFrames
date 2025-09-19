@@ -1535,14 +1535,13 @@ function UUF:UpdateFrame(frameName, unit)
     end
 
     if normalizedUnit == "party" then
-        if UnitDB.Enabled then
-            if not self.Party then return end
-
-            self.Party:SetAttribute("point", Frame.Layout == "HORIZONTAL" and "LEFT" or "TOP")
-            self.Party:SetAttribute("xOffset", Frame.Layout == "HORIZONTAL" and Frame.Spacing or 0)
-            self.Party:SetAttribute("yOffset", Frame.Layout == "VERTICAL" and -Frame.Spacing or 0)
-            self.Party:SetAttribute("showPlayer", Frame.ShowPlayer)
-            self.Party:SetAttribute("groupingOrder", table.concat(Frame.SortOrder, ","))
+        if not self.Party then return end
+        self.Party:SetAttribute("showParty", UnitDB.Enabled)
+        self.Party:SetAttribute("point", Frame.Layout == "HORIZONTAL" and "LEFT" or "TOP")
+        self.Party:SetAttribute("xOffset", Frame.Layout == "HORIZONTAL" and Frame.Spacing or 0)
+        self.Party:SetAttribute("yOffset", Frame.Layout == "VERTICAL" and -Frame.Spacing or 0)
+        self.Party:SetAttribute("showPlayer", Frame.ShowPlayer)
+        self.Party:SetAttribute("groupingOrder", table.concat(Frame.SortOrder, ","))
 
             for i = 1, self.Party:GetNumChildren() do
                 local child = select(i, self.Party:GetChildren())
