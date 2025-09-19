@@ -3208,6 +3208,7 @@ function UUF:CreateGUI()
                     UUF:UpdateFrame(unitFrameName, unit)
                 end
                 UIParent:SetScale(UUF.db.profile.General.UIScale or 1)
+                RefreshProfiles()
             end)
             ProfileContainer:AddChild(ResetProfileButton)
 
@@ -3235,8 +3236,6 @@ function UUF:CreateGUI()
                 end
             end)
             ProfileContainer:AddChild(CreateProfileButton)
-
-            RefreshProfiles()
 
             local GlobalProfileHeading = AG:Create("Heading")
             GlobalProfileHeading:SetText("Global Profile Settings")
@@ -3289,6 +3288,7 @@ function UUF:CreateGUI()
                 RefreshProfiles()
             end)
             ProfileContainer:AddChild(GlobalProfileDropdown)
+            RefreshProfiles()
             ProfileContainer:DoLayout()
 
             local SharingContainer = AG:Create("InlineGroup")
