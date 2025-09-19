@@ -13,6 +13,7 @@ function UnhaltedUF:OnInitialize()
     UUF.TagInterval = UUF.db.profile.General.TagUpdateInterval or 0.25
     UUF.HealthSeparator = UUF.db.profile.General.HealthSeparator or "-"
     UUF.TargetTargetSeparator = UUF.db.profile.General.TargetTargetSeparator or "»"
+    if UUF.db.global.UseGlobalProfile then UUF.db:SetProfile(UUF.db.global.GlobalProfile or "Default") end
 end
 
 function UnhaltedUF:OnEnable()
