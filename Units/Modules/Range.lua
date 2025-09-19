@@ -15,20 +15,24 @@ RangeEventFrame:SetScript("OnEvent", function()
     end
 end)
 
-
 function GetGroupUnit(unit)
-	if UnitIsUnit(unit, 'player') then return end
-	if strfind(unit, 'party') or strfind(unit, 'raid') then return unit end
-	if UnitInParty(unit) or UnitInRaid(unit) then
-		local isInRaid = IsInRaid()
-		for i = 1, GetNumGroupMembers() do
-			local groupUnit = (isInRaid and 'raid' or 'party')..i
-			if UnitIsUnit(unit, groupUnit) then
-				return groupUnit
-			end
-		end
-	end
+    if strfind(unit, "party") or strfind(unit, "raid") or unit == "player" then
+        return unit
+    end
+    if UnitInParty(unit) or UnitInRaid(unit) then
+        local isInRaid = IsInRaid()
+        for i = 1, GetNumGroupMembers() do
+            local groupUnit = (isInRaid and "raid" or "party")..i
+            if UnitIsUnit(unit, groupUnit) then
+                return groupUnit
+            end
+        end
+        if not isInRaid and UnitIsUnit(unit, "player") then
+            return "player"
+        end
+    end
 end
+
 
 local function IsUnitInRange(unit)
     local minRange, maxRange = LRC:GetRange(unit, true, true)
