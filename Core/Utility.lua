@@ -155,6 +155,31 @@ function UUF:WrapTextInColor(unitName, unit)
     end
 end
 
+function UUF:SubChar(text, startChar, endChar)
+    if not text then return "" end
+    local startIndex, endIndex = 1, #text
+    local currentIndex, currentChar = 1, 0
+
+    while currentIndex <= #text do
+        currentChar = currentChar + 1
+        if currentChar == startChar then
+            startIndex = currentIndex
+        end
+
+        local c = string.byte(text, currentIndex)
+        if not c then break end
+        local charLen = (c >= 240 and 4) or (c >= 224 and 3) or (c >= 192 and 2) or 1
+        currentIndex = currentIndex + charLen
+
+        if currentChar == endChar then
+            endIndex = currentIndex - 1
+            break
+        end
+    end
+
+    return string.sub(text, startIndex, endIndex)
+end
+
 function UUF:TitleCase(text)
     if type(text) ~= "string" or text == "" then return text end
     local textLength = #text

@@ -205,7 +205,7 @@ oUF.Tags.Methods["name:veryshort"] = function(unit)
     if not unit or not UnitExists(unit) then return "" end
     local uName = UnitName(unit)
     if #uName > 5 then
-        return string.sub(uName, 1, 5)
+        return UUF:SubChar(uName, 1, 5)
     else
         return uName
     end
@@ -216,7 +216,7 @@ oUF.Tags.Methods["name:short"] = function(unit)
     if not unit or not UnitExists(unit) then return "" end
     local uName = UnitName(unit)
     if #uName > 8 then
-        return string.sub(uName, 1, 8)
+        return UUF:SubChar(uName, 1, 8)
     else
         return uName
     end
@@ -227,7 +227,7 @@ oUF.Tags.Methods["name:medium"] = function(unit)
     if not unit or not UnitExists(unit) then return "" end
     local uName = UnitName(unit)
     if #uName > 12 then
-        return string.sub(uName, 1, 12)
+        return UUF:SubChar(uName, 1, 12)
     else
         return uName
     end
@@ -242,7 +242,7 @@ oUF.Tags.Methods["name:abbreviated"] = function(unit)
         table.insert(nameParts, part)
     end
     for i = 1, #nameParts - 1 do
-        nameParts[i] = string.sub(nameParts[i], 1, 1) .. "."
+        nameParts[i] = UUF:SubChar(nameParts[i], 1, 1) .. "."
     end
     return table.concat(nameParts, " ")
 end
@@ -473,9 +473,9 @@ function UUF:FetchTestTags(tag)
         ["power:perpp"] = UUF:FormatPercent(25),
         ["power:healer-perpp"] = UUF:FormatPercent(25),
 
-        ["name:veryshort"] = string.sub(UnitName("player") or "Player", 1, 5),
-        ["name:short"] = string.sub(UnitName("player") or "Player", 1, 8),
-        ["name:medium"] = string.sub(UnitName("player") or "Player", 1, 12),
+        ["name:veryshort"] = UUF:SubChar(UnitName("player") or "Player", 1, 5),
+        ["name:short"] = UUF:SubChar(UnitName("player") or "Player", 1, 8),
+        ["name:medium"] = UUF:SubChar(UnitName("player") or "Player", 1, 12),
         ["name:abbreviated"] = "D. Stormrage",
         ["name:last"] = "Stormrage",
 
