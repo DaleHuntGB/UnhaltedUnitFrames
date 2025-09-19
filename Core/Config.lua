@@ -4745,7 +4745,7 @@ UUF.Defaults = {
                 },
                 ReadyCheck = {
                     Enabled = true,
-                    Size = 24,
+                    Size = 18,
                     AnchorFrom = "CENTER",
                     AnchorTo = "CENTER",
                     OffsetX = 0,
