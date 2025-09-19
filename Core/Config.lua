@@ -886,120 +886,120 @@ function UUF:CreateGUI()
             end)
             FontShadowsContainer:AddChild(FontShadowColourPicker)
 
-            local ElementsContainer = AG:Create("InlineGroup")
-            ElementsContainer:SetTitle("Elements")
-            ElementsContainer:SetLayout("Flow")
-            ElementsContainer:SetFullWidth(true)
-            ScrollFrame:AddChild(ElementsContainer)
+            -- local ElementsContainer = AG:Create("InlineGroup")
+            -- ElementsContainer:SetTitle("Elements")
+            -- ElementsContainer:SetLayout("Flow")
+            -- ElementsContainer:SetFullWidth(true)
+            -- ScrollFrame:AddChild(ElementsContainer)
 
-            local PortraitContainer = AG:Create("InlineGroup")
-            PortraitContainer:SetTitle("Portraits")
-            PortraitContainer:SetLayout("Flow")
-            PortraitContainer:SetFullWidth(true)
-            ElementsContainer:AddChild(PortraitContainer)
+            -- local PortraitContainer = AG:Create("InlineGroup")
+            -- PortraitContainer:SetTitle("Portraits")
+            -- PortraitContainer:SetLayout("Flow")
+            -- PortraitContainer:SetFullWidth(true)
+            -- ElementsContainer:AddChild(PortraitContainer)
 
-            local GlobalActivatePortraitsButton = AG:Create("Button")
-            GlobalActivatePortraitsButton:SetText("Activate Portraits")
-            GlobalActivatePortraitsButton:SetRelativeWidth(0.25)
-            GlobalActivatePortraitsButton:SetCallback("OnClick", function()
-                for unitFrameName, unit in pairs(UnitFrames) do
-                    if UUF.db.profile[unit].Portrait then
-                        UUF.db.profile[unit].Portrait.Enabled = true
-                        UUF:UpdateFrame(unitFrameName, unit)
-                    end
-                end
-            end)
-            PortraitContainer:AddChild(GlobalActivatePortraitsButton)
+            -- local GlobalActivatePortraitsButton = AG:Create("Button")
+            -- GlobalActivatePortraitsButton:SetText("Activate Portraits")
+            -- GlobalActivatePortraitsButton:SetRelativeWidth(0.25)
+            -- GlobalActivatePortraitsButton:SetCallback("OnClick", function()
+            --     for unitFrameName, unit in pairs(UnitFrames) do
+            --         if UUF.db.profile[unit].Portrait then
+            --             UUF.db.profile[unit].Portrait.Enabled = true
+            --             UUF:UpdateFrame(unitFrameName, unit)
+            --         end
+            --     end
+            -- end)
+            -- PortraitContainer:AddChild(GlobalActivatePortraitsButton)
 
-            local GlobalDeactivatePortraitsButton = AG:Create("Button")
-            GlobalDeactivatePortraitsButton:SetText("Deactivate Portraits")
-            GlobalDeactivatePortraitsButton:SetRelativeWidth(0.25)
-            GlobalDeactivatePortraitsButton:SetCallback("OnClick", function()
-                for unitFrameName, unit in pairs(UnitFrames) do
-                    if UUF.db.profile[unit].Portrait then
-                        UUF.db.profile[unit].Portrait.Enabled = false
-                        UUF:UpdateFrame(unitFrameName, unit)
-                    end
-                end
-            end)
-            PortraitContainer:AddChild(GlobalDeactivatePortraitsButton)
+            -- local GlobalDeactivatePortraitsButton = AG:Create("Button")
+            -- GlobalDeactivatePortraitsButton:SetText("Deactivate Portraits")
+            -- GlobalDeactivatePortraitsButton:SetRelativeWidth(0.25)
+            -- GlobalDeactivatePortraitsButton:SetCallback("OnClick", function()
+            --     for unitFrameName, unit in pairs(UnitFrames) do
+            --         if UUF.db.profile[unit].Portrait then
+            --             UUF.db.profile[unit].Portrait.Enabled = false
+            --             UUF:UpdateFrame(unitFrameName, unit)
+            --         end
+            --     end
+            -- end)
+            -- PortraitContainer:AddChild(GlobalDeactivatePortraitsButton)
 
-            local GlobalPortraitStyleDropdown = AG:Create("Dropdown")
-            GlobalPortraitStyleDropdown:SetList({
-                ["MODEL"] = "Model",
-                ["CLASS"] = "Class"
-            })
-            GlobalPortraitStyleDropdown:SetLabel("Portrait Style")
-            GlobalPortraitStyleDropdown:SetValue("MODEL")
-            GlobalPortraitStyleDropdown:SetRelativeWidth(0.25)
-            GlobalPortraitStyleDropdown:SetCallback("OnValueChanged", function(_, _, value)
-                for unitFrameName, unit in pairs(UnitFrames) do
-                    if UUF.db.profile[unit].Portrait then
-                        UUF.db.profile[unit].Portrait.Style = value
-                        UUF:UpdateFrame(unitFrameName, unit)
-                    end
-                end
-            end)
-            PortraitContainer:AddChild(GlobalPortraitStyleDropdown)
+            -- local GlobalPortraitStyleDropdown = AG:Create("Dropdown")
+            -- GlobalPortraitStyleDropdown:SetList({
+            --     ["MODEL"] = "Model",
+            --     ["CLASS"] = "Class"
+            -- })
+            -- GlobalPortraitStyleDropdown:SetLabel("Portrait Style")
+            -- GlobalPortraitStyleDropdown:SetValue("MODEL")
+            -- GlobalPortraitStyleDropdown:SetRelativeWidth(0.25)
+            -- GlobalPortraitStyleDropdown:SetCallback("OnValueChanged", function(_, _, value)
+            --     for unitFrameName, unit in pairs(UnitFrames) do
+            --         if UUF.db.profile[unit].Portrait then
+            --             UUF.db.profile[unit].Portrait.Style = value
+            --             UUF:UpdateFrame(unitFrameName, unit)
+            --         end
+            --     end
+            -- end)
+            -- PortraitContainer:AddChild(GlobalPortraitStyleDropdown)
 
-            local GlobalPortraitZoomSlider = AG:Create("Slider")
-            GlobalPortraitZoomSlider:SetLabel("Portrait Zoom")
-            GlobalPortraitZoomSlider:SetValue(0.3)
-            GlobalPortraitZoomSlider:SetIsPercent(true)
-            GlobalPortraitZoomSlider:SetSliderValues(0, 1, 0.01)
-            GlobalPortraitZoomSlider:SetRelativeWidth(0.25)
-            GlobalPortraitZoomSlider:SetCallback("OnValueChanged", function(_, _, value)
-                for unitFrameName, unit in pairs(UnitFrames) do
-                    if UUF.db.profile[unit].Portrait then
-                        UUF.db.profile[unit].Portrait.Zoom = value
-                        UUF:UpdateFrame(unitFrameName, unit)
-                    end
-                end
-            end)
-            PortraitContainer:AddChild(GlobalPortraitZoomSlider)
+            -- local GlobalPortraitZoomSlider = AG:Create("Slider")
+            -- GlobalPortraitZoomSlider:SetLabel("Portrait Zoom")
+            -- GlobalPortraitZoomSlider:SetValue(0.3)
+            -- GlobalPortraitZoomSlider:SetIsPercent(true)
+            -- GlobalPortraitZoomSlider:SetSliderValues(0, 1, 0.01)
+            -- GlobalPortraitZoomSlider:SetRelativeWidth(0.25)
+            -- GlobalPortraitZoomSlider:SetCallback("OnValueChanged", function(_, _, value)
+            --     for unitFrameName, unit in pairs(UnitFrames) do
+            --         if UUF.db.profile[unit].Portrait then
+            --             UUF.db.profile[unit].Portrait.Zoom = value
+            --             UUF:UpdateFrame(unitFrameName, unit)
+            --         end
+            --     end
+            -- end)
+            -- PortraitContainer:AddChild(GlobalPortraitZoomSlider)
 
-            local RangeContainer = AG:Create("InlineGroup")
-            RangeContainer:SetTitle("Range Fading")
-            RangeContainer:SetLayout("Flow")
-            RangeContainer:SetFullWidth(true)
-            ElementsContainer:AddChild(RangeContainer)
+            -- local RangeContainer = AG:Create("InlineGroup")
+            -- RangeContainer:SetTitle("Range Fading")
+            -- RangeContainer:SetLayout("Flow")
+            -- RangeContainer:SetFullWidth(true)
+            -- ElementsContainer:AddChild(RangeContainer)
 
-            local GlobalInRangeAlphaSlider = AG:Create("Slider")
-            GlobalInRangeAlphaSlider:SetLabel("In Range Alpha")
-            GlobalInRangeAlphaSlider:SetValue(1.0)
-            GlobalInRangeAlphaSlider:SetIsPercent(true)
-            GlobalInRangeAlphaSlider:SetSliderValues(0, 1, 0.01)
-            GlobalInRangeAlphaSlider:SetRelativeWidth(0.5)
-            GlobalInRangeAlphaSlider:SetCallback("OnValueChanged", function(_, _, value)
-                for unitFrameName, unit in pairs(UnitFrames) do
-                    if unit ~= "player" then
-                        UUF.db.profile[unit].Range.InRange = value
-                        UUF:UpdateFrame(unitFrameName, unit)
-                    end
-                end
-            end)
-            RangeContainer:AddChild(GlobalInRangeAlphaSlider)
+            -- local GlobalInRangeAlphaSlider = AG:Create("Slider")
+            -- GlobalInRangeAlphaSlider:SetLabel("In Range Alpha")
+            -- GlobalInRangeAlphaSlider:SetValue(1.0)
+            -- GlobalInRangeAlphaSlider:SetIsPercent(true)
+            -- GlobalInRangeAlphaSlider:SetSliderValues(0, 1, 0.01)
+            -- GlobalInRangeAlphaSlider:SetRelativeWidth(0.5)
+            -- GlobalInRangeAlphaSlider:SetCallback("OnValueChanged", function(_, _, value)
+            --     for unitFrameName, unit in pairs(UnitFrames) do
+            --         if unit ~= "player" then
+            --             UUF.db.profile[unit].Range.InRange = value
+            --             UUF:UpdateFrame(unitFrameName, unit)
+            --         end
+            --     end
+            -- end)
+            -- RangeContainer:AddChild(GlobalInRangeAlphaSlider)
 
-            local GlobalOutOfRangeAlphaSlider = AG:Create("Slider")
-            GlobalOutOfRangeAlphaSlider:SetLabel("Out Of Range Alpha")
-            GlobalOutOfRangeAlphaSlider:SetValue(0.5)
-            GlobalOutOfRangeAlphaSlider:SetIsPercent(true)
-            GlobalOutOfRangeAlphaSlider:SetSliderValues(0, 1, 0.01)
-            GlobalOutOfRangeAlphaSlider:SetRelativeWidth(0.5)
-            GlobalOutOfRangeAlphaSlider:SetCallback("OnValueChanged", function(_, _, value)
-                for unitFrameName, unit in pairs(UnitFrames) do
-                    if unit ~= "player" then
-                        UUF.db.profile[unit].Range.OutOfRange = value
-                        UUF:UpdateFrame(unitFrameName, unit)
-                    end
-                end
-            end)
-            RangeContainer:AddChild(GlobalOutOfRangeAlphaSlider)
+            -- local GlobalOutOfRangeAlphaSlider = AG:Create("Slider")
+            -- GlobalOutOfRangeAlphaSlider:SetLabel("Out Of Range Alpha")
+            -- GlobalOutOfRangeAlphaSlider:SetValue(0.5)
+            -- GlobalOutOfRangeAlphaSlider:SetIsPercent(true)
+            -- GlobalOutOfRangeAlphaSlider:SetSliderValues(0, 1, 0.01)
+            -- GlobalOutOfRangeAlphaSlider:SetRelativeWidth(0.5)
+            -- GlobalOutOfRangeAlphaSlider:SetCallback("OnValueChanged", function(_, _, value)
+            --     for unitFrameName, unit in pairs(UnitFrames) do
+            --         if unit ~= "player" then
+            --             UUF.db.profile[unit].Range.OutOfRange = value
+            --             UUF:UpdateFrame(unitFrameName, unit)
+            --         end
+            --     end
+            -- end)
+            -- RangeContainer:AddChild(GlobalOutOfRangeAlphaSlider)
             UIScaleContainer:DoLayout()
             ColourContainer:DoLayout()
             TexturesContainer:DoLayout()
             FontsContainer:DoLayout()
-            ElementsContainer:DoLayout()
+            -- ElementsContainer:DoLayout()
             ScrollFrame:DoLayout()
         end
 
