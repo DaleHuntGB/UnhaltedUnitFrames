@@ -3239,6 +3239,10 @@ function UUF:CreateGUI()
             GlobalProfileHeading:SetFullWidth(true)
             ProfileContainer:AddChild(GlobalProfileHeading)
 
+            local GlobalProfileInfoTag = CreateInfoTag("If |cFF8080FFUse Global Profile Settings|r is enabled, the profile selected below will be used as your active profile.\nThis is useful if you want to use the same profile across multiple characters.")
+            GlobalProfileInfoTag:SetFullWidth(true)
+            ProfileContainer:AddChild(GlobalProfileInfoTag)
+
             local UseGlobalProfileToggle = AG:Create("CheckBox")
             local GlobalProfileDropdown = AG:Create("Dropdown")
             UseGlobalProfileToggle:SetLabel("Use Global Profile Settings")
@@ -3341,7 +3345,6 @@ function UUF:CreateGUI()
                         DeepDisable(child, true)
                     end
                 end
-            else
             end
         end
 
