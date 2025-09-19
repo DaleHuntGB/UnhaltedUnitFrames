@@ -3346,6 +3346,8 @@ function UUF:CreateGUI()
                     end
                 end
             end
+            SharingContainer:DoLayout()
+            ScrollFrame:DoLayout()
         end
 
         if mainGroup == "General" then
