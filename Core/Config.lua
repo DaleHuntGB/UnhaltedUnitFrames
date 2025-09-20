@@ -2919,6 +2919,30 @@ function UUF:CreateGUI()
                     ReadyCheckOffsetYSlider:SetRelativeWidth(0.33)
                     ReadyCheckContainer:AddChild(ReadyCheckOffsetYSlider)
 
+                    local SummonIndicatorContainer = AG:Create("InlineGroup")
+                    SummonIndicatorContainer:SetTitle("Summon Indicator")
+                    SummonIndicatorContainer:SetLayout("Flow")
+                    SummonIndicatorContainer:SetFullWidth(true)
+                    GUIContainer:AddChild(SummonIndicatorContainer)
+
+                    local SummonIndicatorEnabledToggle = CreateToggle("Enabled", Indicators.SummonIndicator.Enabled, unit, "Indicators", "SummonIndicator", "Enabled")
+                    SummonIndicatorEnabledToggle:SetRelativeWidth(1)
+                    SummonIndicatorContainer:AddChild(SummonIndicatorEnabledToggle)
+                    local SummonIndicatorAnchorFrom = CreateDropdown("Anchor From", Indicators.SummonIndicator.AnchorFrom, unit, "Indicators", "SummonIndicator", nil, "AnchorFrom")
+                    SummonIndicatorContainer:AddChild(SummonIndicatorAnchorFrom)
+                    local SummonIndicatorAnchorTo = CreateDropdown("Anchor To", Indicators.SummonIndicator.AnchorTo, unit, "Indicators", "SummonIndicator", nil, "AnchorTo")
+                    SummonIndicatorContainer:AddChild(SummonIndicatorAnchorTo)
+                    local SummonIndicatorSizeSlider = CreateSlider("Size", Indicators.SummonIndicator.Size, unit, "Indicators", "SummonIndicator", nil, "Size")
+                    SummonIndicatorSizeSlider:SetRelativeWidth(0.33)
+                    SummonIndicatorContainer:AddChild(SummonIndicatorSizeSlider)
+                    local SummonIndicatorOffsetXSlider = CreateSlider("Offset X", Indicators.SummonIndicator.OffsetX, unit, "Indicators", "SummonIndicator", nil, "OffsetX")
+                    SummonIndicatorOffsetXSlider:SetRelativeWidth(0.33)
+                    SummonIndicatorContainer:AddChild(SummonIndicatorOffsetXSlider)
+                    local SummonIndicatorOffsetYSlider = CreateSlider("Offset Y", Indicators.SummonIndicator.OffsetY, unit, "Indicators", "SummonIndicator", nil, "OffsetY")
+                    SummonIndicatorOffsetYSlider:SetRelativeWidth(0.33)
+                    SummonIndicatorContainer:AddChild(SummonIndicatorOffsetYSlider)
+                    SummonIndicatorContainer:DoLayout()
+
                     ReadyCheckContainer:DoLayout()
 
                 end
@@ -4755,6 +4779,14 @@ UUF.Defaults = {
                     OffsetX = 0,
                     OffsetY = 0,
                     ReadyCheckTextures = "UUFLIGHT",
+                },
+                SummonIndicator = {
+                    Enabled = true,
+                    Size = 16,
+                    AnchorFrom = "CENTER",
+                    AnchorTo = "CENTER",
+                    OffsetX = 0,
+                    OffsetY = 0,
                 }
             },
             Portrait = {
@@ -4930,6 +4962,14 @@ UUF.Defaults = {
                     OffsetX = 0,
                     OffsetY = 0,
                     ReadyCheckTextures = "UUFLIGHT",
+                },
+                SummonIndicator = {
+                    Enabled = true,
+                    Size = 16,
+                    AnchorFrom = "CENTER",
+                    AnchorTo = "CENTER",
+                    OffsetX = 0,
+                    OffsetY = 0,
                 }
             },
             Range = {

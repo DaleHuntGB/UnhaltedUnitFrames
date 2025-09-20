@@ -590,6 +590,25 @@ local function CreateIndicators(self, unit)
             self.ReadyCheckIndicator = nil
         end
     end
+
+    if Indicators.SummonIndicator then
+        if not self.SummonIndicatorTexture then
+            self.SummonIndicatorTexture = self.HighLevelContainer:CreateTexture(CapitalizedUnit[unit].."_SummonIndicator", "OVERLAY", nil, 7)
+            self.SummonIndicatorTexture:SetSize(Indicators.SummonIndicator.Size, Indicators.SummonIndicator.Size)
+            self.SummonIndicatorTexture:SetPoint(
+                Indicators.SummonIndicator.AnchorFrom,
+                self.HighLevelContainer,
+                Indicators.SummonIndicator.AnchorTo,
+                Indicators.SummonIndicator.OffsetX,
+                Indicators.SummonIndicator.OffsetY
+            )
+        end
+        if Indicators.SummonIndicator.Enabled then
+            self.SummonIndicator = self.SummonIndicatorTexture
+        else
+            self.SummonIndicator = nil
+        end
+    end
 end
 
 local function CreatePortrait(self, unit)
@@ -1328,6 +1347,25 @@ local function UpdateIndicators(frameName, unit)
         unitFrame.TargetIndicator:SetBackdropBorderColor(TargetIndicator.Colour[1], TargetIndicator.Colour[2], TargetIndicator.Colour[3], TargetIndicator.Colour[4])
         if not TargetIndicator.Enabled then
             unitFrame.TargetIndicator:Hide()
+        end
+    end
+
+    if unitFrame.SummonIndicatorTexture then
+        local SummonIndicator = Indicators.SummonIndicator
+        unitFrame.SummonIndicatorTexture:ClearAllPoints()
+        unitFrame.SummonIndicatorTexture:SetSize(SummonIndicator.Size, SummonIndicator.Size)
+        unitFrame.SummonIndicatorTexture:SetPoint(SummonIndicator.AnchorFrom, unitFrame.HighLevelContainer, SummonIndicator.AnchorTo, SummonIndicator.OffsetX, SummonIndicator.OffsetY)
+        if SummonIndicator.Enabled then
+            unitFrame.SummonIndicator = unitFrame.SummonIndicatorTexture
+            if not unitFrame:IsElementEnabled("SummonIndicator") then
+                unitFrame:EnableElement("SummonIndicator")
+            end
+        else
+            if unitFrame:IsElementEnabled("SummonIndicator") then
+                unitFrame:DisableElement("SummonIndicator")
+            end
+            unitFrame.Summon:Hide()
+            unitFrame.SummonIndicator = nil
         end
     end
 end
