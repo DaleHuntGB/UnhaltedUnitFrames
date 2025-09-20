@@ -53,6 +53,7 @@ local function CreateHealthBar(self, unit)
             curHP = curHP or 0
             unitHP:SetMinMaxValues(0, maxHP)
             unitHP:SetValue(maxHP - curHP)
+            UUF:ColourOnDispel(self, unit)
         end
         self.HealthBG:SetReverseFill(true)
     end

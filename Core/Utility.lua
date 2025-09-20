@@ -1,5 +1,6 @@
 local _, UUF = ...
 local oUF = UUF.oUF
+local LibDispel = LibStub("LibDispel-1.0")
 
 local function GetNormalizedUnit(unit, parent)
     if not unit then return nil end
@@ -476,4 +477,30 @@ end
 
 function UUF:FetchBuffBlacklist()
     return BuffBlacklist
+end
+
+function UUF:ColourOnDispel(self, unit)
+    if not UnitExists(unit) then return end
+    local dispelColours = LibDispel:GetDebuffTypeColor()
+    local badDispels = LibDispel:GetBadList()
+    local Frame = UUF.db.profile[GetNormalizedUnit(unit)].Frame
+
+    for i = 1, 40 do
+        local auraInfo = C_UnitAuras.GetDebuffDataByIndex(unit, i)
+        if not auraInfo then break end
+        local name = auraInfo.name
+        local spellId = auraInfo.spellId
+        local debuffType = auraInfo.dispelName
+        if not name then break end
+
+        if debuffType and dispelColours[debuffType] then
+            if not badDispels[spellId] and LibDispel:IsDispellableByMe(debuffType) then
+                local c = dispelColours[debuffType]
+                self.HealthBar:SetStatusBarColor(c.r, c.g, c.b, Frame.FGColour[4])
+                return
+            end
+        end
+    end
+
+    self.HealthBar:SetStatusBarColor(Frame.FGColour[1], Frame.FGColour[2], Frame.FGColour[3], Frame.FGColour[4])
 end
