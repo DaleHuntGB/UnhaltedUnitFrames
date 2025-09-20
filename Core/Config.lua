@@ -1411,11 +1411,21 @@ function UUF:CreateGUI()
                 FrameToggleContainer:AddChild(FrameReactionColourToggle)
 
                 local ShowPlayerToggle = CreateToggle("Show Player", Frame.ShowPlayer, unit, "Frame", nil, "ShowPlayer")
-                if unit == "party" then
-                    FrameToggleContainer:AddChild(ShowPlayerToggle)
+                local ColourHealthByDispelToggle = CreateToggle("Colour Health By Dispel", Frame.ColourHealthByDispel, unit, "Frame", nil, "ColourHealthByDispel")
+
+                if Frame.ColourHealthByDispel ~= nil then
+                    FrameToggleContainer:AddChild(ColourHealthByDispelToggle)
                     FrameClassColourToggle:SetRelativeWidth(0.33)
                     FrameReactionColourToggle:SetRelativeWidth(0.33)
-                    ShowPlayerToggle:SetRelativeWidth(0.33)
+                    ColourHealthByDispelToggle:SetRelativeWidth(0.33)
+                end
+
+                if unit == "party" then
+                    FrameToggleContainer:AddChild(ShowPlayerToggle)
+                    FrameClassColourToggle:SetRelativeWidth(0.25)
+                    FrameReactionColourToggle:SetRelativeWidth(0.25)
+                    ShowPlayerToggle:SetRelativeWidth(0.25)
+                    ColourHealthByDispelToggle:SetRelativeWidth(0.25)
                 end
 
                 local FrameColourPickerContainer = AG:Create("InlineGroup")
@@ -3542,6 +3552,7 @@ UUF.Defaults = {
                 ReactionColour = false,
                 FGColour = {8/255, 8/255, 8/255, 0.8},
                 BGColour = {204/255, 204/255, 204/255, 1.0},
+                ColourHealthByDispel = true,
             },
             HealPrediction = {
                 Absorb = {
@@ -3737,6 +3748,7 @@ UUF.Defaults = {
                 ReactionColour = false,
                 FGColour = {8/255, 8/255, 8/255, 0.8},
                 BGColour = {204/255, 204/255, 204/255, 1.0},
+                ColourHealthByDispel = true,
             },
             HealPrediction = {
                 Absorb = {
@@ -3935,6 +3947,7 @@ UUF.Defaults = {
                 ReactionColour = false,
                 FGColour = {8/255, 8/255, 8/255, 0.8},
                 BGColour = {204/255, 204/255, 204/255, 1.0},
+                ColourHealthByDispel = true,
             },
             PowerBar = {
                 Enabled = false,
@@ -4069,6 +4082,7 @@ UUF.Defaults = {
                 ReactionColour = false,
                 FGColour = {8/255, 8/255, 8/255, 0.8},
                 BGColour = {204/255, 204/255, 204/255, 1.0},
+                ColourHealthByDispel = true,
             },
             HealPrediction = {
                 Absorb = {
@@ -4333,6 +4347,7 @@ UUF.Defaults = {
                 ReactionColour = false,
                 FGColour = {8/255, 8/255, 8/255, 0.8},
                 BGColour = {204/255, 204/255, 204/255, 1.0},
+                ColourHealthByDispel = true,
             },
             HealPrediction = {
                 Absorb = {
@@ -4704,7 +4719,8 @@ UUF.Defaults = {
                 Spacing = 1,
                 ShowPlayer = false,
                 SortOrder = {"TANK", "HEALER", "DAMAGER"},
-                Layout = "VERTICAL"
+                Layout = "VERTICAL",
+                ColourHealthByDispel = true,
             },
             HealPrediction = {
                 Absorb = {
@@ -4888,6 +4904,7 @@ UUF.Defaults = {
                 GroupsToShow = 8,
                 Layout = "RIGHT_UP",
                 GroupBy = "GROUP",
+                ColourHealthByDispel = true,
             },
             HealPrediction = {
                 Absorb = {

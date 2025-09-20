@@ -489,6 +489,7 @@ function UUF:ColourOnDispel(self, unit)
     local dispelColours = LibDispel:GetDebuffTypeColor()
     local badDispels = LibDispel:GetBadList()
     local Frame = UUF.db.profile[GetNormalizedUnit(unit)].Frame
+    if not Frame.ColourHealthByDispel then return end
 
     for i = 1, 40 do
         local auraInfo = C_UnitAuras.GetDebuffDataByIndex(unit, i)
