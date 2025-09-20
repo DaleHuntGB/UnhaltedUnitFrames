@@ -1492,45 +1492,49 @@ local function UpdatePartyFrames(self)
     self.Party:SetAttribute("showPlayer", Frame.ShowPlayer)
     self.Party:SetAttribute("groupingOrder", table.concat(Frame.SortOrder, ","))
 
-        for i = 1, self.Party:GetNumChildren() do
-            local child = select(i, self.Party:GetChildren())
-            local unitToken = "party"..i
-            if child and UnitExists(unitToken) then
-                child:SetSize(Frame.Width, Frame.Height)
-                UpdateColours(child, unitToken)
-                UpdateTransparency(child, unitToken)
-                UpdateHealthBar(child, unitToken)
-                UpdatePowerBar(child, unitToken)
-                UpdateHealthPrediction(child, unitToken)
-                UpdateAuras(child, unitToken)
-                UpdateIndicators(child, unitToken)
-                UpdatePortrait(child, unitToken)
-                UpdateRange(child, unitToken)
-                UpdateTags(child, unitToken)
-                child:UpdateAllElements("UUF_UPDATE")
-            end
+    for i = 1, self.Party:GetNumChildren() do
+        local child = select(i, self.Party:GetChildren())
+        if child then
+            local unit = (i == 5) and "player" or ("party" .. i)
+            local dbUnit = (unit == "player") and "party" or unit
+            child:SetSize(Frame.Width, Frame.Height)
+            UpdateColours(child, dbUnit)
+            UpdateTransparency(child, dbUnit)
+            UpdateHealthBar(child, dbUnit)
+            UpdatePowerBar(child, dbUnit)
+            UpdateHealthPrediction(child, dbUnit)
+            UpdateAuras(child, dbUnit)
+            UpdateIndicators(child, dbUnit)
+            UpdatePortrait(child, dbUnit)
+            UpdateRange(child, dbUnit)
+            UpdateTags(child, dbUnit)
+            child:UpdateAllElements("UUF_UPDATE")
         end
-
-        self.Party:ClearAllPoints()
-        self.Party:SetPoint(
-            Frame.AnchorFrom,
-            UIParent,
-            Frame.AnchorTo,
-            Frame.XPosition,
-            Frame.YPosition
-        )
-        self.Party:SetAttribute("showParty", false)
-        self.Party:SetAttribute("showParty", true)
-        return
     end
 
-    if normalizedUnit == "raid" then
-        if not self.Raid then return end
-        local groups = {}
-        for i = 1, Frame.GroupsToShow do
-            groups[#groups+1] = tostring(i)
-        end
-        local groupString = table.concat(groups, ",")
+    self.Party:ClearAllPoints()
+    self.Party:SetPoint(
+        Frame.AnchorFrom,
+        UIParent,
+        Frame.AnchorTo,
+        Frame.XPosition,
+        Frame.YPosition
+    )
+
+    if Party.Enabled then
+        self.Party:SetAttribute("showParty", false)
+        self.Party:SetAttribute("showParty", true)
+    end
+end
+
+local function UpdateRaidFrames(self)
+    local Frame = UUF.db.profile.raid.Frame
+    if not self.Raid then return end
+    local groups = {}
+    for i = 1, Frame.GroupsToShow do
+        groups[#groups + 1] = tostring(i)
+    end
+    local groupString = table.concat(groups, ",")
 
         local point, xOffset, yOffset
         if Frame.RowGrowth == "UP" then
