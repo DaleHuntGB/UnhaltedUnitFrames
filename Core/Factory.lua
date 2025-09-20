@@ -1928,6 +1928,8 @@ function UUF:CreateTestBossFrames()
                 BossFrame.CastBar.Time:SetText("10")
                 BossFrame.CastBar:SetMinMaxValues(0, 100)
                 BossFrame.CastBar:SetValue(50)
+                BossFrame.CastBG:SetMinMaxValues(0, 100)
+                BossFrame.CastBG:SetValue(50)
                 if CastBar.Icon.Enabled and BossFrame.Castbar.Icon then
                     BossFrame.Castbar.Icon:SetTexture("Interface\\Icons\\ability_mage_netherwindpresence")
                     BossFrame.Castbar.Icon:Show()
