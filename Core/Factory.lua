@@ -1599,15 +1599,15 @@ function UUF:UpdateFrame(frameName, unit)
     if not unit then return end
 
     local normalizedUnit = GetNormalizedUnit(unit)
-    local UnitDB = UUF.db.profile[normalizedUnit]
-    if not UnitDB then return end
-    local Frame = UnitDB.Frame
+    local dbUnit = UUF.db.profile[normalizedUnit]
+    if not dbUnit then return end
+    local Frame = dbUnit.Frame
 
     UUF:Init()
     UUF:ResolveMedia()
 
     if normalizedUnit == "boss" then
-        if UnitDB.Enabled then
+        if dbUnit.Enabled then
             for _, BossFrame in ipairs(UUF.BossFrames) do
                 if not UUF.BossTestMode then
                     BossFrame:Enable(false)
@@ -1659,9 +1659,9 @@ function UUF:UpdateFrame(frameName, unit)
 
     local unitFrame = type(frameName) == "table" and frameName or _G[frameName]
     if not unitFrame then return end
-    if UnitDB.Enabled and not unitFrame:IsEnabled() then
+    if dbUnit.Enabled and not unitFrame:IsEnabled() then
         unitFrame:Enable(false)
-    elseif not UnitDB.Enabled and unitFrame:IsEnabled() then
+    elseif not dbUnit.Enabled and unitFrame:IsEnabled() then
         unitFrame:Disable()
         return
     end
@@ -1678,35 +1678,35 @@ function UUF:UpdateFrame(frameName, unit)
     UpdateTransparency(unitFrame, unit)
     UpdateHealthBar(unitFrame, unit)
 
-    if UnitDB.PowerBar then
+    if dbUnit.PowerBar then
         UpdatePowerBar(unitFrame, unit)
     end
 
-    if UnitDB.HealPrediction then
+    if dbUnit.HealPrediction then
         UpdateHealthPrediction(unitFrame, unit)
     end
 
-    if UnitDB.CastBar then
+    if dbUnit.CastBar then
         UpdateCastBar(unitFrame, unit)
     end
 
-    if UnitDB.Buffs or UnitDB.Debuffs then
+    if dbUnit.Buffs or dbUnit.Debuffs then
         UpdateAuras(unitFrame, unit)
     end
 
-    if UnitDB.Portrait then
+    if dbUnit.Portrait then
         UpdatePortrait(unitFrame, unit)
     end
 
-    if UnitDB.Indicators then
+    if dbUnit.Indicators then
         UpdateIndicators(unitFrame, unit)
     end
 
-    if UnitDB.Range then
+    if dbUnit.Range then
         UpdateRange(unitFrame, unit)
     end
 
-    if UnitDB.Tags then
+    if dbUnit.Tags then
         UpdateTags(unitFrame, unit)
     end
 
