@@ -446,13 +446,16 @@ function UUF:FetchImportantBuffs()
 end
 
 local DebuffBlacklist = {
-    [57723]     = true, -- Exhaustion
-    [390435]    = true, -- Exhaustion
-    [264689]    = true, -- Fatigued
-    [57724]     = true, -- Sated
-    [95809]     = true, -- Sated
-    [206151]    = true, -- Challenger's Burden
-    [113942]    = true, -- Demonic Gateway
+    [264689] = true, -- Fatigued
+    [209261] = true, -- Uncontained Fel
+    [382912] = true, -- Well-Honed Instincts
+    [113942] = true, -- Demonic Gateway
+    [95809]  = true, -- Insanity
+    [57723]  = true, -- Exhaustion
+    [57724]  = true, -- Sated
+    [1223611] = true, -- Ethereal Exhaustion
+    [390435] = true, -- Exhaustion
+    [206151] = true, -- Challenger's Burden
 }
 
 local BuffBlacklist = {
