@@ -3215,7 +3215,6 @@ function UUF:CreateGUI()
             ScrollFrame:AddChild(ProfileContainer)
 
             local ActiveProfileHeading = AG:Create("Heading")
-            ActiveProfileHeading:SetText("Active Profile: |cFFFFFFFF" .. UUF.db:GetCurrentProfile() .. "|r")
             ActiveProfileHeading:SetFullWidth(true)
             ProfileContainer:AddChild(ActiveProfileHeading)
 
@@ -3233,8 +3232,8 @@ function UUF:CreateGUI()
                 SelectProfileDropdown:SetValue(UUF.db:GetCurrentProfile())
                 CopyFromProfileDropdown:SetValue(nil)
                 DeleteProfileDropdown:SetValue(nil)
-
-                ActiveProfileHeading:SetText("Active Profile: |cFFFFFFFF" .. UUF.db:GetCurrentProfile() .. "|r")
+                local isUsingGlobal = UUF.db.global.UseGlobalProfile
+                ActiveProfileHeading:SetText( "Active Profile: |cFFFFFFFF" .. UUF.db:GetCurrentProfile() .. (isUsingGlobal and " (|cFFFFCC00Global|r)" or "") .. "|r" )
             end
 
             UUFG.RefreshProfiles = RefreshProfiles -- Exposed for Share.lua
