@@ -9,6 +9,7 @@ UUFG = UUFG or {}
 UUF.BossTestMode = false
 UUF.PartyTestMode = false
 UUF.AurasTestMode = false
+UUF.CastBarTestMode = false
 
 UUF.InfoButton = "|A:glueannouncementpopup-icon-info:16:16|a "
 -- UUF.InfoButton = "|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Utility\\Information.tga:14:14|t "

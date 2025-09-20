@@ -1734,6 +1734,9 @@ function UUF:UpdateFrame(frameName, unit)
 
     if dbUnit.CastBar then
         UpdateCastBar(unitFrame, unit)
+        if UUF.CastBarTestMode then
+            UUF:CreateTestCastBars(unitFrame, unit)
+        end
     end
 
     if dbUnit.Buffs or dbUnit.Debuffs then
@@ -2237,6 +2240,45 @@ function UUF:CreateTestAuras(frameName, unit)
                 local button = unitFrame.DebuffContainer["fake" .. j]
                 if button then button:Hide() end
             end
+        end
+    end
+end
+
+function UUF:CreateTestCastBars(frameName, unit)
+    if not unit then return end
+    local normalizedUnit = GetNormalizedUnit(unit)
+    local dbUnit = UUF.db.profile[normalizedUnit]
+    if not dbUnit then return end
+    local unitFrame = type(frameName) == "table" and frameName or _G[frameName]
+    if not unitFrame then return end
+    local CastBar = UUF.db.profile[normalizedUnit].CastBar
+    if UUF.CastBarTestMode then
+        if unitFrame.CastBar and CastBar.Enabled then
+            unitFrame:DisableElement("Castbar")
+            unitFrame.CastBarContainer:Show()
+            unitFrame.CastBar:Show()
+            unitFrame.CastBG:Show()
+            unitFrame.CastBar.Text:SetText("Ethereal Portal")
+            unitFrame.CastBar.Time:SetText("10")
+            unitFrame.CastBar:SetMinMaxValues(0, 100)
+            unitFrame.CastBar:SetValue(50)
+            unitFrame.CastBG:SetMinMaxValues(0, 100)
+            unitFrame.CastBG:SetValue(50)
+            if CastBar.Icon.Enabled and unitFrame.Castbar.Icon then
+                unitFrame.Castbar.Icon:SetTexture("Interface\\Icons\\ability_mage_netherwindpresence")
+                unitFrame.Castbar.Icon:Show()
+            end
+        else
+            if unitFrame.CastBarContainer then
+                unitFrame.CastBarContainer:Hide()
+            end
+            if unitFrame.Castbar and unitFrame.Castbar.Icon then
+                unitFrame.Castbar.Icon:Hide()
+            end
+        end
+    else
+        if unitFrame.CastBar and CastBar.Enabled then
+            unitFrame:EnableElement("Castbar")
         end
     end
 end

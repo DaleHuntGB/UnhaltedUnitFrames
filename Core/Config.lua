@@ -1678,7 +1678,19 @@ function UUF:CreateGUI()
             local function DrawCastBarContainer(GUIContainer)
                 local CastBar = UUF.db.profile[unit].CastBar
                 local CastBarEnableToggle = CreateToggle("Enable Cast Bar", CastBar.Enabled, unit, "CastBar", nil, "Enabled")
+                CastBarEnableToggle:SetRelativeWidth(0.5)
                 GUIContainer:AddChild(CastBarEnableToggle)
+
+                if CastBar ~= nil then
+                    local TestCastBarButton = AG:Create("Button")
+                    TestCastBarButton:SetText("Test Cast Bar")
+                    TestCastBarButton:SetRelativeWidth(0.5)
+                    TestCastBarButton:SetCallback("OnClick", function()
+                        UUF.CastBarTestMode = not UUF.CastBarTestMode
+                        UUF:CreateTestCastBars(unitToUnitFrame[unit], unit)
+                    end)
+                    GUIContainer:AddChild(TestCastBarButton)
+                end
 
                 local CastBarFrameContainer = AG:Create("InlineGroup")
                 CastBarFrameContainer:SetTitle("Frame")
