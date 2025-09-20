@@ -2366,7 +2366,19 @@ function UUF:CreateGUI()
             local function DrawBuffsContainer(GUIContainer)
 
                 local BuffsEnabledToggle = CreateToggle("Enable", Buffs.Enabled, unit, "Buffs", nil, "Enabled")
+                BuffsEnabledToggle:SetRelativeWidth(0.5)
                 GUIContainer:AddChild(BuffsEnabledToggle)
+
+                if unit ~= "boss" or unit ~= "party" or unit ~= "raid" then
+                    local TestAurasButton = AG:Create("Button")
+                    TestAurasButton:SetText("Test Auras")
+                    TestAurasButton:SetRelativeWidth(0.5)
+                    TestAurasButton:SetCallback("OnClick", function()
+                        UUF.AurasTestMode = not UUF.AurasTestMode
+                        UUF:CreateTestAuras(unitToUnitFrame[unit], unit)
+                    end)
+                    GUIContainer:AddChild(TestAurasButton)
+                end
 
                 local BuffsPositionContainer = AG:Create("InlineGroup")
                 BuffsPositionContainer:SetTitle("Position")
@@ -2468,7 +2480,19 @@ function UUF:CreateGUI()
 
             local function DrawDebuffsContainer(GUIContainer)
                local DebuffsEnabledToggle = CreateToggle("Enable", Debuffs.Enabled, unit, "Debuffs", nil, "Enabled")
+                DebuffsEnabledToggle:SetRelativeWidth(0.5)
                 GUIContainer:AddChild(DebuffsEnabledToggle)
+
+                if unit ~= "boss" or unit ~= "party" or unit ~= "raid" then
+                    local TestAurasButton = AG:Create("Button")
+                    TestAurasButton:SetText("Test Auras")
+                    TestAurasButton:SetRelativeWidth(0.5)
+                    TestAurasButton:SetCallback("OnClick", function()
+                        UUF.AurasTestMode = not UUF.AurasTestMode
+                        UUF:CreateTestAuras(unitToUnitFrame[unit], unit)
+                    end)
+                    GUIContainer:AddChild(TestAurasButton)
+                end
 
                 local DebuffsPositionContainer = AG:Create("InlineGroup")
                 DebuffsPositionContainer:SetTitle("Position")

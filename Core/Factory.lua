@@ -1641,7 +1641,6 @@ local function UpdateRaidFrames(self)
     self.Raid:SetAttribute("showRaid", true)
 end
 
-
 function UUF:UpdateFrame(frameName, unit)
     if not unit then return end
 
@@ -1739,6 +1738,9 @@ function UUF:UpdateFrame(frameName, unit)
 
     if dbUnit.Buffs or dbUnit.Debuffs then
         UpdateAuras(unitFrame, unit)
+        if UUF.AurasTestMode then
+            UUF:CreateTestAuras(unitFrame, unit)
+        end
     end
 
     if dbUnit.Portrait then
@@ -2104,5 +2106,137 @@ function UUF:CreateTestBossFrames()
             end
         end
         UUF:LayoutBossFrames()
+    end
+end
+
+function UUF:CreateTestAuras(frameName, unit)
+    if not unit then return end
+    local normalizedUnit = GetNormalizedUnit(unit)
+    local dbUnit = UUF.db.profile[normalizedUnit]
+    if not dbUnit then return end
+    local unitFrame = type(frameName) == "table" and frameName or _G[frameName]
+    if not unitFrame then return end
+    local General = UUF.db.profile.General
+    local Buffs = UUF.db.profile[normalizedUnit].Buffs
+    local Debuffs = UUF.db.profile[normalizedUnit].Debuffs
+    if UUF.AurasTestMode then
+        if unitFrame.BuffContainer then
+            if Buffs.Enabled then
+                unitFrame.BuffContainer:ClearAllPoints()
+                unitFrame.BuffContainer:SetPoint(Buffs.AnchorFrom, unitFrame, Buffs.AnchorTo, Buffs.OffsetX,
+                    Buffs.OffsetY)
+                unitFrame.BuffContainer:Show()
+
+                for j = 1, Buffs.Num do
+                    local button = unitFrame.BuffContainer["fake" .. j]
+                    if not button then
+                        button = CreateFrame("Button", nil, unitFrame.BuffContainer)
+
+                        button.Icon = button:CreateTexture(nil, "BORDER")
+                        button.Icon:SetAllPoints()
+
+                        button.Count = button:CreateFontString(nil, "OVERLAY")
+                        unitFrame.BuffContainer["fake" .. j] = button
+                    end
+
+                    button:SetSize(Buffs.Size, Buffs.Size)
+                    button.Count:ClearAllPoints()
+                    button.Count:SetPoint(Buffs.Count.AnchorFrom, button, Buffs.Count.AnchorTo, Buffs.Count.OffsetX,
+                        Buffs.Count.OffsetY)
+                    button.Count:SetFont(UUF.Media.Font, Buffs.Count.FontSize, General.FontFlag)
+                    button.Count:SetTextColor(unpack(Buffs.Count.Colour))
+
+                    local row = math.floor((j - 1) / Buffs.Wrap)
+                    local col = (j - 1) % Buffs.Wrap
+                    local x = col * (Buffs.Size + Buffs.Spacing)
+                    local y = row * (Buffs.Size + Buffs.Spacing)
+                    if Buffs.Growth == "LEFT" then x = -x end
+                    if Buffs.WrapDirection == "DOWN" then y = -y end
+
+                    button:ClearAllPoints()
+                    button:SetPoint(Buffs.AnchorFrom, unitFrame.BuffContainer, Buffs.AnchorFrom, x, y)
+
+                    button.Icon:SetTexture(135940)
+                    button.Icon:SetTexCoord(0.01, 0.99, 0.01, 0.99)
+                    button.Count:SetText(j)
+                    button:Show()
+                end
+
+                local maxFake = Buffs.Num
+                for j = maxFake + 1, (unitFrame.BuffContainer.maxFake or maxFake) do
+                    local button = unitFrame.BuffContainer["fake" .. j]
+                    if button then button:Hide() end
+                end
+                unitFrame.BuffContainer.maxFake = Buffs.Num
+            else
+                unitFrame.BuffContainer:Hide()
+            end
+        end
+
+        if unitFrame.DebuffContainer then
+            if Debuffs.Enabled then
+                unitFrame.DebuffContainer:ClearAllPoints()
+                unitFrame.DebuffContainer:SetPoint(Debuffs.AnchorFrom, unitFrame, Debuffs.AnchorTo, Debuffs.OffsetX,
+                    Debuffs.OffsetY)
+                unitFrame.DebuffContainer:Show()
+
+                for j = 1, Debuffs.Num do
+                    local button = unitFrame.DebuffContainer["fake" .. j]
+                    if not button then
+                        button = CreateFrame("Button", nil, unitFrame.DebuffContainer)
+
+                        button.Icon = button:CreateTexture(nil, "BORDER")
+                        button.Icon:SetAllPoints()
+
+                        button.Count = button:CreateFontString(nil, "OVERLAY")
+                        unitFrame.DebuffContainer["fake" .. j] = button
+                    end
+
+                    button:SetSize(Debuffs.Size, Debuffs.Size)
+                    button.Count:ClearAllPoints()
+                    button.Count:SetPoint(Debuffs.Count.AnchorFrom, button, Debuffs.Count.AnchorTo,
+                        Debuffs.Count.OffsetX, Debuffs.Count.OffsetY)
+                    button.Count:SetFont(UUF.Media.Font, Debuffs.Count.FontSize, General.FontFlag)
+                    button.Count:SetTextColor(unpack(Debuffs.Count.Colour))
+
+                    local row = math.floor((j - 1) / Debuffs.Wrap)
+                    local col = (j - 1) % Debuffs.Wrap
+                    local x = col * (Debuffs.Size + Debuffs.Spacing)
+                    local y = row * (Debuffs.Size + Debuffs.Spacing)
+                    if Debuffs.Growth == "LEFT" then x = -x end
+                    if Debuffs.WrapDirection == "DOWN" then y = -y end
+
+                    button:ClearAllPoints()
+                    button:SetPoint(Debuffs.AnchorFrom, unitFrame.DebuffContainer, Debuffs.AnchorFrom, x, y)
+
+                    button.Icon:SetTexture(252997)
+                    button.Icon:SetTexCoord(0.01, 0.99, 0.01, 0.99)
+                    button.Count:SetText(j)
+                    button:Show()
+                end
+
+                local maxFake = Debuffs.Num
+                for j = maxFake + 1, (unitFrame.DebuffContainer.maxFake or maxFake) do
+                    local button = unitFrame.DebuffContainer["fake" .. j]
+                    if button then button:Hide() end
+                end
+                unitFrame.DebuffContainer.maxFake = Debuffs.Num
+            else
+                unitFrame.DebuffContainer:Hide()
+            end
+        end
+    else
+        if unitFrame.BuffContainer then
+            for j = 1, (unitFrame.BuffContainer.maxFake or 0) do
+                local button = unitFrame.BuffContainer["fake" .. j]
+                if button then button:Hide() end
+            end
+        end
+        if unitFrame.DebuffContainer then
+            for j = 1, (unitFrame.DebuffContainer.maxFake or 0) do
+                local button = unitFrame.DebuffContainer["fake" .. j]
+                if button then button:Hide() end
+            end
+        end
     end
 end
