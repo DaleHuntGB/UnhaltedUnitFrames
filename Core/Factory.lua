@@ -1573,6 +1573,7 @@ end
 local function UpdateRaidFrames(self)
     local Frame = UUF.db.profile.raid.Frame
     if not self.Raid then return end
+
     local groups = {}
     for i = 1, Frame.GroupsToShow do
         groups[#groups + 1] = tostring(i)
@@ -1582,27 +1583,29 @@ local function UpdateRaidFrames(self)
     local point, xOffset, yOffset, columnAnchorPoint, colSpacing
     if Frame.Layout == "RIGHT_UP" then
         point, xOffset, yOffset = "TOP", 0, -Frame.Spacing
-        columnAnchorPoint = "RIGHT"
+        columnAnchorPoint = "LEFT"
     elseif Frame.Layout == "RIGHT_DOWN" then
         point, xOffset, yOffset = "BOTTOM", 0, Frame.Spacing
-        columnAnchorPoint = "RIGHT"
+        columnAnchorPoint = "LEFT"
     elseif Frame.Layout == "UP_RIGHT" then
         point, xOffset, yOffset = "RIGHT", Frame.Spacing, 0
-        columnAnchorPoint = "TOP"
+        columnAnchorPoint = "BOTTOM"
     elseif Frame.Layout == "UP_LEFT" then
         point, xOffset, yOffset = "LEFT", -Frame.Spacing, 0
-        columnAnchorPoint = "TOP"
+        columnAnchorPoint = "BOTTOM"
+    else
+        point, xOffset, yOffset = "TOP", 0, -Frame.Spacing
+        columnAnchorPoint = "LEFT"
     end
 
     colSpacing = Frame.ColumnSpacing or Frame.Spacing
 
     self.Raid:SetAttribute("showRaid", Frame.Enabled)
-    self.Raid:SetAttribute("showSolo", Frame.ShowSolo)
-    self.Raid:SetAttribute("showPlayer", Frame.ShowPlayer)
     self.Raid:SetAttribute("groupBy", Frame.GroupBy or "GROUP")
     self.Raid:SetAttribute("groupFilter", groupString)
-    self.Raid:SetAttribute("groupingOrder", table.concat(Frame.SortOrder or {}, ","))
-    self.Raid:SetAttribute("maxColumns", Frame.GroupsToShow)
+    self.Raid:SetAttribute("groupingOrder", "1,2,3,4,5,6,7,8")
+    self.Raid:SetAttribute("maxColumns", Frame.MaxColumns or Frame.GroupsToShow)
+    self.Raid:SetAttribute("unitsPerColumn", Frame.UnitsPerColumn or 5)
     self.Raid:SetAttribute("point", point)
     self.Raid:SetAttribute("xOffset", xOffset)
     self.Raid:SetAttribute("yOffset", yOffset)
@@ -1636,9 +1639,11 @@ local function UpdateRaidFrames(self)
         Frame.YPosition
     )
 
+    -- refresh
     self.Raid:SetAttribute("showRaid", false)
     self.Raid:SetAttribute("showRaid", true)
 end
+
 
 function UUF:UpdateFrame(frameName, unit)
     if not unit then return end
