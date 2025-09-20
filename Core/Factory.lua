@@ -309,7 +309,7 @@ local function CreateCastbar(self, unit)
                         bar.Time:SetFormattedText("%.0f", duration)
                     end
                 else
-                    if (bar.max - duration) < CastBar.Texts.CastTime.CriticalTime  then
+                    if (bar.max - duration) < CastBar.Texts.CastTime.CriticalTime then
                         bar.Time:SetFormattedText("%.1f", bar.max - duration)
                     else
                         bar.Time:SetFormattedText("%.0f", bar.max - duration)
@@ -434,7 +434,6 @@ local function CreateIndicators(self, unit)
     end
 
     if Indicators.Status and (Indicators.Status.Combat or Indicators.Status.Resting) then
-
         if not self.Combat then
             self.Combat = self.HighLevelContainer:CreateTexture(CapitalizedUnit[unit].."_CombatIndicator", "OVERLAY")
             self.Combat:SetSize(Status.Size, Status.Size)
@@ -525,7 +524,7 @@ local function CreateIndicators(self, unit)
 
     if Indicators.RoleIcons then
         if not self.RoleIcon then
-            self.RoleIcon = self.HighLevelContainer:CreateTexture(CapitalizedUnit[unit].."_RoleIcon", "OVERLAY", nil, 6)
+            self.RoleIcon = self.HighLevelContainer:CreateTexture(CapitalizedUnit[unit] .. "_RoleIcon", "OVERLAY", nil, 6)
             self.RoleIcon:SetSize(Indicators.RoleIcons.Size, Indicators.RoleIcons.Size)
             self.RoleIcon:SetPoint(
                 Indicators.RoleIcons.AnchorFrom,
@@ -548,11 +547,11 @@ local function CreateIndicators(self, unit)
                     self.RoleIcon:SetTexture(set[role])
                     if Indicators.RoleIcons.RoleTextures == "DEFAULT" then
                         if role == "TANK" then
-                            self.RoleIcon:SetTexCoord(0, 19/64, 22/64, 41/64)
+                            self.RoleIcon:SetTexCoord(0, 19 / 64, 22 / 64, 41 / 64)
                         elseif role == "HEALER" then
-                            self.RoleIcon:SetTexCoord(20/64, 39/64, 1/64, 20/64)
+                            self.RoleIcon:SetTexCoord(20 / 64, 39 / 64, 1 / 64, 20 / 64)
                         elseif role == "DAMAGER" then
-                            self.RoleIcon:SetTexCoord(20/64, 39/64, 22/64, 41/64)
+                            self.RoleIcon:SetTexCoord(20 / 64, 39 / 64, 22 / 64, 41 / 64)
                         end
                     else
                         self.RoleIcon:SetTexCoord(0, 1, 0, 1)
@@ -887,7 +886,6 @@ local function UpdatePowerBar(frameName, unit)
             unitFrame.Power = nil
         end
     end
-
 end
 
 local function UpdateCastBar(frameName, unit)
@@ -971,7 +969,6 @@ local function UpdateCastBar(frameName, unit)
                 unitFrame.CastBar:SetWidth(CastBar.Width - (unitFrame.CastBarIcon:GetWidth() + 2))
             end
             unitFrame.CastBarIcon:Show()
-
         else
             unitFrame.Castbar.Icon = nil
             unitFrame.CastBarIcon:Hide()
@@ -1004,13 +1001,13 @@ local function UpdateCastBar(frameName, unit)
             end
             unitFrame.Castbar.CustomTimeText = function(bar, duration)
                 if bar.channeling then
-                    if duration < CastBar.Texts.CastTime.CriticalTime  then
+                    if duration < CastBar.Texts.CastTime.CriticalTime then
                         bar.Time:SetFormattedText("%.1f", duration)
                     else
                         bar.Time:SetFormattedText("%.0f", duration)
                     end
                 else
-                    if (bar.max - duration) < CastBar.Texts.CastTime.CriticalTime  then
+                    if (bar.max - duration) < CastBar.Texts.CastTime.CriticalTime then
                         bar.Time:SetFormattedText("%.1f", bar.max - duration)
                     else
                         bar.Time:SetFormattedText("%.0f", bar.max - duration)
@@ -1281,11 +1278,11 @@ local function UpdateIndicators(frameName, unit)
                 unitFrame.RoleIcon:SetTexture(set[role])
                 if RoleIcons.RoleTextures == "DEFAULT" then
                     if role == "TANK" then
-                        unitFrame.RoleIcon:SetTexCoord(0, 19/64, 22/64, 41/64)
+                        unitFrame.RoleIcon:SetTexCoord(0, 19 / 64, 22 / 64, 41 / 64)
                     elseif role == "HEALER" then
-                        unitFrame.RoleIcon:SetTexCoord(20/64, 39/64, 1/64, 20/64)
+                        unitFrame.RoleIcon:SetTexCoord(20 / 64, 39 / 64, 1 / 64, 20 / 64)
                     elseif role == "DAMAGER" then
-                        unitFrame.RoleIcon:SetTexCoord(20/64, 39/64, 22/64, 41/64)
+                        unitFrame.RoleIcon:SetTexCoord(20 / 64, 39 / 64, 22 / 64, 41 / 64)
                     end
                 else
                     unitFrame.RoleIcon:SetTexCoord(0, 1, 0, 1)
