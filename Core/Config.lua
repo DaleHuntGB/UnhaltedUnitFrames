@@ -79,6 +79,14 @@ local ReactionNames = {
     [8] = "Exalted",
 }
 
+local DebuffTypeNames = {
+    ["Magic"] = "Magic",
+    ["Disease"] = "Disease",
+    ["Poison"] = "Poison",
+    ["Curse"] = "Curse",
+    ["None"] = "None"
+}
+
 local CombatTextures = {
     ["DEFAULT"] = "|TInterface\\CharacterFrame\\UI-StateIcon:20:20:0:0:64:64:32:64:0:31|t",
     ["COMBAT0"] = "|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Combat\\Combat0.tga:18:18|t",
@@ -490,38 +498,55 @@ function UUF:CreateGUI()
             CustomColoursContainer:SetFullWidth(true)
             ScrollFrame:AddChild(CustomColoursContainer)
 
+            local ResetColoursContainer = AG:Create("InlineGroup")
+            ResetColoursContainer:SetTitle("Reset Colours")
+            ResetColoursContainer:SetLayout("Flow")
+            ResetColoursContainer:SetFullWidth(true)
+            CustomColoursContainer:AddChild(ResetColoursContainer)
+
             local ResetColoursButton = AG:Create("Button")
-            ResetColoursButton:SetText("Reset All Colours")
-            ResetColoursButton:SetRelativeWidth(0.33)
+            ResetColoursButton:SetText("All Colours")
+            ResetColoursButton:SetRelativeWidth(0.25)
             ResetColoursButton:SetCallback("OnClick", function()
                 UUF.db.profile.General.CustomColours = CopyTable(UUF.Defaults.profile.General.CustomColours)
                 for unitFrameName, unit in pairs(UnitFrames) do
                     UUF:UpdateFrame(unitFrameName, unit)
                 end
             end)
-            CustomColoursContainer:AddChild(ResetColoursButton)
+            ResetColoursContainer:AddChild(ResetColoursButton)
 
             local ResetPowerColoursButton = AG:Create("Button")
-            ResetPowerColoursButton:SetText("Reset Power Colours")
-            ResetPowerColoursButton:SetRelativeWidth(0.33)
+            ResetPowerColoursButton:SetText("Power Colours")
+            ResetPowerColoursButton:SetRelativeWidth(0.25)
             ResetPowerColoursButton:SetCallback("OnClick", function()
                 UUF.db.profile.General.CustomColours.Power = CopyTable(UUF.Defaults.profile.General.CustomColours.Power)
                 for unitFrameName, unit in pairs(UnitFrames) do
                     UUF:UpdateFrame(unitFrameName, unit)
                 end
             end)
-            CustomColoursContainer:AddChild(ResetPowerColoursButton)
+            ResetColoursContainer:AddChild(ResetPowerColoursButton)
 
             local ResetReactionColoursButton = AG:Create("Button")
-            ResetReactionColoursButton:SetText("Reset Reaction Colours")
-            ResetReactionColoursButton:SetRelativeWidth(0.33)
+            ResetReactionColoursButton:SetText("Reaction Colours")
+            ResetReactionColoursButton:SetRelativeWidth(0.25)
             ResetReactionColoursButton:SetCallback("OnClick", function()
                 UUF.db.profile.General.CustomColours.Reaction = CopyTable(UUF.Defaults.profile.General.CustomColours.Reaction)
                 for unitFrameName, unit in pairs(UnitFrames) do
                     UUF:UpdateFrame(unitFrameName, unit)
                 end
             end)
-            CustomColoursContainer:AddChild(ResetReactionColoursButton)
+            ResetColoursContainer:AddChild(ResetReactionColoursButton)
+
+            local ResetDebuffTypeColoursButton = AG:Create("Button")
+            ResetDebuffTypeColoursButton:SetText("Debuff Type Colours")
+            ResetDebuffTypeColoursButton:SetRelativeWidth(0.25)
+            ResetDebuffTypeColoursButton:SetCallback("OnClick", function()
+                UUF.db.profile.General.CustomColours.DebuffType = CopyTable(UUF.Defaults.profile.General.CustomColours.DebuffType)
+                for unitFrameName, unit in pairs(UnitFrames) do
+                    UUF:UpdateFrame(unitFrameName, unit)
+                end
+            end)
+            ResetColoursContainer:AddChild(ResetDebuffTypeColoursButton)
 
             local PowerColours = AG:Create("InlineGroup")
             PowerColours:SetTitle("Power Colours")
@@ -569,11 +594,37 @@ function UUF:CreateGUI()
                 ReactionColours:AddChild(ReactionColour)
             end
 
+            local DebuffTypeColours = AG:Create("InlineGroup")
+            DebuffTypeColours:SetTitle("Debuff Type Colours")
+            DebuffTypeColours:SetLayout("Flow")
+            DebuffTypeColours:SetFullWidth(true)
+            CustomColoursContainer:AddChild(DebuffTypeColours)
+
+            for debuffType, debuffColour in pairs(General.CustomColours.DebuffType) do
+                local DebuffTypeColour = AG:Create("ColorPicker")
+                DebuffTypeColour:SetLabel(DebuffTypeNames[debuffType])
+                local R, G, B = unpack(debuffColour)
+                DebuffTypeColour:SetColor(R, G, B)
+                DebuffTypeColour:SetCallback("OnValueChanged", function(widget, _, r, g, b)
+                    General.CustomColours.DebuffType[debuffType] = {r, g, b}
+                    for unitFrameName, unit in pairs(UnitFrames) do
+                        UUF:UpdateFrame(unitFrameName, unit)
+                    end
+                end)
+                DebuffTypeColour:SetHasAlpha(false)
+                DebuffTypeColour:SetRelativeWidth(0.2)
+                DebuffTypeColours:AddChild(DebuffTypeColour)
+            end
+
+            CustomColoursContainer:DoLayout()
+
             local SupportMeContainer = AG:Create("InlineGroup")
             SupportMeContainer:SetTitle("|T" .. EMOTE_PATH .. "peepoLove.png:18:18|t  How To Support " .. UUF.AddOnName .. " Development")
             SupportMeContainer:SetLayout("Flow")
             SupportMeContainer:SetFullWidth(true)
             CustomColoursContainer:AddChild(SupportMeContainer)
+
+            ScrollFrame:DoLayout()
         end
 
         local function DrawGlobalContainer(GUIContainer)
@@ -3446,6 +3497,13 @@ UUF.Defaults = {
                     [17] = {0.79, 0.26, 0.99},  -- Fury
                     [18] = {1, 0.61, 0}         -- Pain
                 },
+                DebuffType = {
+                    ["Magic"] = {0.2, 0.6, 1},
+                    ["Disease"] = {0.6, 0.4, 0},
+                    ["Poison"] = {0.0, 0.6, 0},
+                    ["Curse"] = {0.6, 0, 1},
+                    ["None"] = {0.8, 0, 0}
+                }
             },
             DecimalPlaces = 1,
             TagUpdateInterval = 0.25,
