@@ -3213,7 +3213,7 @@ function UUF:CreateGUI()
                 ActiveProfileHeading:SetText("Active Profile: |cFFFFFFFF" .. UUF.db:GetCurrentProfile() .. "|r")
             end
 
-            UUFG.RefreshProfiles = RefreshProfiles
+            UUFG.RefreshProfiles = RefreshProfiles -- Exposed for Share.lua
 
             SelectProfileDropdown = AG:Create("Dropdown")
             SelectProfileDropdown:SetLabel("Select...")
