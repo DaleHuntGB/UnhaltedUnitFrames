@@ -485,7 +485,7 @@ function UUF:FetchBuffBlacklist()
 end
 
 function UUF:ColourOnDispel(self, unit)
-    if not UnitExists(unit) then return end
+    if not UnitExists(unit) or not UnitIsPlayer(unit) then return end
     local dispelColours = LibDispel:GetDebuffTypeColor()
     local badDispels = LibDispel:GetBadList()
     local Frame = UUF.db.profile[GetNormalizedUnit(unit)].Frame
