@@ -311,6 +311,11 @@ local function LoadCustomColours()
         oUF.colors.reaction[reaction] = color
     end
 
+    for debuffType, color in pairs(General.CustomColours.DebuffType) do
+        oUF.colors.debuff[debuffType] = color
+        LibDispel:GetDebuffTypeColor()[debuffType] = { r = color[1], g = color[2], b = color[3] }
+    end
+
     -- oUF.colors.health = { General.ForegroundColour[1], General.ForegroundColour[2], General.ForegroundColour[3] }
     -- oUF.colors.tapped = { General.CustomColours.Status[2][1], General.CustomColours.Status[2][2], General.CustomColours.Status[2][3] }
     -- oUF.colors.disconnected = { General.CustomColours.Status[3][1], General.CustomColours.Status[3][2], General.CustomColours.Status[3][3] }
