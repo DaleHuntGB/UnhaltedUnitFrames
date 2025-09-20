@@ -355,12 +355,12 @@ end
 
 local function RandomizeStatusText()
     local SupportOptions = {
-        "Support Me on |cFF8080FFKo-Fi|r!",
-        "Support Me on |cFF8080FFPatreon|r!",
-        "|cFF8080FFPayPal Donations|r are appreciated!",
-        "Join the |cFF8080FFDiscord|r!",
-        "Report Issues / Feedback on |cFF8080FFGitHub|r!",
-        "Follow Me on |cFF8080FFTwitch|r!",
+        "Support Me on |TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Support\\Ko-Fi.png:16:21|t |cFF8080FFKo-Fi|r!",
+        "Support Me on |TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Support\\Patreon.png:21:21|t |cFF8080FFPatreon|r!",
+        "|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Support\\PayPal.png:23:21|t |cFF8080FFPayPal Donations|r are appreciated!",
+        "Join the |TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Support\\Discord.png:21:21|t |cFF8080FFDiscord|r Community!",
+        "Report Issues / Feedback on |TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Support\\GitHub.png:21:21|t |cFF8080FFGitHub|r!",
+        "Follow Me on |TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Support\\Twitch.png:16:21|t |cFF8080FFTwitch|r!",
         "|cFF8080FFSupport|r is truly appreciated. |cFF8080FFDevelopment|r takes time & effort."
     }
     return SupportOptions[math.random(1, #SupportOptions)]
@@ -400,7 +400,7 @@ function UUF:CreateGUI()
     OpenedGUI = true
 
     GUIContainer = AG:Create("Frame")
-    GUIContainer:SetTitle(UUF.AddOnName)
+    GUIContainer:SetTitle("|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Logo.tga:12:15|t " .. UUF.AddOnName)
     GUIContainer:SetStatusText(RandomizeStatusText())
     GUIContainer:SetLayout("Fill")
     GUIContainer:SetWidth(900)
@@ -645,6 +645,30 @@ function UUF:CreateGUI()
             TwitchInteractive:SetRelativeWidth(0.33)
             TwitchInteractive:SetCallback("OnClick", function() UUF:OpenURL("Support Me on Twitch", "https://www.twitch.tv/unhaltedgb") end)
             SupportMeContainer:AddChild(TwitchInteractive)
+
+            local DiscordInteractive = AG:Create("InteractiveLabel")
+            DiscordInteractive:SetText("|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Support\\Discord.png:21:21|t |cFF8080FFDiscord|r")
+            DiscordInteractive:SetFont("Fonts\\FRIZQT__.TTF", 13, "OUTLINE")
+            DiscordInteractive:SetJustifyV("MIDDLE")
+            DiscordInteractive:SetRelativeWidth(0.33)
+            DiscordInteractive:SetCallback("OnClick", function() UUF:OpenURL("Support Me on Discord", "https://discord.gg/UZCgWRYvVE") end)
+            SupportMeContainer:AddChild(DiscordInteractive)
+
+            local PatreonInteractive = AG:Create("InteractiveLabel")
+            PatreonInteractive:SetText("|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Support\\Patreon.png:21:21|t |cFF8080FFPatreon|r")
+            PatreonInteractive:SetFont("Fonts\\FRIZQT__.TTF", 13, "OUTLINE")
+            PatreonInteractive:SetJustifyV("MIDDLE")
+            PatreonInteractive:SetRelativeWidth(0.33)
+            PatreonInteractive:SetCallback("OnClick", function() UUF:OpenURL("Support Me on Patreon", "https://www.patreon.com/unhalted") end)
+            SupportMeContainer:AddChild(PatreonInteractive)
+
+            local GithubInteractive = AG:Create("InteractiveLabel")
+            GithubInteractive:SetText("|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Support\\Github.png:21:21|t |cFF8080FFGithub|r")
+            GithubInteractive:SetFont("Fonts\\FRIZQT__.TTF", 13, "OUTLINE")
+            GithubInteractive:SetJustifyV("MIDDLE")
+            GithubInteractive:SetRelativeWidth(0.33)
+            GithubInteractive:SetCallback("OnClick", function() UUF:OpenURL("Support Me on Github", "https://github.com/dalehuntgb/UnhaltedUnitFrames") end)
+            SupportMeContainer:AddChild(GithubInteractive)
 
             TagsContainer:DoLayout()
             PowerColours:DoLayout()
