@@ -53,8 +53,14 @@ local function CreateHealthBar(self, unit)
             curHP = curHP or 0
             unitHP:SetMinMaxValues(0, maxHP)
             unitHP:SetValue(maxHP - curHP)
-            UUF:ColourOnDispel(self, unit)
         end
+
+        -- Add a UNIT_AURA Hook to Update Health Colour based on Debuff Type
+        self:RegisterEvent("UNIT_AURA", function(_, _, u)
+            if u == unit and Frame.ColourHealthByDispel then
+                UUF:ColourOnDispel(self, u)
+            end
+        end, true)
         self.HealthBG:SetReverseFill(true)
     end
 
