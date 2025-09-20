@@ -140,6 +140,29 @@ oUF.Tags.Methods["health:perhp-healermana"] = function(unit)
     end
 end
 
+oUF.Tags.Methods["health:perhp-with-absorb-healermana"] = function(unit)
+    if UUF.BossTestMode and unit and unit:match("^boss%d+$") then return UUF:FetchTestTags("health:perhp-healermana") end
+    local HealthSeparator = UUF.HealthSeparator
+    if not unit or not UnitExists(unit) then return "" end
+    local uHealth = UnitHealth(unit)
+    local uMaxHealth = UnitHealthMax(unit)
+    local uAbsorb = UnitGetTotalAbsorbs(unit) or 0
+    local uEffectiveHealth = uHealth + uAbsorb
+    local uHealthPercent = (uMaxHealth > 0) and (uEffectiveHealth / uMaxHealth * 100) or 0
+    local powerType = UnitPowerType(unit)
+    local uPower = UnitPower(unit)
+    local uMaxPower = UnitPowerMax(unit)
+    local uPowerPercent = (uMaxPower > 0) and (uPower / uMaxPower * 100) or 0
+    local isHealer = UnitGroupRolesAssigned(unit) == "HEALER"
+    if isHealer and powerType == 0 then
+        return string.format("%s %s %s", UUF:FormatPercent(uHealthPercent), HealthSeparator, UUF:FormatPercent(uPowerPercent))
+    elseif isHealer then
+        return string.format("%s %s %s", UUF:FormatPercent(uHealthPercent), HealthSeparator, UUF:FormatPercent(uPowerPercent))
+    else
+        return string.format("%s", UUF:FormatPercent(uHealthPercent))
+    end
+end
+
 oUF.Tags.Methods["health:perhp-healermana:colour"] = function(unit)
     if UUF.BossTestMode and unit and unit:match("^boss%d+$") then return UUF:FetchTestTags("health:perhp-healermana") end
     local HealthSeparator = UUF.HealthSeparator
@@ -147,6 +170,33 @@ oUF.Tags.Methods["health:perhp-healermana:colour"] = function(unit)
     local uHealth = UnitHealth(unit)
     local uMaxHealth = UnitHealthMax(unit)
     local uHealthPercent = (uMaxHealth > 0) and (uHealth / uMaxHealth * 100) or 0
+    local uPower = UnitPower(unit)
+    local uMaxPower = UnitPowerMax(unit)
+    local uPowerPercent = (uMaxPower > 0) and (uPower / uMaxPower * 100) or 0
+    local isHealer = UnitGroupRolesAssigned(unit) == "HEALER"
+    local powerType, powerToken = UnitPowerType(unit)
+    local powerColour = oUF.colors.power[powerToken] or oUF.colors.power[powerType]
+    if powerColour then
+        powerColour = CreateColor(powerColour[1], powerColour[2], powerColour[3]):GenerateHexColor()
+    end
+    if isHealer and powerType == 0 then
+        return string.format("%s %s |c%s%s|r", UUF:FormatPercent(uHealthPercent), HealthSeparator, powerColour, UUF:FormatPercent(uPowerPercent))
+    elseif isHealer then
+        return string.format("%s %s |c%s%s|r", UUF:FormatPercent(uHealthPercent), HealthSeparator, powerColour, UUF:FormatPercent(uPowerPercent))
+    else
+        return string.format("%s", UUF:FormatPercent(uHealthPercent))
+    end
+end
+
+oUF.Tags.Methods["health:perhp-with-absorb-healermana:colour"] = function(unit)
+    if UUF.BossTestMode and unit and unit:match("^boss%d+$") then return UUF:FetchTestTags("health:perhp-healermana") end
+    local HealthSeparator = UUF.HealthSeparator
+    if not unit or not UnitExists(unit) then return "" end
+    local uHealth = UnitHealth(unit)
+    local uMaxHealth = UnitHealthMax(unit)
+    local uAbsorb = UnitGetTotalAbsorbs(unit) or 0
+    local uEffectiveHealth = uHealth + uAbsorb
+    local uHealthPercent = (uMaxHealth > 0) and (uEffectiveHealth / uMaxHealth * 100) or 0
     local uPower = UnitPower(unit)
     local uMaxPower = UnitPowerMax(unit)
     local uPowerPercent = (uMaxPower > 0) and (uPower / uMaxPower * 100) or 0
@@ -467,7 +517,9 @@ function UUF:FetchTestTags(tag)
         ["health:absorb"] = UUF:FormatLargeNumber(0.25 * 15e6),
         ["health:missinghp"] = UUF:FormatLargeNumber(0.75 * 15e6),
         ["health:perhp-healermana"] = UUF:FormatPercent(25) .. " " .. HealthSeparator .. " " .. UUF:FormatPercent(75),
-
+        ["health:perhp-healermana:colour"] = UUF:FormatPercent(25) .. " " .. HealthSeparator .. " " .. "|cFF0070DE" .. UUF:FormatPercent(75) .. "|r",
+        ["health:perhp-with-absorb"] = UUF:FormatPercent(25) .. " " .. HealthSeparator .. " " .. UUF:FormatLargeNumber(0.25 * 15e6),
+        ["health:perhp-with-absorb:colour"] = UUF:FormatPercent(25) .. " " .. HealthSeparator .. " " .. "|cFF0070DE" .. UUF:FormatLargeNumber(0.25 * 15e6) .. "|r",
 
         ["power:curpp"] = UUF:FormatLargeNumber(0.25 * 15e6),
         ["power:perpp"] = UUF:FormatPercent(25),
@@ -506,6 +558,8 @@ function UUF:GetHealthTags()
         ["health:missinghp"] = "Missing Health",
         ["health:perhp-healermana"] = "Percent Health / Healer Mana Percent",
         ["health:perhp-healermana:colour"] = "Percent Health / Healer Mana Percent (Mana Colour)",
+        ["health:perhp-with-absorb"] = "Percent Health / Current Absorb",
+        ["health:perhp-with-absorb:colour"] = "Percent Health / Current Absorb (Absorb Colour)",
     }
 
     local healthTagsOrdered = {
