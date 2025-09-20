@@ -139,7 +139,7 @@ local function CreatePowerBar(self, unit)
         self.PowerBarBG:SetPoint("BOTTOMLEFT", unitContainer, "BOTTOMLEFT", 1, 1)
         self.PowerBarBG:SetSize(Frame.Width - 2, PowerBar.Height)
         self.PowerBarBG:SetStatusBarTexture(UUF.Media.BackgroundTexture)
-        self.PowerBarBG:SetFrameLevel(unitContainer:GetFrameLevel() + 3)
+        self.PowerBarBG:SetFrameLevel(unitContainer:GetFrameLevel() + 1)
         local BGColour = PowerBar.BGColour
         self.PowerBarBG:SetStatusBarColor(BGColour[1], BGColour[2], BGColour[3], BGColour[4])
     end
@@ -149,7 +149,7 @@ local function CreatePowerBar(self, unit)
         self.PowerBar:SetPoint("BOTTOMLEFT", unitContainer, "BOTTOMLEFT", 1, 1)
         self.PowerBar:SetSize(Frame.Width - 2, PowerBar.Height)
         self.PowerBar:SetStatusBarTexture(UUF.Media.ForegroundTexture)
-        self.PowerBar:SetFrameLevel(unitContainer:GetFrameLevel() + 4)
+        self.PowerBar:SetFrameLevel(unitContainer:GetFrameLevel() + 2)
         local FGColour = PowerBar.FGColour
         self.PowerBar:SetStatusBarColor(FGColour[1], FGColour[2], FGColour[3], FGColour[4])
         self.PowerBar.colorPower = PowerBar.ColourByType
