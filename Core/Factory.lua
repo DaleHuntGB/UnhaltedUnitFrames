@@ -26,7 +26,6 @@ local function CreateHealthBar(self, unit)
     local unitContainer = self.Container
 
     if not self.HealthBar then
-
         if not self.HealthBG then
             self.HealthBG = CreateFrame("StatusBar", CapitalizedUnit[unit] .. "_HealthBG", unitContainer)
             self.HealthBG:SetPoint("TOPLEFT", unitContainer, "TOPLEFT", 1, -1)
@@ -591,7 +590,6 @@ local function CreateIndicators(self, unit)
             self.ReadyCheckIndicator = nil
         end
     end
-
 end
 
 local function CreatePortrait(self, unit)
@@ -1536,77 +1534,131 @@ local function UpdateRaidFrames(self)
     end
     local groupString = table.concat(groups, ",")
 
-        local point, xOffset, yOffset
-        if Frame.RowGrowth == "UP" then
-            point, xOffset, yOffset = "BOTTOM", 0, Frame.Spacing
-        elseif Frame.RowGrowth == "DOWN" then
-            point, xOffset, yOffset = "TOP", 0, -Frame.Spacing
-        elseif Frame.RowGrowth == "LEFT" then
-            point, xOffset, yOffset = "RIGHT", -Frame.Spacing, 0
+    local point, xOffset, yOffset, columnAnchorPoint, colSpacing
+    if Frame.Layout == "RIGHT_UP" then
+        point, xOffset, yOffset = "TOP", 0, -Frame.Spacing
+        columnAnchorPoint = "RIGHT"
+    elseif Frame.Layout == "RIGHT_DOWN" then
+        point, xOffset, yOffset = "BOTTOM", 0, Frame.Spacing
+        columnAnchorPoint = "RIGHT"
+    elseif Frame.Layout == "UP_RIGHT" then
+        point, xOffset, yOffset = "RIGHT", Frame.Spacing, 0
+        columnAnchorPoint = "TOP"
+    elseif Frame.Layout == "UP_LEFT" then
+        point, xOffset, yOffset = "LEFT", -Frame.Spacing, 0
+        columnAnchorPoint = "TOP"
+    end
+
+    colSpacing = Frame.ColumnSpacing or Frame.Spacing
+
+    self.Raid:SetAttribute("showRaid", Frame.Enabled)
+    self.Raid:SetAttribute("showSolo", Frame.ShowSolo)
+    self.Raid:SetAttribute("showPlayer", Frame.ShowPlayer)
+    self.Raid:SetAttribute("groupBy", Frame.GroupBy or "GROUP")
+    self.Raid:SetAttribute("groupFilter", groupString)
+    self.Raid:SetAttribute("groupingOrder", table.concat(Frame.SortOrder or {}, ","))
+    self.Raid:SetAttribute("maxColumns", Frame.GroupsToShow)
+    self.Raid:SetAttribute("point", point)
+    self.Raid:SetAttribute("xOffset", xOffset)
+    self.Raid:SetAttribute("yOffset", yOffset)
+    self.Raid:SetAttribute("columnSpacing", colSpacing)
+    self.Raid:SetAttribute("columnAnchorPoint", columnAnchorPoint)
+
+    for i = 1, self.Raid:GetNumChildren() do
+        local child = select(i, self.Raid:GetChildren())
+        local unitToken = "raid" .. i
+        if child and UnitExists(unitToken) then
+            child:SetSize(Frame.Width, Frame.Height)
+            UpdateColours(child, unitToken)
+            UpdateTransparency(child, unitToken)
+            UpdateHealthBar(child, unitToken)
+            UpdatePowerBar(child, unitToken)
+            UpdateHealthPrediction(child, unitToken)
+            UpdateAuras(child, unitToken)
+            UpdateIndicators(child, unitToken)
+            UpdateRange(child, unitToken)
+            UpdateTags(child, unitToken)
+            child:UpdateAllElements("UUF_UPDATE")
+        end
+    end
+
+    self.Raid:ClearAllPoints()
+    self.Raid:SetPoint(
+        Frame.AnchorFrom,
+        UIParent,
+        Frame.AnchorTo,
+        Frame.XPosition,
+        Frame.YPosition
+    )
+
+    self.Raid:SetAttribute("showRaid", false)
+    self.Raid:SetAttribute("showRaid", true)
+end
+
+function UUF:UpdateFrame(frameName, unit)
+    if not unit then return end
+
+    local normalizedUnit = GetNormalizedUnit(unit)
+    local UnitDB = UUF.db.profile[normalizedUnit]
+    if not UnitDB then return end
+    local Frame = UnitDB.Frame
+
+    UUF:Init()
+    UUF:ResolveMedia()
+
+    if normalizedUnit == "boss" then
+        if UnitDB.Enabled then
+            for _, BossFrame in ipairs(UUF.BossFrames) do
+                if not UUF.BossTestMode then
+                    BossFrame:Enable(false)
+                end
+                BossFrame:SetSize(Frame.Width, Frame.Height)
+            end
         else
-            point, xOffset, yOffset = "LEFT", Frame.Spacing, 0
+            for _, BossFrame in ipairs(UUF.BossFrames) do
+                BossFrame:Disable()
+                BossFrame:Hide()
+            end
+            return
         end
 
-        local columnAnchorPoint
-        if Frame.ColumnGrowth == "LEFT" then
-            columnAnchorPoint = "LEFT"
-        elseif Frame.ColumnGrowth == "RIGHT" then
-            columnAnchorPoint = "RIGHT"
-        elseif Frame.ColumnGrowth == "UP" then
-            columnAnchorPoint = "TOP"
-        else
-            columnAnchorPoint = "BOTTOM"
-        end
+        UUF:LayoutBossFrames()
 
-        self.Raid:SetAttribute("showRaid", Frame.Enabled)
-        self.Raid:SetAttribute("showSolo", Frame.ShowSolo)
-        self.Raid:SetAttribute("showPlayer", Frame.ShowPlayer)
-        self.Raid:SetAttribute("groupBy", Frame.GroupBy or "GROUP")
-        self.Raid:SetAttribute("groupFilter", groupString)
-        self.Raid:SetAttribute("groupingOrder", table.concat(Frame.SortOrder or {}, ","))
-        self.Raid:SetAttribute("maxColumns", Frame.MaxColumns or Frame.GroupsToShow)
-        self.Raid:SetAttribute("unitsPerColumn", Frame.UnitsPerColumn)
-        self.Raid:SetAttribute("point", point)
-        self.Raid:SetAttribute("xOffset", xOffset)
-        self.Raid:SetAttribute("yOffset", yOffset)
-        self.Raid:SetAttribute("columnSpacing", Frame.ColumnSpacing or Frame.Spacing)
-        self.Raid:SetAttribute("columnAnchorPoint", columnAnchorPoint)
-
-        for i = 1, self.Raid:GetNumChildren() do
-            local child = select(i, self.Raid:GetChildren())
-            local unitToken = "raid"..i
-            if child and UnitExists(unitToken) then
-                child:SetSize(Frame.Width, Frame.Height)
-                UpdateColours(child, unitToken)
-                UpdateTransparency(child, unitToken)
-                UpdateHealthBar(child, unitToken)
-                UpdatePowerBar(child, unitToken)
-                UpdateHealthPrediction(child, unitToken)
-                UpdateAuras(child, unitToken)
-                UpdateIndicators(child, unitToken)
-                UpdatePortrait(child, unitToken)
-                UpdateRange(child, unitToken)
-                UpdateTags(child, unitToken)
-                child:UpdateAllElements("UUF_UPDATE")
+        for i, BossFrame in ipairs(UUF.BossFrames) do
+            UpdateColours(BossFrame, "boss" .. i)
+            UpdateTransparency(BossFrame, "boss" .. i)
+            UpdateHealthBar(BossFrame, "boss" .. i)
+            UpdatePowerBar(BossFrame, "boss" .. i)
+            UpdateHealthPrediction(BossFrame, "boss" .. i)
+            UpdateCastBar(BossFrame, "boss" .. i)
+            UpdateAuras(BossFrame, "boss" .. i)
+            UpdateIndicators(BossFrame, "boss" .. i)
+            UpdatePortrait(BossFrame, "boss" .. i)
+            UpdateRange(BossFrame, "boss" .. i)
+            UpdateTags(BossFrame, "boss" .. i)
+            if not UUF.BossTestMode then
+                BossFrame:UpdateAllElements("UUF_UPDATE")
+            else
+                UUF:CreateTestBossFrames()
             end
         end
+        return
+    end
 
-        self.Raid:ClearAllPoints()
-        self.Raid:SetPoint(
-            Frame.AnchorFrom,
-            UIParent,
-            Frame.AnchorTo,
-            Frame.XPosition,
-            Frame.YPosition
-        )
+    if normalizedUnit == "party" then
+        if not self.Party then return end
+        UpdatePartyFrames(self)
+        return
+    end
 
-        self.Raid:SetAttribute("showRaid", false)
-        self.Raid:SetAttribute("showRaid", true)
+    if normalizedUnit == "raid" then
+        if not self.Raid then return end
+        UpdateRaidFrames(self)
+        return
     end
 
     local unitFrame = type(frameName) == "table" and frameName or _G[frameName]
     if not unitFrame then return end
-
     if UnitDB.Enabled and not unitFrame:IsEnabled() then
         unitFrame:Enable(false)
     elseif not UnitDB.Enabled and unitFrame:IsEnabled() then
@@ -1736,13 +1788,15 @@ function UUF:CreateTestBossFrames()
                     local _, class = UnitClass("player")
                     local color = RAID_CLASS_COLORS[class]
                     if color then
-                        BossFrame.HealthBar:SetStatusBarColor(color.r, color.g, color.b, UUF.db.profile.boss.Frame.FGColour[4])
+                        BossFrame.HealthBar:SetStatusBarColor(color.r, color.g, color.b,
+                            UUF.db.profile.boss.Frame.FGColour[4])
                     end
                 elseif Frame.ReactionColour then
                     local reaction = math.random(1, 8)
                     local color = oUF.colors.reaction[reaction]
                     if color then
-                        BossFrame.HealthBar:SetStatusBarColor(color[1], color[2], color[3], UUF.db.profile.boss.Frame.FGColour[4])
+                        BossFrame.HealthBar:SetStatusBarColor(color[1], color[2], color[3],
+                            UUF.db.profile.boss.Frame.FGColour[4])
                     end
                 else
                     BossFrame.HealthBar:SetStatusBarColor(
@@ -1759,16 +1813,16 @@ function UUF:CreateTestBossFrames()
 
             if BossFrame.PowerBar then
                 local PowerColours = {
-                    [0] = {0, 0, 1},
-                    [1] = {1, 0, 0},
-                    [2] = {1, 0.5, 0.25},
-                    [3] = {1, 1, 0},
-                    [4] = {0, 0.82, 1},
-                    [5] = {0.3, 0.52, 0.9},
-                    [6] = {0, 0.5, 1},
-                    [7] = {0.4, 0, 0.8},
-                    [8] = {0.79, 0.26, 0.99},
-                    [9] = {1, 0.61, 0}
+                    [0] = { 0, 0, 1 },
+                    [1] = { 1, 0, 0 },
+                    [2] = { 1, 0.5, 0.25 },
+                    [3] = { 1, 1, 0 },
+                    [4] = { 0, 0.82, 1 },
+                    [5] = { 0.3, 0.52, 0.9 },
+                    [6] = { 0, 0.5, 1 },
+                    [7] = { 0.4, 0, 0.8 },
+                    [8] = { 0.79, 0.26, 0.99 },
+                    [9] = { 1, 0.61, 0 }
                 }
 
                 BossFrame.PowerBar:SetMinMaxValues(0, 100)
@@ -1838,11 +1892,12 @@ function UUF:CreateTestBossFrames()
             if BossFrame.BuffContainer then
                 if Buffs.Enabled then
                     BossFrame.BuffContainer:ClearAllPoints()
-                    BossFrame.BuffContainer:SetPoint(Buffs.AnchorFrom, BossFrame, Buffs.AnchorTo, Buffs.OffsetX, Buffs.OffsetY)
+                    BossFrame.BuffContainer:SetPoint(Buffs.AnchorFrom, BossFrame, Buffs.AnchorTo, Buffs.OffsetX,
+                        Buffs.OffsetY)
                     BossFrame.BuffContainer:Show()
 
                     for j = 1, Buffs.Num do
-                        local button = BossFrame.BuffContainer["fake"..j]
+                        local button = BossFrame.BuffContainer["fake" .. j]
                         if not button then
                             button = CreateFrame("Button", nil, BossFrame.BuffContainer)
 
@@ -1850,17 +1905,18 @@ function UUF:CreateTestBossFrames()
                             button.Icon:SetAllPoints()
 
                             button.Count = button:CreateFontString(nil, "OVERLAY")
-                            BossFrame.BuffContainer["fake"..j] = button
+                            BossFrame.BuffContainer["fake" .. j] = button
                         end
 
                         button:SetSize(Buffs.Size, Buffs.Size)
                         button.Count:ClearAllPoints()
-                        button.Count:SetPoint(Buffs.Count.AnchorFrom, button, Buffs.Count.AnchorTo, Buffs.Count.OffsetX, Buffs.Count.OffsetY)
+                        button.Count:SetPoint(Buffs.Count.AnchorFrom, button, Buffs.Count.AnchorTo, Buffs.Count.OffsetX,
+                            Buffs.Count.OffsetY)
                         button.Count:SetFont(UUF.Media.Font, Buffs.Count.FontSize, General.FontFlag)
                         button.Count:SetTextColor(unpack(Buffs.Count.Colour))
 
-                        local row = math.floor((j-1) / Buffs.Wrap)
-                        local col = (j-1) % Buffs.Wrap
+                        local row = math.floor((j - 1) / Buffs.Wrap)
+                        local col = (j - 1) % Buffs.Wrap
                         local x = col * (Buffs.Size + Buffs.Spacing)
                         local y = row * (Buffs.Size + Buffs.Spacing)
                         if Buffs.Growth == "LEFT" then x = -x end
@@ -1877,7 +1933,7 @@ function UUF:CreateTestBossFrames()
 
                     local maxFake = Buffs.Num
                     for j = maxFake + 1, (BossFrame.BuffContainer.maxFake or maxFake) do
-                        local button = BossFrame.BuffContainer["fake"..j]
+                        local button = BossFrame.BuffContainer["fake" .. j]
                         if button then button:Hide() end
                     end
                     BossFrame.BuffContainer.maxFake = Buffs.Num
@@ -1889,11 +1945,12 @@ function UUF:CreateTestBossFrames()
             if BossFrame.DebuffContainer then
                 if Debuffs.Enabled then
                     BossFrame.DebuffContainer:ClearAllPoints()
-                    BossFrame.DebuffContainer:SetPoint(Debuffs.AnchorFrom, BossFrame, Debuffs.AnchorTo, Debuffs.OffsetX, Debuffs.OffsetY)
+                    BossFrame.DebuffContainer:SetPoint(Debuffs.AnchorFrom, BossFrame, Debuffs.AnchorTo, Debuffs.OffsetX,
+                        Debuffs.OffsetY)
                     BossFrame.DebuffContainer:Show()
 
                     for j = 1, Debuffs.Num do
-                        local button = BossFrame.DebuffContainer["fake"..j]
+                        local button = BossFrame.DebuffContainer["fake" .. j]
                         if not button then
                             button = CreateFrame("Button", nil, BossFrame.DebuffContainer)
 
@@ -1901,17 +1958,18 @@ function UUF:CreateTestBossFrames()
                             button.Icon:SetAllPoints()
 
                             button.Count = button:CreateFontString(nil, "OVERLAY")
-                            BossFrame.DebuffContainer["fake"..j] = button
+                            BossFrame.DebuffContainer["fake" .. j] = button
                         end
 
                         button:SetSize(Debuffs.Size, Debuffs.Size)
                         button.Count:ClearAllPoints()
-                        button.Count:SetPoint(Debuffs.Count.AnchorFrom, button, Debuffs.Count.AnchorTo, Debuffs.Count.OffsetX, Debuffs.Count.OffsetY)
+                        button.Count:SetPoint(Debuffs.Count.AnchorFrom, button, Debuffs.Count.AnchorTo,
+                            Debuffs.Count.OffsetX, Debuffs.Count.OffsetY)
                         button.Count:SetFont(UUF.Media.Font, Debuffs.Count.FontSize, General.FontFlag)
                         button.Count:SetTextColor(unpack(Debuffs.Count.Colour))
 
-                        local row = math.floor((j-1) / Debuffs.Wrap)
-                        local col = (j-1) % Debuffs.Wrap
+                        local row = math.floor((j - 1) / Debuffs.Wrap)
+                        local col = (j - 1) % Debuffs.Wrap
                         local x = col * (Debuffs.Size + Debuffs.Spacing)
                         local y = row * (Debuffs.Size + Debuffs.Spacing)
                         if Debuffs.Growth == "LEFT" then x = -x end
@@ -1928,7 +1986,7 @@ function UUF:CreateTestBossFrames()
 
                     local maxFake = Debuffs.Num
                     for j = maxFake + 1, (BossFrame.DebuffContainer.maxFake or maxFake) do
-                        local button = BossFrame.DebuffContainer["fake"..j]
+                        local button = BossFrame.DebuffContainer["fake" .. j]
                         if button then button:Hide() end
                     end
                     BossFrame.DebuffContainer.maxFake = Debuffs.Num
@@ -1951,7 +2009,8 @@ function UUF:CreateTestBossFrames()
                         [8] = "achievement_character_undead_female"
                     }
                     BossFrame.PortraitTexture:SetTexture("Interface\\ICONS\\" .. PortraitOptions[i])
-                    BossFrame.PortraitTexture:SetTexCoord((Portrait.Zoom or 0)*0.5, 1-(Portrait.Zoom or 0)*0.5, (Portrait.Zoom or 0)*0.5, 1-(Portrait.Zoom or 0)*0.5)
+                    BossFrame.PortraitTexture:SetTexCoord((Portrait.Zoom or 0) * 0.5, 1 - (Portrait.Zoom or 0) * 0.5,
+                        (Portrait.Zoom or 0) * 0.5, 1 - (Portrait.Zoom or 0) * 0.5)
                 else
                     BossFrame.PortraitContainer:Hide()
                 end
@@ -1986,11 +2045,11 @@ function UUF:CreateTestBossFrames()
             RegisterUnitWatch(BossFrame)
             BossFrame:Hide()
             for j = 1, (BossFrame.BuffContainer and BossFrame.BuffContainer.maxFake) or 0 do
-                local button = BossFrame.BuffContainer["fake"..j]
+                local button = BossFrame.BuffContainer["fake" .. j]
                 if button then button:Hide() end
             end
             for j = 1, (BossFrame.DebuffContainer and BossFrame.DebuffContainer.maxFake) or 0 do
-                local button = BossFrame.DebuffContainer["fake"..j]
+                local button = BossFrame.DebuffContainer["fake" .. j]
                 if button then button:Hide() end
             end
             if CastBar.Enabled then
