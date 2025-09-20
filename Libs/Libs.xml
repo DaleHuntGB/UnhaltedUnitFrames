@@ -10,5 +10,6 @@
 	<Include file="Ace3/AceSerializer-3.0/AceSerializer-3.0.xml"/>
 	<Script file="LibDeflate/LibDeflate.lua"/>
 	<Script file="LibRangeCheck-3.0/LibRangeCheck-3.0.lua"/>
+	<Script file="LibDispel/LibDispel.lua"/>
     <Include file="oUF/oUF.xml"/>
 </Ui>
