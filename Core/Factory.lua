@@ -1481,64 +1481,16 @@ function UUF:LayoutBossFrames()
     end
 end
 
-function UUF:UpdateFrame(frameName, unit)
-    if not unit then return end
-
-    local normalizedUnit = GetNormalizedUnit(unit)
-    local UnitDB = UUF.db.profile[normalizedUnit]
-    if not UnitDB then return end
-    local Frame = UnitDB.Frame
-
-    UUF:Init()
-    UUF:ResolveMedia()
-
-    if normalizedUnit == "boss" then
-        if UnitDB.Enabled then
-            for _, BossFrame in ipairs(UUF.BossFrames) do
-                if not UUF.BossTestMode then
-                    BossFrame:Enable(false)
-                end
-                BossFrame:SetSize(Frame.Width, Frame.Height)
-            end
-        else
-            for _, BossFrame in ipairs(UUF.BossFrames) do
-                BossFrame:Disable()
-                BossFrame:Hide()
-            end
-            return
-        end
-
-        UUF:LayoutBossFrames()
-
-        for i, BossFrame in ipairs(UUF.BossFrames) do
-            UpdateColours(BossFrame, "boss"..i)
-            UpdateTransparency(BossFrame, "boss"..i)
-            UpdateHealthBar(BossFrame, "boss"..i)
-            UpdatePowerBar(BossFrame, "boss"..i)
-            UpdateHealthPrediction(BossFrame, "boss"..i)
-            UpdateCastBar(BossFrame, "boss"..i)
-            UpdateAuras(BossFrame, "boss"..i)
-            UpdateIndicators(BossFrame, "boss"..i)
-            UpdatePortrait(BossFrame, "boss"..i)
-            UpdateRange(BossFrame, "boss"..i)
-            UpdateTags(BossFrame, "boss"..i)
-            if not UUF.BossTestMode then
-                BossFrame:UpdateAllElements("UUF_UPDATE")
-            else
-                UUF:CreateTestBossFrames()
-            end
-        end
-        return
-    end
-
-    if normalizedUnit == "party" then
-        if not self.Party then return end
-        self.Party:SetAttribute("showParty", UnitDB.Enabled)
-        self.Party:SetAttribute("point", Frame.Layout == "HORIZONTAL" and "LEFT" or "TOP")
-        self.Party:SetAttribute("xOffset", Frame.Layout == "HORIZONTAL" and Frame.Spacing or 0)
-        self.Party:SetAttribute("yOffset", Frame.Layout == "VERTICAL" and -Frame.Spacing or 0)
-        self.Party:SetAttribute("showPlayer", Frame.ShowPlayer)
-        self.Party:SetAttribute("groupingOrder", table.concat(Frame.SortOrder, ","))
+local function UpdatePartyFrames(self)
+    local Party = UUF.db.profile.party
+    local Frame = UUF.db.profile.party.Frame
+    if not self.Party then return end
+    self.Party:SetAttribute("showParty", Party.Enabled)
+    self.Party:SetAttribute("point", Frame.Layout == "HORIZONTAL" and "LEFT" or "TOP")
+    self.Party:SetAttribute("xOffset", Frame.Layout == "HORIZONTAL" and Frame.Spacing or 0)
+    self.Party:SetAttribute("yOffset", Frame.Layout == "VERTICAL" and -Frame.Spacing or 0)
+    self.Party:SetAttribute("showPlayer", Frame.ShowPlayer)
+    self.Party:SetAttribute("groupingOrder", table.concat(Frame.SortOrder, ","))
 
         for i = 1, self.Party:GetNumChildren() do
             local child = select(i, self.Party:GetChildren())
