@@ -1360,7 +1360,6 @@ function UUF:CreateGUI()
             EnabledToggle:SetCallback("OnValueChanged", function(_, _, value)
                 UUF.db.profile[unit].Enabled = value
                 if unit == "party" then
-                    -- UUF:CreatePrompt(title, text, onAccept, onCancel, acceptText, cancelText)
                     UUF:CreatePrompt("Reload UI Required", "Changing the party frame enabled state requires a UI reload to take effect. Reload now?", function() ReloadUI() end, nil, "Reload", "Cancel")
                 end
                 for i, child in ipairs(ScrollFrame.children) do
@@ -1368,6 +1367,7 @@ function UUF:CreateGUI()
                         DeepDisable(child, not value)
                     end
                 end
+                UUF:UpdateFrame(unitToUnitFrame[unit], unit)
                 ScrollFrame:DoLayout()
             end)
             ScrollFrame:AddChild(EnabledToggle)
