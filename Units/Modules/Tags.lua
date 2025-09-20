@@ -518,8 +518,8 @@ function UUF:FetchTestTags(tag)
         ["health:missinghp"] = UUF:FormatLargeNumber(0.75 * 15e6),
         ["health:perhp-healermana"] = UUF:FormatPercent(25) .. " " .. HealthSeparator .. " " .. UUF:FormatPercent(75),
         ["health:perhp-healermana:colour"] = UUF:FormatPercent(25) .. " " .. HealthSeparator .. " " .. "|cFF0070DE" .. UUF:FormatPercent(75) .. "|r",
-        ["health:perhp-with-absorb"] = UUF:FormatPercent(25) .. " " .. HealthSeparator .. " " .. UUF:FormatLargeNumber(0.25 * 15e6),
-        ["health:perhp-with-absorb:colour"] = UUF:FormatPercent(25) .. " " .. HealthSeparator .. " " .. "|cFF0070DE" .. UUF:FormatLargeNumber(0.25 * 15e6) .. "|r",
+        ["health:perhp-with-absorb-healermana"] = UUF:FormatPercent(25) .. " " .. HealthSeparator .. " " .. UUF:FormatLargeNumber(0.25 * 15e6),
+        ["health:perhp-with-absorb-healermana:colour"] = UUF:FormatPercent(25) .. " " .. HealthSeparator .. " " .. "|cFF0070DE" .. UUF:FormatLargeNumber(0.25 * 15e6) .. "|r",
 
         ["power:curpp"] = UUF:FormatLargeNumber(0.25 * 15e6),
         ["power:perpp"] = UUF:FormatPercent(25),
