@@ -3332,6 +3332,8 @@ function UUF:CreateGUI()
             end)
             ProfileContainer:AddChild(UseGlobalProfileToggle)
 
+            RefreshProfiles()
+
             GlobalProfileDropdown:SetLabel("Global Profile...")
             GlobalProfileDropdown:SetRelativeWidth(0.5)
             GlobalProfileDropdown:SetList(profileKeys)
@@ -3346,7 +3348,7 @@ function UUF:CreateGUI()
                 RefreshProfiles()
             end)
             ProfileContainer:AddChild(GlobalProfileDropdown)
-            RefreshProfiles()
+
             ProfileContainer:DoLayout()
 
             local SharingContainer = AG:Create("InlineGroup")
