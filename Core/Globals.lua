@@ -121,7 +121,6 @@ UUF.ReadyCheckTextureMap = {
     },
 }
 
-
 local PlayerClass = select(2, UnitClass("player"))
 UUF.PlayerClassColour = RAID_CLASS_COLORS[PlayerClass]
 UUF.PlayerClassColourHex = CreateColor(UUF.PlayerClassColour.r, UUF.PlayerClassColour.g, UUF.PlayerClassColour.b):GenerateHexColor()
