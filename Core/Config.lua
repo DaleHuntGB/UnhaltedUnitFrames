@@ -403,8 +403,8 @@ function UUF:CreateGUI()
     GUIContainer:SetTitle(UUF.AddOnName)
     GUIContainer:SetStatusText(RandomizeStatusText())
     GUIContainer:SetLayout("Fill")
-    GUIContainer:SetWidth(800)
-    GUIContainer:SetHeight(600)
+    GUIContainer:SetWidth(900)
+    GUIContainer:SetHeight(550)
     GUIContainer:EnableResize(false)
     GUIContainer:SetCallback("OnClose", function(widget) AG:Release(widget) OpenedGUI = false end)
 
@@ -616,8 +616,6 @@ function UUF:CreateGUI()
                 DebuffTypeColours:AddChild(DebuffTypeColour)
             end
 
-            CustomColoursContainer:DoLayout()
-
             local SupportMeContainer = AG:Create("InlineGroup")
             SupportMeContainer:SetTitle("|T" .. EMOTE_PATH .. "peepoLove.png:18:18|t  How To Support " .. UUF.AddOnName .. " Development")
             SupportMeContainer:SetLayout("Flow")
@@ -648,6 +646,12 @@ function UUF:CreateGUI()
             TwitchInteractive:SetCallback("OnClick", function() UUF:OpenURL("Support Me on Twitch", "https://www.twitch.tv/unhaltedgb") end)
             SupportMeContainer:AddChild(TwitchInteractive)
 
+            TagsContainer:DoLayout()
+            PowerColours:DoLayout()
+            ReactionColours:DoLayout()
+            DebuffTypeColours:DoLayout()
+            ResetColoursContainer:DoLayout()
+            CustomColoursContainer:DoLayout()
             ScrollFrame:DoLayout()
         end
 
