@@ -35,6 +35,18 @@ local unitToUnitFrame = {
     ["pet"]         = "UUF_Pet",
 }
 
+local function GetUnitFrameName(unit)
+    if unitToUnitFrame[unit] then
+        return unitToUnitFrame[unit]
+    elseif unit:match("^party%d+$") then
+        local idx = unit:match("%d+")
+        return "UUF_PartyHeaderUnitButton" .. idx
+    elseif unit:match("^raid%d+$") then
+        local idx = unit:match("%d+")
+        return "UUF_RaidUnitButton" .. idx
+    end
+end
+
 for i = 1, 8 do
     unitToUnitFrame["boss"..i] = "UUF_Boss"..i
 end
@@ -181,7 +193,7 @@ local function CreateToggle(toggleTitle, toggleValue, unit, table, subTable, svV
         else
             UUF.db.profile[unit][svValue] = value
         end
-        UUF:UpdateFrame(unitToUnitFrame[unit], unit)
+        UUF:UpdateFrame(GetUnitFrameName(unit), unit)
 
         if svValue == "Enabled" then
             local parent = Toggle.parent
