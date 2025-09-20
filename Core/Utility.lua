@@ -497,7 +497,7 @@ function UUF:ColourOnDispel(self, unit)
     local newDispel;
     local _debuffType;
 
-    for i = 1, 40 do
+    for i = 1, 10 do
         local auraInfo = C_UnitAuras.GetDebuffDataByIndex(unit, i)
         if not auraInfo then break end
         local name = auraInfo.name
