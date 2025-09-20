@@ -558,8 +558,8 @@ function UUF:GetHealthTags()
         ["health:missinghp"] = "Missing Health",
         ["health:perhp-healermana"] = "Percent Health / Healer Mana Percent",
         ["health:perhp-healermana:colour"] = "Percent Health / Healer Mana Percent (Mana Colour)",
-        ["health:perhp-with-absorb"] = "Percent Health / Current Absorb",
-        ["health:perhp-with-absorb:colour"] = "Percent Health / Current Absorb (Absorb Colour)",
+        ["health:perhp-with-absorb-healermana"] = "Percent Health / Current Absorb / Healer Mana Percent",
+        ["health:perhp-with-absorb-healermana:colour"] = "Percent Health / Current Absorb /Healer Mana Percent (Mana Colour)",
     }
 
     local healthTagsOrdered = {
@@ -571,6 +571,8 @@ function UUF:GetHealthTags()
         "health:missinghp",
         "health:perhp-healermana",
         "health:perhp-healermana:colour",
+        "health:perhp-with-absorb-healermana",
+        "health:perhp-with-absorb-healermana:colour",
     }
     return healthTags, healthTagsOrdered
 end

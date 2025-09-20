@@ -7,6 +7,20 @@ function UUF:SpawnRaidFrames()
     local DB    = UUF.db.profile[unit]
     local Frame = DB.Frame
 
+    if not DB.Enabled then return end
+
+    if CompactRaidFrameManager then
+        CompactRaidFrameManager:UnregisterAllEvents()
+        CompactRaidFrameManager:Hide()
+        CompactRaidFrameManager.Show = function() end
+    end
+
+    if CompactRaidFrameContainer then
+        CompactRaidFrameContainer:UnregisterAllEvents()
+        CompactRaidFrameContainer:Hide()
+        CompactRaidFrameContainer.Show = function() end
+    end
+
     oUF:RegisterStyle("UUF_" .. CapitalizedUnits[unit], function(self)
         UUF.CreateUnitFrame(self, unit)
     end)
