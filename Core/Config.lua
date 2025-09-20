@@ -119,6 +119,13 @@ local ReadyCheckTextures = {
     ["UUFCOLOUR"] = "|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\ReadyCheck\\Colour\\Ready.tga:14:14|t|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\ReadyCheck\\Colour\\NotReady.tga:14:14|t|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\ReadyCheck\\Colour\\Pending.tga:14:14|t |cFF8080FFUnhalted|r Unit Frames - Colour",
 }
 
+local RaidLayouts = {
+    ["RIGHT_UP"] = "Right, then Up",
+    ["RIGHT_DOWN"] = "Right, then Down",
+    ["UP_RIGHT"]   = "Up, then Right",
+    ["DOWN_RIGHT"] = "Down, then Right",
+}
+
 local SLIDER_STEP, SLIDER_MIN, SLIDER_MAX = 0.1, -1000, 1000
 
 local function GenerateFontList()
@@ -261,8 +268,10 @@ local function CreateDropdown(dropdownTitle, dropdownValue, unit, table, subTabl
         Dropdown:SetList( { ["UP"] = "Up", ["DOWN"] = "Down", ["RIGHT"] = "Right", ["LEFT"] = "Left", }, { "UP", "DOWN", "RIGHT", "LEFT" } )
     elseif svValue == "ColumnGrowth" then
         Dropdown:SetList( { ["UP"] = "Up", ["DOWN"] = "Down", ["RIGHT"] = "Right", ["LEFT"] = "Left", }, { "UP", "DOWN", "RIGHT", "LEFT" } )
-    elseif svValue == "Layout" then
+    elseif svValue == "Layout" and unit == "party" then
         Dropdown:SetList( { ["VERTICAL"] = "Vertical", ["HORIZONTAL"] = "Horizontal", }, { "VERTICAL", "HORIZONTAL" } )
+    elseif svValue == "Layout" and unit == "raid" then
+        Dropdown:SetList(RaidLayouts, { "RIGHT_UP", "RIGHT_DOWN", "UP_RIGHT", "DOWN_RIGHT" })
     else
         Dropdown:SetList(AnchorPoints, AnchorOrder)
     end
@@ -293,16 +302,7 @@ local function CreateDropdown(dropdownTitle, dropdownValue, unit, table, subTabl
             end
         end)
     else
-        Dropdown:SetCallback("OnValueChanged", function(_, _, value)
-            if svValue ~= "Layout" then
-                UUF.db.profile[unit][table][svValue] = value
-                UUF:UpdateFrame(unitToUnitFrame[unit], unit)
-            else
-                if svValue == "Layout" then
-                    UUF:CreatePrompt("Reload To Apply Changes", "Change from |cFF8080FF" .. UUF.db.profile[unit][table][svValue] .. "|r to |cFF8080FF" .. value .. "|r\nDo you want to reload to apply changes?", function() UUF.db.profile[unit][table][svValue] = value ReloadUI() end, function() end, "Yes", "No")
-                end
-            end
-        end)
+        Dropdown:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile[unit][table][svValue] = value UUF:UpdateFrame(unitToUnitFrame[unit], unit) end)
     end
     return Dropdown
 end
@@ -1308,7 +1308,10 @@ function UUF:CreateGUI()
             EnabledToggle:SetFullWidth(true)
             EnabledToggle:SetCallback("OnValueChanged", function(_, _, value)
                 UUF.db.profile[unit].Enabled = value
-                UUF:UpdateFrame(unitToUnitFrame[unit], unit)
+                if unit == "party" then
+                    -- UUF:CreatePrompt(title, text, onAccept, onCancel, acceptText, cancelText)
+                    UUF:CreatePrompt("Reload UI Required", "Changing the party frame enabled state requires a UI reload to take effect. Reload now?", function() ReloadUI() end, nil, "Reload", "Cancel")
+                end
                 for i, child in ipairs(ScrollFrame.children) do
                     if i > 1 then
                         DeepDisable(child, not value)
@@ -1402,15 +1405,17 @@ function UUF:CreateGUI()
                 local FrameLayoutDropdown;
                 if Frame.Layout then
                     FrameLayoutDropdown = CreateDropdown("Layout", Frame.Layout, unit, "Frame", nil, nil, "Layout")
-                    FrameLayoutDropdown:SetCallback("OnEnter", function()
-                        GameTooltip:SetOwner(FrameLayoutDropdown.frame, "ANCHOR_TOPLEFT")
-                        GameTooltip:AddLine("|cFF8080FFReload|r is required for changes to take effect.", 1, 1, 1)
-                        GameTooltip:Show()
-                    end)
-                    FrameLayoutDropdown:SetCallback("OnLeave", function() GameTooltip:Hide() end)
+                    FrameLayoutDropdown:SetRelativeWidth(0.25)
+                    FrameAnchorFromDropdown:SetRelativeWidth(0.25)
+                    FrameAnchorToDropdown:SetRelativeWidth(0.25)
                     FrameLayoutDropdown:SetRelativeWidth(0.33)
                     FrameAnchorFromDropdown:SetRelativeWidth(0.33)
                     FrameAnchorToDropdown:SetRelativeWidth(0.33)
+                end
+                local FrameGroupsToShow;
+                if Frame.GroupsToShow then
+                    FrameGroupsToShow = CreateSlider("Groups to Show", Frame.GroupsToShow, unit, "Frame", nil, nil, "GroupsToShow")
+                    FrameGroupsToShow:SetSliderValues(1, 8, 1)
                 end
                 local FrameSpacingSlider;
                 if Frame.Spacing then
@@ -1419,6 +1424,16 @@ function UUF:CreateGUI()
                     FrameSpacingSlider:SetRelativeWidth(0.33)
                     FrameXPosition:SetRelativeWidth(0.33)
                     FrameYPosition:SetRelativeWidth(0.33)
+                    if Frame.GroupsToShow then
+                        FrameSpacingSlider:SetRelativeWidth(0.25)
+                        FrameGroupsToShow:SetRelativeWidth(0.25)
+                        FrameXPosition:SetRelativeWidth(0.25)
+                        FrameYPosition:SetRelativeWidth(0.25)
+                    else
+                        FrameSpacingSlider:SetRelativeWidth(0.33)
+                        FrameXPosition:SetRelativeWidth(0.33)
+                        FrameYPosition:SetRelativeWidth(0.33)
+                    end
                 end
                 local FrameAnchorParent;
                 if Frame.AnchorParent then
@@ -1438,6 +1453,7 @@ function UUF:CreateGUI()
                 FramePositionContainer:AddChild(FrameXPosition)
                 FramePositionContainer:AddChild(FrameYPosition)
                 if Frame.Spacing then FramePositionContainer:AddChild(FrameSpacingSlider) end
+                if Frame.GroupsToShow then FramePositionContainer:AddChild(FrameGroupsToShow) end
 
                 if unit == "party" then
                     local SortOrderContainer = AG:Create("InlineGroup")
@@ -1467,30 +1483,6 @@ function UUF:CreateGUI()
 
                         SortOrderContainer:AddChild(Dropdown)
                     end
-                end
-
-                if unit == "raid" then
-                    local LayoutContainer = AG:Create("InlineGroup")
-                    LayoutContainer:SetTitle("Layout")
-                    LayoutContainer:SetLayout("Flow")
-                    LayoutContainer:SetFullWidth(true)
-                    GUIContainer:AddChild(LayoutContainer)
-
-                    local GroupsToShowSlider = CreateSlider("Groups to Show", Frame.GroupsToShow, unit, "Frame", nil, nil, "GroupsToShow")
-                    GroupsToShowSlider:SetSliderValues(1, 8, 1)
-                    LayoutContainer:AddChild(GroupsToShowSlider)
-
-                    local UnitsPerColumnSlider = CreateSlider("Units per Column", Frame.UnitsPerColumn, unit, "Frame", nil, nil, "UnitsPerColumn")
-                    UnitsPerColumnSlider:SetSliderValues(1, 40, 1)
-                    LayoutContainer:AddChild(UnitsPerColumnSlider)
-
-                    local RowGrowthDropdown = CreateDropdown("Row Growth", Frame.RowGrowth, unit, "Frame", nil, nil, "RowGrowth")
-                    LayoutContainer:AddChild(RowGrowthDropdown)
-
-                    local ColumnGrowthDropdown = CreateDropdown("Column Growth", Frame.ColumnGrowth, unit, "Frame", nil, nil, "ColumnGrowth")
-                    LayoutContainer:AddChild(ColumnGrowthDropdown)
-
-                    LayoutContainer:DoLayout()
                 end
 
                 if unit ~= "player" then
@@ -4835,9 +4827,8 @@ UUF.Defaults = {
                 BGColour = {204/255, 204/255, 204/255, 1.0},
                 Spacing = 1,
                 GroupsToShow = 8,
-                UnitsPerColumn = 5,
-                RowGrowth = "UP",
-                ColumnGrowth = "RIGHT",
+                Layout = "RIGHT_UP",
+                GroupBy = "GROUP",
             },
             HealPrediction = {
                 Absorb = {
