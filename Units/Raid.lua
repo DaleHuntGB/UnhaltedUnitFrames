@@ -40,7 +40,7 @@ function UUF:SpawnRaidFrames()
         "UUF_Raid", nil, "raid",
         "showRaid", DB.Enabled,
         "showPlayer", Frame.ShowPlayer,
-        "groupBy", Frame.GroupBy or "GROUP",
+        "groupBy", "GROUP",
         "groupFilter", groupString,
         "groupingOrder", "1,2,3,4,5,6,7,8",
         "maxColumns", Frame.GroupsToShow,

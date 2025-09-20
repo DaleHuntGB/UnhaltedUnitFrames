@@ -1598,18 +1598,16 @@ local function UpdateRaidFrames(self)
         columnAnchorPoint = "LEFT"
     end
 
-    colSpacing = Frame.ColumnSpacing or Frame.Spacing
-
     self.Raid:SetAttribute("showRaid", Frame.Enabled)
-    self.Raid:SetAttribute("groupBy", Frame.GroupBy or "GROUP")
+    self.Raid:SetAttribute("groupBy", "GROUP")
     self.Raid:SetAttribute("groupFilter", groupString)
     self.Raid:SetAttribute("groupingOrder", "1,2,3,4,5,6,7,8")
-    self.Raid:SetAttribute("maxColumns", Frame.MaxColumns or Frame.GroupsToShow)
-    self.Raid:SetAttribute("unitsPerColumn", Frame.UnitsPerColumn or 5)
+    self.Raid:SetAttribute("maxColumns", Frame.GroupsToShow)
+    self.Raid:SetAttribute("unitsPerColumn", 5)
     self.Raid:SetAttribute("point", point)
     self.Raid:SetAttribute("xOffset", xOffset)
     self.Raid:SetAttribute("yOffset", yOffset)
-    self.Raid:SetAttribute("columnSpacing", colSpacing)
+    self.Raid:SetAttribute("columnSpacing", Frame.Spacing)
     self.Raid:SetAttribute("columnAnchorPoint", columnAnchorPoint)
 
     for i = 1, self.Raid:GetNumChildren() do
@@ -1639,7 +1637,6 @@ local function UpdateRaidFrames(self)
         Frame.YPosition
     )
 
-    -- refresh
     self.Raid:SetAttribute("showRaid", false)
     self.Raid:SetAttribute("showRaid", true)
 end
