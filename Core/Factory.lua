@@ -2102,6 +2102,291 @@ function UUF:CreateTestBossFrames()
 end
 
 function UUF:CreateTestPartyFrames()
+    UUF:ResolveMedia()
+    local UUFDB = UUF.db.profile
+    local General = UUFDB.General
+    local Frame = UUFDB.party.Frame
+    local PowerBar = UUFDB.party.PowerBar
+    local Buffs = UUFDB.party.Buffs
+    local Debuffs = UUFDB.party.Debuffs
+    local Portrait = UUFDB.party.Portrait
+    local Indicators = UUFDB.party.Indicators
+    local Tags = UUFDB.party.Tags
+    local HealAbsorb = UUFDB.party.HealPrediction.HealAbsorb
+    local Absorb = UUFDB.party.HealPrediction.Absorb
+
+    if UUF.PartyTestMode then
+        for i, PartyFrame in ipairs(UUF.PartyFrames) do
+            DevTool:AddData(UUF.PartyFrames)
+            PartyFrame:SetAttribute("unit", nil)
+            UnregisterUnitWatch(PartyFrame)
+            PartyFrame:Show()
+
+            PartyFrame.Power = PartyFrame.PowerBar
+            PartyFrame.Castbar = PartyFrame.CastBar
+            if PartyFrame.CastBarIcon then
+                PartyFrame.Castbar.Icon = PartyFrame.CastBarIcon
+            end
+            PartyFrame.Buffs = PartyFrame.BuffContainer
+            PartyFrame.Debuffs = PartyFrame.DebuffContainer
+            PartyFrame.RaidTargetIndicator = PartyFrame.RaidMarker
+            PartyFrame.LeaderIndicator = PartyFrame.Leader
+            PartyFrame.AssistantIndicator = PartyFrame.Assistant
+            PartyFrame.CombatIndicator = PartyFrame.Combat
+            PartyFrame.RestingIndicator = PartyFrame.Resting
+
+            if PartyFrame.HealthBar then
+                PartyFrame.HealthBar:SetMinMaxValues(0, 100)
+                PartyFrame.HealthBar:SetValue(25)
+                if Frame.ClassColour then
+                    local _, class = UnitClass("player")
+                    local color = RAID_CLASS_COLORS[class]
+                    if color then
+                        PartyFrame.HealthBar:SetStatusBarColor(color.r, color.g, color.b,
+                            UUF.db.profile.party.Frame.FGColour[4])
+                    end
+                elseif Frame.ReactionColour then
+                    local reaction = math.random(1, 8)
+                    local color = oUF.colors.reaction[reaction]
+                    if color then
+                        PartyFrame.HealthBar:SetStatusBarColor(color[1], color[2], color[3],
+                            UUF.db.profile.party.Frame.FGColour[4])
+                    end
+                else
+                    PartyFrame.HealthBar:SetStatusBarColor(
+                        UUF.db.profile.party.Frame.FGColour[1],
+                        UUF.db.profile.party.Frame.FGColour[2],
+                        UUF.db.profile.party.Frame.FGColour[3],
+                        UUF.db.profile.party.Frame.FGColour[4]
+                    )
+                end
+                PartyFrame.HealthBar:Show()
+                PartyFrame.HealthBG:SetMinMaxValues(0, 100)
+                PartyFrame.HealthBG:SetValue(75)
+            end
+
+            if PartyFrame.PowerBar then
+                local PowerColours = {
+                    [0] = { 0, 0, 1 },
+                    [1] = { 1, 0, 0 },
+                    [2] = { 1, 0.5, 0.25 },
+                    [3] = { 1, 1, 0 },
+                    [4] = { 0, 0.82, 1 },
+                    [5] = { 0.3, 0.52, 0.9 },
+                    [6] = { 0, 0.5, 1 },
+                    [7] = { 0.4, 0, 0.8 },
+                    [8] = { 0.79, 0.26, 0.99 },
+                    [9] = { 1, 0.61, 0 }
+                }
+
+                PartyFrame.PowerBar:SetMinMaxValues(0, 100)
+                PartyFrame.PowerBar:SetValue(75)
+                if PowerBar.ColourByType then
+                    PartyFrame.PowerBar:SetStatusBarColor(unpack(PowerColours[math.random(0, #PowerColours)]))
+                else
+                    PartyFrame.PowerBar:SetStatusBarColor(
+                        UUF.db.profile.party.PowerBar.FGColour[1],
+                        UUF.db.profile.party.PowerBar.FGColour[2],
+                        UUF.db.profile.party.PowerBar.FGColour[3],
+                        UUF.db.profile.party.PowerBar.FGColour[4]
+                    )
+                end
+                if PowerBar.Enabled then
+                    PartyFrame.PowerBar:Show()
+                else
+                    PartyFrame.PowerBar:Hide()
+                end
+            end
+
+            if PartyFrame.HealthPrediction then
+                if HealAbsorb.Enabled and PartyFrame.HealAbsorbBar then
+                    PartyFrame.HealAbsorbBar:SetMinMaxValues(0, 100)
+                    PartyFrame.HealAbsorbBar:SetWidth(PartyFrame.HealthBar:GetWidth())
+                    PartyFrame.HealAbsorbBar:SetValue(5)
+                    PartyFrame.HealAbsorbBar:Show()
+                    PartyFrame.HealthPrediction.healAbsorbBar = PartyFrame.HealAbsorbBar
+                elseif PartyFrame.HealAbsorbBar then
+                    PartyFrame.HealAbsorbBar:Hide()
+                    PartyFrame.HealthPrediction.healAbsorbBar = nil
+                end
+
+                if Absorb.Enabled and PartyFrame.AbsorbBar then
+                    PartyFrame.AbsorbBar:SetMinMaxValues(0, 100)
+                    PartyFrame.AbsorbBar:SetWidth(PartyFrame.HealthBar:GetWidth())
+                    PartyFrame.AbsorbBar:SetValue(10)
+                    PartyFrame.AbsorbBar:Show()
+                    PartyFrame.HealthPrediction.absorbBar = PartyFrame.AbsorbBar
+                elseif PartyFrame.AbsorbBar then
+                    PartyFrame.AbsorbBar:Hide()
+                    PartyFrame.HealthPrediction.absorbBar = nil
+                end
+            end
+
+            if PartyFrame.BuffContainer then
+                if Buffs.Enabled then
+                    PartyFrame.BuffContainer:ClearAllPoints()
+                    PartyFrame.BuffContainer:SetPoint(Buffs.AnchorFrom, PartyFrame, Buffs.AnchorTo, Buffs.OffsetX,
+                        Buffs.OffsetY)
+                    PartyFrame.BuffContainer:Show()
+
+                    for j = 1, Buffs.Num do
+                        local button = PartyFrame.BuffContainer["fake" .. j]
+                        if not button then
+                            button = CreateFrame("Button", nil, PartyFrame.BuffContainer)
+
+                            button.Icon = button:CreateTexture(nil, "BORDER")
+                            button.Icon:SetAllPoints()
+
+                            button.Count = button:CreateFontString(nil, "OVERLAY")
+                            PartyFrame.BuffContainer["fake" .. j] = button
+                        end
+
+                        button:SetSize(Buffs.Size, Buffs.Size)
+                        button.Count:ClearAllPoints()
+                        button.Count:SetPoint(Buffs.Count.AnchorFrom, button, Buffs.Count.AnchorTo, Buffs.Count.OffsetX,
+                            Buffs.Count.OffsetY)
+                        button.Count:SetFont(UUF.Media.Font, Buffs.Count.FontSize, General.FontFlag)
+                        button.Count:SetTextColor(unpack(Buffs.Count.Colour))
+
+                        local row = math.floor((j - 1) / Buffs.Wrap)
+                        local col = (j - 1) % Buffs.Wrap
+                        local x = col * (Buffs.Size + Buffs.Spacing)
+                        local y = row * (Buffs.Size + Buffs.Spacing)
+                        if Buffs.Growth == "LEFT" then x = -x end
+                        if Buffs.WrapDirection == "DOWN" then y = -y end
+
+                        button:ClearAllPoints()
+                        button:SetPoint(Buffs.AnchorFrom, PartyFrame.BuffContainer, Buffs.AnchorFrom, x, y)
+
+                        button.Icon:SetTexture(135940)
+                        button.Icon:SetTexCoord(0.01, 0.99, 0.01, 0.99)
+                        button.Count:SetText(j)
+                        button:Show()
+                    end
+
+                    local maxFake = Buffs.Num
+                    for j = maxFake + 1, (PartyFrame.BuffContainer.maxFake or maxFake) do
+                        local button = PartyFrame.BuffContainer["fake" .. j]
+                        if button then button:Hide() end
+                    end
+                    PartyFrame.BuffContainer.maxFake = Buffs.Num
+                else
+                    PartyFrame.BuffContainer:Hide()
+                end
+            end
+
+            if PartyFrame.DebuffContainer then
+                if Debuffs.Enabled then
+                    PartyFrame.DebuffContainer:ClearAllPoints()
+                    PartyFrame.DebuffContainer:SetPoint(Debuffs.AnchorFrom, PartyFrame, Debuffs.AnchorTo, Debuffs.OffsetX,
+                        Debuffs.OffsetY)
+                    PartyFrame.DebuffContainer:Show()
+
+                    for j = 1, Debuffs.Num do
+                        local button = PartyFrame.DebuffContainer["fake" .. j]
+                        if not button then
+                            button = CreateFrame("Button", nil, PartyFrame.DebuffContainer)
+
+                            button.Icon = button:CreateTexture(nil, "BORDER")
+                            button.Icon:SetAllPoints()
+
+                            button.Count = button:CreateFontString(nil, "OVERLAY")
+                            PartyFrame.DebuffContainer["fake" .. j] = button
+                        end
+
+                        button:SetSize(Debuffs.Size, Debuffs.Size)
+                        button.Count:ClearAllPoints()
+                        button.Count:SetPoint(Debuffs.Count.AnchorFrom, button, Debuffs.Count.AnchorTo,
+                            Debuffs.Count.OffsetX, Debuffs.Count.OffsetY)
+                        button.Count:SetFont(UUF.Media.Font, Debuffs.Count.FontSize, General.FontFlag)
+                        button.Count:SetTextColor(unpack(Debuffs.Count.Colour))
+
+                        local row = math.floor((j - 1) / Debuffs.Wrap)
+                        local col = (j - 1) % Debuffs.Wrap
+                        local x = col * (Debuffs.Size + Debuffs.Spacing)
+                        local y = row * (Debuffs.Size + Debuffs.Spacing)
+                        if Debuffs.Growth == "LEFT" then x = -x end
+                        if Debuffs.WrapDirection == "DOWN" then y = -y end
+
+                        button:ClearAllPoints()
+                        button:SetPoint(Debuffs.AnchorFrom, PartyFrame.DebuffContainer, Debuffs.AnchorFrom, x, y)
+
+                        button.Icon:SetTexture(252997)
+                        button.Icon:SetTexCoord(0.01, 0.99, 0.01, 0.99)
+                        button.Count:SetText(j)
+                        button:Show()
+                    end
+
+                    local maxFake = Debuffs.Num
+                    for j = maxFake + 1, (PartyFrame.DebuffContainer.maxFake or maxFake) do
+                        local button = PartyFrame.DebuffContainer["fake" .. j]
+                        if button then button:Hide() end
+                    end
+                    PartyFrame.DebuffContainer.maxFake = Debuffs.Num
+                else
+                    PartyFrame.DebuffContainer:Hide()
+                end
+            end
+
+            if PartyFrame.PortraitContainer then
+                if UUFDB.party.Portrait.Enabled then
+                    PartyFrame.PortraitContainer:Show()
+                    local PortraitOptions = {
+                        [1] = "achievement_character_human_female",
+                        [2] = "achievement_character_human_male",
+                        [3] = "achievement_character_dwarf_male",
+                        [4] = "achievement_character_dwarf_female",
+                        [5] = "achievement_character_nightelf_female",
+                        [6] = "achievement_character_nightelf_male",
+                        [7] = "achievement_character_undead_male",
+                        [8] = "achievement_character_undead_female"
+                    }
+                    PartyFrame.PortraitTexture:SetTexture("Interface\\ICONS\\" .. PortraitOptions[i])
+                    PartyFrame.PortraitTexture:SetTexCoord((Portrait.Zoom or 0) * 0.5, 1 - (Portrait.Zoom or 0) * 0.5,
+                        (Portrait.Zoom or 0) * 0.5, 1 - (Portrait.Zoom or 0) * 0.5)
+                else
+                    PartyFrame.PortraitContainer:Hide()
+                end
+            end
+
+            if PartyFrame.RaidMarker then
+                PartyFrame.RaidMarker:SetTexture("Interface\\TargetingFrame\\UI-RaidTargetingIcon_" .. i)
+                if Indicators.RaidMarker.Enabled then
+                    PartyFrame.RaidMarker:Show()
+                else
+                    PartyFrame.RaidMarker:Hide()
+                end
+            end
+
+            if PartyFrame.FirstTag then
+                PartyFrame:Tag(PartyFrame.FirstTag, Tags["First"].Tag)
+            end
+            if PartyFrame.SecondTag then
+                PartyFrame:Tag(PartyFrame.SecondTag, Tags["Second"].Tag)
+            end
+            if PartyFrame.ThirdTag then
+                PartyFrame:Tag(PartyFrame.ThirdTag, Tags["Third"].Tag)
+            end
+            if PartyFrame.FourthTag then
+                PartyFrame:Tag(PartyFrame.FourthTag, Tags["Fourth"].Tag)
+            end
+            PartyFrame:UpdateTags()
+        end
+    else
+        for i, PartyFrame in ipairs(UUF.PartyFrames) do
+            PartyFrame:SetAttribute("unit", "party" .. i)
+            RegisterUnitWatch(PartyFrame)
+            PartyFrame:Hide()
+            for j = 1, (PartyFrame.BuffContainer and PartyFrame.BuffContainer.maxFake) or 0 do
+                local button = PartyFrame.BuffContainer["fake" .. j]
+                if button then button:Hide() end
+            end
+            for j = 1, (PartyFrame.DebuffContainer and PartyFrame.DebuffContainer.maxFake) or 0 do
+                local button = PartyFrame.DebuffContainer["fake" .. j]
+                if button then button:Hide() end
+            end
+        end
+    end
 end
 
 function UUF:CreateTestAuras(frameName, unit)

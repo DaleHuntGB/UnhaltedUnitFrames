@@ -11,6 +11,8 @@ function UUF:SpawnPartyFrames()
     oUF:RegisterStyle("UUF_Party", UUF.CreateUnitFrame)
     oUF:SetActiveStyle("UUF_Party")
 
+    UUF.PartyFrames = {}
+
     self.Party = oUF:SpawnHeader(
         "UUF_Party", nil, "party",
         "showParty", DB.Enabled,
@@ -30,6 +32,13 @@ function UUF:SpawnPartyFrames()
         local child = _G["UUF_PartyUnitButton"..i]
         if child then
             UUF:RegisterRangeFrame(child, "party"..i)
+        end
+    end
+
+    for i = 1, self.Party:GetNumChildren() do
+        local child = select(i, self.Party:GetChildren())
+        if child then
+            UUF.PartyFrames[#UUF.PartyFrames+1] = child
         end
     end
 
