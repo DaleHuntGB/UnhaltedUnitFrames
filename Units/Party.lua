@@ -9,7 +9,7 @@ function UUF:SpawnPartyFrames()
 
     if not DB.Enabled then return end
 
-    oUF:RegisterStyle("UUF_" .. CapitalizedUnits[unit], function(self) UUF.CreateUnitFrame(self, unit) end)
+    oUF:RegisterStyle("UUF_" .. CapitalizedUnits[unit], UUF.CreateUnitFrame)
     oUF:SetActiveStyle("UUF_" .. CapitalizedUnits[unit])
 
     self.Party = oUF:SpawnHeader(
