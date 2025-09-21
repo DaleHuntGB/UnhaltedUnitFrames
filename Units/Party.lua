@@ -1,6 +1,5 @@
 local _, UUF = ...
 local oUF = UUF.oUF
-local CapitalizedUnits = UUF.CapitalizedUnits
 
 function UUF:SpawnPartyFrames()
     local unit = "party"
@@ -9,8 +8,8 @@ function UUF:SpawnPartyFrames()
 
     if not DB.Enabled then return end
 
-    oUF:RegisterStyle("UUF_" .. CapitalizedUnits[unit], UUF.CreateUnitFrame)
-    oUF:SetActiveStyle("UUF_" .. CapitalizedUnits[unit])
+    oUF:RegisterStyle("UUF_Party", UUF.CreateUnitFrame)
+    oUF:SetActiveStyle("UUF_Party")
 
     self.Party = oUF:SpawnHeader(
         "UUF_Party", nil, "party",
@@ -42,3 +41,4 @@ function UUF:SpawnPartyFrames()
         Frame.YPosition
     )
 end
+
