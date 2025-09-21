@@ -26,7 +26,7 @@ function UUF:SpawnPartyFrames()
 
     self.Party = oUF:SpawnHeader(
         "UUF_Party", nil, "party",
-        "showParty", DB.Enabled,
+        "showParty", true,
         "showPlayer", Frame.ShowPlayer,
         "groupBy", "ASSIGNEDROLE",
         "groupingOrder", table.concat(Frame.SortOrder, ","),
@@ -54,4 +54,5 @@ function UUF:SpawnPartyFrames()
         Frame.YPosition
     )
 end
+
 
