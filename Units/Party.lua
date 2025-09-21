@@ -1,6 +1,17 @@
 local _, UUF = ...
 local oUF = UUF.oUF
 
+local GRUEvtFrame = CreateFrame("Frame")
+GRUEvtFrame:RegisterEvent("GROUP_ROSTER_UPDATE")
+GRUEvtFrame:SetScript("OnEvent", function()
+    for i = 1, 4 do
+        local child = _G["UUF_PartyUnitButton"..i]
+        if child  and not UUF:IsRangeFrameRegistered(child) then
+            UUF:RegisterRangeFrame(child, "party"..i)
+        end
+    end
+end)
+
 function UUF:SpawnPartyFrames()
     local unit = "party"
     local DB = UUF.db.profile[unit]
@@ -27,13 +38,6 @@ function UUF:SpawnPartyFrames()
             self:SetHeight(%d)
         ]], Frame.Width, Frame.Height)
     )
-
-    for i = 1, 4 do
-        local child = _G["UUF_PartyUnitButton"..i]
-        if child then
-            UUF:RegisterRangeFrame(child, "party"..i)
-        end
-    end
 
     for i = 1, self.Party:GetNumChildren() do
         local child = select(i, self.Party:GetChildren())

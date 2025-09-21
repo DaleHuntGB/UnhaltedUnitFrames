@@ -33,7 +33,6 @@ function GetGroupUnit(unit)
     end
 end
 
-
 local function IsUnitInRange(unit)
     local minRange, maxRange = LRC:GetRange(unit, true, true)
     return (not minRange) or maxRange
@@ -63,6 +62,15 @@ function UUF:RegisterRangeFrame(frameName, unit)
         unitFrame.__RangeAlphaSettings = nil
     end
     UUF:UpdateRangeAlpha(unitFrame, unit)
+end
+
+function UUF:IsRangeFrameRegistered(frame)
+    for _, frameData in ipairs(UUF.RangeEvtFrames) do
+        if frameData.frame == frame then
+            return true
+        end
+    end
+    return false
 end
 
 function UUF:UpdateRangeAlpha(unitFrame, unit)
