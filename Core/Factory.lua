@@ -1765,38 +1765,25 @@ function UUF:UpdateFrame(frameName, unit)
     unitFrame:UpdateAllElements("UUF_UPDATE")
 end
 
-function UUF:CreateUnitFrame(unit)
-    local DB = UUF.db.profile[unit]
-    self:SetSize(UUF.db.profile[unit].Frame.Width, UUF.db.profile[unit].Frame.Height)
+function UUF.CreateUnitFrame(frame, unit)
+    local normalizedUnit = GetNormalizedUnit(unit)
+    local DB = UUF.db.profile[normalizedUnit]
 
-    CreateContainer(self, unit)
-    CreateHealthBar(self, unit)
+    frame:SetSize(DB.Frame.Width, DB.Frame.Height)
 
-    if DB.PowerBar then
-        CreatePowerBar(self, unit)
-    end
-    if DB.HealPrediction then
-        CreateHealthPrediction(self, unit)
-    end
-    if DB.CastBar then
-        CreateCastbar(self, unit)
-    end
-    if DB.Buffs then
-        CreateBuffs(self, unit)
-    end
-    if DB.Debuffs then
-        CreateDebuffs(self, unit)
-    end
-    if DB.Portrait then
-        CreatePortrait(self, unit)
-    end
-    if DB.Indicators then
-        CreateIndicators(self, unit)
-    end
-    if DB.Tags then
-        CreateTags(self, unit)
-    end
-    ApplyScripts(self, unit)
+    CreateContainer(frame, normalizedUnit)
+    CreateHealthBar(frame, normalizedUnit)
+
+    if DB.PowerBar then CreatePowerBar(frame, normalizedUnit) end
+    if DB.HealPrediction then CreateHealthPrediction(frame, normalizedUnit) end
+    if DB.CastBar then CreateCastbar(frame, normalizedUnit) end
+    if DB.Buffs then CreateBuffs(frame, normalizedUnit) end
+    if DB.Debuffs then CreateDebuffs(frame, normalizedUnit) end
+    if DB.Portrait then CreatePortrait(frame, normalizedUnit) end
+    if DB.Indicators then CreateIndicators(frame, normalizedUnit) end
+    if DB.Tags then CreateTags(frame, normalizedUnit) end
+
+    ApplyScripts(frame, normalizedUnit)
 end
 
 function UUF:CreateTestBossFrames()
@@ -2111,6 +2098,29 @@ function UUF:CreateTestBossFrames()
             end
         end
         UUF:LayoutBossFrames()
+    end
+end
+
+function UUF:CreateTestPartyFrames()
+    oUF:RegisterStyle("UUF_TestParty", function(frame, unit) UUF.CreateUnitFrame(frame, "party") end)
+    local Frame = self.db.profile.party.Frame
+    if UUF.PartyTestMode then
+        if not self.TestParty then
+            oUF:SetActiveStyle("UUF_TestParty")
+            self.TestParty = oUF:SpawnHeader(
+                "UUF_Party_Test", nil, "custom [@player,exists] show; hide",
+                "nameList", "Test1,Test2,Test3,Test4",
+                "yOffset", -Frame.Spacing,
+                "oUF-initialConfigFunction", ("self:SetWidth(%d) self:SetHeight(%d)"):format(Frame.Width, Frame.Height)
+            )
+            print("UUF: Party Test Mode Enabled")
+            self.TestParty:SetPoint("TOPLEFT", self.Party or UIParent, "TOPLEFT")
+        end
+        if self.Party then self.Party:Hide() end
+        self.TestParty:Show()
+    else
+        if self.TestParty then self.TestParty:Hide() end
+        if self.Party then self.Party:Show() end
     end
 end
 

@@ -1424,7 +1424,7 @@ function UUF:CreateGUI()
             end)
             ScrollFrame:AddChild(EnabledToggle)
 
-            if unit == "boss" then
+            if unit == "boss" or unit == "party" then
                 local TestFrameButton = AG:Create("Button")
                 TestFrameButton:SetText("Display Frames")
                 TestFrameButton:SetCallback("OnClick", function()
