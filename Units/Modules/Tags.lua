@@ -11,6 +11,8 @@ local TagEvents = {
     ["health:missinghp"]                        = "UNIT_HEALTH UNIT_MAXHEALTH UNIT_CONNECTION PLAYER_FLAGS_CHANGED",
     ["health:perhp-healermana"]                 = "UNIT_HEALTH UNIT_MAXHEALTH UNIT_POWER_UPDATE UNIT_MAXPOWER UNIT_CONNECTION PLAYER_FLAGS_CHANGED",
     ["health:perhp-healermana:colour"]          = "UNIT_HEALTH UNIT_MAXHEALTH UNIT_POWER_UPDATE UNIT_MAXPOWER UNIT_CONNECTION PLAYER_FLAGS_CHANGED",
+    ["health:perhp-with-absorb-healermana"]     = "UNIT_HEALTH UNIT_MAXHEALTH UNIT_POWER_UPDATE UNIT_MAXPOWER UNIT_CONNECTION PLAYER_FLAGS_CHANGED UNIT_ABSORB_AMOUNT_CHANGED",
+    ["health:perhp-with-absorb-healermana:colour"]= "UNIT_HEALTH UNIT_MAXHEALTH UNIT_POWER_UPDATE UNIT_MAXPOWER UNIT_CONNECTION PLAYER_FLAGS_CHANGED UNIT_ABSORB_AMOUNT_CHANGED",
     ["power:curpp"]                             = "UNIT_POWER_UPDATE UNIT_MAXPOWER UNIT_CONNECTION PLAYER_FLAGS_CHANGED",
     ["power:perpp"]                             = "UNIT_POWER_UPDATE UNIT_MAXPOWER",
     ["power:healer-perpp"]                      = "UNIT_POWER_UPDATE UNIT_MAXPOWER GROUP_ROSTER_UPDATE",
@@ -167,6 +169,7 @@ oUF.Tags.Methods["health:perhp-healermana:colour"] = function(unit)
     if UUF.BossTestMode and unit and unit:match("^boss%d+$") then return UUF:FetchTestTags("health:perhp-healermana") end
     local HealthSeparator = UUF.HealthSeparator
     if not unit or not UnitExists(unit) then return "" end
+    print(unit)
     local uHealth = UnitHealth(unit)
     local uMaxHealth = UnitHealthMax(unit)
     local uHealthPercent = (uMaxHealth > 0) and (uHealth / uMaxHealth * 100) or 0

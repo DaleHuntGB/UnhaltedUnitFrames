@@ -1,17 +1,6 @@
 local _, UUF = ...
 local oUF = UUF.oUF
 
-local GRUEvtFrame = CreateFrame("Frame")
-GRUEvtFrame:RegisterEvent("GROUP_ROSTER_UPDATE")
-GRUEvtFrame:SetScript("OnEvent", function()
-    for i = 1, 4 do
-        local child = _G["UUF_PartyUnitButton"..i]
-        if child  and not UUF:IsRangeFrameRegistered(child) then
-            UUF:RegisterRangeFrame(child, "party"..i)
-        end
-    end
-end)
-
 function UUF:SpawnPartyFrames()
     local unit = "party"
     local DB = UUF.db.profile[unit]
@@ -21,8 +10,6 @@ function UUF:SpawnPartyFrames()
 
     oUF:RegisterStyle("UUF_Party", UUF.CreateUnitFrame)
     oUF:SetActiveStyle("UUF_Party")
-
-    UUF.PartyFrames = {}
 
     self.Party = oUF:SpawnHeader(
         "UUF_Party", nil, "party",
@@ -39,13 +26,6 @@ function UUF:SpawnPartyFrames()
         ]], Frame.Width, Frame.Height)
     )
 
-    for i = 1, self.Party:GetNumChildren() do
-        local child = select(i, self.Party:GetChildren())
-        if child then
-            UUF.PartyFrames[#UUF.PartyFrames+1] = child
-        end
-    end
-
     self.Party:SetPoint(
         Frame.AnchorFrom,
         UIParent,
@@ -53,6 +33,27 @@ function UUF:SpawnPartyFrames()
         Frame.XPosition,
         Frame.YPosition
     )
+
+    self.Party:HookScript("OnEvent", function(header, event)
+        if event ~= "GROUP_ROSTER_UPDATE" and event ~= "PLAYER_ENTERING_WORLD" then return end
+        for i = 1, header:GetNumChildren() do
+            local child = select(i, header:GetChildren())
+            if child and not child.__RangeHooked then
+                child.__RangeHooked = true
+                child:HookScript("OnAttributeChanged", function(frame, name, value)
+                    if name ~= "unit" then return end
+                    if frame.__LastUnit == value then return end
+                    frame.__LastUnit = value
+
+                    if value and value ~= "player" and not UUF:IsRangeFrameRegistered(value) then
+                        UUF:RegisterRangeFrame(frame, value)
+                    else
+                        frame:SetAlpha(1.0)
+                    end
+                end)
+            end
+        end
+    end)
+    self.Party:RegisterEvent("GROUP_ROSTER_UPDATE")
+    self.Party:RegisterEvent("PLAYER_ENTERING_WORLD")
 end
-
-

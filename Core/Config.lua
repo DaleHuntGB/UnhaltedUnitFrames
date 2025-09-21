@@ -203,12 +203,18 @@ local function CreateToggle(toggleTitle, toggleValue, unit, table, subTable, svV
     local function SaveAndUpdate(value)
         if subTable then
             UUF.db.profile[unit][table][subTable][svValue] = value
+            UUF:UpdateFrame(GetUnitFrameName(unit), unit)
         elseif table then
-            UUF.db.profile[unit][table][svValue] = value
+            if table == "Frame" and svValue == "ShowPlayer" then
+                UUF:CreatePrompt("Reload UI", "Changing the 'Show Player' option requires a UI reload to take effect. Would you like to reload now?", function() UUF.db.profile[unit][table][svValue] = value ReloadUI() end)
+            else
+                UUF.db.profile[unit][table][svValue] = value
+                UUF:UpdateFrame(GetUnitFrameName(unit), unit)
+            end
         else
             UUF.db.profile[unit][svValue] = value
+            UUF:UpdateFrame(GetUnitFrameName(unit), unit)
         end
-        UUF:UpdateFrame(GetUnitFrameName(unit), unit)
 
         if svValue == "Enabled" then
             local parent = Toggle.parent

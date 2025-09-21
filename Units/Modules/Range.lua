@@ -64,9 +64,9 @@ function UUF:RegisterRangeFrame(frameName, unit)
     UUF:UpdateRangeAlpha(unitFrame, unit)
 end
 
-function UUF:IsRangeFrameRegistered(frame)
+function UUF:IsRangeFrameRegistered(unit)
     for _, frameData in ipairs(UUF.RangeEvtFrames) do
-        if frameData.frame == frame then
+        if frameData.unit == unit then
             return true
         end
     end
@@ -76,11 +76,9 @@ end
 function UUF:UpdateRangeAlpha(unitFrame, unit)
     if not unitFrame:IsVisible() then return end
     if not unit or not UnitExists(unit) then return end
+    if unit == "player" then unitFrame:SetAlpha(1.0) return end
     local DB = unitFrame.__RangeAlphaSettings
-    if not DB then
-        unitFrame:SetAlpha(1.0)
-        return
-    end
+    if not DB then unitFrame:SetAlpha(1.0) return end
     local inAlpha = DB.InRange or 1.0
     local outAlpha = DB.OutOfRange or 0.5
     local unitFrameAlpha
