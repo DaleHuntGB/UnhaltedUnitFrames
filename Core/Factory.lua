@@ -141,16 +141,6 @@ local function CreatePowerBar(self, unit)
     local PowerBar = UUFDB[normalizedUnit].PowerBar
     local unitContainer = self.Container
 
-    if not self.PowerBarBG then
-        self.PowerBarBG = CreateFrame("StatusBar", nil, unitContainer)
-        self.PowerBarBG:SetPoint("BOTTOMLEFT", unitContainer, "BOTTOMLEFT", 1, 1)
-        self.PowerBarBG:SetSize(Frame.Width - 2, PowerBar.Height)
-        self.PowerBarBG:SetStatusBarTexture(UUF.Media.BackgroundTexture)
-        self.PowerBarBG:SetFrameLevel(unitContainer:GetFrameLevel() + 1)
-        local BGColour = PowerBar.BGColour
-        self.PowerBarBG:SetStatusBarColor(BGColour[1], BGColour[2], BGColour[3], BGColour[4])
-    end
-
     if not self.PowerBar then
         self.PowerBar = CreateFrame("StatusBar", nil, unitContainer)
         self.PowerBar:SetPoint("BOTTOMLEFT", unitContainer, "BOTTOMLEFT", 1, 1)
@@ -160,6 +150,23 @@ local function CreatePowerBar(self, unit)
         local FGColour = PowerBar.FGColour
         self.PowerBar:SetStatusBarColor(FGColour[1], FGColour[2], FGColour[3], FGColour[4])
         self.PowerBar.colorPower = PowerBar.ColourByType
+    end
+
+    if not self.PowerBarBG then
+        self.PowerBarBG = self.PowerBar:CreateTexture(CapitalizedUnit[unit] .. "_PowerBarBG", "BACKGROUND")
+        self.PowerBarBG:SetPoint("BOTTOMLEFT", unitContainer, "BOTTOMLEFT", 1, 1)
+        self.PowerBarBG:SetSize(Frame.Width - 2, PowerBar.Height)
+        self.PowerBarBG:SetTexture(UUF.Media.BackgroundTexture)
+
+        local BGColour = PowerBar.BGColour
+        if PowerBar.ColourBackgroundByType then
+            self.PowerBarBG.multiplier = 0.25
+            self.PowerBar.bg = self.PowerBarBG
+        else
+            self.PowerBarBG:SetVertexColor(BGColour[1], BGColour[2], BGColour[3], BGColour[4])
+            self.PowerBar.bg = nil
+        end
+
     end
 
     if not self.PowerBarBorder then
@@ -873,11 +880,18 @@ local function UpdatePowerBar(frameName, unit)
 
     if unitFrame.PowerBar then
         local PowerBar = UUFDB[normalizedUnit].PowerBar
+
         if unitFrame.PowerBarBG then
             unitFrame.PowerBarBG:SetSize(Frame.Width - 2, PowerBar.Height)
-            unitFrame.PowerBarBG:SetStatusBarTexture(UUF.Media.BackgroundTexture)
+            unitFrame.PowerBarBG:SetTexture(UUF.Media.BackgroundTexture)
             local BGColour = PowerBar.BGColour
-            unitFrame.PowerBarBG:SetStatusBarColor(BGColour[1], BGColour[2], BGColour[3], BGColour[4])
+            if PowerBar.ColourBackgroundByType then
+                unitFrame.PowerBarBG.multiplier = 0.25
+                unitFrame.PowerBar.bg = unitFrame.PowerBarBG
+            else
+                unitFrame.PowerBarBG:SetVertexColor(BGColour[1], BGColour[2], BGColour[3], BGColour[4])
+                unitFrame.PowerBar.bg = nil
+            end
         end
 
         unitFrame.PowerBar:SetSize(Frame.Width - 2, PowerBar.Height)
@@ -1864,10 +1878,12 @@ function UUF:CreateTestBossFrames()
                     [9] = { 1, 0.61, 0 }
                 }
 
+                local RandomColour = PowerColours[math.random(0, #PowerColours)]
+
                 BossFrame.PowerBar:SetMinMaxValues(0, 100)
                 BossFrame.PowerBar:SetValue(75)
                 if PowerBar.ColourByType then
-                    BossFrame.PowerBar:SetStatusBarColor(unpack(PowerColours[math.random(0, #PowerColours)]))
+                    BossFrame.PowerBar:SetStatusBarColor(unpack(RandomColour))
                 else
                     BossFrame.PowerBar:SetStatusBarColor(
                         UUF.db.profile.boss.PowerBar.FGColour[1],
@@ -1880,6 +1896,20 @@ function UUF:CreateTestBossFrames()
                     BossFrame.PowerBar:Show()
                 else
                     BossFrame.PowerBar:Hide()
+                end
+
+                if BossFrame.PowerBarBG then
+                    if PowerBar.ColourBackgroundByType then
+                        local DarkenedColour = { RandomColour[1] * 0.25, RandomColour[2] * 0.25, RandomColour[3] * 0.25 }
+                        BossFrame.PowerBarBG:SetVertexColor(unpack(DarkenedColour))
+                    else
+                        BossFrame.PowerBarBG:SetVertexColor(
+                            UUF.db.profile.boss.PowerBar.BGColour[1],
+                            UUF.db.profile.boss.PowerBar.BGColour[2],
+                            UUF.db.profile.boss.PowerBar.BGColour[3],
+                            UUF.db.profile.boss.PowerBar.BGColour[4]
+                        )
+                    end
                 end
             end
 

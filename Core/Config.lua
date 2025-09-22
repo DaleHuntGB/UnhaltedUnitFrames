@@ -1686,10 +1686,16 @@ function UUF:CreateGUI()
 
             local function DrawPowerBarContainer(GUIContainer)
                 local PowerBarEnabledToggle = CreateToggle("Enable Power Bar", PowerBar.Enabled, unit, "PowerBar", nil, "Enabled")
+                PowerBarEnabledToggle:SetRelativeWidth(0.33)
                 GUIContainer:AddChild(PowerBarEnabledToggle)
 
                 local PowerBarColourByTypeToggle = CreateToggle("Colour by Power Type", PowerBar.ColourByType, unit, "PowerBar", nil, "ColourByType")
+                PowerBarColourByTypeToggle:SetRelativeWidth(0.33)
                 GUIContainer:AddChild(PowerBarColourByTypeToggle)
+
+                local PowerBarColourBackgroundByTypeToggle = CreateToggle("Background Colour by Power Type", PowerBar.ColourBackgroundByType, unit, "PowerBar", nil, "ColourBackgroundByType")
+                PowerBarColourBackgroundByTypeToggle:SetRelativeWidth(0.33)
+                GUIContainer:AddChild(PowerBarColourBackgroundByTypeToggle)
 
                 local PowerBarColourPickerContainer = AG:Create("InlineGroup")
                 PowerBarColourPickerContainer:SetTitle("Colour")
@@ -3665,6 +3671,7 @@ UUF.Defaults = {
                 Enabled = false,
                 Height = 3,
                 ColourByType = true,
+                ColourBackgroundByType = true,
                 FGColour = {8/255, 8/255, 8/255, 0.8},
                 BGColour = {204/255, 204/255, 204/255, 1},
             },
@@ -3861,6 +3868,7 @@ UUF.Defaults = {
                 Enabled = true,
                 Height = 1,
                 ColourByType = true,
+                ColourBackgroundByType = true,
                 FGColour = {8/255, 8/255, 8/255, 0.8},
                 BGColour = {204/255, 204/255, 204/255, 1},
             },
@@ -4048,6 +4056,7 @@ UUF.Defaults = {
                 Enabled = false,
                 Height = 3,
                 ColourByType = true,
+                ColourBackgroundByType = true,
                 FGColour = {8/255, 8/255, 8/255, 0.8},
                 BGColour = {204/255, 204/255, 204/255, 1},
             },
@@ -4195,6 +4204,7 @@ UUF.Defaults = {
                 Enabled = false,
                 Height = 3,
                 ColourByType = true,
+                ColourBackgroundByType = true,
                 FGColour = {8/255, 8/255, 8/255, 0.8},
                 BGColour = {204/255, 204/255, 204/255, 1},
             },
@@ -4365,6 +4375,7 @@ UUF.Defaults = {
                 Enabled = false,
                 Height = 3,
                 ColourByType = true,
+                ColourBackgroundByType = true,
                 FGColour = {8/255, 8/255, 8/255, 0.8},
                 BGColour = {204/255, 204/255, 204/255, 1},
             },
@@ -4460,6 +4471,7 @@ UUF.Defaults = {
                 Enabled = false,
                 Height = 3,
                 ColourByType = true,
+                ColourBackgroundByType = true,
                 FGColour = {8/255, 8/255, 8/255, 0.8},
                 BGColour = {204/255, 204/255, 204/255, 1},
             },
@@ -4643,6 +4655,7 @@ UUF.Defaults = {
                 Enabled = true,
                 Height = 1,
                 ColourByType = true,
+                ColourBackgroundByType = true,
                 FGColour = {8/255, 8/255, 8/255, 0.8},
                 BGColour = {204/255, 204/255, 204/255, 1},
             },
@@ -4833,6 +4846,7 @@ UUF.Defaults = {
                 Enabled = false,
                 Height = 1,
                 ColourByType = true,
+                ColourBackgroundByType = true,
                 FGColour = {8/255, 8/255, 8/255, 0.8},
                 BGColour = {204/255, 204/255, 204/255, 1},
             },
@@ -5017,6 +5031,7 @@ UUF.Defaults = {
                 Enabled = false,
                 Height = 1,
                 ColourByType = true,
+                ColourBackgroundByType = true,
                 FGColour = {8/255, 8/255, 8/255, 0.8},
                 BGColour = {204/255, 204/255, 204/255, 1},
             },
