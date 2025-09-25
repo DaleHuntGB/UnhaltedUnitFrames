@@ -548,3 +548,25 @@ function UUF:ColourOnDispel(self, unit)
         self.HealthBar:SetStatusBarColor(Frame.FGColour[1], Frame.FGColour[2], Frame.FGColour[3], Frame.FGColour[4])
     end
 end
+
+function UUF:GetDispelColor(unit)
+    if not UnitExists(unit) or not UnitIsPlayer(unit) then return nil end
+
+    local dispelColours = LibDispel:GetDebuffTypeColor()
+    local badDispels = LibDispel:GetBadList()
+
+    for i = 1, 10 do
+        local auraInfo = C_UnitAuras.GetDebuffDataByIndex(unit, i)
+        if not auraInfo then break end
+
+        local spellId = auraInfo.spellId
+        local debuffType = auraInfo.dispelName
+
+        if debuffType and dispelColours[debuffType] then
+            if not badDispels[spellId] and LibDispel:IsDispellableByMe(debuffType) then
+                return dispelColours[debuffType]
+            end
+        end
+    end
+    return nil
+end

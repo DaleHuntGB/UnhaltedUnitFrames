@@ -54,12 +54,24 @@ local function CreateHealthBar(self, unit)
             unitHP:SetValue(maxHP - curHP)
         end
 
-        -- Add a UNIT_AURA Hook to Update Health Colour based on Debuff Type
-        self:RegisterEvent("UNIT_AURA", function(_, _, u)
-            if u == unit and Frame.ColourHealthByDispel then
-                UUF:ColourOnDispel(self, u)
+        self.Health.PostUpdateColor = function(element, unit, r, g, b)
+            local cfg = UUF.db.profile[GetNormalizedUnit(unit)].Frame
+            if cfg.ColourHealthByDispel then
+                local c = UUF:GetDispelColor(unit)
+                if c then
+                    element:SetStatusBarColor(c.r, c.g, c.b, cfg.FGColour[4])
+                elseif not (cfg.ClassColour or cfg.ReactionColour) then
+                    element:SetStatusBarColor(cfg.FGColour[1], cfg.FGColour[2], cfg.FGColour[3], cfg.FGColour[4])
+                end
             end
-        end, true)
+        end
+
+        -- Add a UNIT_AURA Hook to Update Health Colour based on Debuff Type
+        -- self:RegisterEvent("UNIT_AURA", function(_, _, u)
+        --     if u == unit and Frame.ColourHealthByDispel then
+        --         UUF:ColourOnDispel(self, u)
+        --     end
+        -- end, true)
         self.HealthBG:SetReverseFill(true)
     end
 
