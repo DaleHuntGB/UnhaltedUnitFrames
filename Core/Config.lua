@@ -1652,21 +1652,16 @@ function UUF:CreateGUI()
                 HealPredictionAbsorbContainer:AddChild(HealPredictionAbsorbInfoTag)
 
                 local AbsorbEnabledToggle = CreateToggle("Enable Absorbs", Absorb.Enabled, unit, "HealPrediction", "Absorb", "Enabled")
-                AbsorbEnabledToggle:SetRelativeWidth(0.5)
+                AbsorbEnabledToggle:SetRelativeWidth(0.33)
                 HealPredictionAbsorbContainer:AddChild(AbsorbEnabledToggle)
 
                 local AbsorbColourPicker = CreateColourPicker("Colour", Absorb.Colour, unit, "HealPrediction", "Absorb", nil, "Colour")
-                AbsorbColourPicker:SetRelativeWidth(0.5)
+                AbsorbColourPicker:SetRelativeWidth(0.33)
                 HealPredictionAbsorbContainer:AddChild(AbsorbColourPicker)
 
-                local AbsorbHeightSlider = CreateSlider("Height", Absorb.Height, unit, "HealPrediction", "Absorb", nil, "Height")
-                AbsorbHeightSlider:SetSliderValues(1, Frame.Height - (PowerBar.Enabled and (PowerBar.Height + 3) or 2), 1)
-                AbsorbHeightSlider:SetRelativeWidth(0.5)
-                HealPredictionAbsorbContainer:AddChild(AbsorbHeightSlider)
-
                 local AbsorbAnchorPoint = CreateDropdown("Anchor Point", Absorb.AnchorPoint, unit, "HealPrediction", "Absorb", nil, "AnchorPoint")
-                AbsorbAnchorPoint:SetList({ ["TOPLEFT"] = "Top Left", ["TOPRIGHT"] = "Top Right", ["BOTTOMLEFT"] = "Bottom Left", ["BOTTOMRIGHT"] = "Bottom Right", }, {"TOPLEFT", "TOPRIGHT", "BOTTOMLEFT", "BOTTOMRIGHT"})
-                AbsorbAnchorPoint:SetRelativeWidth(0.5)
+                AbsorbAnchorPoint:SetList({["LEFT"] = "Left", ["RIGHT"] = "Right"}, {"LEFT", "RIGHT"})
+                AbsorbAnchorPoint:SetRelativeWidth(0.33)
                 HealPredictionAbsorbContainer:AddChild(AbsorbAnchorPoint)
 
                 local HealPredictionHealAbsorbContainer = AG:Create("InlineGroup")
@@ -3658,8 +3653,7 @@ UUF.Defaults = {
             HealPrediction = {
                 Absorb = {
                     Enabled = true,
-                    AnchorPoint = "BOTTOMLEFT",
-                    Height = 3,
+                    AnchorPoint = "LEFT",
                     Colour = {255/255, 204/255, 0/255, 1},
                 },
                 HealAbsorb = {
@@ -3855,8 +3849,7 @@ UUF.Defaults = {
             HealPrediction = {
                 Absorb = {
                     Enabled = true,
-                    AnchorPoint = "BOTTOMLEFT",
-                    Height = 3,
+                    AnchorPoint = "LEFT",
                     Colour = {255/255, 204/255, 0/255, 1},
                 },
                 HealAbsorb = {
@@ -4191,8 +4184,7 @@ UUF.Defaults = {
             HealPrediction = {
                 Absorb = {
                     Enabled = true,
-                    AnchorPoint = "BOTTOMLEFT",
-                    Height = 3,
+                    AnchorPoint = "LEFT",
                     Colour = {255/255, 204/255, 0/255, 1},
                 },
                 HealAbsorb = {
@@ -4458,8 +4450,7 @@ UUF.Defaults = {
             HealPrediction = {
                 Absorb = {
                     Enabled = false,
-                    AnchorPoint = "BOTTOMLEFT",
-                    Height = 3,
+                    AnchorPoint = "LEFT",
                     Colour = {255/255, 204/255, 0/255, 1},
                 },
                 HealAbsorb = {
@@ -4642,8 +4633,7 @@ UUF.Defaults = {
             HealPrediction = {
                 Absorb = {
                     Enabled = true,
-                    AnchorPoint = "BOTTOMLEFT",
-                    Height = 3,
+                    AnchorPoint = "LEFT",
                     Colour = {255/255, 204/255, 0/255, 1},
                 },
                 HealAbsorb = {
@@ -4833,8 +4823,7 @@ UUF.Defaults = {
             HealPrediction = {
                 Absorb = {
                     Enabled = true,
-                    AnchorPoint = "BOTTOMRIGHT",
-                    Height = 46,
+                    AnchorPoint = "LEFT",
                     Colour = {255/255, 204/255, 0/255, 1},
                 },
                 HealAbsorb = {
@@ -5018,8 +5007,7 @@ UUF.Defaults = {
             HealPrediction = {
                 Absorb = {
                     Enabled = true,
-                    AnchorPoint = "BOTTOMRIGHT",
-                    Height = 46,
+                    AnchorPoint = "LEFT",
                     Colour = {255/255, 204/255, 0/255, 1},
                 },
                 HealAbsorb = {

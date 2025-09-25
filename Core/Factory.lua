@@ -20,7 +20,6 @@ end
 
 local function CreateHealthBar(self, unit)
     local UUFDB = UUF.db.profile
-    local General = UUFDB.General
     local normalizedUnit = GetNormalizedUnit(unit)
     local Frame = UUFDB[normalizedUnit].Frame
     local unitContainer = self.Container
@@ -74,13 +73,10 @@ end
 
 local function CreateHealthPrediction(self, unit)
     local UUFDB = UUF.db.profile
-    local General = UUFDB.General
     local normalizedUnit = GetNormalizedUnit(unit)
+    local Frame = UUFDB[normalizedUnit].Frame
     local Absorb = UUFDB[normalizedUnit].HealPrediction.Absorb
     local HealAbsorb = UUFDB[normalizedUnit].HealPrediction.HealAbsorb
-    local Frame = UUFDB[normalizedUnit].Frame
-    local PowerBar = UUFDB[normalizedUnit].PowerBar
-    local hasPowerBar = PowerBar and PowerBar.Enabled
     if not self.Health then return end
 
     if not self.AbsorbBar then
@@ -88,21 +84,20 @@ local function CreateHealthPrediction(self, unit)
         self.AbsorbBar:SetStatusBarTexture(UUF.Media.ForegroundTexture)
         self.AbsorbBar:SetStatusBarColor(Absorb.Colour[1], Absorb.Colour[2], Absorb.Colour[3], Absorb.Colour[4])
         self.AbsorbBar:SetFrameLevel(self.HealthBar:GetFrameLevel() + 1)
-        self.AbsorbBar:SetOrientation(self.HealthBar:GetOrientation() or "HORIZONTAL")
+        self.AbsorbBar:SetOrientation("HORIZONTAL")
+        self.AbsorbBar:SetWidth(self.HealthBar:GetWidth())
+        self.AbsorbBar:SetHeight(self.HealthBar:GetHeight())
         self.AbsorbBar:ClearAllPoints()
-        local yOffset = 0
-        if hasPowerBar and PowerBar.Height then
-            if Absorb.AnchorPoint == "BOTTOMLEFT" or Absorb.AnchorPoint == "BOTTOMRIGHT" then
-                yOffset = 1
-            elseif Absorb.AnchorPoint == "TOPLEFT" or Absorb.AnchorPoint == "TOPRIGHT" then
-                yOffset = 0
-            end
+
+        if Absorb.AnchorPoint == "LEFT" then
+            self.AbsorbBar:SetPoint("TOPLEFT", self.HealthBar, "TOPLEFT", 0, 0)
+            self.AbsorbBar:SetPoint("BOTTOMLEFT", self.HealthBar, "BOTTOMLEFT", 0, 0)
+            self.AbsorbBar:SetReverseFill(false)
+        elseif Absorb.AnchorPoint == "RIGHT" then
+            self.AbsorbBar:SetPoint("TOPRIGHT", self.HealthBar, "TOPRIGHT", 0, 0)
+            self.AbsorbBar:SetPoint("BOTTOMRIGHT", self.HealthBar, "BOTTOMRIGHT", 0, 0)
+            self.AbsorbBar:SetReverseFill(true)
         end
-        self.AbsorbBar:SetPoint( Absorb.AnchorPoint, self.HealthBar, Absorb.AnchorPoint, 0, yOffset )
-        self.AbsorbBar:SetReverseFill((Absorb.AnchorPoint == "BOTTOMRIGHT" or Absorb.AnchorPoint == "TOPRIGHT") and true or false)
-        local maxHeight = Frame.Height - (hasPowerBar and (PowerBar.Height + 3) or 2)
-        local newHeight = math.min(Absorb.Height, maxHeight)
-        self.AbsorbBar:SetHeight(newHeight)
     end
     if not self.HealAbsorbBar then
         self.HealAbsorbBar = CreateFrame("StatusBar", CapitalizedUnit[unit] .. "_HealAbsorbBar", self.HealthBar)
@@ -135,7 +130,6 @@ end
 
 local function CreatePowerBar(self, unit)
     local UUFDB = UUF.db.profile
-    local General = UUFDB.General
     local normalizedUnit = GetNormalizedUnit(unit)
     local Frame = UUFDB[normalizedUnit].Frame
     local PowerBar = UUFDB[normalizedUnit].PowerBar
@@ -182,8 +176,8 @@ local function CreatePowerBar(self, unit)
         self.Power = self.PowerBar
         self.PowerBar:Show()
         if self.PowerBarBG then self.PowerBarBG:Show() end
-        self.HealthBG:SetHeight(Frame.Height - (self.PowerBar:GetHeight() + 2))
-        self.HealthBar:SetHeight(Frame.Height - (self.PowerBar:GetHeight() + 2))
+        self.HealthBG:SetHeight(Frame.Height - (self.PowerBar:GetHeight() + 3))
+        self.HealthBar:SetHeight(Frame.Height - (self.PowerBar:GetHeight() + 3))
     else
         self.Power = nil
         self.PowerBar:Hide()
@@ -800,30 +794,25 @@ local function UpdateHealthPrediction(frameName, unit)
     local normalizedUnit = GetNormalizedUnit(unit)
     local Absorb = UUFDB[normalizedUnit].HealPrediction.Absorb
     local HealAbsorb = UUFDB[normalizedUnit].HealPrediction.HealAbsorb
-    local Frame = UUFDB[normalizedUnit].Frame
-    local PowerBar = UUFDB[normalizedUnit].PowerBar
-    local hasPowerBar = PowerBar and PowerBar.Enabled
 
     if unitFrame.AbsorbBar then
         unitFrame.AbsorbBar:SetStatusBarTexture(UUF.Media.ForegroundTexture)
         unitFrame.AbsorbBar:SetStatusBarColor(Absorb.Colour[1], Absorb.Colour[2], Absorb.Colour[3], Absorb.Colour[4])
-        unitFrame.AbsorbBar:SetFrameLevel(unitFrame.Health:GetFrameLevel() + 1)
-        unitFrame.AbsorbBar:SetOrientation(unitFrame.Health:GetOrientation() or "HORIZONTAL")
+        unitFrame.AbsorbBar:SetFrameLevel(unitFrame.HealthBar:GetFrameLevel() + 1)
+        unitFrame.AbsorbBar:SetOrientation("HORIZONTAL")
         unitFrame.AbsorbBar:SetWidth(unitFrame.HealthBar:GetWidth())
+        unitFrame.AbsorbBar:SetHeight(unitFrame.HealthBar:GetHeight())
         unitFrame.AbsorbBar:ClearAllPoints()
-        local yOffset = 0
-        if hasPowerBar and PowerBar.Height then
-            if Absorb.AnchorPoint == "BOTTOMLEFT" or Absorb.AnchorPoint == "BOTTOMRIGHT" then
-                yOffset = 1
-            elseif Absorb.AnchorPoint == "TOPLEFT" or Absorb.AnchorPoint == "TOPRIGHT" then
-                yOffset = 0
-            end
+
+        if Absorb.AnchorPoint == "LEFT" then
+            unitFrame.AbsorbBar:SetPoint("TOPLEFT", unitFrame.HealthBar, "TOPLEFT", 0, 0)
+            unitFrame.AbsorbBar:SetPoint("BOTTOMLEFT", unitFrame.HealthBar, "BOTTOMLEFT", 0, 0)
+            unitFrame.AbsorbBar:SetReverseFill(false)
+        elseif Absorb.AnchorPoint == "RIGHT" then
+            unitFrame.AbsorbBar:SetPoint("TOPRIGHT", unitFrame.HealthBar, "TOPRIGHT", 0, 0)
+            unitFrame.AbsorbBar:SetPoint("BOTTOMRIGHT", unitFrame.HealthBar, "BOTTOMRIGHT", 0, 0)
+            unitFrame.AbsorbBar:SetReverseFill(true)
         end
-        unitFrame.AbsorbBar:SetPoint(Absorb.AnchorPoint, unitFrame.HealthBar, Absorb.AnchorPoint, 0, yOffset)
-        unitFrame.AbsorbBar:SetReverseFill((Absorb.AnchorPoint == "BOTTOMRIGHT" or Absorb.AnchorPoint == "TOPRIGHT") and true or false)
-        local maxHeight = Frame.Height - (hasPowerBar and (PowerBar.Height + 3) or 2)
-        local newHeight = math.min(Absorb.Height, maxHeight)
-        unitFrame.AbsorbBar:SetHeight(newHeight)
     end
 
     if unitFrame.HealAbsorbBar then
@@ -876,7 +865,6 @@ local function UpdatePowerBar(frameName, unit)
     local UUFDB = UUF.db.profile
     local normalizedUnit = GetNormalizedUnit(unit)
     local Frame = UUFDB[normalizedUnit].Frame
-    local General = UUFDB.General
 
     if unitFrame.PowerBar then
         local PowerBar = UUFDB[normalizedUnit].PowerBar
@@ -912,6 +900,8 @@ local function UpdatePowerBar(frameName, unit)
             if not unitFrame:IsElementEnabled("Power") then unitFrame:EnableElement("Power") end
             unitFrame.HealthBG:SetHeight(Frame.Height - (unitFrame.PowerBar:GetHeight() + 2))
             unitFrame.HealthBar:SetHeight(Frame.Height - (unitFrame.PowerBar:GetHeight() + 2))
+            if unitFrame.AbsorbBar then unitFrame.AbsorbBar:SetHeight(Frame.Height - (unitFrame.PowerBar:GetHeight() + 2)) end
+            if unitFrame.HealAbsorbBar then unitFrame.HealAbsorbBar:SetHeight(Frame.Height - (unitFrame.PowerBar:GetHeight() + 2)) end
             unitFrame.PowerBar:Show()
             if unitFrame.PowerBarBG then unitFrame.PowerBarBG:Show() end
             if unitFrame.Power and unitFrame.Power.ForceUpdate then unitFrame.Power:ForceUpdate() end
@@ -919,6 +909,8 @@ local function UpdatePowerBar(frameName, unit)
             if unitFrame:IsElementEnabled("Power") then unitFrame:DisableElement("Power") end
             unitFrame.HealthBG:SetHeight(Frame.Height - 2)
             unitFrame.HealthBar:SetHeight(Frame.Height - 2)
+            if unitFrame.AbsorbBar then unitFrame.AbsorbBar:SetHeight(Frame.Height - 2) end
+            if unitFrame.HealAbsorbBar then unitFrame.HealAbsorbBar:SetHeight(Frame.Height - 2) end
             unitFrame.PowerBar:Hide()
             if unitFrame.PowerBarBG then unitFrame.PowerBarBG:Hide() end
             unitFrame.Power = nil
@@ -1894,8 +1886,12 @@ function UUF:CreateTestBossFrames()
                 end
                 if PowerBar.Enabled then
                     BossFrame.PowerBar:Show()
+                    BossFrame.HealthBG:SetHeight(Frame.Height - (BossFrame.PowerBar:GetHeight() + 2))
+                    BossFrame.HealthBar:SetHeight(Frame.Height - (BossFrame.PowerBar:GetHeight() + 2))
                 else
                     BossFrame.PowerBar:Hide()
+                    BossFrame.HealthBG:SetHeight(Frame.Height - 2)
+                    BossFrame.HealthBar:SetHeight(Frame.Height - 2)
                 end
 
                 if BossFrame.PowerBarBG then
@@ -1917,6 +1913,7 @@ function UUF:CreateTestBossFrames()
                 if HealAbsorb.Enabled and BossFrame.HealAbsorbBar then
                     BossFrame.HealAbsorbBar:SetMinMaxValues(0, 100)
                     BossFrame.HealAbsorbBar:SetWidth(BossFrame.HealthBar:GetWidth())
+                    BossFrame.HealAbsorbBar:SetHeight(BossFrame.HealthBar:GetHeight())
                     BossFrame.HealAbsorbBar:SetValue(5)
                     BossFrame.HealAbsorbBar:Show()
                     BossFrame.HealthPrediction.healAbsorbBar = BossFrame.HealAbsorbBar
@@ -1928,6 +1925,7 @@ function UUF:CreateTestBossFrames()
                 if Absorb.Enabled and BossFrame.AbsorbBar then
                     BossFrame.AbsorbBar:SetMinMaxValues(0, 100)
                     BossFrame.AbsorbBar:SetWidth(BossFrame.HealthBar:GetWidth())
+                    BossFrame.AbsorbBar:SetHeight(BossFrame.HealthBar:GetHeight())
                     BossFrame.AbsorbBar:SetValue(10)
                     BossFrame.AbsorbBar:Show()
                     BossFrame.HealthPrediction.absorbBar = BossFrame.AbsorbBar
