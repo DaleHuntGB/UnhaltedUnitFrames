@@ -1882,8 +1882,8 @@ function UUF:CreateTestBossFrames()
                 end
                 if PowerBar.Enabled then
                     BossFrame.PowerBar:Show()
-                    BossFrame.HealthBG:SetHeight(Frame.Height - (BossFrame.PowerBar:GetHeight() + 2))
-                    BossFrame.HealthBar:SetHeight(Frame.Height - (BossFrame.PowerBar:GetHeight() + 2))
+                    BossFrame.HealthBG:SetHeight(Frame.Height - (BossFrame.PowerBar:GetHeight() + 3))
+                    BossFrame.HealthBar:SetHeight(Frame.Height - (BossFrame.PowerBar:GetHeight() + 3))
                 else
                     BossFrame.PowerBar:Hide()
                     BossFrame.HealthBG:SetHeight(Frame.Height - 2)
