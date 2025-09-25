@@ -898,10 +898,8 @@ local function UpdatePowerBar(frameName, unit)
         if PowerBar.Enabled then
             unitFrame.Power = unitFrame.PowerBar
             if not unitFrame:IsElementEnabled("Power") then unitFrame:EnableElement("Power") end
-            unitFrame.HealthBG:SetHeight(Frame.Height - (unitFrame.PowerBar:GetHeight() + 2))
-            unitFrame.HealthBar:SetHeight(Frame.Height - (unitFrame.PowerBar:GetHeight() + 2))
-            if unitFrame.AbsorbBar then unitFrame.AbsorbBar:SetHeight(Frame.Height - (unitFrame.PowerBar:GetHeight() + 2)) end
-            if unitFrame.HealAbsorbBar then unitFrame.HealAbsorbBar:SetHeight(Frame.Height - (unitFrame.PowerBar:GetHeight() + 2)) end
+            unitFrame.HealthBG:SetHeight(Frame.Height - (unitFrame.PowerBar:GetHeight() + 3))
+            unitFrame.HealthBar:SetHeight(Frame.Height - (unitFrame.PowerBar:GetHeight() + 3))
             unitFrame.PowerBar:Show()
             if unitFrame.PowerBarBG then unitFrame.PowerBarBG:Show() end
             if unitFrame.Power and unitFrame.Power.ForceUpdate then unitFrame.Power:ForceUpdate() end
@@ -909,8 +907,6 @@ local function UpdatePowerBar(frameName, unit)
             if unitFrame:IsElementEnabled("Power") then unitFrame:DisableElement("Power") end
             unitFrame.HealthBG:SetHeight(Frame.Height - 2)
             unitFrame.HealthBar:SetHeight(Frame.Height - 2)
-            if unitFrame.AbsorbBar then unitFrame.AbsorbBar:SetHeight(Frame.Height - 2) end
-            if unitFrame.HealAbsorbBar then unitFrame.HealAbsorbBar:SetHeight(Frame.Height - 2) end
             unitFrame.PowerBar:Hide()
             if unitFrame.PowerBarBG then unitFrame.PowerBarBG:Hide() end
             unitFrame.Power = nil
