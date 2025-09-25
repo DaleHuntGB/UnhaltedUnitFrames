@@ -1648,7 +1648,7 @@ function UUF:CreateGUI()
                 HealPredictionAbsorbContainer:SetFullWidth(true)
                 GUIContainer:AddChild(HealPredictionAbsorbContainer)
 
-                local HealPredictionAbsorbInfoTag = CreateInfoTag("|cFF8080FFAbsorbs|r are displayed independently of the health bar.\nYou can adjust the |cFF8080FFheight|r / |cFF8080FFanchor point|r to suit your layout.")
+                local HealPredictionAbsorbInfoTag = CreateInfoTag("|cFF8080FFAbsorbs|r are displayed independently of the health bar.\nYou can adjust the |cFF8080FFanchor point|r to suit your layout.")
                 HealPredictionAbsorbContainer:AddChild(HealPredictionAbsorbInfoTag)
 
                 local AbsorbEnabledToggle = CreateToggle("Enable Absorbs", Absorb.Enabled, unit, "HealPrediction", "Absorb", "Enabled")
