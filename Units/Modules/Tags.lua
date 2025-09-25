@@ -169,7 +169,6 @@ oUF.Tags.Methods["health:perhp-healermana:colour"] = function(unit)
     if UUF.BossTestMode and unit and unit:match("^boss%d+$") then return UUF:FetchTestTags("health:perhp-healermana") end
     local HealthSeparator = UUF.HealthSeparator
     if not unit or not UnitExists(unit) then return "" end
-    print(unit)
     local uHealth = UnitHealth(unit)
     local uMaxHealth = UnitHealthMax(unit)
     local uHealthPercent = (uMaxHealth > 0) and (uHealth / uMaxHealth * 100) or 0
