@@ -1688,7 +1688,16 @@ function UUF:CreateGUI()
                 PowerBarColourByTypeToggle:SetRelativeWidth(0.33)
                 GUIContainer:AddChild(PowerBarColourByTypeToggle)
 
-                local PowerBarColourBackgroundByTypeToggle = CreateToggle("Background Colour by Power Type", PowerBar.ColourBackgroundByType, unit, "PowerBar", nil, "ColourBackgroundByType")
+                local PowerBarBGColourPicker = CreateColourPicker("Background Colour", PowerBar.BGColour, unit, "PowerBar", nil, nil, "BGColour")
+                PowerBarBGColourPicker:SetDisabled(PowerBar.ColourBackgroundByType)
+                local PowerBarColourBackgroundByTypeToggle = AG:Create("CheckBox")
+                PowerBarColourBackgroundByTypeToggle:SetLabel("Colour Background by Power Type")
+                PowerBarColourBackgroundByTypeToggle:SetValue(PowerBar.ColourBackgroundByType)
+                PowerBarColourBackgroundByTypeToggle:SetCallback("OnValueChanged", function(_, _, value)
+                    UUF.db.profile[unit].PowerBar.ColourBackgroundByType = value
+                    UUF:UpdateFrame(unitToUnitFrame[unit], unit)
+                    PowerBarBGColourPicker:SetDisabled(value)
+                end)
                 PowerBarColourBackgroundByTypeToggle:SetRelativeWidth(0.33)
                 GUIContainer:AddChild(PowerBarColourBackgroundByTypeToggle)
 
@@ -1707,8 +1716,6 @@ function UUF:CreateGUI()
                 end)
                 PowerBarFGColourPicker:SetCallback("OnLeave", function() GameTooltip:Hide() end)
                 PowerBarColourPickerContainer:AddChild(PowerBarFGColourPicker)
-
-                local PowerBarBGColourPicker = CreateColourPicker("Background Colour", PowerBar.BGColour, unit, "PowerBar", nil, nil, "BGColour")
                 PowerBarColourPickerContainer:AddChild(PowerBarBGColourPicker)
 
                 local PowerBarPositionContainer = AG:Create("InlineGroup")
