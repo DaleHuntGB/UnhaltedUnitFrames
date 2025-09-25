@@ -4,24 +4,23 @@ local LibDispel = LibStub("LibDispel-1.0")
 
 local function GetNormalizedUnit(unit, parent)
     if not unit then return nil end
-
-    if unit:match("^boss%d+$") then
-        return "boss"
-    elseif unit:match("^party%d+$") then
-        return "party"
-    elseif unit:match("^raid%d+$") then
-        return "raid"
-    elseif unit == "player" and parent then
-        local parentName = type(parent) == "string" and parent or parent:GetName()
-        if parentName:find("Party") then
-            return "party"
-        elseif parentName:find("Raid") then
-            return "raid"
+    if unit:match("^boss%d+") then return "boss"
+    elseif unit:match("^party%d+") then return "party"
+    elseif unit:match("^raid%d+") then return "raid"
+    elseif unit == "player" then
+        local parentName = type(parent) == "string" and parent or (parent and parent.GetName and parent:GetName())
+        if parentName then
+            if parentName:find("Party") then
+                return "party"
+            elseif parentName:find("Raid") then
+                return "raid"
+            end
         end
+        return "player"
     end
-
     return unit
 end
+
 
 function UUF:FormatLargeNumber(amount)
     local decimalPoint = UUF.DP
@@ -141,7 +140,7 @@ function UUF:FilterAuras(auraType)
 	return function(element, unit, data)
 		-- if element.onlyShowPlayer and not data.isPlayerAura then return false end
 		-- if auraType == "Debuffs" and filterByWhitelist and not data.isPlayerAura then return false end
-        local normalizedUnit = GetNormalizedUnit(unit, self.Party)
+        local normalizedUnit = GetNormalizedUnit(unit, element and element.__owner)
 		if not normalizedUnit or not unitsToFilter[normalizedUnit] then return true end
 		local auraID = data.spellId
 		if filterByWhitelist then return whitelistCache[auraID] == true end
@@ -302,7 +301,6 @@ function UUF:OpenURL(title, urlText)
     end
     return urlDialog
 end
-
 
 local function SetupSlashCommands()
     SLASH_UUF1 = "/uuf"
