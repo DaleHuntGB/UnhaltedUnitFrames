@@ -35,17 +35,19 @@ function UUF:SpawnPartyFrames()
     )
 
     self.Party:HookScript("OnEvent", function(header, event)
-        if event ~= "GROUP_ROSTER_UPDATE" and event ~= "PLAYER_ENTERING_WORLD" then return end
+        if event ~= "GROUP_ROSTER_UPDATE" and event ~= "PLAYER_ENTERING_WORLD" and event ~= "GROUP_JOINED" then return end
         for i = 1, header:GetNumChildren() do
             local child = select(i, header:GetChildren())
             if child and not child.__RangeHooked then
                 child.__RangeHooked = true
                 child:HookScript("OnAttributeChanged", function(frame, name, value)
-                    if name ~= "unit" then return end
-                    if frame.__LastUnit == value then return end
-                    frame.__LastUnit = value
+                    if name ~= "unit" or not value then return end
 
-                    if value and value ~= "player" and not UUF:IsRangeFrameRegistered(value) then
+                    local guid = UnitGUID(value)
+                    if frame.__LastGUID == guid then return end
+                    frame.__LastGUID = guid
+
+                    if value ~= "player" and UnitExists(value) then
                         UUF:RegisterRangeFrame(frame, value)
                     else
                         frame:SetAlpha(1.0)
@@ -55,5 +57,6 @@ function UUF:SpawnPartyFrames()
         end
     end)
     self.Party:RegisterEvent("GROUP_ROSTER_UPDATE")
+    self.Party:RegisterEvent("GROUP_JOINED")
     self.Party:RegisterEvent("PLAYER_ENTERING_WORLD")
 end
