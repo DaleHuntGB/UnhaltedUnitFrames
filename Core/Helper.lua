@@ -137,7 +137,11 @@ function UUF:SetupSlashCommands()
     SlashCmdList["UUF"] = function(msg)
         if msg == "" then
             UUF:CreateGUI()
-        elseif msg == "reset" then
+        elseif msg:lower() == "reset" then
+            if UUF.DB.global.UIScaleEnabled then
+                UUF.DB.global.UIScale = 0.76
+                UIParent:SetScale(0.76)
+            end
             UUF:ResetDefaultSettings()
         elseif msg == "resetanchors" then
             UUF:ResetAnchors()
