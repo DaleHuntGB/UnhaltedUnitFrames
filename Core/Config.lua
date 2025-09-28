@@ -1758,7 +1758,7 @@ function UUF:CreateGUI()
                 CastBarEnableToggle:SetRelativeWidth(0.5)
                 GUIContainer:AddChild(CastBarEnableToggle)
 
-                if CastBar ~= nil then
+                if CastBar ~= nil and unit ~= "boss" then
                     local TestCastBarButton = AG:Create("Button")
                     TestCastBarButton:SetText("Test Cast Bar")
                     TestCastBarButton:SetRelativeWidth(0.5)
@@ -2464,7 +2464,7 @@ function UUF:CreateGUI()
                 BuffsEnabledToggle:SetRelativeWidth(0.5)
                 GUIContainer:AddChild(BuffsEnabledToggle)
 
-                if unit ~= "boss" or unit ~= "party" or unit ~= "raid" then
+                if Buffs ~= nil and unit ~= "boss" and unit ~= "party" and unit ~= "raid" then
                     local TestAurasButton = AG:Create("Button")
                     TestAurasButton:SetText("Test Auras")
                     TestAurasButton:SetRelativeWidth(0.5)
@@ -2578,7 +2578,7 @@ function UUF:CreateGUI()
                 DebuffsEnabledToggle:SetRelativeWidth(0.5)
                 GUIContainer:AddChild(DebuffsEnabledToggle)
 
-                if unit ~= "boss" or unit ~= "party" or unit ~= "raid" then
+                if Debuffs ~= nil and unit ~= "boss" and unit ~= "party" and unit ~= "raid" then
                     local TestAurasButton = AG:Create("Button")
                     TestAurasButton:SetText("Test Auras")
                     TestAurasButton:SetRelativeWidth(0.5)
