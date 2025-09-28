@@ -282,6 +282,17 @@ local function CreateDropdown(dropdownTitle, dropdownValue, unit, table, subTabl
         Dropdown:SetList( { ["UP"] = "Up", ["DOWN"] = "Down", ["RIGHT"] = "Right", ["LEFT"] = "Left", }, { "UP", "DOWN", "RIGHT", "LEFT" } )
     elseif svValue == "ColumnGrowth" then
         Dropdown:SetList( { ["UP"] = "Up", ["DOWN"] = "Down", ["RIGHT"] = "Right", ["LEFT"] = "Left", }, { "UP", "DOWN", "RIGHT", "LEFT" } )
+    elseif svValue == "FrameStrata" then
+        Dropdown:SetList({
+            ["BACKGROUND"] = "Background",
+            ["LOW"]        = "Low",
+            ["MEDIUM"]     = "Medium",
+            ["HIGH"]       = "High",
+            ["DIALOG"]     = "Dialog",
+            ["FULLSCREEN"] = "Fullscreen",
+            ["FULLSCREEN_DIALOG"] = "Fullscreen Dialog",
+            ["TOOLTIP"]    = "Tooltip",
+        }, {"BACKGROUND", "LOW", "MEDIUM", "HIGH", "DIALOG", "FULLSCREEN", "FULLSCREEN_DIALOG", "TOOLTIP"})
     elseif svValue == "Layout" and unit == "party" then
         Dropdown:SetList( { ["VERTICAL"] = "Vertical", ["HORIZONTAL"] = "Horizontal", }, { "VERTICAL", "HORIZONTAL" } )
     elseif svValue == "Layout" and unit == "raid" then
@@ -1794,10 +1805,16 @@ function UUF:CreateGUI()
                 CastBarFrameContainer:AddChild(CastBarAnchorInfoTag)
 
                 local CastBarAnchorFrom = CreateDropdown("Anchor From", CastBar.AnchorFrom, unit, "CastBar", nil, nil, "AnchorFrom")
+                CastBarAnchorFrom:SetRelativeWidth(0.33)
                 CastBarFrameContainer:AddChild(CastBarAnchorFrom)
 
                 local CastBarAnchorTo = CreateDropdown("Anchor To", CastBar.AnchorTo, unit, "CastBar", nil, nil, "AnchorTo")
+                CastBarAnchorTo:SetRelativeWidth(0.33)
                 CastBarFrameContainer:AddChild(CastBarAnchorTo)
+
+                local CastBarFrameStrata = CreateDropdown("Frame Strata", CastBar.FrameStrata, unit, "CastBar", nil, nil, "FrameStrata")
+                CastBarFrameStrata:SetRelativeWidth(0.33)
+                CastBarFrameContainer:AddChild(CastBarFrameStrata)
 
                 local CastBarOffsetX = CreateSlider("Offset X", CastBar.OffsetX, unit, "CastBar", nil, nil, "OffsetX")
                 CastBarFrameContainer:AddChild(CastBarOffsetX)
@@ -3687,6 +3704,7 @@ UUF.Defaults = {
                 FGColour = {8/255, 8/255, 8/255, 0.8},
                 BGColour = {204/255, 204/255, 204/255, 1},
                 NotInterruptibleColour = {255/255, 64/255, 64/255, 1},
+                FrameStrata = "MEDIUM",
                 Icon = {
                     Enabled = true,
                     Side = "LEFT",
@@ -3878,6 +3896,7 @@ UUF.Defaults = {
                 Height = 24,
                 AnchorFrom = "TOPLEFT",
                 AnchorTo = "BOTTOMLEFT",
+                FrameStrata = "MEDIUM",
                 OffsetX = 0,
                 OffsetY = -1,
                 FGColour = {8/255, 8/255, 8/255, 0.8},
@@ -4213,6 +4232,7 @@ UUF.Defaults = {
                 Height = 28,
                 AnchorFrom = "BOTTOMLEFT",
                 AnchorTo = "TOPLEFT",
+                FrameStrata = "MEDIUM",
                 OffsetX = 0,
                 OffsetY = 1,
                 FGColour = {8/255, 8/255, 8/255, 0.8},
@@ -4479,6 +4499,7 @@ UUF.Defaults = {
                 Height = 24,
                 AnchorFrom = "TOPLEFT",
                 AnchorTo = "BOTTOMLEFT",
+                FrameStrata = "MEDIUM",
                 OffsetX = 0,
                 OffsetY = -1,
                 FGColour = {8/255, 8/255, 8/255, 0.8},
@@ -4662,6 +4683,7 @@ UUF.Defaults = {
                 Height = 26,
                 AnchorFrom = "TOPLEFT",
                 AnchorTo = "BOTTOMLEFT",
+                FrameStrata = "MEDIUM",
                 OffsetX = 0,
                 OffsetY = -1,
                 FGColour = {8/255, 8/255, 8/255, 0.8},

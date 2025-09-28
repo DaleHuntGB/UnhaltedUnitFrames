@@ -220,6 +220,7 @@ local function CreateCastbar(self, unit)
         self.CastBarContainer:ClearAllPoints()
         self.CastBarContainer:SetPoint(CastBar.AnchorFrom, self, CastBar.AnchorTo, CastBar.OffsetX, CastBar.OffsetY)
         self.CastBarContainer:Hide()
+        self.CastBarContainer:SetFrameStrata(CastBar.FrameStrata)
     end
 
     if not self.CastBar then
@@ -941,6 +942,7 @@ local function UpdateCastBar(frameName, unit)
         unitFrame.CastBarContainer:SetSize(CastBar.Width, CastBar.Height)
         unitFrame.CastBarContainer:SetPoint(CastBar.AnchorFrom, unitFrame, CastBar.AnchorTo, CastBar.OffsetX, CastBar.OffsetY)
         unitFrame.CastBarContainer:Hide()
+        unitFrame.CastBarContainer:SetFrameStrata(CastBar.FrameStrata)
     end
 
     if unitFrame.CastBar then
