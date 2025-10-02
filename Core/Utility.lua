@@ -1,6 +1,11 @@
 local _, UUF = ...
 local oUF = UUF.oUF
 local LibDispel = LibStub("LibDispel-1.0")
+local LSM = LibStub("LibSharedMedia-3.0", true)
+
+if LSM then LSM:Register("border", "WHITE8X8", [[Interface\Buttons\WHITE8X8]]) end
+if LSM then LSM:Register("statusbar", "Dragonflight", [[Interface\AddOns\UnhaltedUnitFrames\Media\Textures\Dragonflight.tga]]) end
+if LSM then LSM:Register("background", "Dragonflight", [[Interface\AddOns\UnhaltedUnitFrames\Media\Textures\Dragonflight_BG.tga]]) end
 
 local function GetNormalizedUnit(unit, parent)
     if not unit then return nil end
