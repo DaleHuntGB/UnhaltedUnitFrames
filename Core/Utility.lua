@@ -21,7 +21,6 @@ local function GetNormalizedUnit(unit, parent)
     return unit
 end
 
-
 function UUF:FormatLargeNumber(amount)
     local decimalPoint = UUF.DP
     if amount >= 1e9 then
@@ -569,4 +568,27 @@ function UUF:GetDispelColor(unit)
         end
     end
     return nil
+end
+
+local function ClickGameMenu()
+    HideUIPanel(GameMenuFrame)
+    UUF:CreateGUI()
+end
+
+function UUF:SetupGameMenu()
+    if GameMenuFrame.UUF then return end
+
+    local gameMenuButton = CreateFrame("Button", "UUF_GameMenuButton", GameMenuFrame, "MainMenuFrameButtonTemplate")
+    gameMenuButton:SetText("|cFF8080FFUnhalted|r Unit Frames")
+    gameMenuButton:SetScript("OnClick", ClickGameMenu)
+    gameMenuButton:SetSize(200, 35)
+
+    gameMenuButton.layoutIndex = 1
+
+    GameMenuFrame.UUF = gameMenuButton
+
+    hooksecurefunc(GameMenuFrame, "Layout", function(frame)
+        if not frame.MenuButtons then frame.MenuButtons = {} end
+        frame.MenuButtons["UUF"] = gameMenuButton
+    end)
 end
