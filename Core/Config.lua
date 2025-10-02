@@ -136,24 +136,6 @@ local RaidLayouts = {
 
 local SLIDER_STEP, SLIDER_MIN, SLIDER_MAX = 0.1, -1000, 1000
 
-local function GenerateFontList()
-    local LSMFonts = LSM:HashTable("font")
-    local FontList = {}
-    for name in pairs(LSMFonts) do
-        FontList[name] = name
-    end
-    return FontList
-end
-
-local function GenerateTextureList()
-    local LSMTextures = LSM:HashTable("statusbar")
-    local TextureList = {}
-    for name in pairs(LSMTextures) do
-        TextureList[name] = name
-    end
-    return TextureList
-end
-
 local function DeepDisable(widget, disabled)
     if widget.SetDisabled then
         widget:SetDisabled(disabled)
@@ -914,12 +896,13 @@ function UUF:CreateGUI()
             TexturesInfoTag:SetRelativeWidth(1)
             TexturesContainer:AddChild(TexturesInfoTag)
 
-            local ForegroundTextureDropdown = AG:Create("Dropdown")
-            ForegroundTextureDropdown:SetList(GenerateTextureList())
+            local ForegroundTextureDropdown = AG:Create("LSM30_Statusbar")
+            ForegroundTextureDropdown:SetList(LSM:HashTable("statusbar"))
             ForegroundTextureDropdown:SetLabel("Foreground Texture")
             ForegroundTextureDropdown:SetValue(UUF.db.profile.General.ForegroundTexture)
             ForegroundTextureDropdown:SetRelativeWidth(0.5)
-            ForegroundTextureDropdown:SetCallback("OnValueChanged", function(_, _, value)
+            ForegroundTextureDropdown:SetCallback("OnValueChanged", function(widget, _, value)
+                widget:SetValue(value)
                 UUF.db.profile.General.ForegroundTexture = value
                 UUF:ResolveMedia()
                 for unitFrameName, unit in pairs(UnitFrames) do
@@ -928,12 +911,13 @@ function UUF:CreateGUI()
             end)
             TexturesContainer:AddChild(ForegroundTextureDropdown)
 
-            local BackgroundTextureDropdown = AG:Create("Dropdown")
-            BackgroundTextureDropdown:SetList(GenerateTextureList())
+            local BackgroundTextureDropdown = AG:Create("LSM30_Statusbar")
+            BackgroundTextureDropdown:SetList(LSM:HashTable("statusbar"))
             BackgroundTextureDropdown:SetLabel("Background Texture")
             BackgroundTextureDropdown:SetValue(UUF.db.profile.General.BackgroundTexture)
             BackgroundTextureDropdown:SetRelativeWidth(0.5)
-            BackgroundTextureDropdown:SetCallback("OnValueChanged", function(_, _, value)
+            BackgroundTextureDropdown:SetCallback("OnValueChanged", function(widget, _, value)
+                widget:SetValue(value)
                 UUF.db.profile.General.BackgroundTexture = value
                 UUF:ResolveMedia()
                 for unitFrameName, unit in pairs(UnitFrames) do
@@ -948,12 +932,13 @@ function UUF:CreateGUI()
             FontsContainer:SetFullWidth(true)
             ScrollFrame:AddChild(FontsContainer)
 
-            local FontDropdown = AG:Create("Dropdown")
-            FontDropdown:SetList(GenerateFontList())
+            local FontDropdown = AG:Create("LSM30_Font")
+            FontDropdown:SetList(LSM:HashTable("font"))
             FontDropdown:SetLabel("Font")
             FontDropdown:SetValue(UUF.db.profile.General.Font)
             FontDropdown:SetRelativeWidth(0.5)
-            FontDropdown:SetCallback("OnValueChanged", function(_, _, value)
+            FontDropdown:SetCallback("OnValueChanged", function(widget, _, value)
+                widget:SetValue(value)
                 UUF.db.profile.General.Font = value
                 UUF:ResolveMedia()
                 for unitFrameName, unit in pairs(UnitFrames) do
