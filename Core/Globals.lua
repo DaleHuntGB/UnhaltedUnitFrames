@@ -1,126 +1,68 @@
 local _, UUF = ...
-
 UUF.AddOnName = C_AddOns.GetAddOnMetadata("UnhaltedUnitFrames", "Title")
 UUF.Version = C_AddOns.GetAddOnMetadata("UnhaltedUnitFrames", "Version")
 UUF.Author = C_AddOns.GetAddOnMetadata("UnhaltedUnitFrames", "Author")
-
-UUFG = UUFG or {}
-
-UUF.BossTestMode = false
-UUF.PartyTestMode = false
-UUF.AurasTestMode = false
-UUF.CastBarTestMode = false
-
 UUF.InfoButton = "|A:glueannouncementpopup-icon-info:16:16|a "
--- UUF.InfoButton = "|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Utility\\Information.tga:14:14|t "
--- UUF.InfoButton = "|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Emotes\\peepoNoted.png:21:21|t "
+UUF.LSM = LibStub("LibSharedMedia-3.0")
+UUF.BossFrames = {}
+UUF.MaxBossFrames = 10
 
-UUF.BackdropTemplate = {
-    bgFile = "Interface\\Buttons\\WHITE8X8",
-    edgeFile = "Interface\\Buttons\\WHITE8X8",
-    edgeSize = 1,
-    insets = { left = 0, right = 0, top = 0, bottom = 0 },
-}
+if UUF.LSM then UUF.LSM:Register("border", "WHITE8X8", [[Interface\Buttons\WHITE8X8]]) end
+if UUF.LSM then UUF.LSM:Register("statusbar", "Dragonflight", [[Interface\AddOns\UnhaltedUnitFrames\Media\Textures\Dragonflight.tga]]) end
+if UUF.LSM then UUF.LSM:Register("background", "Dragonflight", [[Interface\AddOns\UnhaltedUnitFrames\Media\Textures\Dragonflight_BG.tga]]) end
+if UUF.LSM then UUF.LSM:Register("statusbar", "Skyline", [[Interface\AddOns\UnhaltedUnitFrames\Media\Textures\Skyline.tga]]) end
 
 UUF.UnitFrames = {
     ["UUF_Player"] = "player",
     ["UUF_Target"] = "target",
     ["UUF_TargetTarget"] = "targettarget",
-    ["UUF_Focus"] = "focus",
-    ["UUF_FocusTarget"] = "focustarget",
     ["UUF_Pet"] = "pet",
+    ["UUF_Focus"] = "focus",
     ["UUF_Boss"] = "boss",
-    ["UUF_Party"] = "party",
-    ["UUF_Raid"] = "raid",
 }
 
-UUF.CapitalizedUnits = {
-    ["player"] = "Player",
-    ["target"] = "Target",
-    ["targettarget"] = "TargetTarget",
-    ["focus"] = "Focus",
-    ["focustarget"] = "FocusTarget",
-    ["pet"] = "Pet",
-    ["boss"] = "Boss",
-    ["party"] = "Party",
-    ["raid"] = "Raid",
-}
+function UUF:ResolveMedia()
+    local LSM = UUF.LSM
+    local General = UUF.db.profile.General
+    UUF.Media = UUF.Media or {}
 
-UUF.RoleTextureSets = {
-    ["DEFAULT"] = {
-        TANK   = "Interface\\LFGFrame\\UI-LFG-ICON-PORTRAITROLES",
-        HEALER = "Interface\\LFGFrame\\UI-LFG-ICON-PORTRAITROLES",
-        DAMAGER    = "Interface\\LFGFrame\\UI-LFG-ICON-PORTRAITROLES",
-    },
-    ["ELVUIV1"] = {
-        TANK   = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\RoleIcons\\ElvUIV1\\Tank.tga",
-        HEALER = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\RoleIcons\\ElvUIV1\\Healer.tga",
-        DAMAGER    = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\RoleIcons\\ElvUIV1\\DPS.tga",
-    },
-    ["ELVUIV2"] = {
-        TANK   = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\RoleIcons\\ElvUIV2\\Tank.tga",
-        HEALER = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\RoleIcons\\ElvUIV2\\Healer.tga",
-        DAMAGER    = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\RoleIcons\\ElvUIV2\\DPS.tga",
-    },
-    ["UUFLIGHT"] = {
-        TANK   = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\RoleIcons\\White\\Tank.tga",
-        HEALER = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\RoleIcons\\White\\Healer.tga",
-        DAMAGER    = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\RoleIcons\\White\\DPS.tga",
-    },
-    ["UUFDARK"] = {
-        TANK   = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\RoleIcons\\Dark\\Tank.tga",
-        HEALER = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\RoleIcons\\Dark\\Healer.tga",
-        DAMAGER    = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\RoleIcons\\Dark\\DPS.tga",
-    },
-    ["UUFCOLOUR"] = {
-        TANK   = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\RoleIcons\\Colour\\Tank.tga",
-        HEALER = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\RoleIcons\\Colour\\Healer.tga",
-        DAMAGER    = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\RoleIcons\\Colour\\DPS.tga",
-    },
-}
+    UUF.Media.Font = LSM:Fetch("font", General.Font) or STANDARD_TEXT_FONT
+    UUF.Media.ForegroundTexture = LSM:Fetch("statusbar", General.ForegroundTexture) or "Interface\\RaidFrame\\Raid-Bar-Hp-Fill"
+    UUF.Media.BackgroundTexture = LSM:Fetch("background", General.BackgroundTexture) or "Interface\\Buttons\\WHITE8X8"
+end
 
-UUF.StatusTextureMap = {
-    ["COMBAT0"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Combat\\Combat0",
-    ["COMBAT1"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Combat\\Combat1",
-    ["COMBAT2"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Combat\\Combat2",
-    ["COMBAT3"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Combat\\Combat3",
-    ["COMBAT4"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Combat\\Combat4",
-    ["COMBAT5"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Combat\\Combat5",
-    ["COMBAT6"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Combat\\Combat6",
-    ["COMBAT7"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Combat\\Combat7",
-    ["RESTING0"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Resting\\Resting0",
-    ["RESTING1"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Resting\\Resting1",
-    ["RESTING2"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Resting\\Resting2",
-    ["RESTING3"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Resting\\Resting3",
-    ["RESTING4"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Resting\\Resting4",
-    ["RESTING5"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Resting\\Resting5",
-    ["RESTING6"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Resting\\Resting6",
-    ["RESTING7"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Resting\\Resting7",
-}
+function UUF:SetJustification(anchorFrom)
+    if anchorFrom == "TOPLEFT" or anchorFrom == "LEFT" or anchorFrom == "BOTTOMLEFT" then
+        return "LEFT"
+    elseif anchorFrom == "TOPRIGHT" or anchorFrom == "RIGHT" or anchorFrom == "BOTTOMRIGHT" then
+        return "RIGHT"
+    else
+        return "CENTER"
+    end
+end
 
-UUF.ReadyCheckTextureMap = {
-    ["DEFAULT"] = {
-        READY = "Interface\\RaidFrame\\ReadyCheck-Ready",
-        NOTREADY = "Interface\\RaidFrame\\ReadyCheck-NotReady",
-        WAITING = "Interface\\RaidFrame\\ReadyCheck-Waiting",
-    },
-    ["UUFLIGHT"] = {
-        READY = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\ReadyCheck\\White\\Ready",
-        NOTREADY = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\ReadyCheck\\White\\NotReady",
-        WAITING = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\ReadyCheck\\White\\Pending",
-    },
-    ["UUFDARK"] = {
-        READY = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\ReadyCheck\\Dark\\Ready",
-        NOTREADY = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\ReadyCheck\\Dark\\NotReady",
-        WAITING = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\ReadyCheck\\Dark\\Pending",
-    },
-    ["UUFCOLOUR"] = {
-        READY = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\ReadyCheck\\Colour\\Ready",
-        NOTREADY = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\ReadyCheck\\Colour\\NotReady",
-        WAITING = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\ReadyCheck\\Colour\\Pending",
-    },
-}
+local function SetupSlashCommands()
+    SLASH_UUF1 = "/uuf"
+    SlashCmdList["UUF"] = function(msg)
+        UUF:CreateGUI()
+    end
+end
 
-local PlayerClass = select(2, UnitClass("player"))
-UUF.PlayerClassColour = RAID_CLASS_COLORS[PlayerClass]
-UUF.PlayerClassColourHex = CreateColor(UUF.PlayerClassColour.r, UUF.PlayerClassColour.g, UUF.PlayerClassColour.b):GenerateHexColor()
+function UUF:Init()
+    SetupSlashCommands()
+end
+
+local function KillFrame(unitFrame)
+    if not unitFrame then return end
+    unitFrame:UnregisterAllEvents()
+    unitFrame:Hide()
+    unitFrame:SetScript("OnShow", unitFrame.Hide)
+end
+
+function UUF:HideDefaultUnitFrames()
+    KillFrame(PlayerFrame)
+    KillFrame(TargetFrame)
+    KillFrame(FocusFrame)
+    KillFrame(TargetFrameToT)
+    KillFrame(PetFrame)
+end
