@@ -104,19 +104,22 @@ local function UpdateUnitFrame(self)
     local unit = self.unit
     if not unit then return end
 
+    local DB = UUF.db.profile[self.dbUnit]
+    if not DB then return end
+
     local unitHealth = UnitHealth(unit)
     local unitMaxHealth = UnitHealthMax(unit)
-    local unitColourR, unitColourG, unitColourB = FetchUnitColor(unit, UUF.db.profile[unit], UUF.db.profile.General)
+    local unitColourR, unitColourG, unitColourB = FetchUnitColor(unit, DB, UUF.db.profile.General)
 
     self.healthBar:SetMinMaxValues(0, unitMaxHealth)
     self.healthBar:SetValue(unitHealth)
     self.healthBar:SetStatusBarColor(unitColourR, unitColourG, unitColourB)
     local isUnitDead = UnitIsDeadOrGhost(unit)
     local unitHealthPercent = UnitHealthPercent(unit, false, true)
-    local CurrHP         = UUF.db.profile[unit].Tags.Health.Layout == "CurrHP"
-    local CurrMaxHP      = UUF.db.profile[unit].Tags.Health.Layout == "CurrMaxHP"
-    local PerHP             = UUF.db.profile[unit].Tags.Health.Layout == "PerHP"
-    local CurrPerHP  = UUF.db.profile[unit].Tags.Health.Layout == "CurrPerHP"
+    local CurrHP         = DB.Tags.Health.Layout == "CurrHP"
+    local CurrMaxHP      = DB.Tags.Health.Layout == "CurrMaxHP"
+    local PerHP             = DB.Tags.Health.Layout == "PerHP"
+    local CurrPerHP  = DB.Tags.Health.Layout == "CurrPerHP"
     local HealthSeparator = UUF.db.profile.General.HealthSeparator or "-"
     local healthText = ""
     if isUnitDead then
@@ -139,9 +142,9 @@ local function UpdateUnitFrame(self)
         end
     end
     self.HealthText:SetText(healthText)
-    local statusColourR, statusColourG, statusColourB = FetchNameTextColour(unit, UUF.db.profile[unit], UUF.db.profile.General)
+    local statusColourR, statusColourG, statusColourB = FetchNameTextColour(unit, DB, UUF.db.profile.General)
     self.NameText:SetTextColor(statusColourR, statusColourG, statusColourB)
-    self.NameText:SetText(UnitName(unit))
+    self.NameText:SetText(UnitName(unit) or unit)
 end
 
 local function UpdateUnitFramePowerBar(self)
@@ -270,6 +273,7 @@ function UUF:CreateUnitFrame(unit)
     end
 
     unitFrame.unit = unit
+    unitFrame.dbUnit = dbUnit
     unitFrame:RegisterForClicks("AnyUp")
     unitFrame:SetAttribute("unit", unit)
     unitFrame:SetAttribute("*type1", "target")
@@ -284,8 +288,8 @@ function UUF:CreateUnitFrame(unit)
 
     unitFrame:SetScript("OnEnter", UnitFrame_OnEnter)
     unitFrame:SetScript("OnLeave", UnitFrame_OnLeave)
-    unitFrame:HookScript("OnEnter", function(self) DB = UUF.db.profile[unit] if DB.Indicators.MouseoverHighlight.Enabled then self.MouseoverHighlight:Show() end end)
-    unitFrame:HookScript("OnLeave", function(self) DB = UUF.db.profile[unit] if DB.Indicators.MouseoverHighlight.Enabled then self.MouseoverHighlight:Hide() end end)
+    unitFrame:HookScript("OnEnter", function(self) DB = UUF.db.profile[self.dbUnit] if DB.Indicators.MouseoverHighlight.Enabled then self.MouseoverHighlight:Show() end end)
+    unitFrame:HookScript("OnLeave", function(self) DB = UUF.db.profile[self.dbUnit] if DB.Indicators.MouseoverHighlight.Enabled then self.MouseoverHighlight:Hide() end end)
 
     if unit == "pet" then unitFrame:RegisterEvent("UNIT_PET") end
     if unit == "focus" then unitFrame:RegisterEvent("PLAYER_FOCUS_CHANGED") end
@@ -293,6 +297,8 @@ function UUF:CreateUnitFrame(unit)
     unitFrame:SetScript("OnEvent", UpdateUnitFrame)
 
     UpdateUnitFrame(unitFrame)
+
+    return unitFrame
 end
 
 function UUF:UpdateUnitFrame(unit)
@@ -429,47 +435,38 @@ function UUF:UpdateUnitFrame(unit)
     end
 end
 
+local LayoutConfig = {
+    TOPLEFT     = { anchor="TOPLEFT",   offsetMultiplier=0   },
+    TOP         = { anchor="TOP",       offsetMultiplier=0   },
+    TOPRIGHT    = { anchor="TOPRIGHT",  offsetMultiplier=0   },
+    BOTTOMLEFT  = { anchor="TOPLEFT",   offsetMultiplier=1   },
+    BOTTOM      = { anchor="TOP",       offsetMultiplier=1   },
+    BOTTOMRIGHT = { anchor="TOPRIGHT",  offsetMultiplier=1   },
+    CENTER      = { anchor="CENTER",    offsetMultiplier=0.5, isCenter=true },
+    LEFT        = { anchor="LEFT",      offsetMultiplier=0.5, isCenter=true },
+    RIGHT       = { anchor="RIGHT",     offsetMultiplier=0.5, isCenter=true },
+}
+
 function UUF:LayoutBossFrames()
     local Frame = UUF.db.profile.boss.Frame
-    local BossSpacing = Frame.Spacing
-    local GrowDown = Frame.GrowthDirection == "DOWN"
-
-    for i, BossFrame in ipairs(UUF.BossFrames) do
-        BossFrame:ClearAllPoints()
-        if i == 1 then
-            local BossContainerHeight = (BossFrame:GetHeight() + BossSpacing) * #UUF.BossFrames - BossSpacing
-            local offsetY = 0
-            if (Frame.AnchorFrom == "TOPLEFT" or Frame.AnchorFrom == "TOPRIGHT" or Frame.AnchorFrom == "TOP") and not GrowDown then
-                offsetY = -BossContainerHeight
-            elseif (Frame.AnchorFrom == "BOTTOMLEFT" or Frame.AnchorFrom == "BOTTOMRIGHT" or Frame.AnchorFrom == "BOTTOM") and GrowDown then
-                offsetY = BossContainerHeight
-            elseif (Frame.AnchorFrom == "CENTER" or Frame.AnchorFrom == "LEFT" or Frame.AnchorFrom == "RIGHT") then
-                if GrowDown then
-                    offsetY = (BossContainerHeight - BossFrame:GetHeight()) / 2
-                else
-                    offsetY = -(BossContainerHeight - BossFrame:GetHeight()) / 2
-                end
-            end
-            local adjustedAnchorFrom = Frame.AnchorFrom
-            if Frame.AnchorFrom == "TOPLEFT" and not GrowDown then
-                adjustedAnchorFrom = "BOTTOMLEFT"
-            elseif Frame.AnchorFrom == "TOP" and not GrowDown then
-                adjustedAnchorFrom = "BOTTOM"
-            elseif Frame.AnchorFrom == "TOPRIGHT" and not GrowDown then
-                adjustedAnchorFrom = "BOTTOMRIGHT"
-            elseif Frame.AnchorFrom == "BOTTOMLEFT" and GrowDown then
-                adjustedAnchorFrom = "TOPLEFT"
-            elseif Frame.AnchorFrom == "BOTTOM" and GrowDown then
-                adjustedAnchorFrom = "TOP"
-            elseif Frame.AnchorFrom == "BOTTOMRIGHT" and GrowDown then
-                adjustedAnchorFrom = "TOPRIGHT"
-            end
-            BossFrame:SetPoint(adjustedAnchorFrom, UIParent, Frame.AnchorTo, Frame.XPosition, Frame.YPosition + offsetY)
-        else
-            local anchor = GrowDown and "TOPLEFT" or "BOTTOMLEFT"
-            local relativeAnchor = GrowDown and "BOTTOMLEFT" or "TOPLEFT"
-            local offsetY = GrowDown and -BossSpacing or BossSpacing
-            BossFrame:SetPoint(anchor, _G["UUF_Boss" .. (i - 1)], relativeAnchor, 0, offsetY)
-        end
+    if #UUF.BossFrames == 0 then return end
+    
+    local frames = UUF.BossFrames
+    if Frame.GrowthDirection == "UP" then
+        frames = {}
+        for i = #UUF.BossFrames, 1, -1 do frames[#frames+1] = UUF.BossFrames[i] end
     end
+
+    local config = LayoutConfig[Frame.AnchorFrom]
+    local frameHeight = frames[1]:GetHeight()
+    local containerHeight = (frameHeight + Frame.Spacing) * #frames - Frame.Spacing
+    
+    local offsetY = containerHeight * config.offsetMultiplier
+    if config.isCenter then offsetY = offsetY - (frameHeight / 2) end
+
+    local initialAnchor = AnchorUtil.CreateAnchor(config.anchor, UIParent, Frame.AnchorTo, Frame.XPosition, Frame.YPosition + offsetY)
+    AnchorUtil.VerticalLayout(frames, initialAnchor, Frame.Spacing)
 end
+
+
+

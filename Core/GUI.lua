@@ -486,7 +486,14 @@ function UUF:CreateGUI()
                 WidthSlider:SetRelativeWidth(isBoss and 0.33 or 0.5)
                 WidthSlider:SetCallback("OnValueChanged", function(_, _, value)
                     DB.Frame.Width = value
-                    UUF:UpdateUnitFrame(Unit)
+                    if isBoss then
+                        for i=1, 10 do
+                            UUF:UpdateUnitFrame(Unit .. i)
+                        end
+                        UUF:LayoutBossFrames()
+                    else
+                        UUF:UpdateUnitFrame(Unit)
+                    end
                 end)
                 UnitFrameContainer:AddChild(WidthSlider)
 
@@ -497,7 +504,14 @@ function UUF:CreateGUI()
                 HeightSlider:SetRelativeWidth(isBoss and 0.33 or 0.5)
                 HeightSlider:SetCallback("OnValueChanged", function(_, _, value)
                     DB.Frame.Height = value
-                    UUF:UpdateUnitFrame(Unit)
+                    if isBoss then
+                        for i=1, 10 do
+                            UUF:UpdateUnitFrame(Unit .. i)
+                        end
+                        UUF:LayoutBossFrames()
+                    else
+                        UUF:UpdateUnitFrame(Unit)
+                    end
                 end)
                 UnitFrameContainer:AddChild(HeightSlider)
 
@@ -509,7 +523,7 @@ function UUF:CreateGUI()
                     SpacingSlider:SetRelativeWidth(0.33)
                     SpacingSlider:SetCallback("OnValueChanged", function(_, _, value)
                         DB.Frame.Spacing = value
-                        UUF:UpdateUnitFrame(Unit)
+                        UUF:LayoutBossFrames()
                     end)
                     UnitFrameContainer:AddChild(SpacingSlider)
                 end
@@ -521,7 +535,11 @@ function UUF:CreateGUI()
                 AnchorFromDropdown:SetRelativeWidth(isBoss and 0.33 or 0.5)
                 AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value)
                     DB.Frame.AnchorFrom = value
-                    UUF:UpdateUnitFrame(Unit)
+                    if isBoss then
+                        UUF:LayoutBossFrames()
+                    else
+                        UUF:UpdateUnitFrame(Unit)
+                    end
                 end)
                 UnitFrameContainer:AddChild(AnchorFromDropdown)
 
@@ -532,7 +550,11 @@ function UUF:CreateGUI()
                 AnchorToDropdown:SetRelativeWidth(isBoss and 0.33 or 0.5)
                 AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value)
                     DB.Frame.AnchorTo = value
-                    UUF:UpdateUnitFrame(Unit)
+                    if isBoss then
+                        UUF:LayoutBossFrames()
+                    else
+                        UUF:UpdateUnitFrame(Unit)
+                    end
                 end)
                 UnitFrameContainer:AddChild(AnchorToDropdown)
 
@@ -547,7 +569,7 @@ function UUF:CreateGUI()
                     GrowthDirectionDropdown:SetRelativeWidth(0.33)
                     GrowthDirectionDropdown:SetCallback("OnValueChanged", function(_, _, value)
                         DB.Frame.GrowthDirection = value
-                        UUF:UpdateUnitFrame(Unit)
+                        UUF:LayoutBossFrames()
                     end)
                     UnitFrameContainer:AddChild(GrowthDirectionDropdown)
                 end
@@ -559,7 +581,11 @@ function UUF:CreateGUI()
                 XPositionSlider:SetRelativeWidth(0.5)
                 XPositionSlider:SetCallback("OnValueChanged", function(_, _, value)
                     DB.Frame.XPosition = value
-                    UUF:UpdateUnitFrame(Unit)
+                    if isBoss then
+                        UUF:LayoutBossFrames()
+                    else
+                        UUF:UpdateUnitFrame(Unit)
+                    end
                 end)
                 UnitFrameContainer:AddChild(XPositionSlider)
 
@@ -570,7 +596,11 @@ function UUF:CreateGUI()
                 YPositionSlider:SetRelativeWidth(0.5)
                 YPositionSlider:SetCallback("OnValueChanged", function(_, _, value)
                     DB.Frame.YPosition = value
-                    UUF:UpdateUnitFrame(Unit)
+                    if isBoss then
+                        UUF:LayoutBossFrames()
+                    else
+                        UUF:UpdateUnitFrame(Unit)
+                    end
                 end)
                 UnitFrameContainer:AddChild(YPositionSlider)
             end

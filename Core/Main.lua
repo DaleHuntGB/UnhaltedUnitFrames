@@ -21,9 +21,9 @@ function UnhaltedUF:OnEnable()
     UUF:CreateUnitFrame("targettarget")
     UUF:CreateUnitFrame("pet")
     UUF:CreateUnitFrame("focus")
-    -- for i = 1, UUF.MaxBossFrames do
-    --     local BossFrame = UUF:CreateUnitFrame("boss", i)
-    --     UUF.BossFrames[i] = BossFrame
-    -- end
-    -- UUF:LayoutBossFrames()
+    for i = 1, UUF.MaxBossFrames do
+        local BossFrame = UUF:CreateUnitFrame("boss" .. i)
+        UUF.BossFrames[i] = BossFrame
+    end
+    UUF:LayoutBossFrames()
 end
