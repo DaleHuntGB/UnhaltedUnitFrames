@@ -312,9 +312,12 @@ function UUF:CreateUnitFrame(unit)
     unitFrame:RegisterUnitEvent("UNIT_NAME_UPDATE", unit)
     unitFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
     unitFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
-
-    RegisterUnitWatch(unitFrame, false)
-
+    if DB.Enabled then
+        RegisterUnitWatch(unitFrame)
+    else
+        UnregisterUnitWatch(unitFrame)
+        unitFrame:Hide()
+    end
     unitFrame:SetScript("OnEnter", UnitFrame_OnEnter)
     unitFrame:SetScript("OnLeave", UnitFrame_OnLeave)
     unitFrame:HookScript("OnEnter", function(self) DB = UUF.db.profile[self.dbUnit] if DB.Indicators.MouseoverHighlight.Enabled then self.MouseoverHighlight:Show() end end)
@@ -345,9 +348,11 @@ function UUF:UpdateUnitFrame(unit)
     if not DB.Enabled then
         unitFrame:Hide()
         unitFrame:UnregisterAllEvents()
+        UnregisterUnitWatch(unitFrame)
         return
     else
         unitFrame:Show()
+        RegisterUnitWatch(unitFrame)
     end
 
     unitFrame:SetSize(DB.Frame.Width, DB.Frame.Height)
