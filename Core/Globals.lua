@@ -7,6 +7,7 @@ UUF.LSM = LibStub("LibSharedMedia-3.0")
 UUF.BossFrames = {}
 UUF.MaxBossFrames = 10
 UUFG = UUFG or {}
+UUF.BossTestMode = false
 
 UUF.UnitToFrameName = {
     ["player"] = "UUF_Player",

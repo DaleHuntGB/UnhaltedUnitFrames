@@ -432,6 +432,18 @@ function UUF:CreateGUI()
         end)
         ScrollFrame:AddChild(EnableCheckBox)
 
+        if Unit == "boss" then
+            local TestBossFrames = AG:Create("Button")
+            TestBossFrames:SetText("Test Boss Frames")
+            TestBossFrames:SetRelativeWidth(0.5)
+            TestBossFrames:SetCallback("OnClick", function()
+                UUF.BossTestMode = not UUF.BossTestMode
+                UUF:TestBossFrames()
+            end)
+            ScrollFrame:AddChild(TestBossFrames)
+            EnableCheckBox:SetRelativeWidth(0.5)
+        end
+
         local function SelectedModuleGroup(UnitFrameContainer, _, ModuleGroup)
             UnitFrameContainer:ReleaseChildren()
             local function DrawColourContainer()

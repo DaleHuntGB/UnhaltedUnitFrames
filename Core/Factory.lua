@@ -501,7 +501,7 @@ local LayoutConfig = {
 function UUF:LayoutBossFrames()
     local Frame = UUF.db.profile.boss.Frame
     if #UUF.BossFrames == 0 then return end
-    
+
     local frames = UUF.BossFrames
     if Frame.GrowthDirection == "UP" then
         frames = {}
@@ -511,10 +511,26 @@ function UUF:LayoutBossFrames()
     local config = LayoutConfig[Frame.AnchorFrom]
     local frameHeight = frames[1]:GetHeight()
     local containerHeight = (frameHeight + Frame.Spacing) * #frames - Frame.Spacing
-    
+
     local offsetY = containerHeight * config.offsetMultiplier
     if config.isCenter then offsetY = offsetY - (frameHeight / 2) end
 
     local initialAnchor = AnchorUtil.CreateAnchor(config.anchor, UIParent, Frame.AnchorTo, Frame.XPosition, Frame.YPosition + offsetY)
     AnchorUtil.VerticalLayout(frames, initialAnchor, Frame.Spacing)
+end
+
+function UUF:TestBossFrames()
+    if UUF.BossTestMode then
+        for i = 1, 10 do
+            UnregisterUnitWatch(_G["UUF_Boss"..i])
+            _G["UUF_Boss"..i]:Show()
+        end
+        UUF:LayoutBossFrames()
+    else
+        for i = 1, 10 do
+            RegisterUnitWatch(_G["UUF_Boss"..i], false)
+            _G["UUF_Boss"..i]:Hide()
+        end
+        UUF:LayoutBossFrames()
+    end
 end
