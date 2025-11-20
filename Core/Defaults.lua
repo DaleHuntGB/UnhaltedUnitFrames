@@ -183,6 +183,25 @@ UUF.Defaults = {
                 FGColour = {26/255, 26/255, 26/255, 1.0},
                 BGColour = {128/255, 128/255, 128/255, 1.0},
             },
+            PowerBar = {
+                Enabled = false,
+                Height = 3,
+                ColourByType = true,
+                ColourBackgroundByType = true,
+                FGColour = {8/255, 8/255, 8/255, 0.8},
+                BGColour = {128/255, 128/255, 128/255, 1},
+                Text = {
+                    Enabled = false,
+                    AnchorFrom = "RIGHT",
+                    AnchorParent = "FRAME",
+                    AnchorTo = "RIGHT",
+                    OffsetX = -3,
+                    OffsetY = 0,
+                    FontSize = 12,
+                    Colour = {1, 1, 1, 1},
+                    ColourByType = true,
+                }
+            },
             Indicators = {
                 MouseoverHighlight = {
                     Enabled = true,
