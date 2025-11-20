@@ -170,6 +170,9 @@ function UUF:CreateGUI()
                 UUF.db.profile.General.UIScale = 1
                 UIParent:SetScale(1)
                 UIScaleSlider:SetValue(1)
+            else
+                UIParent:SetScale(UUF.db.profile.General.UIScale)
+                UIScaleSlider:SetValue(UUF.db.profile.General.UIScale)
             end
             if not UUF.db.global.ApplyUIScale then
                 UIScaleSlider:SetDisabled(true)

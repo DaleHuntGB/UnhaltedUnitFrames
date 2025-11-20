@@ -7,7 +7,7 @@ UUF.Defaults = {
     },
     profile = {
         General = {
-            AllowUIScaling = true,
+            AllowUIScaling = false,
             UIScale = 1,
             Font = "Friz Quadrata TT",
             FontFlag = "OUTLINE",
