@@ -96,7 +96,6 @@ local function ApplyFrameLayout(unitFrame, unit, DB, GeneralDB)
     unitTagOne:SetJustifyH(UUF:SetJustification(T1.AnchorFrom))
     unitTagOne:SetShadowColor(unpack(GeneralDB.FontShadows.Colour))
     unitTagOne:SetShadowOffset(GeneralDB.FontShadows.OffsetX, GeneralDB.FontShadows.OffsetY)
-    if T1.Enabled then unitTagOne:Show() else unitTagOne:Hide() end
 
     local unitTagTwo = unitFrame.TagTwo
     local T2  = DB.Tags.TagTwo
@@ -107,7 +106,6 @@ local function ApplyFrameLayout(unitFrame, unit, DB, GeneralDB)
     unitTagTwo:SetTextColor(unpack(T2.Colour))
     unitTagTwo:SetShadowColor(unpack(GeneralDB.FontShadows.Colour))
     unitTagTwo:SetShadowOffset(GeneralDB.FontShadows.OffsetX, GeneralDB.FontShadows.OffsetY)
-    if T2.Enabled then unitTagTwo:Show() else unitTagTwo:Hide() end
 
     local unitTagThree = unitFrame.TagThree
     local T3 = DB.Tags.TagThree
@@ -118,7 +116,6 @@ local function ApplyFrameLayout(unitFrame, unit, DB, GeneralDB)
     unitTagThree:SetTextColor(unpack(T3.Colour))
     unitTagThree:SetShadowColor(unpack(GeneralDB.FontShadows.Colour))
     unitTagThree:SetShadowOffset(GeneralDB.FontShadows.OffsetX, GeneralDB.FontShadows.OffsetY)
-    if T3.Enabled then unitTagThree:Show() else unitTagThree:Hide() end
 
     if unitFrame.powerBar and unitFrame.powerBar.Text then
         local unitPowerText = unitFrame.powerBar.Text

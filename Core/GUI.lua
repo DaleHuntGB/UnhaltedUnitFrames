@@ -847,7 +847,6 @@ function UUF:CreateGUI()
                     FontSizeSlider:SetRelativeWidth(0.33)
                     FontSizeSlider:SetCallback("OnValueChanged", function(_, _, value) TagDB.FontSize = value UUF:UpdateUnitFrame(Unit) end)
                     parentContainer:AddChild(FontSizeSlider)
-                    DeepDisable(parentContainer, not TagDB.Enabled, EnabledCheckBox)
                 end
 
                 local TagOneContainer = AG:Create("InlineGroup")
