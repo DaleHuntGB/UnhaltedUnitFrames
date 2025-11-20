@@ -379,5 +379,7 @@ function UUF:UpdateUnitFrame(unit)
     ApplyFrameLayout(unitFrame, unit, DB, GeneralDB)
     ApplyFrameColours(unitFrame, unit, DB, GeneralDB)
     UpdateUnitFrameData(unitFrame, unit, DB, GeneralDB)
-    RefreshUnitEvents(unitFrame, unit, DB)
+    if not UUF.BossTestMode then
+        RefreshUnitEvents(unitFrame, unit, DB)
+    end
 end
