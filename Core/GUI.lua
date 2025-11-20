@@ -971,7 +971,7 @@ function UUF:CreateGUI()
             elseif ModuleGroup == "Frame" then
                 DrawFrameContainer()
             elseif ModuleGroup == "PowerBar" then
-                if Unit ~= "targettarget" and Unit ~= "pet" and Unit ~= "focus" then
+                if Unit ~= "pet" and Unit ~= "focus" then
                     DrawPowerBarContainer()
                 end
             elseif ModuleGroup == "Texts" then
@@ -984,7 +984,7 @@ function UUF:CreateGUI()
         local ModuleTabGroup = AG:Create("TabGroup")
         ModuleTabGroup:SetLayout("Flow")
         ModuleTabGroup:SetFullWidth(true)
-        if Unit ~= "targettarget" and Unit ~= "pet" and Unit ~= "focus" then
+        if Unit ~= "pet" and Unit ~= "focus" then
             ModuleTabGroup:SetTabs({
                 { text = "Colours", value = "Colours"},
                 { text = "Frame", value = "Frame"},
