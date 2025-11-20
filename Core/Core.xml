@@ -5,5 +5,6 @@
      <Script file="Factory.lua"/>
      <Script file="GUI.lua"/>
      <Script file="Share.lua"/>
+     <Script file="Tags.lua"/>
      <Script file="Main.lua"/>
 </Ui>

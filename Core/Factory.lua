@@ -1,6 +1,5 @@
 local _, UUF = ...
 
--- Helper Functions
 local function ResolveFrameName(unit)
     if unit:match("^boss(%d+)$") then
         local unitID = unit:match("^boss(%d+)$")
@@ -35,31 +34,6 @@ local function FetchUnitColour(unit, DB, GeneralDB)
     return foregroundColour[1], foregroundColour[2], foregroundColour[3], foregroundColour[4] or 1
 end
 
-local function FetchNameTextColour(unit, DB, GeneralDB)
-    local NDB = DB.Tags.Name
-
-    if NDB.ColourByStatus then
-        if unit == "pet" then
-            local _, class = UnitClass("player")
-            local classColour = RAID_CLASS_COLORS[class]
-            if classColour then return classColour.r, classColour.g, classColour.b end
-        end
-
-        if UnitIsPlayer(unit) then
-            local _, class = UnitClass(unit)
-            local classColour = RAID_CLASS_COLORS[class]
-            if classColour then return classColour.r, classColour.g, classColour.b end
-        end
-
-        local reaction = UnitReaction(unit, "player") or 5
-        local reactionColour = GeneralDB.CustomColours.Reaction[reaction]
-        if reactionColour then return reactionColour[1], reactionColour[2], reactionColour[3] end
-    end
-
-    local textColour = NDB.Colour
-    return textColour[1], textColour[2], textColour[3]
-end
-
 local function FetchPowerBarColour(unit, DB, GeneralDB)
     local PDB = DB.PowerBar
     if not PDB then return 1,1,1,1 end
@@ -72,32 +46,6 @@ local function FetchPowerBarColour(unit, DB, GeneralDB)
 
     local powerBarForegroundColour = PDB.FGColour
     return powerBarForegroundColour[1], powerBarForegroundColour[2], powerBarForegroundColour[3], powerBarForegroundColour[4] or 1
-end
-
-local function FormatHealthText(unit, DB, GeneralDB)
-    if UnitIsDeadOrGhost(unit) then return "Dead" end
-
-    local unitHP      = UnitHealth(unit)
-    local unitMaxHP   = UnitHealthMax(unit)
-    local unitPerHP = UnitHealthPercent(unit, false, true)
-    local healthSeparator     = GeneralDB.HealthSeparator or "-"
-
-    local layout = DB.Tags.Health.Layout
-    if layout == "CurrPerHP" then
-        if healthSeparator == "()" then
-            return string.format("%s (%.0f%%)", AbbreviateLargeNumbers(unitHP), unitPerHP)
-        else
-            return string.format("%s %s %.0f%%", AbbreviateLargeNumbers(unitHP), healthSeparator, unitPerHP)
-        end
-    elseif layout == "CurrMaxHP" then
-        return string.format("%s / %s", AbbreviateLargeNumbers(unitHP), AbbreviateLargeNumbers(unitMaxHP))
-    elseif layout == "CurrHP" then
-        return AbbreviateLargeNumbers(unitHP)
-    elseif layout == "PerHP" then
-        return string.format("%.0f%%", unitPerHP)
-    end
-
-    return ""
 end
 
 local function ApplyFrameLayout(unitFrame, unit, DB, GeneralDB)
@@ -140,26 +88,37 @@ local function ApplyFrameLayout(unitFrame, unit, DB, GeneralDB)
     end
     unitHealthBar:SetStatusBarTexture(UUF.Media.ForegroundTexture)
 
-    local unitNameText = unitFrame.NameText
-    local NDB = DB.Tags.Name
-    unitNameText:SetFont(UUF.Media.Font, NDB.FontSize, GeneralDB.FontFlag)
-    unitNameText:ClearAllPoints()
-    unitNameText:SetPoint(NDB.AnchorFrom, unitFrame, NDB.AnchorTo, NDB.OffsetX, NDB.OffsetY)
-    unitNameText:SetJustifyH(UUF:SetJustification(NDB.AnchorFrom))
-    unitNameText:SetShadowColor(unpack(GeneralDB.FontShadows.Colour))
-    unitNameText:SetShadowOffset(GeneralDB.FontShadows.OffsetX, GeneralDB.FontShadows.OffsetY)
-    if NDB.Enabled then unitNameText:Show() else unitNameText:Hide() end
+    local unitTagOne = unitFrame.TagOne
+    local T1 = DB.Tags.TagOne
+    unitTagOne:SetFont(UUF.Media.Font, T1.FontSize, GeneralDB.FontFlag)
+    unitTagOne:ClearAllPoints()
+    unitTagOne:SetPoint(T1.AnchorFrom, unitFrame, T1.AnchorTo, T1.OffsetX, T1.OffsetY)
+    unitTagOne:SetJustifyH(UUF:SetJustification(T1.AnchorFrom))
+    unitTagOne:SetShadowColor(unpack(GeneralDB.FontShadows.Colour))
+    unitTagOne:SetShadowOffset(GeneralDB.FontShadows.OffsetX, GeneralDB.FontShadows.OffsetY)
+    if T1.Enabled then unitTagOne:Show() else unitTagOne:Hide() end
 
-    local unitHealthText = unitFrame.HealthText
-    local HDB  = DB.Tags.Health
-    unitHealthText:SetFont(UUF.Media.Font, HDB.FontSize, GeneralDB.FontFlag)
-    unitHealthText:ClearAllPoints()
-    unitHealthText:SetPoint(HDB.AnchorFrom, unitFrame, HDB.AnchorTo, HDB.OffsetX, HDB.OffsetY)
-    unitHealthText:SetJustifyH(UUF:SetJustification(HDB.AnchorFrom))
-    unitHealthText:SetTextColor(unpack(HDB.Colour))
-    unitHealthText:SetShadowColor(unpack(GeneralDB.FontShadows.Colour))
-    unitHealthText:SetShadowOffset(GeneralDB.FontShadows.OffsetX, GeneralDB.FontShadows.OffsetY)
-    if HDB.Enabled then unitHealthText:Show() else unitHealthText:Hide() end
+    local unitTagTwo = unitFrame.TagTwo
+    local T2  = DB.Tags.TagTwo
+    unitTagTwo:SetFont(UUF.Media.Font, T2.FontSize, GeneralDB.FontFlag)
+    unitTagTwo:ClearAllPoints()
+    unitTagTwo:SetPoint(T2.AnchorFrom, unitFrame, T2.AnchorTo, T2.OffsetX, T2.OffsetY)
+    unitTagTwo:SetJustifyH(UUF:SetJustification(T2.AnchorFrom))
+    unitTagTwo:SetTextColor(unpack(T2.Colour))
+    unitTagTwo:SetShadowColor(unpack(GeneralDB.FontShadows.Colour))
+    unitTagTwo:SetShadowOffset(GeneralDB.FontShadows.OffsetX, GeneralDB.FontShadows.OffsetY)
+    if T2.Enabled then unitTagTwo:Show() else unitTagTwo:Hide() end
+
+    local unitTagThree = unitFrame.TagThree
+    local T3 = DB.Tags.TagThree
+    unitTagThree:SetFont(UUF.Media.Font, T3.FontSize, GeneralDB.FontFlag)
+    unitTagThree:ClearAllPoints()
+    unitTagThree:SetPoint(T3.AnchorFrom, unitFrame, T3.AnchorTo, T3.OffsetX, T3.OffsetY)
+    unitTagThree:SetJustifyH(UUF:SetJustification(T3.AnchorFrom))
+    unitTagThree:SetTextColor(unpack(T3.Colour))
+    unitTagThree:SetShadowColor(unpack(GeneralDB.FontShadows.Colour))
+    unitTagThree:SetShadowOffset(GeneralDB.FontShadows.OffsetX, GeneralDB.FontShadows.OffsetY)
+    if T3.Enabled then unitTagThree:Show() else unitTagThree:Hide() end
 
     if unitFrame.powerBar and unitFrame.powerBar.Text then
         local unitPowerText = unitFrame.powerBar.Text
@@ -196,9 +155,6 @@ local function ApplyFrameColours(unitFrame, unit, DB, GeneralDB)
     local unitFrameBGR,unitFrameBGG,unitFrameBGB,unitFrameBGA = unpack(DB.Frame.BGColour)
     unitHealthBar.BG:SetVertexColor(unitFrameBGR,unitFrameBGG,unitFrameBGB,unitFrameBGA)
 
-    local nameTextR,nameTextG,nameTextB = FetchNameTextColour(unit, DB, GeneralDB)
-    unitFrame.NameText:SetTextColor(nameTextR,nameTextG,nameTextB)
-
     if unitFrame.powerBar then
         local powerBarR,powerBarG,powerBarB,powerBarA = FetchPowerBarColour(unit, DB, GeneralDB)
         unitFrame.powerBar:SetStatusBarColor(powerBarR,powerBarG,powerBarB,powerBarA)
@@ -217,9 +173,9 @@ local function UpdateUnitFrameData(unitFrame, unit, DB, GeneralDB)
     unitFrame.healthBar:SetMinMaxValues(0, unitMaxHP)
     unitFrame.healthBar:SetValue(unitHP)
 
-    unitFrame.HealthText:SetText(FormatHealthText(unit, DB, GeneralDB))
-    unitFrame.NameText:SetText(UnitName(unit) or "")
-
+    unitFrame.TagOne:SetText(UUF:EvaluateTagString(unit, (DB.Tags.TagOne.Tag or "")))
+    unitFrame.TagTwo:SetText(UUF:EvaluateTagString(unit, (DB.Tags.TagTwo.Tag or "")))
+    unitFrame.TagThree:SetText(UUF:EvaluateTagString(unit, (DB.Tags.TagThree.Tag or "")))
     if unitFrame.powerBar then
         local unitPower = UnitPower(unit)
         unitFrame.powerBar:SetMinMaxValues(0, UnitPowerMax(unit))
@@ -258,7 +214,7 @@ local function RefreshUnitEvents(unitFrame, unit, DB)
     if unit == "pet" then unitFrame:RegisterEvent("UNIT_PET") end
     if unit == "focus" then unitFrame:RegisterEvent("PLAYER_FOCUS_CHANGED") end
 
-    unitFrame:SetScript("OnEvent", function(self) UUF:UpdateUnitFrame(unit) end)
+    unitFrame:SetScript("OnEvent", function(self) if UUF.BossTestMode then UUF:UpdateUnitFrame(self.unit) else if UnitExists(self.unit) then UUF:UpdateUnitFrame(self.unit) end end end)
 
     if unitFrame.powerBar then
         local powerBar = unitFrame.powerBar
@@ -267,7 +223,7 @@ local function RefreshUnitEvents(unitFrame, unit, DB)
             powerBar:RegisterEvent("UNIT_POWER_UPDATE")
             powerBar:RegisterEvent("UNIT_MAXPOWER")
             powerBar:RegisterEvent("PLAYER_TARGET_CHANGED")
-            powerBar:SetScript("OnEvent", function(bar) UUF:UpdateUnitFrame(unit) end)
+            powerBar:SetScript("OnEvent", function(bar) if UUF.BossTestMode then UUF:UpdateUnitFrame(bar.unit) else if UnitExists(bar.unit) then UUF:UpdateUnitFrame(bar.unit) end end end)
         else
             powerBar:SetScript("OnEvent", nil)
         end
@@ -321,8 +277,9 @@ function UUF:CreateUnitFrame(unit)
     unitFrame.healthBar.BG = unitFrame.healthBar:CreateTexture(nil, "BACKGROUND")
     unitFrame.healthBar.BG:SetAllPoints()
     unitFrame.healthBar.BG:SetTexture(UUF.Media.BackgroundTexture)
-    unitFrame.NameText = unitFrame.healthBar:CreateFontString(nil, "OVERLAY")
-    unitFrame.HealthText = unitFrame.healthBar:CreateFontString(nil, "OVERLAY")
+    unitFrame.TagOne = unitFrame.healthBar:CreateFontString(nil, "OVERLAY")
+    unitFrame.TagTwo = unitFrame.healthBar:CreateFontString(nil, "OVERLAY")
+    unitFrame.TagThree = unitFrame.healthBar:CreateFontString(nil, "OVERLAY")
     unitFrame.MouseoverHighlight = CreateFrame("Frame", nil, unitFrame, "BackdropTemplate")
     unitFrame.MouseoverHighlight:SetAllPoints()
     unitFrame.MouseoverHighlight:SetBackdrop({ bgFile="Interface\\Buttons\\WHITE8x8", edgeFile="Interface\\Buttons\\WHITE8x8", edgeSize=1 })
@@ -351,6 +308,8 @@ end
 
 function UUF:UpdateUnitFrame(unit)
     if not unit then return end
+
+    print("UUF: UpdateUnitFrame called for unit:", unit)
 
     local frameName = ResolveFrameName(unit)
     local unitFrame = _G[frameName]

@@ -803,74 +803,32 @@ function UUF:CreateGUI()
 
             local function DrawTextsContainer()
                 local TagsDB = DB.Tags
-                local NameTagDB = TagsDB.Name
-                local HealthTagDB = TagsDB.Health
+                local TagOneDB = TagsDB.TagOne
+                local TagTwoDB = TagsDB.TagTwo
+                local TagThreeDB = TagsDB.TagThree
 
                 local function TagOptions(parentContainer, TagDB, TagName)
-                    local isNameTag = TagName == "Name"
-                    local isHealthTag = TagName == "Health"
-                    local EnabledCheckBox = AG:Create("CheckBox")
-                    EnabledCheckBox:SetLabel("Enable "..TagName.." Tag")
-                    EnabledCheckBox:SetValue(TagDB.Enabled)
-                    EnabledCheckBox:SetRelativeWidth(0.33)
-                    EnabledCheckBox:SetCallback("OnValueChanged", function(_, _, value)
-                        TagDB.Enabled = value
-                        UUF:UpdateUnitFrame(Unit)
-                        DeepDisable(parentContainer, not value, EnabledCheckBox)
-                    end)
-                    parentContainer:AddChild(EnabledCheckBox)
-                    if isNameTag then
-                        local ColourNameByStatusCheckBox = AG:Create("CheckBox")
-                        ColourNameByStatusCheckBox:SetLabel(Unit ~= "pet" and "Colour By Status" or "Colour By Player Class")
-                        ColourNameByStatusCheckBox:SetValue(TagDB.ColourByStatus)
-                        ColourNameByStatusCheckBox:SetRelativeWidth(0.33)
-                        ColourNameByStatusCheckBox:SetCallback("OnValueChanged", function(_, _, value)
-                            TagDB.ColourByStatus = value
-                            UUF:UpdateUnitFrame(Unit)
-                        end)
-                        ColourNameByStatusCheckBox:SetCallback("OnEnter", function(widget) GameTooltip:SetOwner(widget.frame, "ANCHOR_CURSOR_RIGHT") GameTooltip:SetText(Unit ~= "pet" and "Colour Name Text based on Class (Player) or Reaction (NPC)" or "Colour Name Text based on Player Class") end)
-                        ColourNameByStatusCheckBox:SetCallback("OnLeave", function() GameTooltip:Hide() end)
-                        parentContainer:AddChild(ColourNameByStatusCheckBox)
-                    end
+                    local TagEditBox = AG:Create("EditBox")
+                    TagEditBox:SetLabel("Tag")
+                    TagEditBox:SetText(TagDB.Tag)
+                    TagEditBox:SetRelativeWidth(0.5)
+                    TagEditBox:SetCallback("OnEnterPressed", function(_, _, value) TagDB.Tag = value UUF:UpdateUnitFrame(Unit) end)
+                    parentContainer:AddChild(TagEditBox)
 
                     local ColourPicker = AG:Create("ColorPicker")
-                    ColourPicker:SetLabel(TagName.." Colour")
+                    ColourPicker:SetLabel("Colour")
                     ColourPicker:SetColor(unpack(TagDB.Colour))
                     ColourPicker:SetHasAlpha(true)
-                    ColourPicker:SetRelativeWidth(0.33)
-                    ColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a)
-                        TagDB.Colour = {r, g, b, a}
-                        UUF:UpdateUnitFrame(Unit)
-                    end)
+                    ColourPicker:SetRelativeWidth(0.5)
+                    ColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) TagDB.Colour = {r, g, b, a} UUF:UpdateUnitFrame(Unit) end)
                     parentContainer:AddChild(ColourPicker)
-
-                    if isHealthTag then
-                        local HealthTagModeDropdown = AG:Create("Dropdown")
-                        HealthTagModeDropdown:SetList({
-                            ["CurrHP"] = "Current Health",
-                            ["CurrMaxHP"] = "Current / Max Health",
-                            ["PerHP"] = "Health Percentage",
-                            ["CurrPerHP"] = "Current Health + Percentage",
-                        })
-                        HealthTagModeDropdown:SetLabel("Health Tag Mode")
-                        HealthTagModeDropdown:SetValue(TagDB.Layout)
-                        HealthTagModeDropdown:SetRelativeWidth(0.33)
-                        HealthTagModeDropdown:SetCallback("OnValueChanged", function(_, _, value)
-                            TagDB.Layout = value
-                            UUF:UpdateUnitFrame(Unit)
-                        end)
-                        parentContainer:AddChild(HealthTagModeDropdown)
-                    end
 
                     local AnchorFromDropdown = AG:Create("Dropdown")
                     AnchorFromDropdown:SetList(AnchorPoints)
                     AnchorFromDropdown:SetLabel("Anchor From")
                     AnchorFromDropdown:SetValue(TagDB.AnchorFrom)
                     AnchorFromDropdown:SetRelativeWidth(0.5)
-                    AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value)
-                        TagDB.AnchorFrom = value
-                        UUF:UpdateUnitFrame(Unit)
-                    end)
+                    AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) TagDB.AnchorFrom = value UUF:UpdateUnitFrame(Unit) end)
                     parentContainer:AddChild(AnchorFromDropdown)
 
                     local AnchorToDropdown = AG:Create("Dropdown")
@@ -878,10 +836,7 @@ function UUF:CreateGUI()
                     AnchorToDropdown:SetLabel("Anchor To")
                     AnchorToDropdown:SetValue(TagDB.AnchorTo)
                     AnchorToDropdown:SetRelativeWidth(0.5)
-                    AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value)
-                        TagDB.AnchorTo = value
-                        UUF:UpdateUnitFrame(Unit)
-                    end)
+                    AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) TagDB.AnchorTo = value UUF:UpdateUnitFrame(Unit) end)
                     parentContainer:AddChild(AnchorToDropdown)
 
                     local OffsetXSlider = AG:Create("Slider")
@@ -889,10 +844,7 @@ function UUF:CreateGUI()
                     OffsetXSlider:SetValue(TagDB.OffsetX)
                     OffsetXSlider:SetSliderValues(SLIDER_MIN, SLIDER_MAX, SLIDER_STEP)
                     OffsetXSlider:SetRelativeWidth(0.33)
-                    OffsetXSlider:SetCallback("OnValueChanged", function(_, _, value)
-                        TagDB.OffsetX = value
-                        UUF:UpdateUnitFrame(Unit)
-                    end)
+                    OffsetXSlider:SetCallback("OnValueChanged", function(_, _, value) TagDB.OffsetX = value UUF:UpdateUnitFrame(Unit) end)
                     parentContainer:AddChild(OffsetXSlider)
 
                     local OffsetYSlider = AG:Create("Slider")
@@ -900,10 +852,7 @@ function UUF:CreateGUI()
                     OffsetYSlider:SetValue(TagDB.OffsetY)
                     OffsetYSlider:SetSliderValues(SLIDER_MIN, SLIDER_MAX, SLIDER_STEP)
                     OffsetYSlider:SetRelativeWidth(0.33)
-                    OffsetYSlider:SetCallback("OnValueChanged", function(_, _, value)
-                        TagDB.OffsetY = value
-                        UUF:UpdateUnitFrame(Unit)
-                    end)
+                    OffsetYSlider:SetCallback("OnValueChanged", function(_, _, value) TagDB.OffsetY = value UUF:UpdateUnitFrame(Unit) end)
                     parentContainer:AddChild(OffsetYSlider)
 
                     local FontSizeSlider = AG:Create("Slider")
@@ -911,27 +860,33 @@ function UUF:CreateGUI()
                     FontSizeSlider:SetValue(TagDB.FontSize)
                     FontSizeSlider:SetSliderValues(6, 72, 1)
                     FontSizeSlider:SetRelativeWidth(0.33)
-                    FontSizeSlider:SetCallback("OnValueChanged", function(_, _, value)
-                        TagDB.FontSize = value
-                        UUF:UpdateUnitFrame(Unit)
-                    end)
+                    FontSizeSlider:SetCallback("OnValueChanged", function(_, _, value) TagDB.FontSize = value UUF:UpdateUnitFrame(Unit) end)
                     parentContainer:AddChild(FontSizeSlider)
                     DeepDisable(parentContainer, not TagDB.Enabled, EnabledCheckBox)
                 end
 
-                local NameTagContainer = AG:Create("InlineGroup")
-                NameTagContainer:SetTitle("Name Tag")
-                NameTagContainer:SetLayout("Flow")
-                NameTagContainer:SetFullWidth(true)
-                UnitFrameContainer:AddChild(NameTagContainer)
-                TagOptions(NameTagContainer, NameTagDB, "Name")
+                local TagOneContainer = AG:Create("InlineGroup")
+                TagOneContainer:SetTitle("Tag One")
+                TagOneContainer:SetLayout("Flow")
+                TagOneContainer:SetFullWidth(true)
+                UnitFrameContainer:AddChild(TagOneContainer)
+                TagOptions(TagOneContainer, TagOneDB, "TagOne")
 
-                local HealthTagContainer = AG:Create("InlineGroup")
-                HealthTagContainer:SetTitle("Health Tag")
-                HealthTagContainer:SetLayout("Flow")
-                HealthTagContainer:SetFullWidth(true)
-                UnitFrameContainer:AddChild(HealthTagContainer)
-                TagOptions(HealthTagContainer, HealthTagDB, "Health")
+                local TagTwoContainer = AG:Create("InlineGroup")
+                TagTwoContainer:SetTitle("Tag Two")
+                TagTwoContainer:SetLayout("Flow")
+                TagTwoContainer:SetFullWidth(true)
+                UnitFrameContainer:AddChild(TagTwoContainer)
+                TagOptions(TagTwoContainer, TagTwoDB, "TagTwo")
+
+                local TagThreeContainer = AG:Create("InlineGroup")
+                TagThreeContainer:SetTitle("Tag Three")
+                TagThreeContainer:SetLayout("Flow")
+                TagThreeContainer:SetFullWidth(true)
+                UnitFrameContainer:AddChild(TagThreeContainer)
+                TagOptions(TagThreeContainer, TagThreeDB, "TagThree")
+
+                ScrollFrame:DoLayout()
             end
 
             local function DrawIndicatorsContainer()
@@ -1005,6 +960,7 @@ function UUF:CreateGUI()
         ScrollFrame:AddChild(ModuleTabGroup)
 
     end
+
     local function DrawProfilesContainer(GUIContainer)
         local ScrollFrame = AG:Create("ScrollFrame")
         ScrollFrame:SetLayout("Flow")
