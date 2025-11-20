@@ -6,6 +6,15 @@ UUF.InfoButton = "|A:glueannouncementpopup-icon-info:16:16|a "
 UUF.LSM = LibStub("LibSharedMedia-3.0")
 UUF.BossFrames = {}
 UUF.MaxBossFrames = 10
+UUFG = UUFG or {}
+
+UUF.UnitToFrameName = {
+    ["player"] = "UUF_Player",
+    ["target"] = "UUF_Target",
+    ["targettarget"] = "UUF_TargetTarget",
+    ["pet"] = "UUF_Pet",
+    ["focus"] = "UUF_Focus",
+}
 
 if UUF.LSM then UUF.LSM:Register("border", "WHITE8X8", [[Interface\Buttons\WHITE8X8]]) end
 if UUF.LSM then UUF.LSM:Register("statusbar", "Dragonflight", [[Interface\AddOns\UnhaltedUnitFrames\Media\Textures\Dragonflight.tga]]) end
@@ -97,7 +106,7 @@ function UUF:CreatePrompt(title, text, onAccept, onCancel, acceptText, cancelTex
 end
 
 function UUF:SetUIScale()
-    if UUF.db.global.ApplyUIScale then
-        UIParent:SetScale(UUF.db.global.UIScale)
+    if UUF.db.profile.General.AllowUIScaling then
+        UIParent:SetScale(UUF.db.profile.General.UIScale)
     end
 end

@@ -3,5 +3,6 @@
 	<Script file="Globals.lua"/>
      <Script file="Factory.lua"/>
      <Script file="GUI.lua"/>
+     <Script file="Share.lua"/>
      <Script file="Main.lua"/>
 </Ui>

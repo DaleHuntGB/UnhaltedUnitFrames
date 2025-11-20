@@ -260,8 +260,8 @@ function UUF:CreateUnitFrame(unit)
 
     unitFrame:SetScript("OnEnter", UnitFrame_OnEnter)
     unitFrame:SetScript("OnLeave", UnitFrame_OnLeave)
-    unitFrame:HookScript("OnEnter", function(self) if DB.Indicators.MouseoverHighlight.Enabled then self.MouseoverHighlight:Show() end end)
-    unitFrame:HookScript("OnLeave", function(self) if DB.Indicators.MouseoverHighlight.Enabled then self.MouseoverHighlight:Hide() end end)
+    unitFrame:HookScript("OnEnter", function(self) DB = UUF.db.profile[unit] if DB.Indicators.MouseoverHighlight.Enabled then self.MouseoverHighlight:Show() end end)
+    unitFrame:HookScript("OnLeave", function(self) DB = UUF.db.profile[unit] if DB.Indicators.MouseoverHighlight.Enabled then self.MouseoverHighlight:Hide() end end)
 
     if unit == "pet" then unitFrame:RegisterEvent("UNIT_PET") end
     if unit == "focus" then unitFrame:RegisterEvent("PLAYER_FOCUS_CHANGED") end
@@ -379,8 +379,8 @@ function UUF:UpdateUnitFrame(unit)
         unitFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
         if unit == "pet" then unitFrame:RegisterEvent("UNIT_PET") end
         if unit == "focus" then unitFrame:RegisterEvent("PLAYER_FOCUS_CHANGED") end
-        unitFrame:HookScript("OnEnter", function(self) if DB.Indicators.MouseoverHighlight.Enabled then self.MouseoverHighlight:Show() end end)
-        unitFrame:HookScript("OnLeave", function(self) if DB.Indicators.MouseoverHighlight.Enabled then self.MouseoverHighlight:Hide() end end)
+        unitFrame:HookScript("OnEnter", function(self) DB = UUF.db.profile[unit] if DB.Indicators.MouseoverHighlight.Enabled then self.MouseoverHighlight:Show() end end)
+        unitFrame:HookScript("OnLeave", function(self) DB = UUF.db.profile[unit] if DB.Indicators.MouseoverHighlight.Enabled then self.MouseoverHighlight:Hide() end end)
         unitFrame:SetScript("OnEvent", UpdateUnitFrame)
     else
         unitFrame:SetScript("OnEvent", nil)
