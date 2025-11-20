@@ -290,6 +290,7 @@ function UUF:CreateUnitFrame(unit)
         unitFramePowerBar.unit = unit
         unitFramePowerBar:RegisterEvent("UNIT_POWER_UPDATE")
         unitFramePowerBar:RegisterEvent("UNIT_MAXPOWER")
+        unitFramePowerBar:RegisterEvent("PLAYER_TARGET_CHANGED")
         unitFramePowerBar:SetScript("OnEvent", UpdateUnitFramePowerBar)
         UpdateUnitFramePowerBar(unitFramePowerBar)
     end
@@ -462,6 +463,7 @@ function UUF:UpdateUnitFrame(unit)
         if DB.PowerBar.Enabled then
             unitPowerBar:RegisterEvent("UNIT_POWER_UPDATE")
             unitPowerBar:RegisterEvent("UNIT_MAXPOWER")
+            unitPowerBar:RegisterEvent("PLAYER_TARGET_CHANGED")
             unitPowerBar:SetScript("OnEvent", UpdateUnitFramePowerBar)
         else
             unitPowerBar:SetScript("OnEvent", nil)
