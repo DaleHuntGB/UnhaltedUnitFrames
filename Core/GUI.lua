@@ -273,7 +273,7 @@ function UUF:CreateGUI()
         FontDropdown:SetList(LSM:HashTable("font"))
         FontDropdown:SetLabel("Font")
         FontDropdown:SetValue(UUF.db.profile.General.Font)
-        FontDropdown:SetRelativeWidth(0.5)
+        FontDropdown:SetRelativeWidth(0.33)
         FontDropdown:SetCallback("OnValueChanged", function(widget, _, value)
             widget:SetValue(value)
             UUF.db.profile.General.Font = value
@@ -293,7 +293,7 @@ function UUF:CreateGUI()
         })
         FontFlagsDropdown:SetLabel("Font Flags")
         FontFlagsDropdown:SetValue(UUF.db.profile.General.FontFlag)
-        FontFlagsDropdown:SetRelativeWidth(0.5)
+        FontFlagsDropdown:SetRelativeWidth(0.33)
         FontFlagsDropdown:SetCallback("OnValueChanged", function(_, _, value)
             UUF.db.profile.General.FontFlag = value
             for unit in pairs(UnitToFrameName) do
@@ -301,6 +301,25 @@ function UUF:CreateGUI()
             end
         end)
         FontsContainer:AddChild(FontFlagsDropdown)
+
+        local HealthSeparatorDropdown = AG:Create("Dropdown")
+        HealthSeparatorDropdown:SetList({
+            ["-"] = "999K - 100%",
+            ["||"] = "999K | 100%",
+            ["/"] = "999K / 100%",
+            [""] = "999K 100%",
+            ["()"] = "999K (100%)",
+        })
+        HealthSeparatorDropdown:SetLabel("Health Text Layout")
+        HealthSeparatorDropdown:SetValue(UUF.db.profile.General.HealthSeparator)
+        HealthSeparatorDropdown:SetRelativeWidth(0.33)
+        HealthSeparatorDropdown:SetCallback("OnValueChanged", function(_, _, value)
+            UUF.db.profile.General.HealthSeparator = value
+            for unit in pairs(UnitToFrameName) do
+                UUF:UpdateUnitFrame(unit)
+            end
+        end)
+        FontsContainer:AddChild(HealthSeparatorDropdown)
 
         local FontShadowsContainer = AG:Create("InlineGroup")
         FontShadowsContainer:SetTitle("Shadow")
@@ -661,18 +680,6 @@ function UUF:CreateGUI()
                         parentContainer:AddChild(ColourNameByStatusCheckBox)
                     end
 
-                    if isHealthTag then
-                        local DisplayPercentHealthCheckBox = AG:Create("CheckBox")
-                        DisplayPercentHealthCheckBox:SetLabel("Display Percent Health")
-                        DisplayPercentHealthCheckBox:SetValue(TagDB.DisplayPercent)
-                        DisplayPercentHealthCheckBox:SetRelativeWidth(0.33)
-                        DisplayPercentHealthCheckBox:SetCallback("OnValueChanged", function(_, _, value)
-                            TagDB.DisplayPercent = value
-                            UUF:UpdateUnitFrame(Unit)
-                        end)
-                        parentContainer:AddChild(DisplayPercentHealthCheckBox)
-                    end
-
                     local ColourPicker = AG:Create("ColorPicker")
                     ColourPicker:SetLabel(TagName.." Colour")
                     ColourPicker:SetColor(unpack(TagDB.Colour))
@@ -683,6 +690,24 @@ function UUF:CreateGUI()
                         UUF:UpdateUnitFrame(Unit)
                     end)
                     parentContainer:AddChild(ColourPicker)
+
+                    if isHealthTag then
+                        local HealthTagModeDropdown = AG:Create("Dropdown")
+                        HealthTagModeDropdown:SetList({
+                            ["CurrHP"] = "Current Health",
+                            ["CurrMaxHP"] = "Current / Max Health",
+                            ["PerHP"] = "Health Percentage",
+                            ["CurrPerHP"] = "Current Health + Percentage",
+                        })
+                        HealthTagModeDropdown:SetLabel("Health Tag Mode")
+                        HealthTagModeDropdown:SetValue(TagDB.Layout)
+                        HealthTagModeDropdown:SetRelativeWidth(0.33)
+                        HealthTagModeDropdown:SetCallback("OnValueChanged", function(_, _, value)
+                            TagDB.Layout = value
+                            UUF:UpdateUnitFrame(Unit)
+                        end)
+                        parentContainer:AddChild(HealthTagModeDropdown)
+                    end
 
                     local AnchorFromDropdown = AG:Create("Dropdown")
                     AnchorFromDropdown:SetList(AnchorPoints)

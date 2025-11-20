@@ -113,8 +113,32 @@ local function UpdateUnitFrame(self)
     self.healthBar:SetStatusBarColor(unitColourR, unitColourG, unitColourB)
     local isUnitDead = UnitIsDeadOrGhost(unit)
     local unitHealthPercent = UnitHealthPercent(unit, false, true)
-    local displayPercentHealth = UUF.db.profile[unit].Tags.Health.DisplayPercent
-    self.HealthText:SetText(isUnitDead and "Dead" or AbbreviateLargeNumbers(unitHealth) .. (displayPercentHealth and string.format(" - %.0f%%", unitHealthPercent) or ""))
+    local CurrHP         = UUF.db.profile[unit].Tags.Health.Layout == "CurrHP"
+    local CurrMaxHP      = UUF.db.profile[unit].Tags.Health.Layout == "CurrMaxHP"
+    local PerHP             = UUF.db.profile[unit].Tags.Health.Layout == "PerHP"
+    local CurrPerHP  = UUF.db.profile[unit].Tags.Health.Layout == "CurrPerHP"
+    local HealthSeparator = UUF.db.profile.General.HealthSeparator or "-"
+    local healthText = ""
+    if isUnitDead then
+        healthText = "Dead"
+    else
+        if CurrPerHP then
+            if HealthSeparator == "()" then
+                healthText = string.format("%s (%.0f%%)", AbbreviateLargeNumbers(unitHealth), unitHealthPercent)
+            else
+                healthText = string.format("%s %s %.0f%%", AbbreviateLargeNumbers(unitHealth), HealthSeparator, unitHealthPercent)
+            end
+        elseif CurrMaxHP then
+            healthText = string.format("%s / %s", AbbreviateLargeNumbers(unitHealth), AbbreviateLargeNumbers(unitMaxHealth))
+        elseif CurrHP then
+            healthText = AbbreviateLargeNumbers(unitHealth)
+        elseif PerHP then
+            healthText = string.format("%.0f%%", unitHealthPercent)
+        else
+            healthText = ""
+        end
+    end
+    self.HealthText:SetText(healthText)
     local statusColourR, statusColourG, statusColourB = FetchNameTextColour(unit, UUF.db.profile[unit], UUF.db.profile.General)
     self.NameText:SetTextColor(statusColourR, statusColourG, statusColourB)
     self.NameText:SetText(UnitName(unit))
