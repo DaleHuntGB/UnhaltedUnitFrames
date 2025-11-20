@@ -47,7 +47,7 @@ local ReactionNames = {
     [8] = "Exalted",
 }
 
-local SLIDER_STEP, SLIDER_MIN, SLIDER_MAX = 0.1, -1000, 1000
+local SLIDER_STEP, SLIDER_MIN, SLIDER_MAX = 0.1, -3000, 3000
 
 local function CreateInfoTag(Description)
     local InfoDesc = AG:Create("Label")
