@@ -1,6 +1,6 @@
-## Title: |cFF8080FFUnhalted|r Unit Frames
-## Version: 12.0.0
 ## Interface: 120000
+## Title: |cFF8080FFUnhalted|r Unit Frames
+## Version: @project-version@
 ## Author: UnhaltedGB
 ## SavedVariables: UnhaltedUFDB
 ## Category-enUS: Unit Frames

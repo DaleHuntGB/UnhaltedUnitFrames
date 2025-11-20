@@ -1,0 +1,36 @@
+name: Release Addon
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  package:
+    name: Build & Publish
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Install Dependencies...
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y subversion zip
+
+      - name: Download BigWigs Packager
+        run: |
+          curl -s -L https://raw.githubusercontent.com/BigWigsMods/packager/master/release.sh > release.sh
+          chmod +x release.sh
+
+      - name: Run Packager
+        env:
+          CF_API_KEY: ${{ secrets.CF_API_KEY }}
+          WAGO_API_TOKEN: ${{ secrets.WAGO_API_TOKEN }}
+          CF_RELEASE_TYPE: alpha
+          WAGO_RELEASE_TYPE: alpha
+        run: |
+          ./release.sh -p

@@ -1,0 +1,30 @@
+package-as: UnhaltedUnitFrames
+
+enable-nolib-creation: yes
+
+externals:
+    Libs/Ace3:
+        url: https://repos.wowace.com/wow/ace3/trunk
+        tag: latest
+
+    Libs/CallbackHandler-1.0:
+        url: https://repos.wowace.com/wow/callbackhandler/trunk/CallbackHandler-1.0
+        tag: latest
+
+    Libs/LibSharedMedia-3.0:
+        url: https://repos.wowace.com/wow/libsharedmedia-3-0/trunk
+        tag: latest
+
+    Libs/LibDeflate:
+        url: https://github.com/safeteeWoW/LibDeflate.git
+        tag: latest
+
+    Libs/LibStub:
+        url: https://repos.wowace.com/wow/libstub/trunk
+        tag: latest
+
+ignore:
+    - README.md
+    - .git/
+    - .github/
+    - .vscode/
