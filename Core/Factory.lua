@@ -145,8 +145,11 @@ end
 local function UpdateUnitFramePowerBar(self)
     local unit = self.unit
     if not unit then return end
+    local dbUnit = unit
+    if unit:match("^boss%d+$") then dbUnit = "boss" end
+    local DB = UUF.db.profile[dbUnit]
     self:Show()
-    local db = UUF.db.profile[unit].PowerBar
+    local db = DB.PowerBar
     local textDB = db.Text
     local unitPower = UnitPower(unit)
     local r, g, b, a = FetchPowerBarColour(unit)
