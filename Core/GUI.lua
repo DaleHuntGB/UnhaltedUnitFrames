@@ -957,6 +957,8 @@ function UUF:CreateGUI()
                 ["-"] = "-",
                 ["||"] = "|",
                 ["/"] = "/",
+                ["»"] = "»",
+                ["•"] = "•",
             })
             HealthSeparatorDropdown:SetLabel("Health Separator")
             HealthSeparatorDropdown:SetValue(UUF.db.profile.General.HealthSeparator)
