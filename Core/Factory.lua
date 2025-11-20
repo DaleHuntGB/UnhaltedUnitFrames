@@ -10,20 +10,23 @@ local function ResolveFrameName(unit)
 end
 
 local function FetchUnitColor(unit, DB, GeneralDB)
+    if not DB then
+        local dbUnit = unit
+        if unit:match("^boss%d+$") then dbUnit = "boss" end
+        DB = UUF.db.profile[dbUnit]
+    end
+    if not DB or not DB.Frame then return 1, 1, 1, 1 end
     if DB.Frame.ClassColour then
         if unit == "pet" then
             local _, playerClass = UnitClass("player")
             local playerClassColour = playerClass and RAID_CLASS_COLORS[playerClass]
-            if playerClassColour then
-                return playerClassColour.r, playerClassColour.g, playerClassColour.b
-            end
+            if playerClassColour then return playerClassColour.r, playerClassColour.g, playerClassColour.b, 1 end
         end
-
         if UnitIsPlayer(unit) then
             local _, class = UnitClass(unit)
-            local unitClassColour = class and RAID_CLASS_COLORS[class]
-            if unitClassColour then
-                return unitClassColour.r, unitClassColour.g, unitClassColour.b
+            local classColour = class and RAID_CLASS_COLORS[class]
+            if classColour then
+                return classColour.r, classColour.g, classColour.b, 1
             end
         end
     end
@@ -31,13 +34,11 @@ local function FetchUnitColor(unit, DB, GeneralDB)
     if DB.Frame.ReactionColour then
         local reaction = UnitReaction(unit, "player") or 5
         local reactionColours = GeneralDB.CustomColours.Reaction
-        local reactionColour = reactionColours and reactionColours[reaction]
-        if reactionColour then
-            return reactionColour[1], reactionColour[2], reactionColour[3]
-        end
+        local unitReactionColour = reactionColours and reactionColours[reaction]
+        if unitReactionColour then return unitReactionColour[1], unitReactionColour[2], unitReactionColour[3], 1 end
     end
-
-    return DB.Frame.FGColour[1], DB.Frame.FGColour[2], DB.Frame.FGColour[3], DB.Frame.FGColour[4]
+    local unitForegroundColour = DB.Frame.FGColour
+    return unitForegroundColour[1], unitForegroundColour[2], unitForegroundColour[3], unitForegroundColour[4] or 1
 end
 
 local function FetchNameTextColour(unit, DB, GeneralDB)
@@ -94,21 +95,24 @@ end
 local function UpdateUnitFrame(self)
     local unit = self.unit
     if not unit then return end
-
-    local unitHealth = UnitHealth(unit)
-    local unitMaxHealth = UnitHealthMax(unit)
-    local unitColourR, unitColourG, unitColourB = FetchUnitColor(unit, UUF.db.profile[unit], UUF.db.profile.General)
-
+    local dbUnit = unit
+    if unit:match("^boss%d+$") then dbUnit = "boss" end
+    local DB = UUF.db.profile[dbUnit]
+    local GeneralDB = UUF.db.profile.General
+    if not DB or not DB.Frame then return end
+    local unitHealth     = UnitHealth(unit)
+    local unitMaxHealth  = UnitHealthMax(unit)
+    local unitColourR, unitColourG, unitColourB = FetchUnitColor(unit, DB, GeneralDB)
     self.healthBar:SetMinMaxValues(0, unitMaxHealth)
     self.healthBar:SetValue(unitHealth)
     self.healthBar:SetStatusBarColor(unitColourR, unitColourG, unitColourB)
     local isUnitDead = UnitIsDeadOrGhost(unit)
     local unitHealthPercent = UnitHealthPercent(unit, false, true)
-    local CurrHP         = UUF.db.profile[unit].Tags.Health.Layout == "CurrHP"
-    local CurrMaxHP      = UUF.db.profile[unit].Tags.Health.Layout == "CurrMaxHP"
-    local PerHP             = UUF.db.profile[unit].Tags.Health.Layout == "PerHP"
-    local CurrPerHP  = UUF.db.profile[unit].Tags.Health.Layout == "CurrPerHP"
-    local HealthSeparator = UUF.db.profile.General.HealthSeparator or "-"
+    local CurrHP     = DB.Tags.Health.Layout == "CurrHP"
+    local CurrMaxHP  = DB.Tags.Health.Layout == "CurrMaxHP"
+    local PerHP      = DB.Tags.Health.Layout == "PerHP"
+    local CurrPerHP  = DB.Tags.Health.Layout == "CurrPerHP"
+    local HealthSeparator = GeneralDB.HealthSeparator or "-"
     local healthText = ""
     if isUnitDead then
         healthText = "Dead"
@@ -120,18 +124,21 @@ local function UpdateUnitFrame(self)
                 healthText = string.format("%s %s %.0f%%", AbbreviateLargeNumbers(unitHealth), HealthSeparator, unitHealthPercent)
             end
         elseif CurrMaxHP then
-            healthText = string.format("%s / %s", AbbreviateLargeNumbers(unitHealth), AbbreviateLargeNumbers(unitMaxHealth))
+            healthText = string.format("%s / %s",
+                AbbreviateLargeNumbers(unitHealth),
+                AbbreviateLargeNumbers(unitMaxHealth))
         elseif CurrHP then
             healthText = AbbreviateLargeNumbers(unitHealth)
         elseif PerHP then
             healthText = string.format("%.0f%%", unitHealthPercent)
-        else
-            healthText = ""
         end
     end
+
     self.HealthText:SetText(healthText)
-    local statusColourR, statusColourG, statusColourB = FetchNameTextColour(unit, UUF.db.profile[unit], UUF.db.profile.General)
-    self.NameText:SetTextColor(statusColourR, statusColourG, statusColourB)
+
+    local nameR, nameG, nameB = FetchNameTextColour(unit, DB, GeneralDB)
+
+    self.NameText:SetTextColor(nameR, nameG, nameB)
     self.NameText:SetText(UnitName(unit))
 end
 
@@ -296,8 +303,9 @@ function UUF:CreateUnitFrame(unit)
     unitFrame:SetAttribute("*type1", "target")
     unitFrame:SetAttribute("*type2", "togglemenu")
 
-    unitFrame:RegisterEvent("UNIT_HEALTH")
-    unitFrame:RegisterEvent("UNIT_NAME_UPDATE")
+    unitFrame:RegisterUnitEvent("UNIT_HEALTH", unit)
+    unitFrame:RegisterUnitEvent("UNIT_MAXHEALTH", unit)
+    unitFrame:RegisterUnitEvent("UNIT_NAME_UPDATE", unit)
     unitFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
     unitFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
 
@@ -351,6 +359,7 @@ function UUF:UpdateUnitFrame(unit)
     unitHealthBar:SetPoint("TOPLEFT", unitFrame, "TOPLEFT", 1, -1)
     unitHealthBar:SetPoint("BOTTOMRIGHT", unitFrame, "BOTTOMRIGHT", -1, 1)
     unitFrame.healthBar:SetStatusBarTexture(UUF.Media.ForegroundTexture)
+    unitFrame.healthBar:SetStatusBarColor(FetchUnitColor(unit, DB, GeneralDB))
 
     local bgR, bgG, bgB, bgA = unpack(DB.Frame.BGColour)
     unitHealthBG:SetVertexColor(bgR, bgG, bgB, bgA)
@@ -437,9 +446,9 @@ function UUF:UpdateUnitFrame(unit)
 
     unitFrame:UnregisterAllEvents()
     if DB.Enabled then
-        unitFrame:RegisterEvent("UNIT_HEALTH")
-        unitFrame:RegisterEvent("UNIT_MAXHEALTH")
-        unitFrame:RegisterEvent("UNIT_NAME_UPDATE")
+        unitFrame:RegisterUnitEvent("UNIT_HEALTH", unit)
+        unitFrame:RegisterUnitEvent("UNIT_MAXHEALTH", unit)
+        unitFrame:RegisterUnitEvent("UNIT_NAME_UPDATE", unit)
         unitFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
         unitFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
         if unit == "pet" then unitFrame:RegisterEvent("UNIT_PET") end

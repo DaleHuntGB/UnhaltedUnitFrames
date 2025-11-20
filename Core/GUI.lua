@@ -423,7 +423,7 @@ function UUF:CreateGUI()
         Container:AddChild(ScrollFrame)
 
         local EnableCheckBox = AG:Create("CheckBox")
-        EnableCheckBox:SetLabel("Enable Unit Frame")
+        EnableCheckBox:SetLabel("Enable")
         EnableCheckBox:SetValue(DB.Enabled)
         EnableCheckBox:SetFullWidth(true)
         EnableCheckBox:SetCallback("OnValueChanged", function(_, _, value)
@@ -929,7 +929,7 @@ function UUF:CreateGUI()
             elseif ModuleGroup == "Frame" then
                 DrawFrameContainer()
             elseif ModuleGroup == "PowerBar" then
-                if Unit ~= "targettarget" and Unit ~= "pet" then
+                if Unit ~= "targettarget" and Unit ~= "pet" and Unit ~= "focus" then
                     DrawPowerBarContainer()
                 end
             elseif ModuleGroup == "Texts" then
