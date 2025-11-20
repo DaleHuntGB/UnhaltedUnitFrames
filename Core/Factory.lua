@@ -247,7 +247,7 @@ function UUF:CreateUnitFrame(unit)
     unitFrame.MouseoverHighlight:SetBackdropBorderColor(unpack(DB.Indicators.MouseoverHighlight.Colour))
     unitFrame.MouseoverHighlight:Hide()
 
-    if unit ~= "targettarget" and unit ~= "pet" and unit ~= "focus" then
+    if unit ~= "pet" and unit ~= "focus" then
         local unitFramePowerBar = CreateFrame("StatusBar", nil, unitFrame)
         unitFrame.powerBar = unitFramePowerBar
 
