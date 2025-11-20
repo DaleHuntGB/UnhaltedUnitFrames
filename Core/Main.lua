@@ -12,7 +12,7 @@ function UnhaltedUF:OnInitialize()
 end
 
 function UnhaltedUF:OnEnable()
-    UIParent:SetScale(0.5333333333333)
+    UUF:SetUIScale()
     UUF:Init()
     UUF:HideDefaultUnitFrames()
     UUF:ResolveMedia()

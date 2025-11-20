@@ -66,3 +66,38 @@ function UUF:HideDefaultUnitFrames()
     KillFrame(TargetFrameToT)
     KillFrame(PetFrame)
 end
+
+function UUF:CreatePrompt(title, text, onAccept, onCancel, acceptText, cancelText)
+    StaticPopupDialogs["UUF_PROMPT_DIALOG"] = {
+        text = text or "",
+        button1 = acceptText or ACCEPT,
+        button2 = cancelText or CANCEL,
+        OnAccept = function(self, data)
+            if data and data.onAccept then
+                data.onAccept()
+            end
+        end,
+        OnCancel = function(self, data)
+            if data and data.onCancel then
+                data.onCancel()
+            end
+        end,
+        timeout = 0,
+        whileDead = true,
+        hideOnEscape = true,
+        preferredIndex = 3,
+        showAlert = true,
+    }
+    local promptDialog = StaticPopup_Show("UUF_PROMPT_DIALOG", title, text)
+    if promptDialog then
+        promptDialog.data = { onAccept = onAccept, onCancel = onCancel }
+        promptDialog:SetFrameStrata("TOOLTIP")
+    end
+    return promptDialog
+end
+
+function UUF:SetUIScale()
+    if UUF.db.global.ApplyUIScale then
+        UIParent:SetScale(UUF.db.global.UIScale)
+    end
+end

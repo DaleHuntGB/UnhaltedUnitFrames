@@ -99,6 +99,108 @@ function UUF:CreateGUI()
         ScrollFrame:SetFullHeight(true)
         Container:AddChild(ScrollFrame)
 
+        local UIScaleContainer = AG:Create("InlineGroup")
+        UIScaleContainer:SetTitle("UI Scale")
+        UIScaleContainer:SetLayout("Flow")
+        UIScaleContainer:SetFullWidth(true)
+        ScrollFrame:AddChild(UIScaleContainer)
+
+        local UIScaleInfo = CreateInfoTag("This can force the UI Scale to be lower than |cFF08B6FFBlizzard|r intends which can cause some |cFFFFCC00unexpected effects|r.\nIf you experience issues, please |cFFFF4040disable|r the feature.")
+        UIScaleInfo:SetRelativeWidth(1)
+
+        local UIScaleSlider = AG:Create("Slider")
+        UIScaleSlider:SetLabel("UI Scale")
+        UIScaleSlider:SetValue(UUF.db.global.UIScale or 1)
+        UIScaleSlider:SetSliderValues(0.3, 1.5, 0.01)
+        UIScaleSlider:SetRelativeWidth(0.33)
+        UIScaleSlider:SetCallback("OnMouseUp", function(_, _, value)
+            if not UUF.db.global.ApplyUIScale then return end
+            if value > 0.8 then
+                UUF:CreatePrompt(
+                "UI Scale Warning",
+                "Setting the UI Scale to |cFF8080FF" .. value .. "|r\nThis may cause UI Elements to appear very large.\nAre you sure you want to continue?",
+                function() UUF.db.global.UIScale = value UIParent:SetScale(value) end,
+                function() UIParent:SetScale(UUF.db.global.UIScale) UIScaleSlider:SetValue(UUF.db.global.UIScale) UIScaleSlider:SetLabel("UI Scale") end,
+                "Set |cFF8080FF" .. value .. "|r UI Scale"
+            )
+            else
+                UUF.db.global.UIScale = value
+                UIParent:SetScale(value)
+            end
+        end)
+        UIScaleSlider:SetCallback("OnValueChanged", function(_, _, value)
+            if value > 0.8 then
+                UIScaleSlider:SetLabel("UI Scale |cFFFF4040(Warning)|r")
+            else
+                UIScaleSlider:SetLabel("UI Scale")
+            end
+        end)
+
+        local TenEightyUIScaleButton = AG:Create("Button")
+        TenEightyUIScaleButton:SetText("1080p")
+        TenEightyUIScaleButton:SetRelativeWidth(0.33)
+        TenEightyUIScaleButton:SetCallback("OnClick", function()
+            if not UUF.db.global.ApplyUIScale then return end
+            UUF.db.global.UIScale = 0.7111111111111
+            UIParent:SetScale(0.7111111111111)
+            UIScaleSlider:SetValue(0.7111111111111)
+        end)
+        TenEightyUIScaleButton:SetCallback("OnEnter", function()
+            GameTooltip:SetOwner(TenEightyUIScaleButton.frame, "ANCHOR_TOP")
+            GameTooltip:AddLine("UI Scale is set to |cFF8080FF0.7111111111111|r", 1, 1, 1)
+            GameTooltip:Show()
+        end)
+        TenEightyUIScaleButton:SetCallback("OnLeave", function() GameTooltip:Hide() end)
+
+        local FourteenFortyUIScaleButton = AG:Create("Button")
+        FourteenFortyUIScaleButton:SetText("1440p")
+        FourteenFortyUIScaleButton:SetRelativeWidth(0.33)
+        FourteenFortyUIScaleButton:SetCallback("OnClick", function()
+            if not UUF.db.global.ApplyUIScale then return end
+            UUF.db.global.UIScale = 0.5333333333333
+            UIParent:SetScale(0.5333333333333)
+            UIScaleSlider:SetValue(0.5333333333333)
+        end)
+        FourteenFortyUIScaleButton:SetCallback("OnEnter", function()
+            GameTooltip:SetOwner(FourteenFortyUIScaleButton.frame, "ANCHOR_TOP")
+            GameTooltip:AddLine("UI Scale is set to |cFF8080FF0.5333333333333|r", 1, 1, 1)
+            GameTooltip:Show()
+        end)
+        FourteenFortyUIScaleButton:SetCallback("OnLeave", function() GameTooltip:Hide() end)
+
+        local EnableUIScaleToggle = AG:Create("CheckBox")
+        EnableUIScaleToggle:SetLabel("Enable UI Scale")
+        EnableUIScaleToggle:SetValue(UUF.db.global.ApplyUIScale)
+        EnableUIScaleToggle:SetRelativeWidth(1)
+        EnableUIScaleToggle:SetCallback("OnValueChanged", function(_, _, value)
+            UUF.db.global.ApplyUIScale = value
+            if not value then
+                UUF.db.global.UIScale = 1
+                UIParent:SetScale(1)
+                UIScaleSlider:SetValue(1)
+            end
+            if not UUF.db.global.ApplyUIScale then
+                UIScaleSlider:SetDisabled(true)
+                TenEightyUIScaleButton:SetDisabled(true)
+                FourteenFortyUIScaleButton:SetDisabled(true)
+                UIScaleContainer:DoLayout()
+            else
+                UIScaleSlider:SetDisabled(false)
+                TenEightyUIScaleButton:SetDisabled(false)
+                FourteenFortyUIScaleButton:SetDisabled(false)
+                UIScaleContainer:DoLayout()
+            end
+            DeepDisable(UIScaleContainer, not value, EnableUIScaleToggle)
+        end)
+
+        UIScaleContainer:AddChild(UIScaleInfo)
+        UIScaleContainer:AddChild(EnableUIScaleToggle)
+        UIScaleContainer:AddChild(UIScaleSlider)
+        UIScaleContainer:AddChild(TenEightyUIScaleButton)
+        UIScaleContainer:AddChild(FourteenFortyUIScaleButton)
+
+        DeepDisable(UIScaleContainer, not UUF.db.global.ApplyUIScale, EnableUIScaleToggle)
+
         local TexturesContainer = AG:Create("InlineGroup")
         TexturesContainer:SetTitle("Textures")
         TexturesContainer:SetLayout("Flow")
