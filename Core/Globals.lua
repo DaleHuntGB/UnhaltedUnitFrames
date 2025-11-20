@@ -8,6 +8,10 @@ UUF.BossFrames = {}
 UUF.MaxBossFrames = 10
 UUFG = UUFG or {}
 UUF.BossTestMode = false
+if UUF.LSM then UUF.LSM:Register("border", "WHITE8X8", [[Interface\Buttons\WHITE8X8]]) end
+if UUF.LSM then UUF.LSM:Register("statusbar", "Dragonflight", [[Interface\AddOns\UnhaltedUnitFrames\Media\Textures\Dragonflight.tga]]) end
+if UUF.LSM then UUF.LSM:Register("background", "Dragonflight", [[Interface\AddOns\UnhaltedUnitFrames\Media\Textures\Dragonflight_BG.tga]]) end
+if UUF.LSM then UUF.LSM:Register("statusbar", "Skyline", [[Interface\AddOns\UnhaltedUnitFrames\Media\Textures\Skyline.tga]]) end
 
 UUF.UnitToFrameName = {
     ["player"] = "UUF_Player",
@@ -16,11 +20,6 @@ UUF.UnitToFrameName = {
     ["pet"] = "UUF_Pet",
     ["focus"] = "UUF_Focus",
 }
-
-if UUF.LSM then UUF.LSM:Register("border", "WHITE8X8", [[Interface\Buttons\WHITE8X8]]) end
-if UUF.LSM then UUF.LSM:Register("statusbar", "Dragonflight", [[Interface\AddOns\UnhaltedUnitFrames\Media\Textures\Dragonflight.tga]]) end
-if UUF.LSM then UUF.LSM:Register("background", "Dragonflight", [[Interface\AddOns\UnhaltedUnitFrames\Media\Textures\Dragonflight_BG.tga]]) end
-if UUF.LSM then UUF.LSM:Register("statusbar", "Skyline", [[Interface\AddOns\UnhaltedUnitFrames\Media\Textures\Skyline.tga]]) end
 
 UUF.UnitFrames = {
     ["UUF_Player"] = "player",
@@ -35,7 +34,6 @@ function UUF:ResolveMedia()
     local LSM = UUF.LSM
     local General = UUF.db.profile.General
     UUF.Media = UUF.Media or {}
-
     UUF.Media.Font = LSM:Fetch("font", General.Font) or STANDARD_TEXT_FONT
     UUF.Media.ForegroundTexture = LSM:Fetch("statusbar", General.ForegroundTexture) or "Interface\\RaidFrame\\Raid-Bar-Hp-Fill"
     UUF.Media.BackgroundTexture = LSM:Fetch("background", General.BackgroundTexture) or "Interface\\Buttons\\WHITE8X8"
