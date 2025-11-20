@@ -6,7 +6,7 @@
 
 
 ## About
-Unhalted Unit Frames is an AddOn that aims to replace the default Blizzard **Player**, **Target**, **Focus**, **Focus Target**, **Pet**, **Target of Target** and **Boss Frames**.
+Unhalted Unit Frames is an AddOn that aims to replace the default Blizzard **Player**, **Target**, **Focus**, **Pet**, **Target of Target** and **Boss Frames**.
 
 The entire project is solo developed.
 
