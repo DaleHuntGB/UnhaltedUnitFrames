@@ -147,16 +147,30 @@ end
 local function UpdateUnitFramePowerBar(self)
     local unit = self.unit
     if not unit then return end
-
     self:Show()
-
+    local db = UUF.db.profile[unit].PowerBar
+    local textDB = db.Text
     local unitPower = UnitPower(unit)
     local r, g, b, a = FetchPowerBarColour(unit)
-
     self:SetMinMaxValues(0, 100)
     self:SetValue(unitPower)
     self:SetStatusBarColor(r, g, b, a)
+    if self.Text then
+        if textDB.Enabled then
+            self.Text:Show()
+            if textDB.ColourByType then
+                self.Text:SetTextColor(r, g, b, a)
+            else
+                local textDBR, textDBG, textDBB, textDBA = unpack(textDB.Colour)
+                self.Text:SetTextColor(textDBR, textDBG, textDBB, textDBA or 1)
+            end
+            self.Text:SetText(AbbreviateLargeNumbers(unitPower))
+        else
+            self.Text:Hide()
+        end
+    end
 end
+
 
 function UUF:CreateUnitFrame(unit)
     local dbUnit = unit
@@ -232,6 +246,17 @@ function UUF:CreateUnitFrame(unit)
         local unitFramePowerBar = CreateFrame("StatusBar", nil, unitFrame)
         unitFrame.powerBar = unitFramePowerBar
 
+        unitFramePowerBar.Text = unitFramePowerBar:CreateFontString(nil, "OVERLAY")
+        unitFramePowerBar.Text:SetFont(UUF.Media.Font, DB.PowerBar.Text.FontSize, GeneralDB.FontFlag)
+        if DB.PowerBar.Text.AnchorParent == "FRAME" then
+            unitFramePowerBar.Text:SetPoint(DB.PowerBar.Text.AnchorFrom, unitFrame, DB.PowerBar.Text.AnchorTo, DB.PowerBar.Text.OffsetX, DB.PowerBar.Text.OffsetY)
+        else
+            unitFramePowerBar.Text:SetPoint(DB.PowerBar.Text.AnchorFrom, unitFramePowerBar, DB.PowerBar.Text.AnchorTo, DB.PowerBar.Text.OffsetX, DB.PowerBar.Text.OffsetY)
+        end
+        unitFramePowerBar.Text:SetJustifyH(UUF:SetJustification(DB.PowerBar.Text.AnchorFrom))
+        unitFramePowerBar.Text:SetTextColor(unpack(DB.PowerBar.Text.Colour))
+        unitFramePowerBar.Text:SetShadowColor(unpack(GeneralDB.FontShadows.Colour))
+        unitFramePowerBar.Text:SetShadowOffset(GeneralDB.FontShadows.OffsetX, GeneralDB.FontShadows.OffsetY)
         if DB.PowerBar.Enabled then
             local barHeight = DB.PowerBar.Height
 
@@ -363,31 +388,51 @@ function UUF:UpdateUnitFrame(unit)
     end
 
     local unitPowerBar = unitFrame.powerBar
-    if unitPowerBar then
-        if DB.PowerBar.Enabled then
-            local unitPowerBarHeight = DB.PowerBar.Height
-            unitPowerBar:SetHeight(unitPowerBarHeight)
-            unitPowerBar:SetStatusBarTexture(UUF.Media.ForegroundTexture)
-            unitPowerBar:Show()
-            unitPowerBar:ClearAllPoints()
-            unitPowerBar:SetPoint("BOTTOMLEFT", unitFrame, "BOTTOMLEFT", 1, 1)
-            unitPowerBar:SetPoint("BOTTOMRIGHT", unitFrame, "BOTTOMRIGHT", -1, 1)
-            if not unitPowerBar.bg then unitPowerBar.bg = unitPowerBar:CreateTexture(nil, "BACKGROUND") end
-            unitPowerBar.bg:SetAllPoints()
-            unitPowerBar.bg:SetTexture(UUF.Media.BackgroundTexture)
-            local r, g, b, a = unpack(DB.PowerBar.BGColour or {0.1, 0.1, 0.1, 0.7})
-            unitPowerBar.bg:SetVertexColor(r, g, b, a)
-            unitHealthBar:ClearAllPoints()
-            unitHealthBar:SetPoint("TOPLEFT", unitFrame, "TOPLEFT", 1, -1)
-            unitHealthBar:SetPoint("BOTTOMLEFT", unitPowerBar, "TOPLEFT", 0, 0)
-            unitHealthBar:SetPoint("BOTTOMRIGHT", unitPowerBar, "TOPRIGHT", 0, 0)
-        else
-            unitPowerBar:Hide()
-            unitHealthBar:ClearAllPoints()
-            unitHealthBar:SetPoint("TOPLEFT", unitFrame, "TOPLEFT", 1, -1)
-            unitHealthBar:SetPoint("BOTTOMRIGHT", unitFrame, "BOTTOMRIGHT", -1, 1)
-        end
+    local unitPowerBarText = unitPowerBar and unitPowerBar.Text
+
+
+    if not unitPowerBar then return end
+    if DB.PowerBar.Enabled then
+        unitPowerBar:SetHeight(DB.PowerBar.Height)
+        unitPowerBar:SetStatusBarTexture(UUF.Media.ForegroundTexture)
+        unitPowerBar:Show()
+
+        unitPowerBar:ClearAllPoints()
+        unitPowerBar:SetPoint("BOTTOMLEFT",  unitFrame, "BOTTOMLEFT",  1,  1)
+        unitPowerBar:SetPoint("BOTTOMRIGHT", unitFrame, "BOTTOMRIGHT", -1,  1)
+        if not unitPowerBar.bg then unitPowerBar.bg = unitPowerBar:CreateTexture(nil, "BACKGROUND") end
+        unitPowerBar.bg:SetAllPoints()
+        unitPowerBar.bg:SetTexture(UUF.Media.BackgroundTexture)
+        unitPowerBar.bg:SetVertexColor(unpack(DB.PowerBar.BGColour or {0.1, 0.1, 0.1, 0.7}))
+        unitHealthBar:ClearAllPoints()
+        unitHealthBar:SetPoint("TOPLEFT",     unitFrame,    "TOPLEFT",  1, -1)
+        unitHealthBar:SetPoint("BOTTOMLEFT",  unitPowerBar, "TOPLEFT",  0,  0)
+        unitHealthBar:SetPoint("BOTTOMRIGHT", unitPowerBar, "TOPRIGHT", 0,  0)
+    else
+        unitPowerBar:Hide()
+        unitHealthBar:ClearAllPoints()
+        unitHealthBar:SetPoint("TOPLEFT",     unitFrame, "TOPLEFT",     1, -1)
+        unitHealthBar:SetPoint("BOTTOMRIGHT", unitFrame, "BOTTOMRIGHT", -1, 1)
+        if unitPowerBarText then unitPowerBarText:Hide() end
+        return
     end
+    if unitPowerBarText then
+        local PBTextDB = DB.PowerBar.Text
+        if not PBTextDB.Enabled then unitPowerBarText:Hide() return end
+        unitPowerBarText:Show()
+        unitPowerBarText:ClearAllPoints()
+        if PBTextDB.AnchorParent == "FRAME" then
+            unitPowerBarText:SetPoint(PBTextDB.AnchorFrom, unitFrame, PBTextDB.AnchorTo, PBTextDB.OffsetX, PBTextDB.OffsetY)
+        else
+            unitPowerBarText:SetPoint(PBTextDB.AnchorFrom, unitPowerBar, PBTextDB.AnchorTo, PBTextDB.OffsetX, PBTextDB.OffsetY)
+        end
+        unitPowerBarText:SetFont(UUF.Media.Font, PBTextDB.FontSize, GeneralDB.FontFlag)
+        unitPowerBarText:SetJustifyH(UUF:SetJustification(PBTextDB.AnchorFrom))
+        unitPowerBarText:SetTextColor(unpack(PBTextDB.Colour))
+        unitPowerBarText:SetShadowColor(unpack(GeneralDB.FontShadows.Colour))
+        unitPowerBarText:SetShadowOffset(GeneralDB.FontShadows.OffsetX, GeneralDB.FontShadows.OffsetY)
+    end
+
     local unitMouseoverHighlight = unitFrame.MouseoverHighlight
     if unitMouseoverHighlight then
         unitFrame.MouseoverHighlight:SetBackdropColor(0,0,0,0)

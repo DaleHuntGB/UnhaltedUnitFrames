@@ -648,7 +648,115 @@ function UUF:CreateGUI()
                 end)
                 ColourContainer:AddChild(PowerBarBGColourPicker)
 
+                local PowerBarTextContainer = AG:Create("InlineGroup")
+                PowerBarTextContainer:SetTitle("Text")
+                PowerBarTextContainer:SetLayout("Flow")
+                PowerBarTextContainer:SetFullWidth(true)
+                UnitFrameContainer:AddChild(PowerBarTextContainer)
+
+                local PowerBarTextEnabledCheckBox = AG:Create("CheckBox")
+                PowerBarTextEnabledCheckBox:SetLabel("Enable Power Text")
+                PowerBarTextEnabledCheckBox:SetValue(PowerBarDB.Text.Enabled)
+                PowerBarTextEnabledCheckBox:SetRelativeWidth(1)
+                PowerBarTextEnabledCheckBox:SetCallback("OnValueChanged", function(_, _, value)
+                    PowerBarDB.Text.Enabled = value
+                    UUF:UpdateUnitFrame(Unit)
+                    DeepDisable(PowerBarTextContainer, not value, PowerBarTextEnabledCheckBox)
+                end)
+                PowerBarTextContainer:AddChild(PowerBarTextEnabledCheckBox)
+
+                local PowerBarTextColourByTypeCheckBox = AG:Create("CheckBox")
+                PowerBarTextColourByTypeCheckBox:SetLabel("Colour Text By Power Type")
+                PowerBarTextColourByTypeCheckBox:SetValue(PowerBarDB.Text.ColourByType)
+                PowerBarTextColourByTypeCheckBox:SetRelativeWidth(0.33)
+                PowerBarTextColourByTypeCheckBox:SetCallback("OnValueChanged", function(_, _, value)
+                    PowerBarDB.Text.ColourByType = value
+                    UUF:UpdateUnitFrame(Unit)
+                end)
+                PowerBarTextContainer:AddChild(PowerBarTextColourByTypeCheckBox)
+
+                local PowerBarTextColourColourPicker = AG:Create("ColorPicker")
+                PowerBarTextColourColourPicker:SetLabel("Text Colour")
+                PowerBarTextColourColourPicker:SetColor(unpack(PowerBarDB.Text.Colour))
+                PowerBarTextColourColourPicker:SetHasAlpha(true)
+                PowerBarTextColourColourPicker:SetRelativeWidth(0.33)
+                PowerBarTextColourColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a)
+                    PowerBarDB.Text.Colour = {r, g, b, a}
+                    UUF:UpdateUnitFrame(Unit)
+                end)
+                PowerBarTextContainer:AddChild(PowerBarTextColourColourPicker)
+
+                local PowerBarTextAnchorParentDropdown = AG:Create("Dropdown")
+                PowerBarTextAnchorParentDropdown:SetList({
+                    ["POWER"] = "Power Bar",
+                    ["FRAME"] = "Unit Frame",
+                })
+                PowerBarTextAnchorParentDropdown:SetLabel("Anchor Parent")
+                PowerBarTextAnchorParentDropdown:SetValue(PowerBarDB.Text.AnchorParent)
+                PowerBarTextAnchorParentDropdown:SetRelativeWidth(0.33)
+                PowerBarTextAnchorParentDropdown:SetCallback("OnValueChanged", function(_, _, value)
+                    PowerBarDB.Text.AnchorParent = value
+                    UUF:UpdateUnitFrame(Unit)
+                end)
+                PowerBarTextContainer:AddChild(PowerBarTextAnchorParentDropdown)
+
+                local PowerBarTextAnchorFromDropdown = AG:Create("Dropdown")
+                PowerBarTextAnchorFromDropdown:SetList(AnchorPoints)
+                PowerBarTextAnchorFromDropdown:SetLabel("Anchor From")
+                PowerBarTextAnchorFromDropdown:SetValue(PowerBarDB.Text.AnchorFrom)
+                PowerBarTextAnchorFromDropdown:SetRelativeWidth(0.5)
+                PowerBarTextAnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value)
+                    PowerBarDB.Text.AnchorFrom = value
+                    UUF:UpdateUnitFrame(Unit)
+                end)
+                PowerBarTextContainer:AddChild(PowerBarTextAnchorFromDropdown)
+
+                local PowerBarTextAnchorToDropdown = AG:Create("Dropdown")
+                PowerBarTextAnchorToDropdown:SetList(AnchorPoints)
+                PowerBarTextAnchorToDropdown:SetLabel("Anchor To")
+                PowerBarTextAnchorToDropdown:SetValue(PowerBarDB.Text.AnchorTo)
+                PowerBarTextAnchorToDropdown:SetRelativeWidth(0.5)
+                PowerBarTextAnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value)
+                    PowerBarDB.Text.AnchorTo = value
+                    UUF:UpdateUnitFrame(Unit)
+                end)
+                PowerBarTextContainer:AddChild(PowerBarTextAnchorToDropdown)
+
+                local PowerBarTextOffsetXSlider = AG:Create("Slider")
+                PowerBarTextOffsetXSlider:SetLabel("Offset X")
+                PowerBarTextOffsetXSlider:SetValue(PowerBarDB.Text.OffsetX)
+                PowerBarTextOffsetXSlider:SetSliderValues(SLIDER_MIN, SLIDER_MAX, SLIDER_STEP)
+                PowerBarTextOffsetXSlider:SetRelativeWidth(0.33)
+                PowerBarTextOffsetXSlider:SetCallback("OnValueChanged", function(_, _, value)
+                    PowerBarDB.Text.OffsetX = value
+                    UUF:UpdateUnitFrame(Unit)
+                end)
+                PowerBarTextContainer:AddChild(PowerBarTextOffsetXSlider)
+
+                local PowerBarTextOffsetYSlider = AG:Create("Slider")
+                PowerBarTextOffsetYSlider:SetLabel("Offset Y")
+                PowerBarTextOffsetYSlider:SetValue(PowerBarDB.Text.OffsetY)
+                PowerBarTextOffsetYSlider:SetSliderValues(SLIDER_MIN, SLIDER_MAX, SLIDER_STEP)
+                PowerBarTextOffsetYSlider:SetRelativeWidth(0.33)
+                PowerBarTextOffsetYSlider:SetCallback("OnValueChanged", function(_, _, value)
+                    PowerBarDB.Text.OffsetY = value
+                    UUF:UpdateUnitFrame(Unit)
+                end)
+                PowerBarTextContainer:AddChild(PowerBarTextOffsetYSlider)
+
+                local PowerBarTextFontSizeSlider = AG:Create("Slider")
+                PowerBarTextFontSizeSlider:SetLabel("Font Size")
+                PowerBarTextFontSizeSlider:SetValue(PowerBarDB.Text.FontSize)
+                PowerBarTextFontSizeSlider:SetSliderValues(6, 40, 1)
+                PowerBarTextFontSizeSlider:SetRelativeWidth(0.33)
+                PowerBarTextFontSizeSlider:SetCallback("OnValueChanged", function(_, _, value)
+                    PowerBarDB.Text.FontSize = value
+                    UUF:UpdateUnitFrame(Unit)
+                end)
+                PowerBarTextContainer:AddChild(PowerBarTextFontSizeSlider)
+
                 DeepDisable(UnitFrameContainer, not PowerBarDB.Enabled, PowerBarEnabledCheckBox)
+                DeepDisable(PowerBarTextContainer, not PowerBarDB.Text.Enabled, PowerBarTextEnabledCheckBox)
             end
 
             local function DrawTextsContainer()
