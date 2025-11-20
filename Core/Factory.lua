@@ -308,21 +308,14 @@ end
 
 function UUF:UpdateUnitFrame(unit)
     if not unit then return end
-
-    print("UUF: UpdateUnitFrame called for unit:", unit)
-
     local frameName = ResolveFrameName(unit)
     local unitFrame = _G[frameName]
     if not unitFrame then return end
-
     local dbUnit = unit:match("^boss%d+$") and "boss" or unit
     local DB = UUF.db.profile[dbUnit]
     local GeneralDB = UUF.db.profile.General
-
     ApplyFrameLayout(unitFrame, unit, DB, GeneralDB)
     ApplyFrameColours(unitFrame, unit, DB, GeneralDB)
     UpdateUnitFrameData(unitFrame, unit, DB, GeneralDB)
-    if not UUF.BossTestMode then
-        RefreshUnitEvents(unitFrame, unit, DB)
-    end
+    if not UUF.BossTestMode then RefreshUnitEvents(unitFrame, unit, DB) end
 end
