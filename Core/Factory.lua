@@ -1,13 +1,5 @@
 local _, UUF = ...
-
-local UnitToFrameName = {
-    player = "UUF_Player",
-    target = "UUF_Target",
-    targettarget = "UUF_TargetTarget",
-    pet = "UUF_Pet",
-    focus = "UUF_Focus",
-    boss = "UUF_Boss",
-}
+UnitToFrameName = UUF.UnitToFrameName
 
 local function ResolveFrameName(unit)
     if unit:match("^boss(%d+)$") then
@@ -16,7 +8,6 @@ local function ResolveFrameName(unit)
     end
     return UnitToFrameName[unit]
 end
-
 
 local function FetchUnitColor(unit, DB, GeneralDB)
     if DB.Frame.ClassColour then
@@ -170,7 +161,6 @@ local function UpdateUnitFramePowerBar(self)
         end
     end
 end
-
 
 function UUF:CreateUnitFrame(unit)
     local dbUnit = unit
