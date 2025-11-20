@@ -278,45 +278,29 @@ local LayoutConfig = {
     TOPLEFT     = { anchor="TOPLEFT",   offsetMultiplier=0   },
     TOP         = { anchor="TOP",       offsetMultiplier=0   },
     TOPRIGHT    = { anchor="TOPRIGHT",  offsetMultiplier=0   },
-
-    BOTTOMLEFT  = { anchor="BOTTOMLEFT",   offsetMultiplier=0   },
-    BOTTOM      = { anchor="BOTTOM",       offsetMultiplier=0   },
-    BOTTOMRIGHT = { anchor="BOTTOMRIGHT",  offsetMultiplier=0   },
-
-    CENTER      = { anchor="CENTER",    offsetMultiplier=0, isCenter=true },
-    LEFT        = { anchor="LEFT",      offsetMultiplier=0, isCenter=true },
-    RIGHT       = { anchor="RIGHT",     offsetMultiplier=0, isCenter=true },
+    BOTTOMLEFT  = { anchor="TOPLEFT",   offsetMultiplier=1   },
+    BOTTOM      = { anchor="TOP",       offsetMultiplier=1   },
+    BOTTOMRIGHT = { anchor="TOPRIGHT",  offsetMultiplier=1   },
+    CENTER      = { anchor="CENTER",    offsetMultiplier=0.5, isCenter=true },
+    LEFT        = { anchor="LEFT",      offsetMultiplier=0.5, isCenter=true },
+    RIGHT       = { anchor="RIGHT",     offsetMultiplier=0.5, isCenter=true },
 }
 
 function UUF:LayoutBossFrames()
-    local DB = UUF.db.profile.boss
-    if not DB or not DB.Frame or not UUF.BossFrames or #UUF.BossFrames == 0 then return end
-    local FrameDB = DB.Frame
+    local Frame = UUF.db.profile.boss.Frame
+    if #UUF.BossFrames == 0 then return end
     local bossFrames = UUF.BossFrames
-    if FrameDB.GrowthDirection == "UP" then
-        local reversedLayout = {}
-        for i = #bossFrames, 1, -1 do
-            reversedLayout[#reversedLayout+1] = bossFrames[i]
-        end
-        bossFrames = reversedLayout
+    if Frame.GrowthDirection == "UP" then
+        bossFrames = {}
+        for i = #UUF.BossFrames, 1, -1 do bossFrames[#bossFrames+1] = UUF.BossFrames[i] end
     end
-    local layoutConfig = LayoutConfig[FrameDB.AnchorFrom] or LayoutConfig.CENTER
-    local totalHeight = (#bossFrames * (FrameDB.Height or 42)) + ((#bossFrames - 1) * FrameDB.Spacing)
-    local offsetY = 0
-    if layoutConfig.isCenter then offsetY = -(totalHeight / 2) + ((FrameDB.Height or 42) / 2) end
-
-    local containerParent = UIParent
-    local startX = FrameDB.XPosition
-    local startY = FrameDB.YPosition + offsetY
-
-    local firstBossFrame = bossFrames[1]
-    firstBossFrame:ClearAllPoints()
-    firstBossFrame:SetPoint(layoutConfig.anchor, containerParent, FrameDB.AnchorTo, startX, startY)
-
-    for i = 2, #bossFrames do
-        bossFrames[i]:ClearAllPoints()
-        bossFrames[i]:SetPoint("TOP", bossFrames[i-1], "BOTTOM", 0, -FrameDB.Spacing)
-    end
+    local layoutConfig = LayoutConfig[Frame.AnchorFrom]
+    local frameHeight = bossFrames[1]:GetHeight()
+    local containerHeight = (frameHeight + Frame.Spacing) * #bossFrames - Frame.Spacing
+    local offsetY = containerHeight * layoutConfig.offsetMultiplier
+    if layoutConfig.isCenter then offsetY = offsetY - (frameHeight / 2) end
+    local initialAnchor = AnchorUtil.CreateAnchor(layoutConfig.anchor, UIParent, Frame.AnchorTo, Frame.XPosition, Frame.YPosition + offsetY)
+    AnchorUtil.VerticalLayout(bossFrames, initialAnchor, Frame.Spacing)
 end
 
 function UUF:CreateUnitFrame(unit)
