@@ -155,7 +155,12 @@ local function UpdateUnitFramePowerBar(self)
                 local textDBR, textDBG, textDBB, textDBA = unpack(textDB.Colour)
                 self.Text:SetTextColor(textDBR, textDBG, textDBB, textDBA or 1)
             end
-            self.Text:SetText(AbbreviateLargeNumbers(unitPower))
+            local powerType = UnitPowerType(unit)
+            if powerType and powerType == 0 then
+                self.Text:SetText(string.format("%.0f%%", UnitPowerPercent(unit, Enum.PowerType.Mana, false, true)))
+            else
+                self.Text:SetText(AbbreviateLargeNumbers(unitPower))
+            end
         else
             self.Text:Hide()
         end
