@@ -11,14 +11,15 @@ function UUF:ExportSavedVariables()
     local SerializedInfo = Serialize:Serialize(profileData)
     local CompressedInfo = Compress:CompressDeflate(SerializedInfo)
     local EncodedInfo = Compress:EncodeForPrint(CompressedInfo)
+    EncodedInfo = "!UUF"..EncodedInfo
     return EncodedInfo
 end
 
 function UUF:ImportSavedVariables(EncodedInfo)
-    local DecodedInfo = Compress:DecodeForPrint(EncodedInfo)
+    local DecodedInfo = Compress:DecodeForPrint(EncodedInfo:sub(5))
     local DecompressedInfo = Compress:DecompressDeflate(DecodedInfo)
     local success, data = Serialize:Deserialize(DecompressedInfo)
-    if not success or type(data) ~= "table" then
+    if not success or type(data) ~= "table" or EncodedInfo:sub(1, 4) ~= "!UUF" then
         print("|cFF8080FFUnhalted|r Unit Frames: Invalid Import String.")
         return
     end
