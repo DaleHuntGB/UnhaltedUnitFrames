@@ -9,6 +9,7 @@ function UnhaltedUF:OnInitialize()
             UUF.db.profile[k] = v
         end
     end
+    UUF.HealthSeparator = UUF.db.profile.General.HealthSeparator or "-"
 end
 
 function UnhaltedUF:OnEnable()

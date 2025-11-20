@@ -276,7 +276,7 @@ function UUF:CreateGUI()
         FontDropdown:SetList(LSM:HashTable("font"))
         FontDropdown:SetLabel("Font")
         FontDropdown:SetValue(UUF.db.profile.General.Font)
-        FontDropdown:SetRelativeWidth(0.33)
+        FontDropdown:SetRelativeWidth(0.5)
         FontDropdown:SetCallback("OnValueChanged", function(widget, _, value)
             widget:SetValue(value)
             UUF.db.profile.General.Font = value
@@ -296,7 +296,7 @@ function UUF:CreateGUI()
         })
         FontFlagsDropdown:SetLabel("Font Flags")
         FontFlagsDropdown:SetValue(UUF.db.profile.General.FontFlag)
-        FontFlagsDropdown:SetRelativeWidth(0.33)
+        FontFlagsDropdown:SetRelativeWidth(0.5)
         FontFlagsDropdown:SetCallback("OnValueChanged", function(_, _, value)
             UUF.db.profile.General.FontFlag = value
             for unit in pairs(UnitToFrameName) do
@@ -304,25 +304,6 @@ function UUF:CreateGUI()
             end
         end)
         FontsContainer:AddChild(FontFlagsDropdown)
-
-        local HealthSeparatorDropdown = AG:Create("Dropdown")
-        HealthSeparatorDropdown:SetList({
-            ["-"] = "999K - 100%",
-            ["||"] = "999K | 100%",
-            ["/"] = "999K / 100%",
-            [""] = "999K 100%",
-            ["()"] = "999K (100%)",
-        })
-        HealthSeparatorDropdown:SetLabel("Health Text Layout")
-        HealthSeparatorDropdown:SetValue(UUF.db.profile.General.HealthSeparator)
-        HealthSeparatorDropdown:SetRelativeWidth(0.33)
-        HealthSeparatorDropdown:SetCallback("OnValueChanged", function(_, _, value)
-            UUF.db.profile.General.HealthSeparator = value
-            for unit in pairs(UnitToFrameName) do
-                UUF:UpdateUnitFrame(unit)
-            end
-        end)
-        FontsContainer:AddChild(HealthSeparatorDropdown)
 
         local FontShadowsContainer = AG:Create("InlineGroup")
         FontShadowsContainer:SetTitle("Shadow")
@@ -807,6 +788,10 @@ function UUF:CreateGUI()
                 local TagTwoDB = TagsDB.TagTwo
                 local TagThreeDB = TagsDB.TagThree
 
+                local TagInfoTag = CreateInfoTag("Tags are limited to one per field.")
+                TagInfoTag:SetRelativeWidth(1)
+                UnitFrameContainer:AddChild(TagInfoTag)
+
                 local function TagOptions(parentContainer, TagDB, TagName)
                     local TagEditBox = AG:Create("EditBox")
                     TagEditBox:SetLabel("Tag")
@@ -961,12 +946,77 @@ function UUF:CreateGUI()
 
     end
 
-    local function DrawProfilesContainer(GUIContainer)
+        local function DrawTagsContainer(Container)
+            local ScrollFrame = AG:Create("ScrollFrame")
+            ScrollFrame:SetLayout("Flow")
+            ScrollFrame:SetFullWidth(true)
+            ScrollFrame:SetFullHeight(true)
+            Container:AddChild(ScrollFrame)
+
+            local HealthSeparatorDropdown = AG:Create("Dropdown")
+            HealthSeparatorDropdown:SetList({
+                ["-"] = "-",
+                ["||"] = "|",
+                ["/"] = "/",
+            })
+            HealthSeparatorDropdown:SetLabel("Health Separator")
+            HealthSeparatorDropdown:SetValue(UUF.db.profile.General.HealthSeparator)
+            HealthSeparatorDropdown:SetRelativeWidth(1)
+            HealthSeparatorDropdown:SetCallback("OnValueChanged", function(_, _, value) UUF.HealthSeparator = value UUF.db.profile.General.HealthSeparator = value for unit in pairs(UnitToFrameName) do UUF:UpdateUnitFrame(unit) end end)
+            ScrollFrame:AddChild(HealthSeparatorDropdown)
+
+            local function DrawTagContainer(TagContainer, tagGroup)
+                local TagsList = UUF:GetTagsForGroup(tagGroup)
+                for Tag, Desc in pairs(TagsList) do
+                    local TagDesc = AG:Create("Heading")
+                    TagDesc:SetText(Desc)
+                    TagDesc:SetFullWidth(true)
+                    TagContainer:AddChild(TagDesc)
+
+                    local TagValue = AG:Create("EditBox")
+                    TagValue:SetText("[" .. Tag .. "]")
+                    TagValue:SetCallback("OnTextChanged", function(widget, event, value)
+                        TagValue:ClearFocus()
+                        TagValue:SetText("[" .. Tag .. "]")
+                    end)
+                    TagValue:SetRelativeWidth(1)
+                    TagContainer:AddChild(TagValue)
+
+                end
+            end
+
+            local function SelectedGroup(TagContainer, _, subGroup)
+                TagContainer:ReleaseChildren()
+                if subGroup == "Health" then
+                    DrawTagContainer(TagContainer, "Health")
+                elseif subGroup == "Name" then
+                    DrawTagContainer(TagContainer, "Name")
+                elseif subGroup == "Power" then
+                    DrawTagContainer(TagContainer, "Power")
+                end
+                ScrollFrame:DoLayout()
+            end
+
+            local GUIContainerTabGroup = AG:Create("TabGroup")
+            GUIContainerTabGroup:SetLayout("Flow")
+            GUIContainerTabGroup:SetTabs({
+                { text = "Health", value = "Health" },
+                { text = "Name", value = "Name" },
+                { text = "Power", value = "Power" },
+            })
+            GUIContainerTabGroup:SetCallback("OnGroupSelected", SelectedGroup)
+            GUIContainerTabGroup:SelectTab("Health")
+            GUIContainerTabGroup:SetFullWidth(true)
+            ScrollFrame:AddChild(GUIContainerTabGroup)
+            ScrollFrame:DoLayout()
+        end
+
+    local function DrawProfilesContainer(Container)
         local ScrollFrame = AG:Create("ScrollFrame")
         ScrollFrame:SetLayout("Flow")
         ScrollFrame:SetFullWidth(true)
         ScrollFrame:SetFullHeight(true)
-        GUIContainer:AddChild(ScrollFrame)
+        Container:AddChild(ScrollFrame)
 
         local ProfileContainer = AG:Create("InlineGroup")
         ProfileContainer:SetTitle("Profiles")
@@ -1213,6 +1263,8 @@ function UUF:CreateGUI()
             DrawUnitFrameContainer(GUIContainer, "focus")
         elseif MainGroup == "boss" then
             DrawUnitFrameContainer(GUIContainer, "boss")
+        elseif MainGroup == "Tags" then
+            DrawTagsContainer(GUIContainer)
         elseif MainGroup == "Profiles" then
             DrawProfilesContainer(GUIContainer)
         end
@@ -1228,6 +1280,7 @@ function UUF:CreateGUI()
         { text = "Pet", value = "pet"},
         { text = "Focus", value = "focus"},
         { text = "Boss", value = "boss"},
+        { text = "Tags", value = "Tags"},
         { text = "Profiles", value = "Profiles"},
     })
     GUIContainerTabGroup:SetCallback("OnGroupSelected", SelectedGroup)
