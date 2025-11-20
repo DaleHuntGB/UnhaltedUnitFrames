@@ -7,7 +7,7 @@ on:
 
 jobs:
   package:
-    name: Build & Publish
+    name: Build and Publish
     runs-on: ubuntu-latest
 
     steps:
