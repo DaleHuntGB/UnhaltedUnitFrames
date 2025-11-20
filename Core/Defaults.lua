@@ -2,11 +2,13 @@ local _, UUF = ...
 
 UUF.Defaults = {
     global = {
-        ApplyUIScale = true,
-        UIScale = 1,
+        UseGlobalProfile = false,
+        GlobalProfile = "Default",
     },
     profile = {
         General = {
+            AllowUIScaling = true,
+            UIScale = 1,
             Font = "Friz Quadrata TT",
             FontFlag = "OUTLINE",
             FontShadows = {
