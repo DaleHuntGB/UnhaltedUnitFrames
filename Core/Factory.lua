@@ -143,8 +143,10 @@ local function ApplyFrameLayout(unitFrame, unit, DB, GeneralDB)
     local unitMouseoverHighlight = unitFrame.MouseoverHighlight
     unitMouseoverHighlight:SetBackdropBorderColor(unpack(DB.Indicators.MouseoverHighlight.Colour))
 
-    local unitTargetIndicator = unitFrame.TargetIndicator
-    unitTargetIndicator:SetBackdropBorderColor(unpack(DB.Indicators.TargetIndicator.Colour))
+    if unit == "boss" then
+        local unitTargetIndicator = unitFrame.TargetIndicator
+        unitTargetIndicator:SetBackdropBorderColor(unpack(DB.Indicators.TargetIndicator.Colour))
+    end
 
 end
 
@@ -286,13 +288,15 @@ function UUF:CreateUnitFrame(unit)
     unitFrame.MouseoverHighlight:SetBackdrop({ bgFile="Interface\\Buttons\\WHITE8x8", edgeFile="Interface\\Buttons\\WHITE8x8", edgeSize=1 })
     unitFrame.MouseoverHighlight:SetBackdropColor(0,0,0,0)
     unitFrame.MouseoverHighlight:Hide()
-    unitFrame.TargetIndicator = CreateFrame("Frame", nil, unitFrame, "BackdropTemplate")
-    unitFrame.TargetIndicator:SetFrameLevel(unitFrame:GetFrameLevel() + 1)
-    unitFrame.TargetIndicator:SetPoint("TOPLEFT", unitFrame, "TOPLEFT", -3, 3)
-    unitFrame.TargetIndicator:SetPoint("BOTTOMRIGHT", unitFrame, "BOTTOMRIGHT", 3, -3)
-    unitFrame.TargetIndicator:SetBackdrop({ edgeFile = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Glow.tga", edgeSize = 3, insets = {left = -6, right = -6, top = -6, bottom = -6} })
-    unitFrame.TargetIndicator:SetBackdropColor(0, 0, 0, 0)
-    unitFrame.TargetIndicator:Hide()
+    if unit == "boss" then
+        unitFrame.TargetIndicator = CreateFrame("Frame", nil, unitFrame, "BackdropTemplate")
+        unitFrame.TargetIndicator:SetFrameLevel(unitFrame:GetFrameLevel() + 1)
+        unitFrame.TargetIndicator:SetPoint("TOPLEFT", unitFrame, "TOPLEFT", -3, 3)
+        unitFrame.TargetIndicator:SetPoint("BOTTOMRIGHT", unitFrame, "BOTTOMRIGHT", 3, -3)
+        unitFrame.TargetIndicator:SetBackdrop({ edgeFile = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Glow.tga", edgeSize = 3, insets = {left = -6, right = -6, top = -6, bottom = -6} })
+        unitFrame.TargetIndicator:SetBackdropColor(0, 0, 0, 0)
+        unitFrame.TargetIndicator:Hide()
+    end
     unitFrame:SetScript("OnEnter", function(self) local DB = UUF.db.profile[self.dbUnit] if DB.Indicators.MouseoverHighlight.Enabled then self.MouseoverHighlight:Show() end UnitFrame_OnEnter(self) end)
     unitFrame:SetScript("OnLeave", function(self) local DB = UUF.db.profile[self.dbUnit] if DB.Indicators.MouseoverHighlight.Enabled then self.MouseoverHighlight:Hide() end UnitFrame_OnLeave(self) end)
     if unit ~= "pet" and unit ~= "focus" then
@@ -355,9 +359,11 @@ function UUF:RegisterTargetIndicatorFrame(frameName, unit)
     local unitFrame = type(frameName) == "table" and frameName or _G[frameName]
     local DB = UUF.db.profile[normalizedUnit]
     table.insert(UUF.TargetHighlightEvtFrames, { frame = unitFrame, unit = unit })
-    if DB and DB.TargetIndicator and DB.TargetIndicator.Enabled then
+    if DB and DB.TargetIndicator and DB.TargetIndicator.Enabled and unit == "boss" then
         UUF:UpdateTargetHighlight(unitFrame, unit)
     else
-        unitFrame.TargetIndicator:Hide()
+        if unit == "boss" and unitFrame.TargetIndicator then
+            unitFrame.TargetIndicator:Hide()
+        end
     end
 end
