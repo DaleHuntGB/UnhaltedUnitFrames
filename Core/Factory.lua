@@ -190,6 +190,7 @@ local function UpdateUnitFrameData(unitFrame, unit, DB, GeneralDB)
 end
 
 local function RefreshUnitEvents(unitFrame, unit, DB)
+    if UUF.BossTestMode then return end
     unitFrame:UnregisterAllEvents()
 
     if not DB.Enabled then
@@ -217,10 +218,10 @@ local function RefreshUnitEvents(unitFrame, unit, DB)
         local powerBar = unitFrame.powerBar
         powerBar:UnregisterAllEvents()
         if DB.PowerBar.Enabled then
-            powerBar:RegisterEvent("UNIT_POWER_UPDATE")
-            powerBar:RegisterEvent("UNIT_MAXPOWER")
+            powerBar:RegisterUnitEvent("UNIT_POWER_UPDATE", unit)
+            powerBar:RegisterUnitEvent("UNIT_MAXPOWER", unit)
             powerBar:RegisterEvent("PLAYER_TARGET_CHANGED")
-            powerBar:SetScript("OnEvent", function(bar) if UUF.BossTestMode then UUF:UpdateUnitFrame(bar.unit) else if UnitExists(bar.unit) then UUF:UpdateUnitFrame(bar.unit) end end end)
+            powerBar:SetScript("OnEvent", function(self) if UUF.BossTestMode then UUF:UpdateUnitFrame(self.unit) else if UnitExists(self.unit) then UUF:UpdateUnitFrame(self.unit) end end end)
         else
             powerBar:SetScript("OnEvent", nil)
         end
@@ -288,6 +289,7 @@ function UUF:CreateUnitFrame(unit)
         unitFrame.powerBar = CreateFrame("StatusBar", nil, unitFrame)
         unitFrame.powerBar:SetStatusBarTexture(UUF.Media.ForegroundTexture)
         unitFrame.powerBar.Text = unitFrame.powerBar:CreateFontString(nil, "OVERLAY")
+        unitFrame.powerBar.unit = unit
     end
 
     unitFrame:RegisterForClicks("AnyUp")
@@ -311,8 +313,30 @@ function UUF:UpdateUnitFrame(unit)
     local dbUnit = unit:match("^boss%d+$") and "boss" or unit
     local DB = UUF.db.profile[dbUnit]
     local GeneralDB = UUF.db.profile.General
+    ApplyFrameColours(unitFrame, unit, DB, GeneralDB)
+    UpdateUnitFrameData(unitFrame, unit, DB, GeneralDB)
+end
+
+function UUF:RefreshUnitFrame(unit)
+    if not unit then return end
+    local frameName = ResolveFrameName(unit)
+    local unitFrame = _G[frameName]
+    if not unitFrame then return end
+    local dbUnit = unit:match("^boss%d+$") and "boss" or unit
+    local DB = UUF.db.profile[dbUnit]
+    RefreshUnitEvents(unitFrame, unit, DB)
+end
+
+function UUF:FullFrameUpdate(unit)
+    if not unit then return end
+    local frameName = ResolveFrameName(unit)
+    local unitFrame = _G[frameName]
+    if not unitFrame then return end
+    local dbUnit = unit:match("^boss%d+$") and "boss" or unit
+    local DB = UUF.db.profile[dbUnit]
+    local GeneralDB = UUF.db.profile.General
     ApplyFrameLayout(unitFrame, unit, DB, GeneralDB)
     ApplyFrameColours(unitFrame, unit, DB, GeneralDB)
     UpdateUnitFrameData(unitFrame, unit, DB, GeneralDB)
-    if not UUF.BossTestMode then RefreshUnitEvents(unitFrame, unit, DB) end
+    RefreshUnitEvents(unitFrame, unit, DB)
 end

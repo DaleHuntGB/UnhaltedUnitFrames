@@ -217,7 +217,7 @@ function UUF:CreateGUI()
             UUF.db.profile.General.ForegroundTexture = value
             UUF:ResolveMedia()
             for unit in pairs(UnitToFrameName) do
-                UUF:UpdateUnitFrame(unit)
+                UUF:FullFrameUpdate(unit)
             end
         end)
         TexturesContainer:AddChild(ForegroundTextureDropdown)
@@ -232,7 +232,7 @@ function UUF:CreateGUI()
             UUF.db.profile.General.BackgroundTexture = value
             UUF:ResolveMedia()
             for unit in pairs(UnitToFrameName) do
-                UUF:UpdateUnitFrame(unit)
+                UUF:FullFrameUpdate(unit)
             end
         end)
         TexturesContainer:AddChild(BackgroundTextureDropdown)
@@ -249,7 +249,7 @@ function UUF:CreateGUI()
         FGColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a)
             for unit in pairs(UnitToFrameName) do
                 UUF.db.profile[unit].Frame.FGColour = {r, g, b, a}
-                UUF:UpdateUnitFrame(unit)
+                UUF:FullFrameUpdate(unit)
             end
         end)
         TexturesContainer:AddChild(FGColourPicker)
@@ -262,7 +262,7 @@ function UUF:CreateGUI()
         BGColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a)
             for unit in pairs(UnitToFrameName) do
                 UUF.db.profile[unit].Frame.BGColour = {r, g, b, a}
-                UUF:UpdateUnitFrame(unit)
+                UUF:FullFrameUpdate(unit)
             end
         end)
         TexturesContainer:AddChild(BGColourPicker)
@@ -283,7 +283,7 @@ function UUF:CreateGUI()
             UUF.db.profile.General.Font = value
             UUF:ResolveMedia()
             for unit in pairs(UnitToFrameName) do
-                UUF:UpdateUnitFrame(unit)
+                UUF:FullFrameUpdate(unit)
             end
         end)
         FontsContainer:AddChild(FontDropdown)
@@ -301,7 +301,7 @@ function UUF:CreateGUI()
         FontFlagsDropdown:SetCallback("OnValueChanged", function(_, _, value)
             UUF.db.profile.General.FontFlag = value
             for unit in pairs(UnitToFrameName) do
-                UUF:UpdateUnitFrame(unit)
+                UUF:FullFrameUpdate(unit)
             end
         end)
         FontsContainer:AddChild(FontFlagsDropdown)
@@ -319,7 +319,7 @@ function UUF:CreateGUI()
         FontShadowXOffsetSlider:SetCallback("OnValueChanged", function(_, _, value)
             UUF.db.profile.General.FontShadows.OffsetX = value
             for unit in pairs(UnitToFrameName) do
-                UUF:UpdateUnitFrame(unit)
+                UUF:FullFrameUpdate(unit)
             end
         end)
         FontShadowsContainer:AddChild(FontShadowXOffsetSlider)
@@ -331,7 +331,7 @@ function UUF:CreateGUI()
         FontShadowYOffsetSlider:SetCallback("OnValueChanged", function(_, _, value)
             UUF.db.profile.General.FontShadows.OffsetY = value
             for unit in pairs(UnitToFrameName) do
-                UUF:UpdateUnitFrame(unit)
+                UUF:FullFrameUpdate(Unit)
             end
         end)
         FontShadowsContainer:AddChild(FontShadowYOffsetSlider)
@@ -343,7 +343,7 @@ function UUF:CreateGUI()
         FontShadowColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a)
             UUF.db.profile.General.FontShadows.Colour = {r, g, b, a}
             for unit in pairs(UnitToFrameName) do
-                UUF:UpdateUnitFrame(unit)
+                UUF:FullFrameUpdate(unit)
             end
         end)
         FontShadowsContainer:AddChild(FontShadowColourPicker)
@@ -367,7 +367,7 @@ function UUF:CreateGUI()
             PowerColour:SetLabel(PowerNames[powerType])
             local R, G, B = unpack(powerColour)
             PowerColour:SetColor(R, G, B)
-            PowerColour:SetCallback("OnValueChanged", function(widget, _, r, g, b) General.CustomColours.Power[powerType] = {r, g, b} for unit in pairs(UnitToFrameName) do UUF:UpdateUnitFrame(unit) end end)
+            PowerColour:SetCallback("OnValueChanged", function(widget, _, r, g, b) General.CustomColours.Power[powerType] = {r, g, b} for unit in pairs(UnitToFrameName) do UUF:FullFrameUpdate(unit) end end)
             PowerColour:SetHasAlpha(false)
             PowerColour:SetRelativeWidth(0.25)
             PowerColours:AddChild(PowerColour)
@@ -384,7 +384,7 @@ function UUF:CreateGUI()
             ReactionColour:SetLabel(ReactionNames[reactionType])
             local R, G, B = unpack(reactionColour)
             ReactionColour:SetColor(R, G, B)
-            ReactionColour:SetCallback("OnValueChanged", function(widget, _, r, g, b) General.CustomColours.Reaction[reactionType] = {r, g, b} for unit in pairs(UnitToFrameName) do UUF:UpdateUnitFrame(unit) end end)
+            ReactionColour:SetCallback("OnValueChanged", function(widget, _, r, g, b) General.CustomColours.Reaction[reactionType] = {r, g, b} for unit in pairs(UnitToFrameName) do UUF:FullFrameUpdate(unit) end end)
             ReactionColour:SetHasAlpha(false)
             ReactionColour:SetRelativeWidth(0.25)
             ReactionColours:AddChild(ReactionColour)
@@ -464,7 +464,7 @@ function UUF:CreateGUI()
         EnableCheckBox:SetFullWidth(true)
         EnableCheckBox:SetCallback("OnValueChanged", function(_, _, value)
             DB.Enabled = value
-            UUF:UpdateUnitFrame(Unit)
+            UUF:FullFrameUpdate(Unit)
         end)
         ScrollFrame:AddChild(EnableCheckBox)
 
@@ -489,7 +489,7 @@ function UUF:CreateGUI()
                 UseClassColourCheckBox:SetRelativeWidth(0.5)
                 UseClassColourCheckBox:SetCallback("OnValueChanged", function(_, _, value)
                     DB.Frame.ClassColour = value
-                    UUF:UpdateUnitFrame(Unit)
+                    UUF:FullFrameUpdate(Unit)
                 end)
                 UnitFrameContainer:AddChild(UseClassColourCheckBox)
 
@@ -500,7 +500,7 @@ function UUF:CreateGUI()
                 FGColourPicker:SetRelativeWidth(0.5)
                 FGColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a)
                     DB.Frame.FGColour = {r, g, b, a}
-                    UUF:UpdateUnitFrame(Unit)
+                    UUF:FullFrameUpdate(Unit)
                 end)
                 UnitFrameContainer:AddChild(FGColourPicker)
 
@@ -510,7 +510,7 @@ function UUF:CreateGUI()
                 UseReactionColourCheckBox:SetRelativeWidth(0.5)
                 UseReactionColourCheckBox:SetCallback("OnValueChanged", function(_, _, value)
                     DB.Frame.ReactionColour = value
-                    UUF:UpdateUnitFrame(Unit)
+                    UUF:FullFrameUpdate(Unit)
                 end)
                 UnitFrameContainer:AddChild(UseReactionColourCheckBox)
 
@@ -521,7 +521,7 @@ function UUF:CreateGUI()
                 BGColourPicker:SetRelativeWidth(0.5)
                 BGColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a)
                     DB.Frame.BGColour = {r, g, b, a}
-                    UUF:UpdateUnitFrame(Unit)
+                    UUF:FullFrameUpdate(Unit)
                 end)
                 UnitFrameContainer:AddChild(BGColourPicker)
             end
@@ -536,11 +536,11 @@ function UUF:CreateGUI()
                     DB.Frame.Width = value
                     if isBoss then
                         for i=1, 10 do
-                            UUF:UpdateUnitFrame(Unit .. i)
+                            UUF:FullFrameUpdate("boss" .. i)
                         end
                         UUF:LayoutBossFrames()
                     else
-                        UUF:UpdateUnitFrame(Unit)
+                        UUF:FullFrameUpdate(Unit)
                     end
                 end)
                 UnitFrameContainer:AddChild(WidthSlider)
@@ -554,11 +554,11 @@ function UUF:CreateGUI()
                     DB.Frame.Height = value
                     if isBoss then
                         for i=1, 10 do
-                            UUF:UpdateUnitFrame(Unit .. i)
+                            UUF:FullFrameUpdate("boss" .. i)
                         end
                         UUF:LayoutBossFrames()
                     else
-                        UUF:UpdateUnitFrame(Unit)
+                        UUF:FullFrameUpdate(Unit)
                     end
                 end)
                 UnitFrameContainer:AddChild(HeightSlider)
@@ -586,7 +586,7 @@ function UUF:CreateGUI()
                     if isBoss then
                         UUF:LayoutBossFrames()
                     else
-                        UUF:UpdateUnitFrame(Unit)
+                        UUF:FullFrameUpdate(Unit)
                     end
                 end)
                 UnitFrameContainer:AddChild(AnchorFromDropdown)
@@ -601,7 +601,7 @@ function UUF:CreateGUI()
                     if isBoss then
                         UUF:LayoutBossFrames()
                     else
-                        UUF:UpdateUnitFrame(Unit)
+                        UUF:FullFrameUpdate(Unit)
                     end
                 end)
                 UnitFrameContainer:AddChild(AnchorToDropdown)
@@ -632,7 +632,7 @@ function UUF:CreateGUI()
                     if isBoss then
                         UUF:LayoutBossFrames()
                     else
-                        UUF:UpdateUnitFrame(Unit)
+                        UUF:FullFrameUpdate(Unit)
                     end
                 end)
                 UnitFrameContainer:AddChild(XPositionSlider)
@@ -647,7 +647,7 @@ function UUF:CreateGUI()
                     if isBoss then
                         UUF:LayoutBossFrames()
                     else
-                        UUF:UpdateUnitFrame(Unit)
+                        UUF:FullFrameUpdate(Unit)
                     end
                 end)
                 UnitFrameContainer:AddChild(YPositionSlider)
@@ -662,7 +662,14 @@ function UUF:CreateGUI()
                 PowerBarEnabledCheckBox:SetRelativeWidth(0.5)
                 PowerBarEnabledCheckBox:SetCallback("OnValueChanged", function(_, _, value)
                     PowerBarDB.Enabled = value
-                    UUF:UpdateUnitFrame(Unit)
+                    if isBoss then
+                        for i=1, 10 do
+                            UUF:FullFrameUpdate("boss" .. i)
+                        end
+                        UUF:LayoutBossFrames()
+                    else
+                        UUF:FullFrameUpdate(Unit)
+                    end
                     DeepDisable(UnitFrameContainer, not value, PowerBarEnabledCheckBox)
                 end)
                 UnitFrameContainer:AddChild(PowerBarEnabledCheckBox)
@@ -674,7 +681,14 @@ function UUF:CreateGUI()
                 PowerBarHeightSlider:SetRelativeWidth(0.5)
                 PowerBarHeightSlider:SetCallback("OnValueChanged", function(_, _, value)
                     PowerBarDB.Height = value
-                    UUF:UpdateUnitFrame(Unit)
+                    if isBoss then
+                        for i=1, 10 do
+                            UUF:FullFrameUpdate("boss" .. i)
+                        end
+                        UUF:LayoutBossFrames()
+                    else
+                        UUF:FullFrameUpdate(Unit)
+                    end
                 end)
                 UnitFrameContainer:AddChild(PowerBarHeightSlider)
 
@@ -690,7 +704,14 @@ function UUF:CreateGUI()
                 ColourByTypeCheckBox:SetRelativeWidth(0.5)
                 ColourByTypeCheckBox:SetCallback("OnValueChanged", function(_, _, value)
                     PowerBarDB.ColourByType = value
-                    UUF:UpdateUnitFrame(Unit)
+                    if isBoss then
+                        for i=1, 10 do
+                            UUF:FullFrameUpdate("boss" .. i)
+                        end
+                        UUF:LayoutBossFrames()
+                    else
+                        UUF:FullFrameUpdate(Unit)
+                    end
                 end)
                 ColourContainer:AddChild(ColourByTypeCheckBox)
 
@@ -701,7 +722,14 @@ function UUF:CreateGUI()
                 PowerBarFGColourPicker:SetRelativeWidth(0.5)
                 PowerBarFGColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a)
                     PowerBarDB.FGColour = {r, g, b, a}
-                    UUF:UpdateUnitFrame(Unit)
+                    if isBoss then
+                        for i=1, 10 do
+                            UUF:FullFrameUpdate("boss" .. i)
+                        end
+                        UUF:LayoutBossFrames()
+                    else
+                        UUF:FullFrameUpdate(Unit)
+                    end
                 end)
                 ColourContainer:AddChild(PowerBarFGColourPicker)
 
@@ -711,7 +739,14 @@ function UUF:CreateGUI()
                 ColourByBackgroundTypeCheckBox:SetRelativeWidth(0.5)
                 ColourByBackgroundTypeCheckBox:SetCallback("OnValueChanged", function(_, _, value)
                     PowerBarDB.ColourBackgroundByType = value
-                    UUF:UpdateUnitFrame(Unit)
+                    if isBoss then
+                        for i=1, 10 do
+                            UUF:FullFrameUpdate("boss" .. i)
+                        end
+                        UUF:LayoutBossFrames()
+                    else
+                        UUF:FullFrameUpdate(Unit)
+                    end
                 end)
                 ColourContainer:AddChild(ColourByBackgroundTypeCheckBox)
 
@@ -722,7 +757,14 @@ function UUF:CreateGUI()
                 PowerBarBGColourPicker:SetRelativeWidth(0.5)
                 PowerBarBGColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a)
                     PowerBarDB.BGColour = {r, g, b, a}
-                    UUF:UpdateUnitFrame(Unit)
+                    if isBoss then
+                        for i=1, 10 do
+                            UUF:FullFrameUpdate("boss" .. i)
+                        end
+                        UUF:LayoutBossFrames()
+                    else
+                        UUF:FullFrameUpdate(Unit)
+                    end
                 end)
                 ColourContainer:AddChild(PowerBarBGColourPicker)
 
@@ -738,7 +780,14 @@ function UUF:CreateGUI()
                 PowerBarTextEnabledCheckBox:SetRelativeWidth(1)
                 PowerBarTextEnabledCheckBox:SetCallback("OnValueChanged", function(_, _, value)
                     PowerBarDB.Text.Enabled = value
-                    UUF:UpdateUnitFrame(Unit)
+                    if isBoss then
+                        for i=1, 10 do
+                            UUF:FullFrameUpdate("boss" .. i)
+                        end
+                        UUF:LayoutBossFrames()
+                    else
+                        UUF:FullFrameUpdate(Unit)
+                    end
                     DeepDisable(PowerBarTextContainer, not value, PowerBarTextEnabledCheckBox)
                 end)
                 PowerBarTextContainer:AddChild(PowerBarTextEnabledCheckBox)
@@ -749,7 +798,14 @@ function UUF:CreateGUI()
                 PowerBarTextColourByTypeCheckBox:SetRelativeWidth(0.33)
                 PowerBarTextColourByTypeCheckBox:SetCallback("OnValueChanged", function(_, _, value)
                     PowerBarDB.Text.ColourByType = value
-                    UUF:UpdateUnitFrame(Unit)
+                    if isBoss then
+                        for i=1, 10 do
+                            UUF:FullFrameUpdate("boss" .. i)
+                        end
+                        UUF:LayoutBossFrames()
+                    else
+                        UUF:FullFrameUpdate(Unit)
+                    end
                 end)
                 PowerBarTextContainer:AddChild(PowerBarTextColourByTypeCheckBox)
 
@@ -760,7 +816,14 @@ function UUF:CreateGUI()
                 PowerBarTextColourColourPicker:SetRelativeWidth(0.33)
                 PowerBarTextColourColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a)
                     PowerBarDB.Text.Colour = {r, g, b, a}
-                    UUF:UpdateUnitFrame(Unit)
+                    if isBoss then
+                        for i=1, 10 do
+                            UUF:FullFrameUpdate("boss" .. i)
+                        end
+                        UUF:LayoutBossFrames()
+                    else
+                        UUF:FullFrameUpdate(Unit)
+                    end
                 end)
                 PowerBarTextContainer:AddChild(PowerBarTextColourColourPicker)
 
@@ -774,7 +837,14 @@ function UUF:CreateGUI()
                 PowerBarTextAnchorParentDropdown:SetRelativeWidth(0.33)
                 PowerBarTextAnchorParentDropdown:SetCallback("OnValueChanged", function(_, _, value)
                     PowerBarDB.Text.AnchorParent = value
-                    UUF:UpdateUnitFrame(Unit)
+                    if isBoss then
+                        for i=1, 10 do
+                            UUF:FullFrameUpdate("boss" .. i)
+                        end
+                        UUF:LayoutBossFrames()
+                    else
+                        UUF:FullFrameUpdate(Unit)
+                    end
                 end)
                 PowerBarTextContainer:AddChild(PowerBarTextAnchorParentDropdown)
 
@@ -785,7 +855,14 @@ function UUF:CreateGUI()
                 PowerBarTextAnchorFromDropdown:SetRelativeWidth(0.5)
                 PowerBarTextAnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value)
                     PowerBarDB.Text.AnchorFrom = value
-                    UUF:UpdateUnitFrame(Unit)
+                    if isBoss then
+                        for i=1, 10 do
+                            UUF:FullFrameUpdate("boss" .. i)
+                        end
+                        UUF:LayoutBossFrames()
+                    else
+                        UUF:FullFrameUpdate(Unit)
+                    end
                 end)
                 PowerBarTextContainer:AddChild(PowerBarTextAnchorFromDropdown)
 
@@ -796,7 +873,14 @@ function UUF:CreateGUI()
                 PowerBarTextAnchorToDropdown:SetRelativeWidth(0.5)
                 PowerBarTextAnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value)
                     PowerBarDB.Text.AnchorTo = value
-                    UUF:UpdateUnitFrame(Unit)
+                    if isBoss then
+                        for i=1, 10 do
+                            UUF:FullFrameUpdate("boss" .. i)
+                        end
+                        UUF:LayoutBossFrames()
+                    else
+                        UUF:FullFrameUpdate(Unit)
+                    end
                 end)
                 PowerBarTextContainer:AddChild(PowerBarTextAnchorToDropdown)
 
@@ -807,7 +891,14 @@ function UUF:CreateGUI()
                 PowerBarTextOffsetXSlider:SetRelativeWidth(0.33)
                 PowerBarTextOffsetXSlider:SetCallback("OnValueChanged", function(_, _, value)
                     PowerBarDB.Text.OffsetX = value
-                    UUF:UpdateUnitFrame(Unit)
+                    if isBoss then
+                        for i=1, 10 do
+                            UUF:FullFrameUpdate("boss" .. i)
+                        end
+                        UUF:LayoutBossFrames()
+                    else
+                        UUF:FullFrameUpdate(Unit)
+                    end
                 end)
                 PowerBarTextContainer:AddChild(PowerBarTextOffsetXSlider)
 
@@ -818,7 +909,14 @@ function UUF:CreateGUI()
                 PowerBarTextOffsetYSlider:SetRelativeWidth(0.33)
                 PowerBarTextOffsetYSlider:SetCallback("OnValueChanged", function(_, _, value)
                     PowerBarDB.Text.OffsetY = value
-                    UUF:UpdateUnitFrame(Unit)
+                    if isBoss then
+                        for i=1, 10 do
+                            UUF:FullFrameUpdate("boss" .. i)
+                        end
+                        UUF:LayoutBossFrames()
+                    else
+                        UUF:FullFrameUpdate(Unit)
+                    end
                 end)
                 PowerBarTextContainer:AddChild(PowerBarTextOffsetYSlider)
 
@@ -829,7 +927,14 @@ function UUF:CreateGUI()
                 PowerBarTextFontSizeSlider:SetRelativeWidth(0.33)
                 PowerBarTextFontSizeSlider:SetCallback("OnValueChanged", function(_, _, value)
                     PowerBarDB.Text.FontSize = value
-                    UUF:UpdateUnitFrame(Unit)
+                    if isBoss then
+                        for i=1, 10 do
+                            UUF:FullFrameUpdate("boss" .. i)
+                        end
+                        UUF:LayoutBossFrames()
+                    else
+                        UUF:FullFrameUpdate(Unit)
+                    end
                 end)
                 PowerBarTextContainer:AddChild(PowerBarTextFontSizeSlider)
 
@@ -852,7 +957,7 @@ function UUF:CreateGUI()
                     TagEditBox:SetLabel("Tag")
                     TagEditBox:SetText(TagDB.Tag)
                     TagEditBox:SetRelativeWidth(0.5)
-                    TagEditBox:SetCallback("OnEnterPressed", function(_, _, value) TagDB.Tag = value UUF:UpdateUnitFrame(Unit) end)
+                    TagEditBox:SetCallback("OnEnterPressed", function(_, _, value) TagDB.Tag = value UUF:FullFrameUpdate(Unit) end)
                     parentContainer:AddChild(TagEditBox)
 
                     local ColourPicker = AG:Create("ColorPicker")
@@ -860,7 +965,7 @@ function UUF:CreateGUI()
                     ColourPicker:SetColor(unpack(TagDB.Colour))
                     ColourPicker:SetHasAlpha(true)
                     ColourPicker:SetRelativeWidth(0.5)
-                    ColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) TagDB.Colour = {r, g, b, a} UUF:UpdateUnitFrame(Unit) end)
+                    ColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) TagDB.Colour = {r, g, b, a} UUF:FullFrameUpdate(Unit) end)
                     parentContainer:AddChild(ColourPicker)
 
                     local AnchorFromDropdown = AG:Create("Dropdown")
@@ -868,7 +973,7 @@ function UUF:CreateGUI()
                     AnchorFromDropdown:SetLabel("Anchor From")
                     AnchorFromDropdown:SetValue(TagDB.AnchorFrom)
                     AnchorFromDropdown:SetRelativeWidth(0.5)
-                    AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) TagDB.AnchorFrom = value UUF:UpdateUnitFrame(Unit) end)
+                    AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) TagDB.AnchorFrom = value UUF:FullFrameUpdate(Unit) end)
                     parentContainer:AddChild(AnchorFromDropdown)
 
                     local AnchorToDropdown = AG:Create("Dropdown")
@@ -876,7 +981,7 @@ function UUF:CreateGUI()
                     AnchorToDropdown:SetLabel("Anchor To")
                     AnchorToDropdown:SetValue(TagDB.AnchorTo)
                     AnchorToDropdown:SetRelativeWidth(0.5)
-                    AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) TagDB.AnchorTo = value UUF:UpdateUnitFrame(Unit) end)
+                    AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) TagDB.AnchorTo = value UUF:FullFrameUpdate(Unit) end)
                     parentContainer:AddChild(AnchorToDropdown)
 
                     local OffsetXSlider = AG:Create("Slider")
@@ -884,7 +989,7 @@ function UUF:CreateGUI()
                     OffsetXSlider:SetValue(TagDB.OffsetX)
                     OffsetXSlider:SetSliderValues(SLIDER_MIN, SLIDER_MAX, SLIDER_STEP)
                     OffsetXSlider:SetRelativeWidth(0.33)
-                    OffsetXSlider:SetCallback("OnValueChanged", function(_, _, value) TagDB.OffsetX = value UUF:UpdateUnitFrame(Unit) end)
+                    OffsetXSlider:SetCallback("OnValueChanged", function(_, _, value) TagDB.OffsetX = value UUF:FullFrameUpdate(Unit) end)
                     parentContainer:AddChild(OffsetXSlider)
 
                     local OffsetYSlider = AG:Create("Slider")
@@ -892,7 +997,7 @@ function UUF:CreateGUI()
                     OffsetYSlider:SetValue(TagDB.OffsetY)
                     OffsetYSlider:SetSliderValues(SLIDER_MIN, SLIDER_MAX, SLIDER_STEP)
                     OffsetYSlider:SetRelativeWidth(0.33)
-                    OffsetYSlider:SetCallback("OnValueChanged", function(_, _, value) TagDB.OffsetY = value UUF:UpdateUnitFrame(Unit) end)
+                    OffsetYSlider:SetCallback("OnValueChanged", function(_, _, value) TagDB.OffsetY = value UUF:FullFrameUpdate(Unit) end)
                     parentContainer:AddChild(OffsetYSlider)
 
                     local FontSizeSlider = AG:Create("Slider")
@@ -900,7 +1005,7 @@ function UUF:CreateGUI()
                     FontSizeSlider:SetValue(TagDB.FontSize)
                     FontSizeSlider:SetSliderValues(6, 72, 1)
                     FontSizeSlider:SetRelativeWidth(0.33)
-                    FontSizeSlider:SetCallback("OnValueChanged", function(_, _, value) TagDB.FontSize = value UUF:UpdateUnitFrame(Unit) end)
+                    FontSizeSlider:SetCallback("OnValueChanged", function(_, _, value) TagDB.FontSize = value UUF:FullFrameUpdate(Unit) end)
                     parentContainer:AddChild(FontSizeSlider)
                 end
 
@@ -943,7 +1048,7 @@ function UUF:CreateGUI()
                 MouseoverHighlightEnabledCheckBox:SetRelativeWidth(0.5)
                 MouseoverHighlightEnabledCheckBox:SetCallback("OnValueChanged", function(_, _, value)
                     IndicatorsDB.MouseoverHighlight.Enabled = value
-                    UUF:UpdateUnitFrame(Unit)
+                    UUF:FullFrameUpdate(Unit)
                     DeepDisable(MouseoverHighlightContainer, not value, MouseoverHighlightEnabledCheckBox)
                 end)
                 MouseoverHighlightContainer:AddChild(MouseoverHighlightEnabledCheckBox)
@@ -955,7 +1060,7 @@ function UUF:CreateGUI()
                 MouseoverHighlightColourPicker:SetRelativeWidth(0.5)
                 MouseoverHighlightColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a)
                     IndicatorsDB.MouseoverHighlight.Colour = {r, g, b, a}
-                    UUF:UpdateUnitFrame(Unit)
+                    UUF:FullFrameUpdate(Unit)
                 end)
                 MouseoverHighlightContainer:AddChild(MouseoverHighlightColourPicker)
             end
@@ -1018,7 +1123,7 @@ function UUF:CreateGUI()
         HealthSeparatorDropdown:SetLabel("Health Separator")
         HealthSeparatorDropdown:SetValue(UUF.db.profile.General.HealthSeparator)
         HealthSeparatorDropdown:SetRelativeWidth(1)
-        HealthSeparatorDropdown:SetCallback("OnValueChanged", function(_, _, value) UUF.HealthSeparator = value UUF.db.profile.General.HealthSeparator = value for unit in pairs(UnitToFrameName) do UUF:UpdateUnitFrame(unit) end end)
+        HealthSeparatorDropdown:SetCallback("OnValueChanged", function(_, _, value) UUF.HealthSeparator = value UUF.db.profile.General.HealthSeparator = value for unit in pairs(UnitToFrameName) do UUF:FullFrameUpdate(unit) end end)
         ScrollFrame:AddChild(HealthSeparatorDropdown)
 
         local function DrawTagContainer(TagContainer, tagGroup)
@@ -1111,7 +1216,7 @@ function UUF:CreateGUI()
             UUF.db:SetProfile(value)
             UIParent:SetScale(UUF.db.profile.General.UIScale or 1)
             for unit in pairs(UnitToFrameName) do
-                UUF:UpdateUnitFrame(unit)
+                UUF:FullFrameUpdate(unit)
             end
             RefreshProfiles()
         end)
@@ -1125,7 +1230,7 @@ function UUF:CreateGUI()
                 UUF.db:CopyProfile(value)
                 UIParent:SetScale(UUF.db.profile.General.UIScale or 1)
                 for unit in pairs(UnitToFrameName) do
-                    UUF:UpdateUnitFrame(unit)
+                    UUF:FullFrameUpdate(unit)
                 end
                 RefreshProfiles()
             end)
@@ -1152,7 +1257,7 @@ function UUF:CreateGUI()
             UUF.db:ResetProfile()
             UUF:ResolveMedia()
             for unit in pairs(UnitToFrameName) do
-                UUF:UpdateUnitFrame(unit)
+                UUF:FullFrameUpdate(unit)
             end
             UIParent:SetScale(UUF.db.profile.General.UIScale or 1)
             RefreshProfiles()
@@ -1176,7 +1281,7 @@ function UUF:CreateGUI()
                 UUF.db:SetProfile(profileName)
                 UIParent:SetScale(UUF.db.profile.General.UIScale or 1)
                 for unit in pairs(UnitToFrameName) do
-                    UUF:UpdateUnitFrame(unit)
+                    UUF:FullFrameUpdate(unit)
                 end
                 RefreshProfiles()
                 CreateProfileEditBox:SetText("")
@@ -1205,7 +1310,7 @@ function UUF:CreateGUI()
                 UUF.db:SetProfile(UUF.db.global.GlobalProfile)
                 UIParent:SetScale(UUF.db.profile.General.UIScale or 1)
                 for unit in pairs(UnitToFrameName) do
-                    UUF:UpdateUnitFrame(unit)
+                    UUF:FullFrameUpdate(unit)
                 end
             end
 
@@ -1232,7 +1337,7 @@ function UUF:CreateGUI()
             UUF.db.global.GlobalProfile = value
             UIParent:SetScale(UUF.db.profile.General.UIScale or 1)
             for unit in pairs(UnitToFrameName) do
-                UUF:UpdateUnitFrame(unit)
+                UUF:FullFrameUpdate(unit)
             end
             RefreshProfiles()
         end)
