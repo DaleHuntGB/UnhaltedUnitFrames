@@ -2,6 +2,7 @@ local _, UUF = ...
 local AG = LibStub("AceGUI-3.0")
 local GUIFrame;
 local OpenedGUI = false
+local EMOTE_PATH = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Emotes\\"
 local LSM = UUF.LSM
 local UnitToFrameName = UUF.UnitToFrameName
 
@@ -388,6 +389,60 @@ function UUF:CreateGUI()
             ReactionColour:SetRelativeWidth(0.25)
             ReactionColours:AddChild(ReactionColour)
         end
+
+        local SupportMeContainer = AG:Create("InlineGroup")
+        SupportMeContainer:SetTitle("|T" .. EMOTE_PATH .. "peepoLove.png:18:18|t  How To Support " .. UUF.AddOnName .. " Development")
+        SupportMeContainer:SetLayout("Flow")
+        SupportMeContainer:SetFullWidth(true)
+        ScrollFrame:AddChild(SupportMeContainer)
+
+        local KoFiInteractive = AG:Create("InteractiveLabel")
+        KoFiInteractive:SetText("|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Support\\Ko-Fi.png:16:21|t |cFF8080FFKo-Fi|r")
+        KoFiInteractive:SetFont("Fonts\\FRIZQT__.TTF", 13, "OUTLINE")
+        KoFiInteractive:SetJustifyV("MIDDLE")
+        KoFiInteractive:SetRelativeWidth(0.33)
+        KoFiInteractive:SetCallback("OnClick", function() UUF:OpenURL("Support Me on Ko-Fi", "https://ko-fi.com/unhalted") end)
+        SupportMeContainer:AddChild(KoFiInteractive)
+
+        local PayPalInteractive = AG:Create("InteractiveLabel")
+        PayPalInteractive:SetText("|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Support\\PayPal.png:23:21|t |cFF8080FFPayPal|r")
+        PayPalInteractive:SetFont("Fonts\\FRIZQT__.TTF", 13, "OUTLINE")
+        PayPalInteractive:SetJustifyV("MIDDLE")
+        PayPalInteractive:SetRelativeWidth(0.33)
+        PayPalInteractive:SetCallback("OnClick", function() UUF:OpenURL("Support Me on PayPal", "https://www.paypal.com/paypalme/dhunt1911") end)
+        SupportMeContainer:AddChild(PayPalInteractive)
+
+        local TwitchInteractive = AG:Create("InteractiveLabel")
+        TwitchInteractive:SetText("|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Support\\Twitch.png:25:21|t |cFF8080FFTwitch|r")
+        TwitchInteractive:SetFont("Fonts\\FRIZQT__.TTF", 13, "OUTLINE")
+        TwitchInteractive:SetJustifyV("MIDDLE")
+        TwitchInteractive:SetRelativeWidth(0.33)
+        TwitchInteractive:SetCallback("OnClick", function() UUF:OpenURL("Support Me on Twitch", "https://www.twitch.tv/unhaltedgb") end)
+        SupportMeContainer:AddChild(TwitchInteractive)
+
+        local DiscordInteractive = AG:Create("InteractiveLabel")
+        DiscordInteractive:SetText("|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Support\\Discord.png:21:21|t |cFF8080FFDiscord|r")
+        DiscordInteractive:SetFont("Fonts\\FRIZQT__.TTF", 13, "OUTLINE")
+        DiscordInteractive:SetJustifyV("MIDDLE")
+        DiscordInteractive:SetRelativeWidth(0.33)
+        DiscordInteractive:SetCallback("OnClick", function() UUF:OpenURL("Support Me on Discord", "https://discord.gg/UZCgWRYvVE") end)
+        SupportMeContainer:AddChild(DiscordInteractive)
+
+        local PatreonInteractive = AG:Create("InteractiveLabel")
+        PatreonInteractive:SetText("|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Support\\Patreon.png:21:21|t |cFF8080FFPatreon|r")
+        PatreonInteractive:SetFont("Fonts\\FRIZQT__.TTF", 13, "OUTLINE")
+        PatreonInteractive:SetJustifyV("MIDDLE")
+        PatreonInteractive:SetRelativeWidth(0.33)
+        PatreonInteractive:SetCallback("OnClick", function() UUF:OpenURL("Support Me on Patreon", "https://www.patreon.com/unhalted") end)
+        SupportMeContainer:AddChild(PatreonInteractive)
+
+        local GithubInteractive = AG:Create("InteractiveLabel")
+        GithubInteractive:SetText("|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Support\\Github.png:21:21|t |cFF8080FFGithub|r")
+        GithubInteractive:SetFont("Fonts\\FRIZQT__.TTF", 13, "OUTLINE")
+        GithubInteractive:SetJustifyV("MIDDLE")
+        GithubInteractive:SetRelativeWidth(0.33)
+        GithubInteractive:SetCallback("OnClick", function() UUF:OpenURL("Support Me on Github", "https://github.com/dalehuntgb/UnhaltedUnitFrames") end)
+        SupportMeContainer:AddChild(GithubInteractive)
 
         ScrollFrame:DoLayout()
     end

@@ -104,6 +104,31 @@ function UUF:CreatePrompt(title, text, onAccept, onCancel, acceptText, cancelTex
     return promptDialog
 end
 
+function UUF:OpenURL(title, urlText)
+    StaticPopupDialogs["UUF_URL_POPUP"] = {
+        text = title or "",
+        button1 = CLOSE,
+        hasEditBox = true,
+        editBoxWidth = 300,
+        OnShow = function(self)
+            self.EditBox:SetText(urlText or "")
+            self.EditBox:SetFocus()
+            self.EditBox:HighlightText()
+        end,
+        OnAccept = function(self) end,
+        EditBoxOnEscapePressed = function(self) self:GetParent():Hide() end,
+        timeout = 0,
+        whileDead = true,
+        hideOnEscape = true,
+        preferredIndex = 3,
+    }
+    local urlDialog = StaticPopup_Show("UUF_URL_POPUP")
+    if urlDialog then
+        urlDialog:SetFrameStrata("TOOLTIP")
+    end
+    return urlDialog
+end
+
 function UUF:SetUIScale()
     if UUF.db.profile.General.AllowUIScaling then
         UIParent:SetScale(UUF.db.profile.General.UIScale)
