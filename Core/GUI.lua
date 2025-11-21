@@ -469,6 +469,12 @@ function UUF:CreateGUI()
         ScrollFrame:AddChild(EnableCheckBox)
 
         if Unit == "boss" then
+            local sassyRemarks = {
+                [1] = "Yes, fine.",
+                [2] = "Why ask?",
+                [3] = "Whatever...",
+                [4] = "K.",
+            }
             local TestBossFrames = AG:Create("Button")
             TestBossFrames:SetText("Test Boss Frames")
             TestBossFrames:SetRelativeWidth(0.5)
@@ -485,7 +491,7 @@ function UUF:CreateGUI()
                         function() ReloadUI() end,
                         function() ReloadUI() end,
                         "Sure!",
-                        "Yes, fine."
+                        sassyRemarks[math.random(1, #sassyRemarks)]
                     )
                 end
             end)
