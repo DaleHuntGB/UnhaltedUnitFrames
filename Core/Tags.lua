@@ -38,7 +38,7 @@ UUF:RegisterTag("curpp", function(unit) return UnitPower(unit) end)
 UUF:RegisterTag("curpp:abbr", function(unit) return AbbreviateLargeNumbers(UnitPower(unit)) end)
 UUF:RegisterTag("maxpp", function(unit) return UnitPowerMax(unit) end)
 UUF:RegisterTag("maxpp:abbr", function(unit) return AbbreviateLargeNumbers(UnitPowerMax(unit)) end)
-UUF:RegisterTag("perpp", function(unit) return string.format("%.0f%%", UnitPowerPercent(unit, false, true)) end)
+UUF:RegisterTag("perpp", function(unit) return string.format("%.0f%%", UnitPowerPercent(unit, UnitPowerType(unit), false, true)) end)
 UUF:RegisterTag("name", function(unit) return UnitName(unit) end)
 UUF:RegisterTag("name:colour", function(unit) local r, g, b = FetchUnitColour(unit) local unitName = UnitName(unit) or "" return string.format("|cff%02x%02x%02x%s|r", r*255, g*255, b*255, unitName) end)
 
