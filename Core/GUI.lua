@@ -958,6 +958,32 @@ function UUF:CreateGUI()
                     UUF:UpdateUnitFrame(Unit)
                 end)
                 MouseoverHighlightContainer:AddChild(MouseoverHighlightColourPicker)
+
+                if Unit == "boss" then
+                    local TargetIndicatorContainer = AG:Create("InlineGroup")
+                    TargetIndicatorContainer:SetTitle("Mouseover Highlight")
+                    TargetIndicatorContainer:SetLayout("Flow")
+                    TargetIndicatorContainer:SetFullWidth(true)
+                    UnitFrameContainer:AddChild(TargetIndicatorContainer)
+
+                    local TargetIndicatorEnabledCheckBox = AG:Create("CheckBox")
+                    TargetIndicatorEnabledCheckBox:SetLabel("Enable Target Indicator")
+                    TargetIndicatorEnabledCheckBox:SetValue(IndicatorsDB.TargetIndicator.Enabled)
+                    TargetIndicatorEnabledCheckBox:SetRelativeWidth(0.5)
+                    TargetIndicatorEnabledCheckBox:SetCallback("OnValueChanged", function(_, _, value)
+                        IndicatorsDB.TargetIndicator.Enabled = value
+                        UUF:UpdateUnitFrame(Unit)
+                        DeepDisable(TargetIndicatorContainer, not value, TargetIndicatorEnabledCheckBox)
+                    end)
+                    TargetIndicatorContainer:AddChild(TargetIndicatorEnabledCheckBox)
+                    local TargetIndicatorColourPicker = AG:Create("ColorPicker")
+                    TargetIndicatorColourPicker:SetLabel("Highlight Colour")
+                    TargetIndicatorColourPicker:SetColor(unpack(IndicatorsDB.TargetIndicator.Colour))
+                    TargetIndicatorColourPicker:SetHasAlpha(true)
+                    TargetIndicatorColourPicker:SetRelativeWidth(0.5)
+                    TargetIndicatorColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) IndicatorsDB.TargetIndicator.Colour = {r, g, b, a} UUF:UpdateUnitFrame(Unit) end)
+                    TargetIndicatorContainer:AddChild(TargetIndicatorColourPicker)
+                end
             end
 
             if ModuleGroup == "Colours" then
@@ -1000,72 +1026,72 @@ function UUF:CreateGUI()
 
     end
 
-        local function DrawTagsContainer(Container)
-            local ScrollFrame = AG:Create("ScrollFrame")
-            ScrollFrame:SetLayout("Flow")
-            ScrollFrame:SetFullWidth(true)
-            ScrollFrame:SetFullHeight(true)
-            Container:AddChild(ScrollFrame)
+    local function DrawTagsContainer(Container)
+        local ScrollFrame = AG:Create("ScrollFrame")
+        ScrollFrame:SetLayout("Flow")
+        ScrollFrame:SetFullWidth(true)
+        ScrollFrame:SetFullHeight(true)
+        Container:AddChild(ScrollFrame)
 
-            local HealthSeparatorDropdown = AG:Create("Dropdown")
-            HealthSeparatorDropdown:SetList({
-                ["-"] = "-",
-                ["||"] = "|",
-                ["/"] = "/",
-                ["»"] = "»",
-                ["•"] = "•",
-            })
-            HealthSeparatorDropdown:SetLabel("Health Separator")
-            HealthSeparatorDropdown:SetValue(UUF.db.profile.General.HealthSeparator)
-            HealthSeparatorDropdown:SetRelativeWidth(1)
-            HealthSeparatorDropdown:SetCallback("OnValueChanged", function(_, _, value) UUF.HealthSeparator = value UUF.db.profile.General.HealthSeparator = value for unit in pairs(UnitToFrameName) do UUF:UpdateUnitFrame(unit) end end)
-            ScrollFrame:AddChild(HealthSeparatorDropdown)
+        local HealthSeparatorDropdown = AG:Create("Dropdown")
+        HealthSeparatorDropdown:SetList({
+            ["-"] = "-",
+            ["||"] = "|",
+            ["/"] = "/",
+            ["»"] = "»",
+            ["•"] = "•",
+        })
+        HealthSeparatorDropdown:SetLabel("Health Separator")
+        HealthSeparatorDropdown:SetValue(UUF.db.profile.General.HealthSeparator)
+        HealthSeparatorDropdown:SetRelativeWidth(1)
+        HealthSeparatorDropdown:SetCallback("OnValueChanged", function(_, _, value) UUF.HealthSeparator = value UUF.db.profile.General.HealthSeparator = value for unit in pairs(UnitToFrameName) do UUF:UpdateUnitFrame(unit) end end)
+        ScrollFrame:AddChild(HealthSeparatorDropdown)
 
-            local function DrawTagContainer(TagContainer, tagGroup)
-                local TagsList = UUF:GetTagsForGroup(tagGroup)
-                for Tag, Desc in pairs(TagsList) do
-                    local TagDesc = AG:Create("Heading")
-                    TagDesc:SetText(Desc)
-                    TagDesc:SetFullWidth(true)
-                    TagContainer:AddChild(TagDesc)
+        local function DrawTagContainer(TagContainer, tagGroup)
+            local TagsList = UUF:GetTagsForGroup(tagGroup)
+            for Tag, Desc in pairs(TagsList) do
+                local TagDesc = AG:Create("Heading")
+                TagDesc:SetText(Desc)
+                TagDesc:SetFullWidth(true)
+                TagContainer:AddChild(TagDesc)
 
-                    local TagValue = AG:Create("EditBox")
+                local TagValue = AG:Create("EditBox")
+                TagValue:SetText("[" .. Tag .. "]")
+                TagValue:SetCallback("OnTextChanged", function(widget, event, value)
+                    TagValue:ClearFocus()
                     TagValue:SetText("[" .. Tag .. "]")
-                    TagValue:SetCallback("OnTextChanged", function(widget, event, value)
-                        TagValue:ClearFocus()
-                        TagValue:SetText("[" .. Tag .. "]")
-                    end)
-                    TagValue:SetRelativeWidth(1)
-                    TagContainer:AddChild(TagValue)
+                end)
+                TagValue:SetRelativeWidth(1)
+                TagContainer:AddChild(TagValue)
 
-                end
             end
+        end
 
-            local function SelectedGroup(TagContainer, _, subGroup)
-                TagContainer:ReleaseChildren()
-                if subGroup == "Health" then
-                    DrawTagContainer(TagContainer, "Health")
-                elseif subGroup == "Name" then
-                    DrawTagContainer(TagContainer, "Name")
-                elseif subGroup == "Power" then
-                    DrawTagContainer(TagContainer, "Power")
-                end
-                ScrollFrame:DoLayout()
+        local function SelectedGroup(TagContainer, _, subGroup)
+            TagContainer:ReleaseChildren()
+            if subGroup == "Health" then
+                DrawTagContainer(TagContainer, "Health")
+            elseif subGroup == "Name" then
+                DrawTagContainer(TagContainer, "Name")
+            elseif subGroup == "Power" then
+                DrawTagContainer(TagContainer, "Power")
             end
-
-            local GUIContainerTabGroup = AG:Create("TabGroup")
-            GUIContainerTabGroup:SetLayout("Flow")
-            GUIContainerTabGroup:SetTabs({
-                { text = "Health", value = "Health" },
-                { text = "Name", value = "Name" },
-                { text = "Power", value = "Power" },
-            })
-            GUIContainerTabGroup:SetCallback("OnGroupSelected", SelectedGroup)
-            GUIContainerTabGroup:SelectTab("Health")
-            GUIContainerTabGroup:SetFullWidth(true)
-            ScrollFrame:AddChild(GUIContainerTabGroup)
             ScrollFrame:DoLayout()
         end
+
+        local GUIContainerTabGroup = AG:Create("TabGroup")
+        GUIContainerTabGroup:SetLayout("Flow")
+        GUIContainerTabGroup:SetTabs({
+            { text = "Health", value = "Health" },
+            { text = "Name", value = "Name" },
+            { text = "Power", value = "Power" },
+        })
+        GUIContainerTabGroup:SetCallback("OnGroupSelected", SelectedGroup)
+        GUIContainerTabGroup:SelectTab("Health")
+        GUIContainerTabGroup:SetFullWidth(true)
+        ScrollFrame:AddChild(GUIContainerTabGroup)
+        ScrollFrame:DoLayout()
+    end
 
     local function DrawProfilesContainer(Container)
         local ScrollFrame = AG:Create("ScrollFrame")

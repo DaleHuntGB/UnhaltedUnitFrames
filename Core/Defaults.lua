@@ -398,7 +398,11 @@ UUF.Defaults = {
                 MouseoverHighlight = {
                     Enabled = true,
                     Colour = {1, 1, 1, 1},
-                }
+                },
+                TargetIndicator = {
+                    Enabled = true,
+                    Colour = {1, 1, 1, 1},
+                },
             },
             Tags = {
                 TagOne = {

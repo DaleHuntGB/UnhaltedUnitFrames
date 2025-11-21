@@ -25,6 +25,7 @@ function UnhaltedUF:OnEnable()
     for i = 1, UUF.MaxBossFrames do
         local BossFrame = UUF:CreateUnitFrame("boss" .. i)
         UUF.BossFrames[i] = BossFrame
+        UUF:RegisterTargetIndicatorFrame(BossFrame, "boss" .. i)
     end
     UUF:LayoutBossFrames()
 end

@@ -5,6 +5,7 @@ UUF.Author = C_AddOns.GetAddOnMetadata("UnhaltedUnitFrames", "Author")
 UUF.InfoButton = "|A:glueannouncementpopup-icon-info:16:16|a "
 UUF.LSM = LibStub("LibSharedMedia-3.0")
 UUF.BossFrames = {}
+UUF.TargetHighlightEvtFrames = {}
 UUF.MaxBossFrames = 10
 UUFG = UUFG or {}
 UUF.BossTestMode = false
