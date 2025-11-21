@@ -305,6 +305,7 @@ function UUF:CreateUnitFrame(unit)
     return unitFrame
 end
 
+-- Only update data & colours in combat.
 function UUF:UpdateUnitFrame(unit)
     if not unit then return end
     local frameName = ResolveFrameName(unit)
@@ -317,6 +318,7 @@ function UUF:UpdateUnitFrame(unit)
     UpdateUnitFrameData(unitFrame, unit, DB, GeneralDB)
 end
 
+-- Update & assign all events outside of combat.
 function UUF:RefreshUnitFrame(unit)
     if not unit then return end
     local frameName = ResolveFrameName(unit)
@@ -327,6 +329,8 @@ function UUF:RefreshUnitFrame(unit)
     RefreshUnitEvents(unitFrame, unit, DB)
 end
 
+-- Full update of layout, colours, data & events outside of combat.
+-- Usually called after changing configuration settings.
 function UUF:FullFrameUpdate(unit)
     if not unit then return end
     local frameName = ResolveFrameName(unit)
