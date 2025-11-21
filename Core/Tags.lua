@@ -71,10 +71,6 @@ end
 local NameTags = {
     ["name"] = "Unit Name",
     ["name:colour"] = "Unit Name with Class/Reaction Colour",
-    ["name:short"] = "Unit Name (Shortened)",
-    ["name:medium"] = "Unit Name (Medium Length)",
-    ["name:colour:short"] = "Unit Name with Colour (Shortened)",
-    ["name:colour:medium"] = "Unit Name with Colour (Medium Length)",
 }
 
 local function GetNameTags()
