@@ -10,6 +10,9 @@ function UnhaltedUF:OnInitialize()
         end
     end
     UUF.HealthSeparator = UUF.db.profile.General.HealthSeparator or "-"
+
+    -- Allow other addons to access UUF namespace
+    self.API = UUF
 end
 
 function UnhaltedUF:OnEnable()
