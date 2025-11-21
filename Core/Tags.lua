@@ -40,7 +40,11 @@ UUF:RegisterTag("maxpp", function(unit) return UnitPowerMax(unit) end)
 UUF:RegisterTag("maxpp:abbr", function(unit) return AbbreviateLargeNumbers(UnitPowerMax(unit)) end)
 UUF:RegisterTag("perpp", function(unit) return string.format("%.0f%%", UnitPowerPercent(unit, false, true)) end)
 UUF:RegisterTag("name", function(unit) return UnitName(unit) end)
+UUF:RegisterTag("name:short", function(unit) return string.format("%.5s", UnitName(unit)) end)
+UUF:RegisterTag("name:medium", function(unit) return string.format("%.8s", UnitName(unit)) end)
 UUF:RegisterTag("name:colour", function(unit) local r, g, b = FetchUnitColour(unit) local unitName = UnitName(unit) or "" return string.format("|cff%02x%02x%02x%s|r", r*255, g*255, b*255, unitName) end)
+UUF:RegisterTag("name:colour:short", function(unit) local r, g, b = FetchUnitColour(unit) local unitName = UnitName(unit) or "" unitName = string.format("%.5s", unitName) return string.format("|cff%02x%02x%02x%s|r", r*255, g*255, b*255, unitName) end)
+UUF:RegisterTag("name:colour:medium", function(unit) local r, g, b = FetchUnitColour(unit) local unitName = UnitName(unit) or "" unitName = string.format("%.8s", unitName) return string.format("|cff%02x%02x%02x%s|r", r*255, g*255, b*255, unitName) end)
 
 local HealthTags = {
     ["curhp"] = "Current Health",
@@ -71,6 +75,10 @@ end
 local NameTags = {
     ["name"] = "Unit Name",
     ["name:colour"] = "Unit Name with Class/Reaction Colour",
+    ["name:short"] = "Unit Name (Shortened)",
+    ["name:medium"] = "Unit Name (Medium Length)",
+    ["name:colour:short"] = "Unit Name with Colour (Shortened)",
+    ["name:colour:medium"] = "Unit Name with Colour (Medium Length)",
 }
 
 local function GetNameTags()
