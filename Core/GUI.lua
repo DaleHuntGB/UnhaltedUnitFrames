@@ -469,6 +469,12 @@ function UUF:CreateGUI()
         ScrollFrame:AddChild(EnableCheckBox)
 
         if Unit == "boss" then
+            local niceRemarks = {
+                [1] = "You bet!",
+                [2] = "Of course!",
+                [3] = "No problem!",
+                [4] = "Absolutely!",
+            }
             local sassyRemarks = {
                 [1] = "Yes, fine.",
                 [2] = "Why ask?",
@@ -490,7 +496,7 @@ function UUF:CreateGUI()
                         "Reload Now?",
                         function() ReloadUI() end,
                         function() ReloadUI() end,
-                        "Sure!",
+                        niceRemarks[math.random(1, #niceRemarks)],
                         sassyRemarks[math.random(1, #sassyRemarks)]
                     )
                 end
