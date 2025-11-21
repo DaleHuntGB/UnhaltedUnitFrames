@@ -958,32 +958,6 @@ function UUF:CreateGUI()
                     UUF:UpdateUnitFrame(Unit)
                 end)
                 MouseoverHighlightContainer:AddChild(MouseoverHighlightColourPicker)
-
-                if Unit == "boss" then
-                    local TargetIndicatorContainer = AG:Create("InlineGroup")
-                    TargetIndicatorContainer:SetTitle("Mouseover Highlight")
-                    TargetIndicatorContainer:SetLayout("Flow")
-                    TargetIndicatorContainer:SetFullWidth(true)
-                    UnitFrameContainer:AddChild(TargetIndicatorContainer)
-
-                    local TargetIndicatorEnabledCheckBox = AG:Create("CheckBox")
-                    TargetIndicatorEnabledCheckBox:SetLabel("Enable Target Indicator")
-                    TargetIndicatorEnabledCheckBox:SetValue(IndicatorsDB.TargetIndicator.Enabled)
-                    TargetIndicatorEnabledCheckBox:SetRelativeWidth(0.5)
-                    TargetIndicatorEnabledCheckBox:SetCallback("OnValueChanged", function(_, _, value)
-                        IndicatorsDB.TargetIndicator.Enabled = value
-                        UUF:UpdateUnitFrame(Unit)
-                        DeepDisable(TargetIndicatorContainer, not value, TargetIndicatorEnabledCheckBox)
-                    end)
-                    TargetIndicatorContainer:AddChild(TargetIndicatorEnabledCheckBox)
-                    local TargetIndicatorColourPicker = AG:Create("ColorPicker")
-                    TargetIndicatorColourPicker:SetLabel("Highlight Colour")
-                    TargetIndicatorColourPicker:SetColor(unpack(IndicatorsDB.TargetIndicator.Colour))
-                    TargetIndicatorColourPicker:SetHasAlpha(true)
-                    TargetIndicatorColourPicker:SetRelativeWidth(0.5)
-                    TargetIndicatorColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) IndicatorsDB.TargetIndicator.Colour = {r, g, b, a} UUF:UpdateUnitFrame(Unit) end)
-                    TargetIndicatorContainer:AddChild(TargetIndicatorColourPicker)
-                end
             end
 
             if ModuleGroup == "Colours" then

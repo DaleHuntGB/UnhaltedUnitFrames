@@ -142,12 +142,6 @@ local function ApplyFrameLayout(unitFrame, unit, DB, GeneralDB)
 
     local unitMouseoverHighlight = unitFrame.MouseoverHighlight
     unitMouseoverHighlight:SetBackdropBorderColor(unpack(DB.Indicators.MouseoverHighlight.Colour))
-
-    if unit == "boss" then
-        local unitTargetIndicator = unitFrame.TargetIndicator
-        unitTargetIndicator:SetBackdropBorderColor(unpack(DB.Indicators.TargetIndicator.Colour))
-    end
-
 end
 
 local function ApplyFrameColours(unitFrame, unit, DB, GeneralDB)
@@ -288,15 +282,6 @@ function UUF:CreateUnitFrame(unit)
     unitFrame.MouseoverHighlight:SetBackdrop({ bgFile="Interface\\Buttons\\WHITE8x8", edgeFile="Interface\\Buttons\\WHITE8x8", edgeSize=1 })
     unitFrame.MouseoverHighlight:SetBackdropColor(0,0,0,0)
     unitFrame.MouseoverHighlight:Hide()
-    if unit == "boss" then
-        unitFrame.TargetIndicator = CreateFrame("Frame", nil, unitFrame, "BackdropTemplate")
-        unitFrame.TargetIndicator:SetFrameLevel(unitFrame:GetFrameLevel() + 1)
-        unitFrame.TargetIndicator:SetPoint("TOPLEFT", unitFrame, "TOPLEFT", -3, 3)
-        unitFrame.TargetIndicator:SetPoint("BOTTOMRIGHT", unitFrame, "BOTTOMRIGHT", 3, -3)
-        unitFrame.TargetIndicator:SetBackdrop({ edgeFile = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Glow.tga", edgeSize = 3, insets = {left = -6, right = -6, top = -6, bottom = -6} })
-        unitFrame.TargetIndicator:SetBackdropColor(0, 0, 0, 0)
-        unitFrame.TargetIndicator:Hide()
-    end
     unitFrame:SetScript("OnEnter", function(self) local DB = UUF.db.profile[self.dbUnit] if DB.Indicators.MouseoverHighlight.Enabled then self.MouseoverHighlight:Show() end UnitFrame_OnEnter(self) end)
     unitFrame:SetScript("OnLeave", function(self) local DB = UUF.db.profile[self.dbUnit] if DB.Indicators.MouseoverHighlight.Enabled then self.MouseoverHighlight:Hide() end UnitFrame_OnLeave(self) end)
     if unit ~= "pet" and unit ~= "focus" then
@@ -330,40 +315,4 @@ function UUF:UpdateUnitFrame(unit)
     ApplyFrameColours(unitFrame, unit, DB, GeneralDB)
     UpdateUnitFrameData(unitFrame, unit, DB, GeneralDB)
     if not UUF.BossTestMode then RefreshUnitEvents(unitFrame, unit, DB) end
-end
-
-local unitIsTargetEvtFrame = CreateFrame("Frame")
-unitIsTargetEvtFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
-unitIsTargetEvtFrame:RegisterEvent("UNIT_TARGET")
-unitIsTargetEvtFrame:SetScript("OnEvent", function()
-    if not UUF.db.profile.boss.Indicators.TargetIndicator.Enabled then return end
-    for _, frameData in ipairs(UUF.TargetHighlightEvtFrames) do
-        local frame, unit = frameData.frame, frameData.unit
-        UUF:UpdateTargetHighlight(frame, unit)
-    end
-end)
-
-function UUF:UpdateTargetHighlight(frame, unit)
-    if frame and frame.TargetIndicator then
-        if UnitIsUnit("target", unit) and UUF.db.profile.boss.Indicators.TargetIndicator.Enabled then
-            frame.TargetIndicator:Show()
-        else
-            frame.TargetIndicator:Hide()
-        end
-    end
-end
-
-function UUF:RegisterTargetIndicatorFrame(frameName, unit)
-    if not unit or not frameName then return end
-    local normalizedUnit = unit:match("^boss%d+$") and "boss" or unit:match("^party%d+$") and "party" or unit:match("^raid%d+$") and "raid" or unit
-    local unitFrame = type(frameName) == "table" and frameName or _G[frameName]
-    local DB = UUF.db.profile[normalizedUnit]
-    table.insert(UUF.TargetHighlightEvtFrames, { frame = unitFrame, unit = unit })
-    if DB and DB.TargetIndicator and DB.TargetIndicator.Enabled and unit == "boss" then
-        UUF:UpdateTargetHighlight(unitFrame, unit)
-    else
-        if unit == "boss" and unitFrame.TargetIndicator then
-            unitFrame.TargetIndicator:Hide()
-        end
-    end
 end
