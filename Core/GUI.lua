@@ -475,6 +475,19 @@ function UUF:CreateGUI()
             TestBossFrames:SetCallback("OnClick", function()
                 UUF.BossTestMode = not UUF.BossTestMode
                 UUF:TestBossFrames()
+                if UUF.BossTestMode then
+                    TestBossFrames:SetText("Disable Test Frames")
+                else
+                    TestBossFrames:SetText("Enable Test Frames")
+                    UUF:CreatePrompt(
+                        "Reload UI |cFF8080FFRequired|r",
+                        "Reload Now?",
+                        function() ReloadUI() end,
+                        function() ReloadUI() end,
+                        "Sure!",
+                        "Yes, fine."
+                    )
+                end
             end)
             ScrollFrame:AddChild(TestBossFrames)
             EnableCheckBox:SetRelativeWidth(0.5)
