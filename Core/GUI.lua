@@ -567,7 +567,7 @@ function UUF:CreateGUI()
                     local SpacingSlider = AG:Create("Slider")
                     SpacingSlider:SetLabel("Spacing")
                     SpacingSlider:SetValue(DB.Frame.Spacing)
-                    SpacingSlider:SetSliderValues(0, 100, 1)
+                    SpacingSlider:SetSliderValues(-1, 100, 1)
                     SpacingSlider:SetRelativeWidth(0.33)
                     SpacingSlider:SetCallback("OnValueChanged", function(_, _, value)
                         DB.Frame.Spacing = value
