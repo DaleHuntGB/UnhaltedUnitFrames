@@ -64,8 +64,14 @@ end
 local function KillFrame(unitFrame)
     if not unitFrame then return end
     unitFrame:UnregisterAllEvents()
-    unitFrame:Hide()
-    unitFrame:SetScript("OnShow", unitFrame.Hide)
+    if unitFrame == PlayerFrame then
+        unitFrame:SetAlpha(0)
+        unitFrame:SetScale(0.00000001)
+        unitFrame:EnableMouse(false)
+    else
+        unitFrame:Hide()
+        unitFrame:SetScript("OnShow", unitFrame.Hide)
+    end
 end
 
 function UUF:HideDefaultUnitFrames()
