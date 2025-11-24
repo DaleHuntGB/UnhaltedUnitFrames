@@ -13,6 +13,11 @@ if UUF.LSM then UUF.LSM:Register("border", "WHITE8X8", [[Interface\Buttons\WHITE
 if UUF.LSM then UUF.LSM:Register("statusbar", "Dragonflight", [[Interface\AddOns\UnhaltedUnitFrames\Media\Textures\Dragonflight.tga]]) end
 if UUF.LSM then UUF.LSM:Register("background", "Dragonflight", [[Interface\AddOns\UnhaltedUnitFrames\Media\Textures\Dragonflight_BG.tga]]) end
 if UUF.LSM then UUF.LSM:Register("statusbar", "Skyline", [[Interface\AddOns\UnhaltedUnitFrames\Media\Textures\Skyline.tga]]) end
+if UUF.LSM then UUF.LSM:Register("font", "Avantgarde - Book", [[Interface\AddOns\UnhaltedUnitFrames\Media\Fonts\AvantGarde\Book.ttf]]) end
+if UUF.LSM then UUF.LSM:Register("font", "Avantgarde - Book (Oblique)", [[Interface\AddOns\UnhaltedUnitFrames\Media\Fonts\AvantGarde\BookOblique.ttf]]) end
+if UUF.LSM then UUF.LSM:Register("font", "Avantgarde - Demi", [[Interface\AddOns\UnhaltedUnitFrames\Media\Fonts\AvantGarde\Demi.ttf]]) end
+if UUF.LSM then UUF.LSM:Register("font", "Avantgarde - Regular", [[Interface\AddOns\UnhaltedUnitFrames\Media\Fonts\AvantGarde\Regular.ttf]]) end
+if UUF.LSM then UUF.LSM:Register("font", "Expressway - Regular", [[Interface\AddOns\UnhaltedUnitFrames\Media\Fonts\Expressway.ttf]]) end
 
 UUF.UnitToFrameName = {
     ["player"] = "UUF_Player",
