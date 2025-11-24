@@ -2,6 +2,9 @@ package-as: UnhaltedUnitFrames
 release-type: beta
 enable-nolib-creation: yes
 
+curse-id: 1235670
+wago-id: 96do35NO
+
 externals:
     Libs/Ace3:
         url: https://repos.wowace.com/wow/ace3/trunk

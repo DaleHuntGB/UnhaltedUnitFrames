@@ -4,6 +4,8 @@
 ## Author: UnhaltedGB
 ## SavedVariables: UnhaltedUFDB
 ## Category-enUS: Unit Frames
+## X-Curse-Project-ID: 1235670
+## X-Wago-ID: 96do35NO
 
 # Load Libraries
 Libs/Init.xml
