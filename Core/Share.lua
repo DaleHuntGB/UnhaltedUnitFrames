@@ -80,11 +80,12 @@ function UUFG:ExportUUF(profileKey)
     local SerializedInfo = Serialize:Serialize(profileData)
     local CompressedInfo = Compress:CompressDeflate(SerializedInfo)
     local EncodedInfo = Compress:EncodeForPrint(CompressedInfo)
+    EncodedInfo = "!UUF" .. EncodedInfo
     return EncodedInfo
 end
 
 function UUFG:ImportUUF(importString, profileKey)
-    local DecodedInfo = Compress:DecodeForPrint(importString)
+    local DecodedInfo = Compress:DecodeForPrint(importString:sub(5))
     local DecompressedInfo = Compress:DecompressDeflate(DecodedInfo)
     local success, profileData = Serialize:Deserialize(DecompressedInfo)
 
