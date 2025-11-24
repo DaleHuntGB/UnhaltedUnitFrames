@@ -1116,7 +1116,7 @@ function UUF:CreateGUI()
                 if Unit == "player" then
                     local Status = IndicatorsDB.Status
                     local StatusContainer = AG:Create("InlineGroup")
-                    StatusContainer:SetTitle("Combat / Resting |TInterface\\CharacterFrame\\UI-StateIcon:24:24:0:0:64:64:0:32:0:27|t")
+                    StatusContainer:SetTitle("Combat / Resting Indicators")
                     StatusContainer:SetLayout("Flow")
                     StatusContainer:SetFullWidth(true)
                     UnitFrameContainer:AddChild(StatusContainer)
@@ -1135,6 +1135,11 @@ function UUF:CreateGUI()
                     DisplayCombatIndicatorCheckBox:SetCallback("OnValueChanged", function(_, _, value)
                         Status.Combat = value
                         UUF:FullFrameUpdate(Unit)
+                        if not value and not Status.Resting then
+                            DeepDisable(StatusContainer, true, DisplayCombatIndicatorCheckBox)
+                        else
+                            DeepDisable(StatusContainer, false)
+                        end
                     end)
                     StatusContainer:AddChild(DisplayCombatIndicatorCheckBox)
 
@@ -1145,6 +1150,11 @@ function UUF:CreateGUI()
                     DisplayRestingIndicatorCheckBox:SetCallback("OnValueChanged", function(_, _, value)
                         Status.Resting = value
                         UUF:FullFrameUpdate(Unit)
+                        if not value and not Status.Combat then
+                            DeepDisable(StatusContainer, true, DisplayRestingIndicatorCheckBox)
+                        else
+                            DeepDisable(StatusContainer, false)
+                        end
                     end)
                     StatusContainer:AddChild(DisplayRestingIndicatorCheckBox)
 
