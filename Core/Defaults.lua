@@ -112,7 +112,18 @@ UUF.Defaults = {
                 MouseoverHighlight = {
                     Enabled = true,
                     Colour = {1, 1, 1, 1},
-                }
+                },
+                Status = {
+                    Combat = false,
+                    Resting = false,
+                    Size = 24,
+                    AnchorFrom = "CENTER",
+                    AnchorTo = "TOPLEFT",
+                    OffsetX = 3,
+                    OffsetY = -3,
+                    RestingTexture = "DEFAULT",
+                    CombatTexture = "DEFAULT",
+                },
             },
             Tags = {
                 TagOne = {

@@ -48,6 +48,30 @@ local ReactionNames = {
     [8] = "Exalted",
 }
 
+local CombatTextures = {
+    ["DEFAULT"] = "|TInterface\\CharacterFrame\\UI-StateIcon:20:20:0:0:64:64:32:64:0:31|t",
+    ["COMBAT0"] = "|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Combat\\Combat0.tga:18:18|t",
+    ["COMBAT1"] = "|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Combat\\Combat1.tga:18:18|t",
+    ["COMBAT2"] = "|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Combat\\Combat2.tga:18:18|t",
+    ["COMBAT3"] = "|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Combat\\Combat3.tga:18:18|t",
+    ["COMBAT4"] = "|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Combat\\Combat4.tga:18:18|t",
+    ["COMBAT5"] = "|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Combat\\Combat5.tga:18:18|t",
+    ["COMBAT6"] = "|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Combat\\Combat6.tga:18:18|t",
+    ["COMBAT7"] = "|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Combat\\Combat7.tga:18:18|t",
+}
+
+local RestingTextures = {
+    ["DEFAULT"] = "|TInterface\\CharacterFrame\\UI-StateIcon:18:18:0:0:64:64:0:32:0:27|t",
+    ["RESTING0"] = "|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Resting\\Resting0.tga:18:18|t",
+    ["RESTING1"] = "|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Resting\\Resting1.tga:18:18|t",
+    ["RESTING2"] = "|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Resting\\Resting2.tga:18:18|t",
+    ["RESTING3"] = "|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Resting\\Resting3.tga:18:18|t",
+    ["RESTING4"] = "|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Resting\\Resting4.tga:18:18|t",
+    ["RESTING5"] = "|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Resting\\Resting5.tga:18:18|t",
+    ["RESTING6"] = "|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Resting\\Resting6.tga:18:18|t",
+    ["RESTING7"] = "|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Resting\\Resting7.tga:18:18|t",
+}
+
 local SLIDER_STEP, SLIDER_MIN, SLIDER_MAX = 0.1, -3000, 3000
 
 local function CreateInfoTag(Description)
@@ -1088,6 +1112,128 @@ function UUF:CreateGUI()
                     UUF:FullFrameUpdate(Unit)
                 end)
                 MouseoverHighlightContainer:AddChild(MouseoverHighlightColourPicker)
+
+                if Unit == "player" then
+                    local Status = IndicatorsDB.Status
+                    local StatusContainer = AG:Create("InlineGroup")
+                    StatusContainer:SetTitle("Combat / Resting |TInterface\\CharacterFrame\\UI-StateIcon:24:24:0:0:64:64:0:32:0:27|t")
+                    StatusContainer:SetLayout("Flow")
+                    StatusContainer:SetFullWidth(true)
+                    UnitFrameContainer:AddChild(StatusContainer)
+
+                    local StatusDesc = AG:Create("Label")
+                    StatusDesc:SetText(UUF.InfoButton .. "|cFF8080FFCombat|r / |cFF8080FFResting|r Indicators share the same position & size settings.")
+                    StatusDesc:SetFont("Fonts\\FRIZQT__.TTF", 12, "OUTLINE")
+                    StatusDesc:SetFullWidth(true)
+                    StatusDesc:SetJustifyH("CENTER")
+                    StatusContainer:AddChild(StatusDesc)
+
+                    local DisplayCombatIndicatorCheckBox = AG:Create("CheckBox")
+                    DisplayCombatIndicatorCheckBox:SetLabel("Display Combat Indicator")
+                    DisplayCombatIndicatorCheckBox:SetValue(Status.Combat)
+                    DisplayCombatIndicatorCheckBox:SetRelativeWidth(0.5)
+                    DisplayCombatIndicatorCheckBox:SetCallback("OnValueChanged", function(_, _, value)
+                        Status.Combat = value
+                        UUF:FullFrameUpdate(Unit)
+                    end)
+                    StatusContainer:AddChild(DisplayCombatIndicatorCheckBox)
+
+                    local DisplayRestingIndicatorCheckBox = AG:Create("CheckBox")
+                    DisplayRestingIndicatorCheckBox:SetLabel("Display Resting Indicator")
+                    DisplayRestingIndicatorCheckBox:SetValue(Status.Resting)
+                    DisplayRestingIndicatorCheckBox:SetRelativeWidth(0.5)
+                    DisplayRestingIndicatorCheckBox:SetCallback("OnValueChanged", function(_, _, value)
+                        Status.Resting = value
+                        UUF:FullFrameUpdate(Unit)
+                    end)
+                    StatusContainer:AddChild(DisplayRestingIndicatorCheckBox)
+
+                    local CombatTextureIndicatorDropdown = AG:Create("Dropdown")
+                    CombatTextureIndicatorDropdown:SetList(CombatTextures)
+                    CombatTextureIndicatorDropdown:SetLabel("Combat Indicator Texture")
+                    CombatTextureIndicatorDropdown:SetValue(Status.CombatTexture)
+                    CombatTextureIndicatorDropdown:SetRelativeWidth(0.5)
+                    CombatTextureIndicatorDropdown:SetCallback("OnValueChanged", function(_, _, value)
+                        Status.CombatTexture = value
+                        UUF:FullFrameUpdate(Unit)
+                    end)
+                    StatusContainer:AddChild(CombatTextureIndicatorDropdown)
+
+                    local RestingTextureIndicatorDropdown = AG:Create("Dropdown")
+                    RestingTextureIndicatorDropdown:SetList(RestingTextures)
+                    RestingTextureIndicatorDropdown:SetLabel("Resting Indicator Texture")
+                    RestingTextureIndicatorDropdown:SetValue(Status.RestingTexture)
+                    RestingTextureIndicatorDropdown:SetRelativeWidth(0.5)
+                    RestingTextureIndicatorDropdown:SetCallback("OnValueChanged", function(_, _, value)
+                        Status.RestingTexture = value
+                        UUF:FullFrameUpdate(Unit)
+                    end)
+                    StatusContainer:AddChild(RestingTextureIndicatorDropdown)
+
+                    local StatusAnchorFromDropdown = AG:Create("Dropdown")
+                    StatusAnchorFromDropdown:SetList(AnchorPoints)
+                    StatusAnchorFromDropdown:SetLabel("Anchor From")
+                    StatusAnchorFromDropdown:SetValue(Status.AnchorFrom)
+                    StatusAnchorFromDropdown:SetRelativeWidth(0.5)
+                    StatusAnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value)
+                        Status.AnchorFrom = value
+                        UUF:FullFrameUpdate(Unit)
+                    end)
+                    StatusContainer:AddChild(StatusAnchorFromDropdown)
+
+                    local StatusAnchorToDropdown = AG:Create("Dropdown")
+                    StatusAnchorToDropdown:SetList(AnchorPoints)
+                    StatusAnchorToDropdown:SetLabel("Anchor To")
+                    StatusAnchorToDropdown:SetValue(Status.AnchorTo)
+                    StatusAnchorToDropdown:SetRelativeWidth(0.5)
+                    StatusAnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value)
+                        Status.AnchorTo = value
+                        UUF:FullFrameUpdate(Unit)
+                    end)
+                    StatusContainer:AddChild(StatusAnchorToDropdown)
+
+                    local StatusOffsetXSlider = AG:Create("Slider")
+                    StatusOffsetXSlider:SetLabel("Offset X")
+                    StatusOffsetXSlider:SetValue(Status.OffsetX)
+                    StatusOffsetXSlider:SetSliderValues(SLIDER_MIN, SLIDER_MAX, SLIDER_STEP)
+                    StatusOffsetXSlider:SetRelativeWidth(0.33)
+                    StatusOffsetXSlider:SetCallback("OnValueChanged", function(_, _, value)
+                        Status.OffsetX = value
+                        UUF:FullFrameUpdate(Unit)
+                    end)
+                    StatusContainer:AddChild(StatusOffsetXSlider)
+
+                    local StatusOffsetYSlider = AG:Create("Slider")
+                    StatusOffsetYSlider:SetLabel("Offset Y")
+                    StatusOffsetYSlider:SetValue(Status.OffsetY)
+                    StatusOffsetYSlider:SetSliderValues(SLIDER_MIN, SLIDER_MAX, SLIDER_STEP)
+                    StatusOffsetYSlider:SetRelativeWidth(0.33)
+                    StatusOffsetYSlider:SetCallback("OnValueChanged", function(_, _, value)
+                        Status.OffsetY = value
+                        UUF:FullFrameUpdate(Unit)
+                    end)
+                    StatusContainer:AddChild(StatusOffsetYSlider)
+
+                    local StatusSizeSlider = AG:Create("Slider")
+                    StatusSizeSlider:SetLabel("Size")
+                    StatusSizeSlider:SetValue(Status.Size)
+                    StatusSizeSlider:SetSliderValues(8, 128, 1)
+                    StatusSizeSlider:SetRelativeWidth(0.33)
+                    StatusSizeSlider:SetCallback("OnValueChanged", function(_, _, value)
+                        Status.Size = value
+                        UUF:FullFrameUpdate(Unit)
+                    end)
+                    StatusContainer:AddChild(StatusSizeSlider)
+
+                    for _, child in ipairs(StatusContainer.children) do
+                        if child ~= DisplayCombatIndicatorCheckBox and child ~= DisplayRestingIndicatorCheckBox then
+                            DeepDisable(child, not (Status.Combat or Status.Resting))
+                        end
+                    end
+                    DeepDisable(RestingTextureIndicatorDropdown, not Status.Resting)
+                    DeepDisable(CombatTextureIndicatorDropdown, not Status.Combat)
+
+                end
             end
 
             if ModuleGroup == "Colours" then

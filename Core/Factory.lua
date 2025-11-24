@@ -142,6 +142,44 @@ local function ApplyFrameLayout(unitFrame, unit, DB, GeneralDB)
 
     local unitMouseoverHighlight = unitFrame.MouseoverHighlight
     unitMouseoverHighlight:SetBackdropBorderColor(unpack(DB.Indicators.MouseoverHighlight.Colour))
+
+    if unitFrame.CombatTexture then
+        if DB.Indicators.Status.CombatTexture == "DEFAULT" then
+            unitFrame.CombatTexture:SetTexture([[Interface\CharacterFrame\UI-StateIcon]])
+            unitFrame.CombatTexture:SetTexCoord(0.5, 1, 0, 0.49)
+        else
+            unitFrame.CombatTexture:SetTexture(UUF.StatusTextureMap[DB.Indicators.Status.CombatTexture])
+            unitFrame.CombatTexture:SetTexCoord(0, 1, 0, 1)
+        end
+        unitFrame.CombatTexture:SetSize(DB.Indicators.Status.Size, DB.Indicators.Status.Size)
+        unitFrame.CombatTexture:ClearAllPoints()
+        unitFrame.CombatTexture:SetPoint(DB.Indicators.Status.AnchorFrom, unitFrame, DB.Indicators.Status.AnchorTo, DB.Indicators.Status.OffsetX, DB.Indicators.Status.OffsetY)
+        unitFrame.CombatTexture:SetDrawLayer("OVERLAY", 7)
+        if DB.Indicators.Status.Combat then
+            unitFrame.CombatTexture:Show()
+        else
+            unitFrame.CombatTexture:Hide()
+        end
+    end
+
+    if unitFrame.RestingTexture then
+        if DB.Indicators.Status.RestingTexture == "DEFAULT" then
+            unitFrame.RestingTexture:SetTexture([[Interface\CharacterFrame\UI-StateIcon]])
+            unitFrame.RestingTexture:SetTexCoord(0, 0.5, 0, 0.421875)
+        else
+            unitFrame.RestingTexture:SetTexture(UUF.StatusTextureMap[DB.Indicators.Status.RestingTexture])
+            unitFrame.RestingTexture:SetTexCoord(0, 1, 0, 1)
+        end
+        unitFrame.RestingTexture:SetSize(DB.Indicators.Status.Size, DB.Indicators.Status.Size)
+        unitFrame.RestingTexture:ClearAllPoints()
+        unitFrame.RestingTexture:SetPoint(DB.Indicators.Status.AnchorFrom, unitFrame, DB.Indicators.Status.AnchorTo, DB.Indicators.Status.OffsetX, DB.Indicators.Status.OffsetY)
+        unitFrame.RestingTexture:SetDrawLayer("OVERLAY", 7)
+        if DB.Indicators.Status.Resting then
+            unitFrame.RestingTexture:Show()
+        else
+            unitFrame.RestingTexture:Hide()
+        end
+    end
 end
 
 local function ApplyFrameColours(unitFrame, unit, DB, GeneralDB)
@@ -187,6 +225,27 @@ local function UpdateUnitFrameData(unitFrame, unit, DB, GeneralDB)
             end
         end
     end
+
+    if unit == "player" then
+        local inCombat  = DB.Indicators.Status.Combat  and UnitAffectingCombat("player")
+        local isResting = DB.Indicators.Status.Resting and IsResting()
+
+        if unitFrame.CombatTexture then
+            if inCombat then
+                unitFrame.CombatTexture:Show()
+            else
+                unitFrame.CombatTexture:Hide()
+            end
+        end
+
+        if unitFrame.RestingTexture then
+            if isResting and not inCombat then
+                unitFrame.RestingTexture:Show()
+            else
+                unitFrame.RestingTexture:Hide()
+            end
+        end
+    end
 end
 
 local function RefreshUnitEvents(unitFrame, unit, DB)
@@ -208,6 +267,8 @@ local function RefreshUnitEvents(unitFrame, unit, DB)
     unitFrame:RegisterUnitEvent("UNIT_NAME_UPDATE", unit)
     unitFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
     unitFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
+    unitFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
+    unitFrame:RegisterEvent("PLAYER_REGEN_DISABLED")
 
     if unit == "pet" then unitFrame:RegisterEvent("UNIT_PET") end
     if unit == "focus" then unitFrame:RegisterEvent("PLAYER_FOCUS_CHANGED") end
@@ -283,6 +344,10 @@ function UUF:CreateUnitFrame(unit)
     unitFrame.MouseoverHighlight:SetBackdrop({ bgFile="Interface\\Buttons\\WHITE8x8", edgeFile="Interface\\Buttons\\WHITE8x8", edgeSize=1 })
     unitFrame.MouseoverHighlight:SetBackdropColor(0,0,0,0)
     unitFrame.MouseoverHighlight:Hide()
+    if unit == "player" then
+        unitFrame.CombatTexture  = unitFrame.healthBar:CreateTexture(frameName.."_CombatIndicator", "OVERLAY")
+        unitFrame.RestingTexture = unitFrame.healthBar:CreateTexture(frameName.."_RestingIndicator", "OVERLAY")
+    end
     unitFrame:SetScript("OnEnter", function(self) local DB = UUF.db.profile[self.dbUnit] if DB.Indicators.MouseoverHighlight.Enabled then self.MouseoverHighlight:Show() end UnitFrame_OnEnter(self) end)
     unitFrame:SetScript("OnLeave", function(self) local DB = UUF.db.profile[self.dbUnit] if DB.Indicators.MouseoverHighlight.Enabled then self.MouseoverHighlight:Hide() end UnitFrame_OnLeave(self) end)
     if unit ~= "pet" and unit ~= "focus" then
