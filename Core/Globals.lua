@@ -99,6 +99,11 @@ function UUF:HideDefaultUnitFrames()
     KillFrame(FocusFrame)
     KillFrame(TargetFrameToT)
     KillFrame(PetFrame)
+    KillFrame(Boss1TargetFrame)
+    KillFrame(Boss2TargetFrame)
+    KillFrame(Boss3TargetFrame)
+    KillFrame(Boss4TargetFrame)
+    KillFrame(Boss5TargetFrame)
 end
 
 function UUF:CreatePrompt(title, text, onAccept, onCancel, acceptText, cancelText)
