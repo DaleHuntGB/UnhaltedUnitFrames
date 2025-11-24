@@ -78,6 +78,15 @@ local function ApplyFrameLayout(unitFrame, unit, DB, GeneralDB)
         unitPowerBar.BG:SetTexture(UUF.Media.BackgroundTexture)
         unitPowerBar.BG:SetVertexColor(unpack(DB.PowerBar.BGColour))
 
+        if not unitPowerBar.TopBorder then
+            unitPowerBar.TopBorder = unitPowerBar:CreateTexture(nil, "OVERLAY")
+            unitPowerBar.TopBorder:SetHeight(1)
+            unitPowerBar.TopBorder:SetPoint("TOPLEFT", unitPowerBar, "TOPLEFT", 0, 0)
+            unitPowerBar.TopBorder:SetPoint("TOPRIGHT", unitPowerBar, "TOPRIGHT", 0, 0)
+            unitPowerBar.TopBorder:SetTexture("Interface\\Buttons\\WHITE8x8")
+            unitPowerBar.TopBorder:SetVertexColor(0,0,0,1)
+        end
+
         unitHealthBar:SetPoint("TOPLEFT", unitFrame, "TOPLEFT", 1, -1)
         unitHealthBar:SetPoint("BOTTOMLEFT", unitPowerBar, "TOPLEFT", 0, 0)
         unitHealthBar:SetPoint("BOTTOMRIGHT", unitPowerBar, "TOPRIGHT", 0, 0)
