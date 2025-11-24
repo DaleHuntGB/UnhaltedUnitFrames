@@ -1,5 +1,5 @@
 package-as: UnhaltedUnitFrames
-
+release-type: beta
 enable-nolib-creation: yes
 
 externals:
