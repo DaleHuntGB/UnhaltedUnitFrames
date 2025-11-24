@@ -50,6 +50,10 @@ UUF.StatusTextureMap = {
     ["RESTING7"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Resting\\Resting7.tga",
 }
 
+function UUF:Print(MSG)
+    print(UUF.AddOnName .. ":|r " .. MSG)
+end
+
 function UUF:ResolveMedia()
     local LSM = UUF.LSM
     local General = UUF.db.profile.General
@@ -74,6 +78,7 @@ local function SetupSlashCommands()
     SlashCmdList["UUF"] = function(msg)
         UUF:CreateGUI()
     end
+    UUF:Print("'|cFF8080FF/uuf|r' for in-game configuration.")
 end
 
 function UUF:Init()
