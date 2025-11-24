@@ -477,6 +477,7 @@ function UUF:CreateGUI()
         local DB = UUF.db.profile[dbUnit]
         local ScrollFrame = AG:Create("ScrollFrame")
         local isBoss = Unit == "boss"
+        local isParentableFrame = Unit == "targettarget" or Unit == "focus" or Unit == "pet"
         ScrollFrame:SetLayout("Flow")
         ScrollFrame:SetFullWidth(true)
         ScrollFrame:SetFullHeight(true)
@@ -629,7 +630,7 @@ function UUF:CreateGUI()
                 AnchorFromDropdown:SetList(AnchorPoints)
                 AnchorFromDropdown:SetLabel("Anchor From")
                 AnchorFromDropdown:SetValue(DB.Frame.AnchorFrom)
-                AnchorFromDropdown:SetRelativeWidth(isBoss and 0.33 or 0.5)
+                AnchorFromDropdown:SetRelativeWidth((isBoss or isParentableFrame) and 0.33 or 0.5)
                 AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value)
                     DB.Frame.AnchorFrom = value
                     if isBoss then
@@ -640,11 +641,23 @@ function UUF:CreateGUI()
                 end)
                 UnitFrameContainer:AddChild(AnchorFromDropdown)
 
+                if isParentableFrame then
+                    local AnchorParentEditBox = AG:Create("EditBox")
+                    AnchorParentEditBox:SetLabel("Anchor Parent Frame")
+                    AnchorParentEditBox:SetText(DB.Frame.AnchorParent)
+                    AnchorParentEditBox:SetRelativeWidth(0.33)
+                    AnchorParentEditBox:SetCallback("OnEnterPressed", function(_, _, value)
+                        DB.Frame.AnchorParent = value
+                        UUF:FullFrameUpdate(Unit)
+                    end)
+                    UnitFrameContainer:AddChild(AnchorParentEditBox)
+                end
+
                 local AnchorToDropdown = AG:Create("Dropdown")
                 AnchorToDropdown:SetList(AnchorPoints)
                 AnchorToDropdown:SetLabel("Anchor To")
                 AnchorToDropdown:SetValue(DB.Frame.AnchorTo)
-                AnchorToDropdown:SetRelativeWidth(isBoss and 0.33 or 0.5)
+                AnchorToDropdown:SetRelativeWidth((isBoss or isParentableFrame) and 0.33 or 0.5)
                 AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value)
                     DB.Frame.AnchorTo = value
                     if isBoss then
