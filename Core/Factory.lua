@@ -102,7 +102,7 @@ local function ApplyFrameLayout(unitFrame, unit, DB, GeneralDB)
         if absorbDB and absorbDB.Enabled then
             unitFrame.absorbsBar:Show()
             unitFrame.absorbsBar:SetWidth(unitFrame:GetWidth() - 2)
-            unitFrame.absorbsBar:SetHeight(absorbDB.Height)
+            unitFrame.absorbsBar:SetHeight(unitFrame.healthBar:GetHeight() - 2)
             unitFrame.absorbsBar:SetStatusBarTexture(UUF.Media.ForegroundTexture)
             unitFrame.absorbsBar:SetPoint("TOPLEFT", unitHealthBar:GetStatusBarTexture(), "TOPLEFT")
             unitFrame.absorbsBar:SetPoint("BOTTOMRIGHT", unitHealthBar:GetStatusBarTexture(), "BOTTOMRIGHT")
