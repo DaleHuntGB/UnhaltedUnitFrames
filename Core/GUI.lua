@@ -1031,6 +1031,110 @@ function UUF:CreateGUI()
 
                 DeepDisable(UnitFrameContainer, not PowerBarDB.Enabled, PowerBarEnabledCheckBox)
                 DeepDisable(PowerBarTextContainer, not PowerBarDB.Text.Enabled, PowerBarTextEnabledCheckBox)
+
+                ScrollFrame:DoLayout()
+            end
+
+            local function DrawAlternatePowerBarContainer()
+                local AlternatePowerDB = DB.AlternatePowerBar
+
+                local AlternatePowerEnabledCheckBox = AG:Create("CheckBox")
+                AlternatePowerEnabledCheckBox:SetLabel("Enable Alternate Power Bar")
+                AlternatePowerEnabledCheckBox:SetValue(AlternatePowerDB.Enabled)
+                AlternatePowerEnabledCheckBox:SetRelativeWidth(0.5)
+                AlternatePowerEnabledCheckBox:SetCallback("OnValueChanged", function(_, _, value)
+                    AlternatePowerDB.Enabled = value
+                    if isBoss then
+                        for i=1, 10 do
+                            UUF:FullFrameUpdate("boss" .. i)
+                        end
+                        UUF:LayoutBossFrames()
+                    else
+                        UUF:FullFrameUpdate(Unit)
+                    end
+                    DeepDisable(UnitFrameContainer, not value, AlternatePowerEnabledCheckBox)
+                end)
+                UnitFrameContainer:AddChild(AlternatePowerEnabledCheckBox)
+
+                local AlternatePowerHeightSlider = AG:Create("Slider")
+                AlternatePowerHeightSlider:SetLabel("Power Bar Height")
+                AlternatePowerHeightSlider:SetValue(AlternatePowerDB.Height)
+                AlternatePowerHeightSlider:SetSliderValues(1, 100, 1)
+                AlternatePowerHeightSlider:SetRelativeWidth(0.5)
+                AlternatePowerHeightSlider:SetCallback("OnValueChanged", function(_, _, value)
+                    AlternatePowerDB.Height = value
+                    if isBoss then
+                        for i=1, 10 do
+                            UUF:FullFrameUpdate("boss" .. i)
+                        end
+                        UUF:LayoutBossFrames()
+                    else
+                        UUF:FullFrameUpdate(Unit)
+                    end
+                end)
+                UnitFrameContainer:AddChild(AlternatePowerHeightSlider)
+
+                local AlternatePowerColourContainer = AG:Create("InlineGroup")
+                AlternatePowerColourContainer:SetTitle("Colours")
+                AlternatePowerColourContainer:SetLayout("Flow")
+                AlternatePowerColourContainer:SetFullWidth(true)
+                UnitFrameContainer:AddChild(AlternatePowerColourContainer)
+
+                local AlternatePowerColourByTypeCheckBox = AG:Create("CheckBox")
+                AlternatePowerColourByTypeCheckBox:SetLabel("Colour By Power Type")
+                AlternatePowerColourByTypeCheckBox:SetValue(AlternatePowerDB.ColourByType)
+                AlternatePowerColourByTypeCheckBox:SetRelativeWidth(0.33)
+                AlternatePowerColourByTypeCheckBox:SetCallback("OnValueChanged", function(_, _, value)
+                    AlternatePowerDB.ColourByType = value
+                    if isBoss then
+                        for i=1, 10 do
+                            UUF:FullFrameUpdate("boss" .. i)
+                        end
+                        UUF:LayoutBossFrames()
+                    else
+                        UUF:FullFrameUpdate(Unit)
+                    end
+                end)
+                AlternatePowerColourContainer:AddChild(AlternatePowerColourByTypeCheckBox)
+
+                local AlternatePowerFGColourPicker = AG:Create("ColorPicker")
+                AlternatePowerFGColourPicker:SetLabel("Foreground Colour")
+                AlternatePowerFGColourPicker:SetColor(unpack(AlternatePowerDB.FGColour))
+                AlternatePowerFGColourPicker:SetHasAlpha(true)
+                AlternatePowerFGColourPicker:SetRelativeWidth(0.33)
+                AlternatePowerFGColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a)
+                    AlternatePowerDB.FGColour = {r, g, b, a}
+                    if isBoss then
+                        for i=1, 10 do
+                            UUF:FullFrameUpdate("boss" .. i)
+                        end
+                        UUF:LayoutBossFrames()
+                    else
+                        UUF:FullFrameUpdate(Unit)
+                    end
+                end)
+                AlternatePowerColourContainer:AddChild(AlternatePowerFGColourPicker)
+
+                local AlternatePowerBGColourPicker = AG:Create("ColorPicker")
+                AlternatePowerBGColourPicker:SetLabel("Background Colour")
+                AlternatePowerBGColourPicker:SetColor(unpack(AlternatePowerDB.BGColour))
+                AlternatePowerBGColourPicker:SetHasAlpha(true)
+                AlternatePowerBGColourPicker:SetRelativeWidth(0.33)
+                AlternatePowerBGColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a)
+                    AlternatePowerDB.BGColour = {r, g, b, a}
+                    if isBoss then
+                        for i=1, 10 do
+                            UUF:FullFrameUpdate("boss" .. i)
+                        end
+                        UUF:LayoutBossFrames()
+                    else
+                        UUF:FullFrameUpdate(Unit)
+                    end
+                end)
+                AlternatePowerColourContainer:AddChild(AlternatePowerBGColourPicker)
+                ScrollFrame:DoLayout()
+
+                DeepDisable(AlternatePowerColourContainer, not AlternatePowerDB.Enabled, AlternatePowerEnabledCheckBox)
             end
 
             local function DrawTextsContainer()
@@ -1298,6 +1402,10 @@ function UUF:CreateGUI()
                 if Unit ~= "pet" and Unit ~= "focus" then
                     DrawPowerBarContainer()
                 end
+            elseif ModuleGroup == "AlternatePowerBar" then
+                if Unit == "player" then
+                    DrawAlternatePowerBarContainer()
+                end
             elseif ModuleGroup == "Texts" then
                 DrawTextsContainer()
             elseif ModuleGroup == "Indicators" then
@@ -1308,7 +1416,18 @@ function UUF:CreateGUI()
         local ModuleTabGroup = AG:Create("TabGroup")
         ModuleTabGroup:SetLayout("Flow")
         ModuleTabGroup:SetFullWidth(true)
-        if Unit ~= "pet" and Unit ~= "focus" then
+        if Unit == "player" then
+            ModuleTabGroup:SetTabs({
+                { text = "Colours", value = "Colours"},
+                { text = "Frame", value = "Frame"},
+                { text = "Heal Prediction", value = "HealPrediction"},
+                { text = "Power Bar", value = "PowerBar"},
+                { text = "Alternate Power Bar", value = "AlternatePowerBar"},
+                { text = "Texts", value = "Texts"},
+                { text = "Indicators", value = "Indicators"},
+            })
+
+        elseif Unit ~= "pet" and Unit ~= "focus" then
             ModuleTabGroup:SetTabs({
                 { text = "Colours", value = "Colours"},
                 { text = "Frame", value = "Frame"},
@@ -1317,6 +1436,7 @@ function UUF:CreateGUI()
                 { text = "Texts", value = "Texts"},
                 { text = "Indicators", value = "Indicators"},
             })
+
         else
             ModuleTabGroup:SetTabs({
                 { text = "Colours", value = "Colours"},

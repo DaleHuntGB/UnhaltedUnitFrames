@@ -48,6 +48,22 @@ local function FetchPowerBarColour(unit, DB, GeneralDB)
     return powerBarForegroundColour[1], powerBarForegroundColour[2], powerBarForegroundColour[3], powerBarForegroundColour[4] or 1
 end
 
+local function FetchAlternatePowerBarColour(unit, DB, GeneralDB)
+    local PDB = DB.AlternatePowerBar
+    if not PDB then return 1,1,1,1 end
+
+    if PDB.ColourByType then
+        local powerColour = GeneralDB.CustomColours.Power[Enum.PowerType.Mana]
+        if powerColour then
+            return powerColour[1], powerColour[2], powerColour[3], powerColour[4] or 1
+        end
+    end
+
+    local alternatePowerBarForegroundColour = PDB.FGColour
+    return alternatePowerBarForegroundColour[1], alternatePowerBarForegroundColour[2], alternatePowerBarForegroundColour[3], alternatePowerBarForegroundColour[4] or 1
+end
+
+
 local function ApplyFrameLayout(unitFrame, unit, DB, GeneralDB)
     unitFrame:SetSize(DB.Frame.Width, DB.Frame.Height)
 
@@ -81,8 +97,8 @@ local function ApplyFrameLayout(unitFrame, unit, DB, GeneralDB)
         if not unitPowerBar.TopBorder then
             unitPowerBar.TopBorder = unitPowerBar:CreateTexture(nil, "OVERLAY")
             unitPowerBar.TopBorder:SetHeight(1)
-            unitPowerBar.TopBorder:SetPoint("TOPLEFT", unitPowerBar, "TOPLEFT", 0, 0)
-            unitPowerBar.TopBorder:SetPoint("TOPRIGHT", unitPowerBar, "TOPRIGHT", 0, 0)
+            unitPowerBar.TopBorder:SetPoint("TOPLEFT", unitPowerBar, "TOPLEFT", 0, 1)
+            unitPowerBar.TopBorder:SetPoint("TOPRIGHT", unitPowerBar, "TOPRIGHT", 0, 1)
             unitPowerBar.TopBorder:SetTexture("Interface\\Buttons\\WHITE8x8")
             unitPowerBar.TopBorder:SetVertexColor(0,0,0,1)
         end
@@ -96,6 +112,48 @@ local function ApplyFrameLayout(unitFrame, unit, DB, GeneralDB)
         unitHealthBar:SetPoint("BOTTOMRIGHT", unitFrame, "BOTTOMRIGHT", -1, 1)
     end
     unitHealthBar:SetStatusBarTexture(UUF.Media.ForegroundTexture)
+
+    if DB.AlternatePowerBar and DB.AlternatePowerBar.Enabled and unitFrame.alternatePowerBar and unit == "player" then
+        local unitAlternatePowerBar = unitFrame.alternatePowerBar
+        unitAlternatePowerBar:Show()
+        unitAlternatePowerBar:SetHeight(DB.AlternatePowerBar.Height)
+        unitAlternatePowerBar:SetStatusBarTexture(UUF.Media.ForegroundTexture)
+        unitAlternatePowerBar:ClearAllPoints()
+        unitAlternatePowerBar:SetPoint("BOTTOMLEFT",  unitFrame, "BOTTOMLEFT", 1, 1)
+        unitAlternatePowerBar:SetPoint("BOTTOMRIGHT", unitFrame, "BOTTOMRIGHT", -1, 1)
+
+        if not unitAlternatePowerBar.BG then unitAlternatePowerBar.BG = unitAlternatePowerBar:CreateTexture(nil, "BACKGROUND") end
+        unitAlternatePowerBar.BG:SetAllPoints()
+        unitAlternatePowerBar.BG:SetTexture(UUF.Media.BackgroundTexture)
+        unitAlternatePowerBar.BG:SetVertexColor(unpack(DB.AlternatePowerBar.BGColour))
+
+        if not unitAlternatePowerBar.TopBorder then
+            unitAlternatePowerBar.TopBorder = unitAlternatePowerBar:CreateTexture(nil, "OVERLAY")
+            unitAlternatePowerBar.TopBorder:SetHeight(1)
+            unitAlternatePowerBar.TopBorder:SetPoint("TOPLEFT", unitAlternatePowerBar, "TOPLEFT", 0, 1)
+            unitAlternatePowerBar.TopBorder:SetPoint("TOPRIGHT", unitAlternatePowerBar, "TOPRIGHT", 0, 1)
+            unitAlternatePowerBar.TopBorder:SetTexture("Interface\\Buttons\\WHITE8x8")
+            unitAlternatePowerBar.TopBorder:SetVertexColor(0,0,0,1)
+        else
+            unitAlternatePowerBar.TopBorder:Show()
+        end
+
+        unitHealthBar:SetPoint("TOPLEFT", unitFrame, "TOPLEFT", 1, -1)
+        unitHealthBar:SetPoint("BOTTOMLEFT", unitAlternatePowerBar, "TOPLEFT", 0, 0)
+        unitHealthBar:SetPoint("BOTTOMRIGHT", unitAlternatePowerBar, "TOPRIGHT", 0, 0)
+    else
+        if unitFrame.alternatePowerBar then
+            unitFrame.alternatePowerBar:Hide()
+            if unitFrame.alternatePowerBar.TopBorder then
+                unitFrame.alternatePowerBar.TopBorder:Hide()
+            end
+            if unitFrame.alternatePowerBar.BG then
+                unitFrame.alternatePowerBar.BG:Hide()
+            end
+        end
+        unitHealthBar:SetPoint("TOPLEFT",     unitFrame, "TOPLEFT",     1, -1)
+        unitHealthBar:SetPoint("BOTTOMRIGHT", unitFrame, "BOTTOMRIGHT", -1, 1)
+    end
 
     if unitFrame.absorbsBar then
         local absorbDB = DB.HealPrediction and DB.HealPrediction.Absorbs
@@ -225,6 +283,18 @@ local function ApplyFrameColours(unitFrame, unit, DB, GeneralDB)
             end
         end
     end
+
+    if unitFrame.alternatePowerBar and unit == "player" then
+        local alternatePowerBarR,alternatePowerBarG,alternatePowerBarB,alternatePowerBarA = FetchAlternatePowerBarColour(unit, DB, GeneralDB)
+        unitFrame.alternatePowerBar:SetStatusBarColor(alternatePowerBarR,alternatePowerBarG,alternatePowerBarB,alternatePowerBarA)
+    end
+end
+
+local function ShouldHaveAlternatePowerBar()
+    local class = select(2, UnitClass("player"))
+    local spec  = GetSpecialization()
+    if not spec then return false end
+    return (class == "PRIEST" and GetSpecializationInfo(spec) == 258)
 end
 
 local function UpdateUnitFrameData(unitFrame, unit, DB, GeneralDB)
@@ -250,17 +320,18 @@ local function UpdateUnitFrameData(unitFrame, unit, DB, GeneralDB)
     unitFrame.TagTwo:SetText(UUF:EvaluateTagString(unit, (DB.Tags.TagTwo.Tag or "")))
     unitFrame.TagThree:SetText(UUF:EvaluateTagString(unit, (DB.Tags.TagThree.Tag or "")))
     if unitFrame.powerBar then
-        if not DB.PowerBar.Enabled then return end
-        local unitPower = UnitPower(unit)
-        unitFrame.powerBar:SetMinMaxValues(0, UnitPowerMax(unit))
-        unitFrame.powerBar:SetValue(unitPower)
+        if not DB.PowerBar.Enabled then
+            local unitPower = UnitPower(unit)
+            unitFrame.powerBar:SetMinMaxValues(0, UnitPowerMax(unit))
+            unitFrame.powerBar:SetValue(unitPower)
 
-        if DB.PowerBar.Text.Enabled then
-            local powerType = UnitPowerType(unit)
-            if powerType == 0 then
-                unitFrame.powerBar.Text:SetText(string.format("%.0f%%", UnitPowerPercent(unit, Enum.PowerType.Mana, false, true)))
-            else
-                unitFrame.powerBar.Text:SetText(AbbreviateLargeNumbers(unitPower))
+            if DB.PowerBar.Text.Enabled then
+                local powerType = UnitPowerType(unit)
+                if powerType == 0 then
+                    unitFrame.powerBar.Text:SetText(string.format("%.0f%%", UnitPowerPercent(unit, Enum.PowerType.Mana, false, true)))
+                else
+                    unitFrame.powerBar.Text:SetText(AbbreviateLargeNumbers(unitPower))
+                end
             end
         end
     end
@@ -282,6 +353,19 @@ local function UpdateUnitFrameData(unitFrame, unit, DB, GeneralDB)
                 unitFrame.RestingTexture:Show()
             else
                 unitFrame.RestingTexture:Hide()
+            end
+        end
+
+        if unitFrame.alternatePowerBar then
+            if ShouldHaveAlternatePowerBar() then
+                unitFrame.alternatePowerBar:Show()
+                local mana = UnitPower("player", Enum.PowerType.Mana)
+                unitFrame.alternatePowerBar:SetMinMaxValues( 0, UnitPowerMax("player", Enum.PowerType.Mana))
+                unitFrame.alternatePowerBar:SetValue(mana)
+                local r,g,b,a = FetchAlternatePowerBarColour(unit, DB, GeneralDB)
+                unitFrame.alternatePowerBar:SetStatusBarColor(r,g,b,a)
+            else
+                unitFrame.alternatePowerBar:Hide()
             end
         end
     end
@@ -325,6 +409,19 @@ local function RefreshUnitEvents(unitFrame, unit, DB)
             powerBar:SetScript("OnEvent", function(self) if UUF.BossTestMode then UUF:UpdateUnitFrame(self.unit) else if UnitExists(self.unit) then UUF:UpdateUnitFrame(self.unit) end end end)
         else
             powerBar:SetScript("OnEvent", nil)
+        end
+    end
+
+    if unitFrame.alternatePowerBar and unit == "player" then
+        local alternatePowerBar = unitFrame.alternatePowerBar
+        alternatePowerBar:UnregisterAllEvents()
+        if DB.AlternatePowerBar.Enabled then
+            alternatePowerBar:RegisterUnitEvent("UNIT_POWER_UPDATE", unit)
+            alternatePowerBar:RegisterUnitEvent("UNIT_MAXPOWER", unit)
+            alternatePowerBar:RegisterEvent("PLAYER_TARGET_CHANGED")
+            alternatePowerBar:SetScript("OnEvent", function(self) if UUF.BossTestMode then UUF:UpdateUnitFrame(self.unit) else if UnitExists(self.unit) then UUF:UpdateUnitFrame(self.unit) end end end)
+        else
+            alternatePowerBar:SetScript("OnEvent", nil)
         end
     end
 end
@@ -401,6 +498,12 @@ function UUF:CreateUnitFrame(unit)
         unitFrame.powerBar:SetStatusBarTexture(UUF.Media.ForegroundTexture)
         unitFrame.powerBar.Text = unitFrame.powerBar:CreateFontString(nil, "OVERLAY")
         unitFrame.powerBar.unit = unit
+    end
+
+    if unit == "player" then
+        unitFrame.alternatePowerBar = CreateFrame("StatusBar", nil, unitFrame)
+        unitFrame.alternatePowerBar:SetStatusBarTexture(UUF.Media.ForegroundTexture)
+        unitFrame.alternatePowerBar.unit = unit
     end
 
     unitFrame:RegisterForClicks("AnyUp")

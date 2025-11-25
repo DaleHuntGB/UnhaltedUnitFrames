@@ -114,6 +114,13 @@ UUF.Defaults = {
                     ColourByType = true,
                 }
             },
+            AlternatePowerBar = {
+                Enabled = true,
+                Height = 3,
+                ColourByType = true,
+                FGColour = {8/255, 8/255, 8/255, 0.8},
+                BGColour = {26/255, 26/255, 26/255, 1},
+            },
             Indicators = {
                 MouseoverHighlight = {
                     Enabled = true,
