@@ -724,21 +724,21 @@ function UUF:CreateGUI()
 
                 local ShowAbsorbsCheckBox = AG:Create("CheckBox")
                 ShowAbsorbsCheckBox:SetLabel("Show Absorbs")
-                ShowAbsorbsCheckBox:SetValue(DB.HealPrediction.ShowAbsorbs)
+                ShowAbsorbsCheckBox:SetValue(DB.HealPrediction.Absorbs.Enabled)
                 ShowAbsorbsCheckBox:SetRelativeWidth(0.5)
                 ShowAbsorbsCheckBox:SetCallback("OnValueChanged", function(_, _, value)
-                    DB.HealPrediction.ShowAbsorbs = value
+                    DB.HealPrediction.Absorbs.Enabled = value
                     UUF:FullFrameUpdate(Unit)
                 end)
                 AbsorbsContainer:AddChild(ShowAbsorbsCheckBox)
 
                 local AbsorbsColourPicker = AG:Create("ColorPicker")
                 AbsorbsColourPicker:SetLabel("Absorbs Colour")
-                AbsorbsColourPicker:SetColor(unpack(DB.HealPrediction.AbsorbsColour))
+                AbsorbsColourPicker:SetColor(unpack(DB.HealPrediction.Absorbs.Colour))
                 AbsorbsColourPicker:SetHasAlpha(true)
                 AbsorbsColourPicker:SetRelativeWidth(0.5)
                 AbsorbsColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a)
-                    DB.HealPrediction.AbsorbsColour = {r, g, b, a}
+                    DB.HealPrediction.Absorbs.Colour = {r, g, b, a}
                     UUF:FullFrameUpdate(Unit)
                 end)
                 AbsorbsContainer:AddChild(AbsorbsColourPicker)
