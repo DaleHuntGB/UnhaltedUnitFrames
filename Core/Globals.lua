@@ -18,6 +18,7 @@ if UUF.LSM then UUF.LSM:Register("font", "Avantgarde - Book (Oblique)", [[Interf
 if UUF.LSM then UUF.LSM:Register("font", "Avantgarde - Demi", [[Interface\AddOns\UnhaltedUnitFrames\Media\Fonts\AvantGarde\Demi.ttf]]) end
 if UUF.LSM then UUF.LSM:Register("font", "Avantgarde - Regular", [[Interface\AddOns\UnhaltedUnitFrames\Media\Fonts\AvantGarde\Regular.ttf]]) end
 if UUF.LSM then UUF.LSM:Register("font", "Expressway - Regular", [[Interface\AddOns\UnhaltedUnitFrames\Media\Fonts\Expressway.ttf]]) end
+if UUF.LSM then UUF.LSM:Register("font", "Avante", [[Interface\AddOns\UnhaltedUnitFrames\Media\Fonts\Avante.ttf]]) end
 
 UUF.UnitToFrameName = {
     ["player"] = "UUF_Player",
