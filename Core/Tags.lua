@@ -34,6 +34,7 @@ UUF:RegisterTag("maxhp:abbr", function(unit) return AbbreviateLargeNumbers(UnitH
 UUF:RegisterTag("perhp", function(unit) return string.format("%.0f%%", UnitHealthPercent(unit, false, true)) end)
 UUF:RegisterTag("curhpperhp", function(unit) if UnitIsDeadOrGhost(unit) then return "Dead" end return string.format("%s %s %.0f%%", UnitHealth(unit), UUF.HealthSeparator, UnitHealthPercent(unit, false, true)) end)
 UUF:RegisterTag("curhpperhp:abbr", function(unit) if UnitIsDeadOrGhost(unit) then return "Dead" end return string.format("%s %s %.0f%%", AbbreviateLargeNumbers(UnitHealth(unit)), UUF.HealthSeparator, UnitHealthPercent(unit, false, true)) end)
+UUF:RegisterTag("absorbs", function(unit) local absorbs = AbbreviateLargeNumbers(UnitGetTotalAbsorbs(unit)) return absorbs end)
 UUF:RegisterTag("curpp", function(unit) return UnitPower(unit) end)
 UUF:RegisterTag("curpp:abbr", function(unit) return AbbreviateLargeNumbers(UnitPower(unit)) end)
 UUF:RegisterTag("maxpp", function(unit) return UnitPowerMax(unit) end)
@@ -50,6 +51,7 @@ local HealthTags = {
     ["maxhp"] = "Maximum Health",
     ["maxhp:abbr"] = "Maximum Health (Abbreviated)",
     ["perhp"] = "Health Percentage",
+    ["absorbs"] = "Total Absorbs",
 }
 
 local function GetHealthTags()

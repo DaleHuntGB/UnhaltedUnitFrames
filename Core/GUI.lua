@@ -715,6 +715,35 @@ function UUF:CreateGUI()
                 UnitFrameContainer:AddChild(YPositionSlider)
             end
 
+            local function DrawHealPredictionContainer()
+                local AbsorbsContainer = AG:Create("InlineGroup")
+                AbsorbsContainer:SetTitle("Absorbs")
+                AbsorbsContainer:SetLayout("Flow")
+                AbsorbsContainer:SetFullWidth(true)
+                UnitFrameContainer:AddChild(AbsorbsContainer)
+
+                local ShowAbsorbsCheckBox = AG:Create("CheckBox")
+                ShowAbsorbsCheckBox:SetLabel("Show Absorbs")
+                ShowAbsorbsCheckBox:SetValue(DB.HealPrediction.ShowAbsorbs)
+                ShowAbsorbsCheckBox:SetRelativeWidth(0.5)
+                ShowAbsorbsCheckBox:SetCallback("OnValueChanged", function(_, _, value)
+                    DB.HealPrediction.ShowAbsorbs = value
+                    UUF:FullFrameUpdate(Unit)
+                end)
+                AbsorbsContainer:AddChild(ShowAbsorbsCheckBox)
+
+                local AbsorbsColourPicker = AG:Create("ColorPicker")
+                AbsorbsColourPicker:SetLabel("Absorbs Colour")
+                AbsorbsColourPicker:SetColor(unpack(DB.HealPrediction.AbsorbsColour))
+                AbsorbsColourPicker:SetHasAlpha(true)
+                AbsorbsColourPicker:SetRelativeWidth(0.5)
+                AbsorbsColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a)
+                    DB.HealPrediction.AbsorbsColour = {r, g, b, a}
+                    UUF:FullFrameUpdate(Unit)
+                end)
+                AbsorbsContainer:AddChild(AbsorbsColourPicker)
+            end
+
             local function DrawPowerBarContainer()
                 local PowerBarDB = DB.PowerBar
 
@@ -1263,6 +1292,8 @@ function UUF:CreateGUI()
                 DrawColourContainer()
             elseif ModuleGroup == "Frame" then
                 DrawFrameContainer()
+            elseif ModuleGroup == "HealPrediction" then
+                DrawHealPredictionContainer()
             elseif ModuleGroup == "PowerBar" then
                 if Unit ~= "pet" and Unit ~= "focus" then
                     DrawPowerBarContainer()
@@ -1281,6 +1312,7 @@ function UUF:CreateGUI()
             ModuleTabGroup:SetTabs({
                 { text = "Colours", value = "Colours"},
                 { text = "Frame", value = "Frame"},
+                { text = "Heal Prediction", value = "HealPrediction"},
                 { text = "Power Bar", value = "PowerBar"},
                 { text = "Texts", value = "Texts"},
                 { text = "Indicators", value = "Indicators"},
@@ -1289,6 +1321,7 @@ function UUF:CreateGUI()
             ModuleTabGroup:SetTabs({
                 { text = "Colours", value = "Colours"},
                 { text = "Frame", value = "Frame"},
+                { text = "Heal Prediction", value = "HealPrediction"},
                 { text = "Texts", value = "Texts"},
                 { text = "Indicators", value = "Indicators"},
             })

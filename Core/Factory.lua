@@ -97,11 +97,28 @@ local function ApplyFrameLayout(unitFrame, unit, DB, GeneralDB)
     end
     unitHealthBar:SetStatusBarTexture(UUF.Media.ForegroundTexture)
 
+    if unitFrame.absorbsBar then
+        local absorbDB = DB.HealPrediction and DB.HealPrediction.Absorbs
+        if absorbDB and absorbDB.Enabled then
+            unitFrame.absorbsBar:Show()
+            unitFrame.absorbsBar:SetWidth(unitFrame:GetWidth() - 2)
+            unitFrame.absorbsBar:SetHeight(absorbDB.Height)
+            unitFrame.absorbsBar:SetStatusBarTexture(UUF.Media.ForegroundTexture)
+            unitFrame.absorbsBar:SetPoint("TOPLEFT", unitHealthBar:GetStatusBarTexture(), "TOPLEFT")
+            unitFrame.absorbsBar:SetPoint("BOTTOMRIGHT", unitHealthBar:GetStatusBarTexture(), "BOTTOMRIGHT")
+            local r,g,b,a = unpack(absorbDB.Colour)
+            unitFrame.absorbsBar:SetStatusBarColor(r,g,b,a)
+        else
+            unitFrame.absorbsBar:Hide()
+        end
+    end
+
     local unitTagOne = unitFrame.TagOne
+    local highLevelContainer = unitFrame.highLevelContainer
     local T1 = DB.Tags.TagOne
     unitTagOne:SetFont(UUF.Media.Font, T1.FontSize, GeneralDB.FontFlag)
     unitTagOne:ClearAllPoints()
-    unitTagOne:SetPoint(T1.AnchorFrom, unitFrame, T1.AnchorTo, T1.OffsetX, T1.OffsetY)
+    unitTagOne:SetPoint(T1.AnchorFrom, highLevelContainer, T1.AnchorTo, T1.OffsetX, T1.OffsetY)
     unitTagOne:SetJustifyH(UUF:SetJustification(T1.AnchorFrom))
     unitTagOne:SetShadowColor(unpack(GeneralDB.FontShadows.Colour))
     unitTagOne:SetShadowOffset(GeneralDB.FontShadows.OffsetX, GeneralDB.FontShadows.OffsetY)
@@ -110,7 +127,7 @@ local function ApplyFrameLayout(unitFrame, unit, DB, GeneralDB)
     local T2  = DB.Tags.TagTwo
     unitTagTwo:SetFont(UUF.Media.Font, T2.FontSize, GeneralDB.FontFlag)
     unitTagTwo:ClearAllPoints()
-    unitTagTwo:SetPoint(T2.AnchorFrom, unitFrame, T2.AnchorTo, T2.OffsetX, T2.OffsetY)
+    unitTagTwo:SetPoint(T2.AnchorFrom, highLevelContainer, T2.AnchorTo, T2.OffsetX, T2.OffsetY)
     unitTagTwo:SetJustifyH(UUF:SetJustification(T2.AnchorFrom))
     unitTagTwo:SetTextColor(unpack(T2.Colour))
     unitTagTwo:SetShadowColor(unpack(GeneralDB.FontShadows.Colour))
@@ -120,7 +137,7 @@ local function ApplyFrameLayout(unitFrame, unit, DB, GeneralDB)
     local T3 = DB.Tags.TagThree
     unitTagThree:SetFont(UUF.Media.Font, T3.FontSize, GeneralDB.FontFlag)
     unitTagThree:ClearAllPoints()
-    unitTagThree:SetPoint(T3.AnchorFrom, unitFrame, T3.AnchorTo, T3.OffsetX, T3.OffsetY)
+    unitTagThree:SetPoint(T3.AnchorFrom, highLevelContainer, T3.AnchorTo, T3.OffsetX, T3.OffsetY)
     unitTagThree:SetJustifyH(UUF:SetJustification(T3.AnchorFrom))
     unitTagThree:SetTextColor(unpack(T3.Colour))
     unitTagThree:SetShadowColor(unpack(GeneralDB.FontShadows.Colour))
@@ -162,7 +179,7 @@ local function ApplyFrameLayout(unitFrame, unit, DB, GeneralDB)
         end
         unitFrame.CombatTexture:SetSize(DB.Indicators.Status.Size, DB.Indicators.Status.Size)
         unitFrame.CombatTexture:ClearAllPoints()
-        unitFrame.CombatTexture:SetPoint(DB.Indicators.Status.AnchorFrom, unitFrame, DB.Indicators.Status.AnchorTo, DB.Indicators.Status.OffsetX, DB.Indicators.Status.OffsetY)
+        unitFrame.CombatTexture:SetPoint(DB.Indicators.Status.AnchorFrom, highLevelContainer, DB.Indicators.Status.AnchorTo, DB.Indicators.Status.OffsetX, DB.Indicators.Status.OffsetY)
         unitFrame.CombatTexture:SetDrawLayer("OVERLAY", 7)
         if DB.Indicators.Status.Combat then
             unitFrame.CombatTexture:Show()
@@ -181,7 +198,7 @@ local function ApplyFrameLayout(unitFrame, unit, DB, GeneralDB)
         end
         unitFrame.RestingTexture:SetSize(DB.Indicators.Status.Size, DB.Indicators.Status.Size)
         unitFrame.RestingTexture:ClearAllPoints()
-        unitFrame.RestingTexture:SetPoint(DB.Indicators.Status.AnchorFrom, unitFrame, DB.Indicators.Status.AnchorTo, DB.Indicators.Status.OffsetX, DB.Indicators.Status.OffsetY)
+        unitFrame.RestingTexture:SetPoint(DB.Indicators.Status.AnchorFrom, highLevelContainer, DB.Indicators.Status.AnchorTo, DB.Indicators.Status.OffsetX, DB.Indicators.Status.OffsetY)
         unitFrame.RestingTexture:SetDrawLayer("OVERLAY", 7)
         if DB.Indicators.Status.Resting then
             unitFrame.RestingTexture:Show()
@@ -217,10 +234,23 @@ local function UpdateUnitFrameData(unitFrame, unit, DB, GeneralDB)
     unitFrame.healthBar:SetMinMaxValues(0, unitMaxHP)
     unitFrame.healthBar:SetValue(unitHP)
 
+    if unitFrame.absorbsBar then
+        if not (DB.HealPrediction and DB.HealPrediction.Absorbs and DB.HealPrediction.Absorbs.Enabled) then unitFrame.absorbsBar:Hide() return end
+        local absorbAmount = UnitGetTotalAbsorbs(unit) or 0
+        if absorbAmount then
+            unitFrame.absorbsBar:Show()
+            unitFrame.absorbsBar:SetMinMaxValues(0, unitMaxHP)
+            unitFrame.absorbsBar:SetValue(absorbAmount)
+        else
+            unitFrame.absorbsBar:Hide()
+        end
+    end
+
     unitFrame.TagOne:SetText(UUF:EvaluateTagString(unit, (DB.Tags.TagOne.Tag or "")))
     unitFrame.TagTwo:SetText(UUF:EvaluateTagString(unit, (DB.Tags.TagTwo.Tag or "")))
     unitFrame.TagThree:SetText(UUF:EvaluateTagString(unit, (DB.Tags.TagThree.Tag or "")))
     if unitFrame.powerBar then
+        if not DB.PowerBar.Enabled then return end
         local unitPower = UnitPower(unit)
         unitFrame.powerBar:SetMinMaxValues(0, UnitPowerMax(unit))
         unitFrame.powerBar:SetValue(unitPower)
@@ -274,6 +304,7 @@ local function RefreshUnitEvents(unitFrame, unit, DB)
     unitFrame:RegisterUnitEvent("UNIT_HEALTH", unit)
     unitFrame:RegisterUnitEvent("UNIT_MAXHEALTH", unit)
     unitFrame:RegisterUnitEvent("UNIT_NAME_UPDATE", unit)
+    unitFrame:RegisterUnitEvent("UNIT_ABSORB_AMOUNT_CHANGED", unit)
     unitFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
     unitFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
     unitFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
@@ -342,20 +373,26 @@ function UUF:CreateUnitFrame(unit)
     unitFrame.healthBar:SetPoint("TOPLEFT", unitFrame, "TOPLEFT", 1, -1)
     unitFrame.healthBar:SetPoint("BOTTOMRIGHT", unitFrame, "BOTTOMRIGHT", -1, 1)
     unitFrame.healthBar:SetStatusBarTexture(UUF.Media.ForegroundTexture)
+    unitFrame.highLevelContainer = CreateFrame("Frame", nil, unitFrame)
+    unitFrame.highLevelContainer:SetPoint("TOPLEFT", unitFrame, "TOPLEFT")
+    unitFrame.highLevelContainer:SetPoint("BOTTOMRIGHT", unitFrame, "BOTTOMRIGHT")
     unitFrame.healthBar.BG = unitFrame.healthBar:CreateTexture(nil, "BACKGROUND")
     unitFrame.healthBar.BG:SetAllPoints()
     unitFrame.healthBar.BG:SetTexture(UUF.Media.BackgroundTexture)
-    unitFrame.TagOne = unitFrame.healthBar:CreateFontString(nil, "OVERLAY")
-    unitFrame.TagTwo = unitFrame.healthBar:CreateFontString(nil, "OVERLAY")
-    unitFrame.TagThree = unitFrame.healthBar:CreateFontString(nil, "OVERLAY")
+    unitFrame.absorbsBar = CreateFrame("StatusBar", nil, unitFrame.healthBar)
+    unitFrame.absorbsBar:SetStatusBarTexture(UUF.Media.ForegroundTexture)
+    unitFrame.highLevelContainer:SetFrameLevel(unitFrame:GetFrameLevel() + 999)
+    unitFrame.TagOne = unitFrame.highLevelContainer:CreateFontString(nil, "OVERLAY")
+    unitFrame.TagTwo = unitFrame.highLevelContainer:CreateFontString(nil, "OVERLAY")
+    unitFrame.TagThree = unitFrame.highLevelContainer:CreateFontString(nil, "OVERLAY")
     unitFrame.MouseoverHighlight = CreateFrame("Frame", nil, unitFrame, "BackdropTemplate")
     unitFrame.MouseoverHighlight:SetAllPoints()
     unitFrame.MouseoverHighlight:SetBackdrop({ bgFile="Interface\\Buttons\\WHITE8x8", edgeFile="Interface\\Buttons\\WHITE8x8", edgeSize=1 })
     unitFrame.MouseoverHighlight:SetBackdropColor(0,0,0,0)
     unitFrame.MouseoverHighlight:Hide()
     if unit == "player" then
-        unitFrame.CombatTexture  = unitFrame.healthBar:CreateTexture(frameName.."_CombatIndicator", "OVERLAY")
-        unitFrame.RestingTexture = unitFrame.healthBar:CreateTexture(frameName.."_RestingIndicator", "OVERLAY")
+        unitFrame.CombatTexture  = unitFrame.highLevelContainer:CreateTexture(frameName.."_CombatIndicator", "OVERLAY")
+        unitFrame.RestingTexture = unitFrame.highLevelContainer:CreateTexture(frameName.."_RestingIndicator", "OVERLAY")
     end
     unitFrame:SetScript("OnEnter", function(self) local DB = UUF.db.profile[self.dbUnit] if DB.Indicators.MouseoverHighlight.Enabled then self.MouseoverHighlight:Show() end UnitFrame_OnEnter(self) end)
     unitFrame:SetScript("OnLeave", function(self) local DB = UUF.db.profile[self.dbUnit] if DB.Indicators.MouseoverHighlight.Enabled then self.MouseoverHighlight:Hide() end UnitFrame_OnLeave(self) end)

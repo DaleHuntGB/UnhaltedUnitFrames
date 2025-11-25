@@ -58,6 +58,12 @@ UUF.Defaults = {
                 FGColour = {26/255, 26/255, 26/255, 1.0},
                 BGColour = {26/255, 26/255, 26/255, 1.0},
             },
+            HealPrediction = {
+                Absorbs = {
+                    Enabled = true,
+                    Colour = {255/255, 204/255, 0/255, 1},
+                }
+            },
             CastBar = {
                 Enabled = true,
                 Height = 24,
@@ -170,6 +176,12 @@ UUF.Defaults = {
                 FGColour = {26/255, 26/255, 26/255, 1.0},
                 BGColour = {26/255, 26/255, 26/255, 1.0},
             },
+            HealPrediction = {
+                Absorbs = {
+                    Enabled = true,
+                    Colour = {255/255, 204/255, 0/255, 1},
+                }
+            },
             CastBar = {
                 Enabled = true,
                 Height = 24,
@@ -272,6 +284,12 @@ UUF.Defaults = {
                 FGColour = {26/255, 26/255, 26/255, 1.0},
                 BGColour = {26/255, 26/255, 26/255, 1.0},
             },
+            HealPrediction = {
+                Absorbs = {
+                    Enabled = true,
+                    Colour = {255/255, 204/255, 0/255, 1},
+                }
+            },
             PowerBar = {
                 Enabled = false,
                 Height = 3,
@@ -343,6 +361,12 @@ UUF.Defaults = {
                 FGColour = {26/255, 26/255, 26/255, 1.0},
                 BGColour = {26/255, 26/255, 26/255, 1.0},
             },
+            HealPrediction = {
+                Absorbs = {
+                    Enabled = true,
+                    Colour = {255/255, 204/255, 0/255, 1},
+                }
+            },
             Indicators = {
                 MouseoverHighlight = {
                     Enabled = true,
@@ -394,6 +418,12 @@ UUF.Defaults = {
                 ReactionColour = true,
                 FGColour = {26/255, 26/255, 26/255, 1.0},
                 BGColour = {26/255, 26/255, 26/255, 1.0},
+            },
+            HealPrediction = {
+                Absorbs = {
+                    Enabled = true,
+                    Colour = {255/255, 204/255, 0/255, 1},
+                }
             },
             Indicators = {
                 MouseoverHighlight = {
@@ -447,6 +477,12 @@ UUF.Defaults = {
                 BGColour = {26/255, 26/255, 26/255, 1.0},
                 GrowthDirection = "DOWN",
                 Spacing = 1,
+            },
+            HealPrediction = {
+                Absorbs = {
+                    Enabled = true,
+                    Colour = {255/255, 204/255, 0/255, 1},
+                }
             },
             CastBar = {
                 Enabled = true,
