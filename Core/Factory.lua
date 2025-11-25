@@ -63,6 +63,30 @@ local function FetchAlternatePowerBarColour(unit, DB, GeneralDB)
     return alternatePowerBarForegroundColour[1], alternatePowerBarForegroundColour[2], alternatePowerBarForegroundColour[3], alternatePowerBarForegroundColour[4] or 1
 end
 
+local function ShouldHaveAlternatePowerBar()
+    local SpecsNeedingAltPower = {
+        PRIEST = { 258 },           -- Shadow
+        MAGE   = { 62, 63, 64 },    -- Arcane, Fire, Frost
+        PALADIN = { 70 },           -- Ret
+        SHAMAN  = { 262, 263 },     -- Ele, Enh
+        EVOKER  = { 1467, 1473 },   -- Dev, Aug
+    }
+    local class = select(2, UnitClass("player"))
+    local specIndex = GetSpecialization()
+    if not specIndex then return false end
+
+    local specID = GetSpecializationInfo(specIndex)
+    local classSpecs = SpecsNeedingAltPower[class]
+    if not classSpecs then return false end
+
+    for _, requiredSpec in ipairs(classSpecs) do
+        if specID == requiredSpec then
+            return true
+        end
+    end
+
+    return false
+end
 
 local function ApplyFrameLayout(unitFrame, unit, DB, GeneralDB)
     unitFrame:SetSize(DB.Frame.Width, DB.Frame.Height)
@@ -113,7 +137,7 @@ local function ApplyFrameLayout(unitFrame, unit, DB, GeneralDB)
     end
     unitHealthBar:SetStatusBarTexture(UUF.Media.ForegroundTexture)
 
-    if DB.AlternatePowerBar and DB.AlternatePowerBar.Enabled and unitFrame.alternatePowerBar and unit == "player" then
+    if DB.AlternatePowerBar and DB.AlternatePowerBar.Enabled and unitFrame.alternatePowerBar and unit == "player" and ShouldHaveAlternatePowerBar() then
         local unitAlternatePowerBar = unitFrame.alternatePowerBar
         unitAlternatePowerBar:Show()
         unitAlternatePowerBar:SetHeight(DB.AlternatePowerBar.Height)
@@ -288,13 +312,6 @@ local function ApplyFrameColours(unitFrame, unit, DB, GeneralDB)
         local alternatePowerBarR,alternatePowerBarG,alternatePowerBarB,alternatePowerBarA = FetchAlternatePowerBarColour(unit, DB, GeneralDB)
         unitFrame.alternatePowerBar:SetStatusBarColor(alternatePowerBarR,alternatePowerBarG,alternatePowerBarB,alternatePowerBarA)
     end
-end
-
-local function ShouldHaveAlternatePowerBar()
-    local class = select(2, UnitClass("player"))
-    local spec  = GetSpecialization()
-    if not spec then return false end
-    return (class == "PRIEST" and GetSpecializationInfo(spec) == 258)
 end
 
 local function UpdateUnitFrameData(unitFrame, unit, DB, GeneralDB)
