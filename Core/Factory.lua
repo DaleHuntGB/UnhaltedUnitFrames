@@ -1,5 +1,4 @@
 local _, UUF = ...
-
 local function ResolveFrameName(unit)
     if unit:match("^boss(%d+)$") then
         local unitID = unit:match("^boss(%d+)$")
@@ -7,7 +6,6 @@ local function ResolveFrameName(unit)
     end
     return UUF.UnitToFrameName[unit]
 end
-
 local function FetchUnitColour(unit, DB, GeneralDB)
     if not DB or not DB.Frame then return 1,1,1,1 end
     -- Pet should take the player colour.
@@ -23,46 +21,37 @@ local function FetchUnitColour(unit, DB, GeneralDB)
             if classColour then return classColour.r, classColour.g, classColour.b, 1 end
         end
     end
-
     if DB.Frame.ReactionColour then
         local reaction = UnitReaction(unit, "player") or 5
         local reactionColour = GeneralDB.CustomColours.Reaction[reaction]
         if reactionColour then return reactionColour[1], reactionColour[2], reactionColour[3], 1 end
     end
-
     local foregroundColour = DB.Frame.FGColour
     return foregroundColour[1], foregroundColour[2], foregroundColour[3], foregroundColour[4] or 1
 end
-
 local function FetchPowerBarColour(unit, DB, GeneralDB)
     local PDB = DB.PowerBar
     if not PDB then return 1,1,1,1 end
-
     if PDB.ColourByType then
         local powerType = UnitPowerType(unit)
         local powerColour = GeneralDB.CustomColours.Power[powerType]
         if powerColour then return powerColour[1], powerColour[2], powerColour[3], powerColour[4] or 1 end
     end
-
     local powerBarForegroundColour = PDB.FGColour
     return powerBarForegroundColour[1], powerBarForegroundColour[2], powerBarForegroundColour[3], powerBarForegroundColour[4] or 1
 end
-
 local function FetchAlternatePowerBarColour(unit, DB, GeneralDB)
     local PDB = DB.AlternatePowerBar
     if not PDB then return 1,1,1,1 end
-
     if PDB.ColourByType then
         local powerColour = GeneralDB.CustomColours.Power[Enum.PowerType.Mana]
         if powerColour then
             return powerColour[1], powerColour[2], powerColour[3], powerColour[4] or 1
         end
     end
-
     local alternatePowerBarForegroundColour = PDB.FGColour
     return alternatePowerBarForegroundColour[1], alternatePowerBarForegroundColour[2], alternatePowerBarForegroundColour[3], alternatePowerBarForegroundColour[4] or 1
 end
-
 local function ShouldHaveAlternatePowerBar()
     local SpecsNeedingAltPower = {
         PRIEST = { 258 },           -- Shadow
@@ -74,50 +63,39 @@ local function ShouldHaveAlternatePowerBar()
     local class = select(2, UnitClass("player"))
     local specIndex = GetSpecialization()
     if not specIndex then return false end
-
     local specID = GetSpecializationInfo(specIndex)
     local classSpecs = SpecsNeedingAltPower[class]
     if not classSpecs then return false end
-
     for _, requiredSpec in ipairs(classSpecs) do
         if specID == requiredSpec then
             return true
         end
     end
-
     return false
 end
-
 local function ApplyFrameLayout(unitFrame, unit, DB, GeneralDB)
     unitFrame:SetSize(DB.Frame.Width, DB.Frame.Height)
-
     local parent = UIParent
     if DB.Frame.AnchorParent and _G[DB.Frame.AnchorParent] then parent = _G[DB.Frame.AnchorParent] end
     unitFrame:ClearAllPoints()
     unitFrame:SetPoint(DB.Frame.AnchorFrom, parent, DB.Frame.AnchorTo, DB.Frame.XPosition, DB.Frame.YPosition)
-
     unitFrame:SetBackdrop({bgFile = UUF.Media.BackgroundTexture, edgeFile = "Interface\\Buttons\\WHITE8x8", edgeSize = 1})
     unitFrame:SetBackdropColor(unpack(DB.Frame.BGColour))
     unitFrame:SetBackdropBorderColor(0,0,0,1)
-
     local unitHealthBar = unitFrame.healthBar
     unitHealthBar:ClearAllPoints()
-
     if DB.PowerBar and DB.PowerBar.Enabled and unitFrame.powerBar then
         local unitPowerBar = unitFrame.powerBar
         unitPowerBar:Show()
         unitPowerBar:SetHeight(DB.PowerBar.Height)
         unitPowerBar:SetStatusBarTexture(UUF.Media.ForegroundTexture)
-
         unitPowerBar:ClearAllPoints()
         unitPowerBar:SetPoint("BOTTOMLEFT",  unitFrame, "BOTTOMLEFT", 1, 1)
         unitPowerBar:SetPoint("BOTTOMRIGHT", unitFrame, "BOTTOMRIGHT", -1, 1)
-
         if not unitPowerBar.BG then unitPowerBar.BG = unitPowerBar:CreateTexture(nil, "BACKGROUND") end
         unitPowerBar.BG:SetAllPoints()
         unitPowerBar.BG:SetTexture(UUF.Media.BackgroundTexture)
         unitPowerBar.BG:SetVertexColor(unpack(DB.PowerBar.BGColour))
-
         if not unitPowerBar.TopBorder then
             unitPowerBar.TopBorder = unitPowerBar:CreateTexture(nil, "OVERLAY")
             unitPowerBar.TopBorder:SetHeight(1)
@@ -126,7 +104,6 @@ local function ApplyFrameLayout(unitFrame, unit, DB, GeneralDB)
             unitPowerBar.TopBorder:SetTexture("Interface\\Buttons\\WHITE8x8")
             unitPowerBar.TopBorder:SetVertexColor(0,0,0,1)
         end
-
         unitHealthBar:SetPoint("TOPLEFT", unitFrame, "TOPLEFT", 1, -1)
         unitHealthBar:SetPoint("BOTTOMLEFT", unitPowerBar, "TOPLEFT", 0, 0)
         unitHealthBar:SetPoint("BOTTOMRIGHT", unitPowerBar, "TOPRIGHT", 0, 0)
@@ -136,7 +113,6 @@ local function ApplyFrameLayout(unitFrame, unit, DB, GeneralDB)
         unitHealthBar:SetPoint("BOTTOMRIGHT", unitFrame, "BOTTOMRIGHT", -1, 1)
     end
     unitHealthBar:SetStatusBarTexture(UUF.Media.ForegroundTexture)
-
     if DB.AlternatePowerBar and DB.AlternatePowerBar.Enabled and unitFrame.alternatePowerBar and unit == "player" and ShouldHaveAlternatePowerBar() then
         local unitAlternatePowerBar = unitFrame.alternatePowerBar
         unitAlternatePowerBar:Show()
@@ -145,12 +121,10 @@ local function ApplyFrameLayout(unitFrame, unit, DB, GeneralDB)
         unitAlternatePowerBar:ClearAllPoints()
         unitAlternatePowerBar:SetPoint("BOTTOMLEFT",  unitFrame, "BOTTOMLEFT", 1, 1)
         unitAlternatePowerBar:SetPoint("BOTTOMRIGHT", unitFrame, "BOTTOMRIGHT", -1, 1)
-
         if not unitAlternatePowerBar.BG then unitAlternatePowerBar.BG = unitAlternatePowerBar:CreateTexture(nil, "BACKGROUND") end
         unitAlternatePowerBar.BG:SetAllPoints()
         unitAlternatePowerBar.BG:SetTexture(UUF.Media.BackgroundTexture)
         unitAlternatePowerBar.BG:SetVertexColor(unpack(DB.AlternatePowerBar.BGColour))
-
         if not unitAlternatePowerBar.TopBorder then
             unitAlternatePowerBar.TopBorder = unitAlternatePowerBar:CreateTexture(nil, "OVERLAY")
             unitAlternatePowerBar.TopBorder:SetHeight(1)
@@ -161,7 +135,6 @@ local function ApplyFrameLayout(unitFrame, unit, DB, GeneralDB)
         else
             unitAlternatePowerBar.TopBorder:Show()
         end
-
         unitHealthBar:SetPoint("TOPLEFT", unitFrame, "TOPLEFT", 1, -1)
         unitHealthBar:SetPoint("BOTTOMLEFT", unitAlternatePowerBar, "TOPLEFT", 0, 0)
         unitHealthBar:SetPoint("BOTTOMRIGHT", unitAlternatePowerBar, "TOPRIGHT", 0, 0)
@@ -178,7 +151,6 @@ local function ApplyFrameLayout(unitFrame, unit, DB, GeneralDB)
         unitHealthBar:SetPoint("TOPLEFT",     unitFrame, "TOPLEFT",     1, -1)
         unitHealthBar:SetPoint("BOTTOMRIGHT", unitFrame, "BOTTOMRIGHT", -1, 1)
     end
-
     if unitFrame.absorbsBar then
         local absorbDB = DB.HealPrediction and DB.HealPrediction.Absorbs
         if absorbDB and absorbDB.Enabled then
@@ -194,7 +166,6 @@ local function ApplyFrameLayout(unitFrame, unit, DB, GeneralDB)
             unitFrame.absorbsBar:Hide()
         end
     end
-
     local unitTagOne = unitFrame.TagOne
     local highLevelContainer = unitFrame.highLevelContainer
     local T1 = DB.Tags.TagOne
@@ -204,7 +175,6 @@ local function ApplyFrameLayout(unitFrame, unit, DB, GeneralDB)
     unitTagOne:SetJustifyH(UUF:SetJustification(T1.AnchorFrom))
     unitTagOne:SetShadowColor(unpack(GeneralDB.FontShadows.Colour))
     unitTagOne:SetShadowOffset(GeneralDB.FontShadows.OffsetX, GeneralDB.FontShadows.OffsetY)
-
     local unitTagTwo = unitFrame.TagTwo
     local T2  = DB.Tags.TagTwo
     unitTagTwo:SetFont(UUF.Media.Font, T2.FontSize, GeneralDB.FontFlag)
@@ -214,7 +184,6 @@ local function ApplyFrameLayout(unitFrame, unit, DB, GeneralDB)
     unitTagTwo:SetTextColor(unpack(T2.Colour))
     unitTagTwo:SetShadowColor(unpack(GeneralDB.FontShadows.Colour))
     unitTagTwo:SetShadowOffset(GeneralDB.FontShadows.OffsetX, GeneralDB.FontShadows.OffsetY)
-
     local unitTagThree = unitFrame.TagThree
     local T3 = DB.Tags.TagThree
     unitTagThree:SetFont(UUF.Media.Font, T3.FontSize, GeneralDB.FontFlag)
@@ -224,18 +193,15 @@ local function ApplyFrameLayout(unitFrame, unit, DB, GeneralDB)
     unitTagThree:SetTextColor(unpack(T3.Colour))
     unitTagThree:SetShadowColor(unpack(GeneralDB.FontShadows.Colour))
     unitTagThree:SetShadowOffset(GeneralDB.FontShadows.OffsetX, GeneralDB.FontShadows.OffsetY)
-
     if unitFrame.powerBar and unitFrame.powerBar.Text then
         local unitPowerText = unitFrame.powerBar.Text
         local PTDB = DB.PowerBar.Text
-
         unitPowerText:ClearAllPoints()
         unitPowerText:SetFont(UUF.Media.Font, PTDB.FontSize, GeneralDB.FontFlag)
         unitPowerText:SetJustifyH(UUF:SetJustification(PTDB.AnchorFrom))
         unitPowerText:SetTextColor(unpack(PTDB.Colour))
         unitPowerText:SetShadowColor(unpack(GeneralDB.FontShadows.Colour))
         unitPowerText:SetShadowOffset(GeneralDB.FontShadows.OffsetX, GeneralDB.FontShadows.OffsetY)
-
         if PTDB.Enabled then
             unitPowerText:Show()
             if PTDB.AnchorParent == "FRAME" then
@@ -247,10 +213,8 @@ local function ApplyFrameLayout(unitFrame, unit, DB, GeneralDB)
             unitPowerText:Hide()
         end
     end
-
     local unitMouseoverHighlight = unitFrame.MouseoverHighlight
     unitMouseoverHighlight:SetBackdropBorderColor(unpack(DB.Indicators.MouseoverHighlight.Colour))
-
     if unitFrame.CombatTexture then
         if DB.Indicators.Status.CombatTexture == "DEFAULT" then
             unitFrame.CombatTexture:SetTexture([[Interface\CharacterFrame\UI-StateIcon]])
@@ -269,7 +233,6 @@ local function ApplyFrameLayout(unitFrame, unit, DB, GeneralDB)
             unitFrame.CombatTexture:Hide()
         end
     end
-
     if unitFrame.RestingTexture then
         if DB.Indicators.Status.RestingTexture == "DEFAULT" then
             unitFrame.RestingTexture:SetTexture([[Interface\CharacterFrame\UI-StateIcon]])
@@ -289,15 +252,12 @@ local function ApplyFrameLayout(unitFrame, unit, DB, GeneralDB)
         end
     end
 end
-
 local function ApplyFrameColours(unitFrame, unit, DB, GeneralDB)
     local unitHealthBar = unitFrame.healthBar
     local r,g,b,a = FetchUnitColour(unit, DB, GeneralDB)
     unitHealthBar:SetStatusBarColor(r,g,b,a)
-
     local unitFrameBGR,unitFrameBGG,unitFrameBGB,unitFrameBGA = unpack(DB.Frame.BGColour)
     unitHealthBar.BG:SetVertexColor(unitFrameBGR,unitFrameBGG,unitFrameBGB,unitFrameBGA)
-
     if unitFrame.powerBar then
         local powerBarR,powerBarG,powerBarB,powerBarA = FetchPowerBarColour(unit, DB, GeneralDB)
         unitFrame.powerBar:SetStatusBarColor(powerBarR,powerBarG,powerBarB,powerBarA)
@@ -307,20 +267,16 @@ local function ApplyFrameColours(unitFrame, unit, DB, GeneralDB)
             end
         end
     end
-
     if unitFrame.alternatePowerBar and unit == "player" then
         local alternatePowerBarR,alternatePowerBarG,alternatePowerBarB,alternatePowerBarA = FetchAlternatePowerBarColour(unit, DB, GeneralDB)
         unitFrame.alternatePowerBar:SetStatusBarColor(alternatePowerBarR,alternatePowerBarG,alternatePowerBarB,alternatePowerBarA)
     end
 end
-
 local function UpdateUnitFrameData(unitFrame, unit, DB, GeneralDB)
     local unitHP = UnitHealth(unit)
     local unitMaxHP = UnitHealthMax(unit)
-
     unitFrame.healthBar:SetMinMaxValues(0, unitMaxHP)
     unitFrame.healthBar:SetValue(unitHP)
-
     if unitFrame.absorbsBar then
         if not (DB.HealPrediction and DB.HealPrediction.Absorbs and DB.HealPrediction.Absorbs.Enabled) then unitFrame.absorbsBar:Hide() return end
         local absorbAmount = UnitGetTotalAbsorbs(unit) or 0
@@ -332,16 +288,14 @@ local function UpdateUnitFrameData(unitFrame, unit, DB, GeneralDB)
             unitFrame.absorbsBar:Hide()
         end
     end
-
     unitFrame.TagOne:SetText(UUF:EvaluateTagString(unit, (DB.Tags.TagOne.Tag or "")))
     unitFrame.TagTwo:SetText(UUF:EvaluateTagString(unit, (DB.Tags.TagTwo.Tag or "")))
     unitFrame.TagThree:SetText(UUF:EvaluateTagString(unit, (DB.Tags.TagThree.Tag or "")))
     if unitFrame.powerBar then
-        if not DB.PowerBar.Enabled then
+        if DB.PowerBar.Enabled then
             local unitPower = UnitPower(unit)
             unitFrame.powerBar:SetMinMaxValues(0, UnitPowerMax(unit))
             unitFrame.powerBar:SetValue(unitPower)
-
             if DB.PowerBar.Text.Enabled then
                 local powerType = UnitPowerType(unit)
                 if powerType == 0 then
@@ -352,11 +306,9 @@ local function UpdateUnitFrameData(unitFrame, unit, DB, GeneralDB)
             end
         end
     end
-
     if unit == "player" then
         local inCombat  = DB.Indicators.Status.Combat  and UnitAffectingCombat("player")
         local isResting = DB.Indicators.Status.Resting and IsResting()
-
         if unitFrame.CombatTexture then
             if inCombat then
                 unitFrame.CombatTexture:Show()
@@ -364,7 +316,6 @@ local function UpdateUnitFrameData(unitFrame, unit, DB, GeneralDB)
                 unitFrame.CombatTexture:Hide()
             end
         end
-
         if unitFrame.RestingTexture then
             if isResting and not inCombat then
                 unitFrame.RestingTexture:Show()
@@ -372,7 +323,6 @@ local function UpdateUnitFrameData(unitFrame, unit, DB, GeneralDB)
                 unitFrame.RestingTexture:Hide()
             end
         end
-
         if unitFrame.alternatePowerBar then
             if ShouldHaveAlternatePowerBar() then
                 unitFrame.alternatePowerBar:Show()
@@ -387,21 +337,17 @@ local function UpdateUnitFrameData(unitFrame, unit, DB, GeneralDB)
         end
     end
 end
-
 local function RefreshUnitEvents(unitFrame, unit, DB)
     if UUF.BossTestMode then return end
     unitFrame:UnregisterAllEvents()
-
     if not DB.Enabled then
         unitFrame:SetScript("OnEvent", nil)
         unitFrame:Hide()
         UnregisterUnitWatch(unitFrame)
         return
     end
-
     RegisterUnitWatch(unitFrame)
     unitFrame:Show()
-
     unitFrame:RegisterUnitEvent("UNIT_HEALTH", unit)
     unitFrame:RegisterUnitEvent("UNIT_MAXHEALTH", unit)
     unitFrame:RegisterUnitEvent("UNIT_NAME_UPDATE", unit)
@@ -410,12 +356,9 @@ local function RefreshUnitEvents(unitFrame, unit, DB)
     unitFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
     unitFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
     unitFrame:RegisterEvent("PLAYER_REGEN_DISABLED")
-
     if unit == "pet" then unitFrame:RegisterEvent("UNIT_PET") end
     if unit == "focus" then unitFrame:RegisterEvent("PLAYER_FOCUS_CHANGED") end
-
     unitFrame:SetScript("OnEvent", function(self) if UUF.BossTestMode then UUF:UpdateUnitFrame(self.unit) else if UnitExists(self.unit) then UUF:UpdateUnitFrame(self.unit) end end end)
-
     if unitFrame.powerBar then
         local powerBar = unitFrame.powerBar
         powerBar:UnregisterAllEvents()
@@ -428,7 +371,6 @@ local function RefreshUnitEvents(unitFrame, unit, DB)
             powerBar:SetScript("OnEvent", nil)
         end
     end
-
     if unitFrame.alternatePowerBar and unit == "player" then
         local alternatePowerBar = unitFrame.alternatePowerBar
         alternatePowerBar:UnregisterAllEvents()
@@ -442,7 +384,6 @@ local function RefreshUnitEvents(unitFrame, unit, DB)
         end
     end
 end
-
 local LayoutConfig = {
     TOPLEFT     = { anchor="TOPLEFT",   offsetMultiplier=0   },
     TOP         = { anchor="TOP",       offsetMultiplier=0   },
@@ -454,7 +395,6 @@ local LayoutConfig = {
     LEFT        = { anchor="LEFT",      offsetMultiplier=0.5, isCenter=true },
     RIGHT       = { anchor="RIGHT",     offsetMultiplier=0.5, isCenter=true },
 }
-
 function UUF:LayoutBossFrames()
     local Frame = UUF.db.profile.boss.Frame
     if #UUF.BossFrames == 0 then return end
@@ -471,18 +411,15 @@ function UUF:LayoutBossFrames()
     local initialAnchor = AnchorUtil.CreateAnchor(layoutConfig.anchor, UIParent, Frame.AnchorTo, Frame.XPosition, Frame.YPosition + offsetY)
     AnchorUtil.VerticalLayout(bossFrames, initialAnchor, Frame.Spacing)
 end
-
 function UUF:CreateUnitFrame(unit)
     local dbUnit = unit:match("^boss%d+$") and "boss" or unit
     local DB = UUF.db.profile[dbUnit]
     local GeneralDB = UUF.db.profile.General
     if not DB then return end
-
     local frameName = ResolveFrameName(unit)
     local unitFrame = CreateFrame("Button", frameName, UIParent, "SecureUnitButtonTemplate,BackdropTemplate,PingableUnitFrameTemplate")
     unitFrame.unit = unit
     unitFrame.dbUnit = dbUnit
-
     unitFrame.healthBar = CreateFrame("StatusBar", nil, unitFrame)
     unitFrame.healthBar:SetPoint("TOPLEFT", unitFrame, "TOPLEFT", 1, -1)
     unitFrame.healthBar:SetPoint("BOTTOMRIGHT", unitFrame, "BOTTOMRIGHT", -1, 1)
@@ -516,26 +453,21 @@ function UUF:CreateUnitFrame(unit)
         unitFrame.powerBar.Text = unitFrame.powerBar:CreateFontString(nil, "OVERLAY")
         unitFrame.powerBar.unit = unit
     end
-
     if unit == "player" then
         unitFrame.alternatePowerBar = CreateFrame("StatusBar", nil, unitFrame)
         unitFrame.alternatePowerBar:SetStatusBarTexture(UUF.Media.ForegroundTexture)
         unitFrame.alternatePowerBar.unit = unit
     end
-
     unitFrame:RegisterForClicks("AnyUp")
     unitFrame:SetAttribute("unit", unit)
     unitFrame:SetAttribute("*type1", "target")
     unitFrame:SetAttribute("*type2", "togglemenu")
-
     ApplyFrameLayout(unitFrame, unit, DB, GeneralDB)
     ApplyFrameColours(unitFrame, unit, DB, GeneralDB)
     UpdateUnitFrameData(unitFrame, unit, DB, GeneralDB)
     RefreshUnitEvents(unitFrame, unit, DB)
-
     return unitFrame
 end
-
 -- Only update data & colours in combat.
 function UUF:UpdateUnitFrame(unit)
     if not unit then return end
@@ -548,7 +480,6 @@ function UUF:UpdateUnitFrame(unit)
     ApplyFrameColours(unitFrame, unit, DB, GeneralDB)
     UpdateUnitFrameData(unitFrame, unit, DB, GeneralDB)
 end
-
 -- Update & assign all events outside of combat.
 function UUF:RefreshUnitFrame(unit)
     if not unit then return end
@@ -559,7 +490,6 @@ function UUF:RefreshUnitFrame(unit)
     local DB = UUF.db.profile[dbUnit]
     RefreshUnitEvents(unitFrame, unit, DB)
 end
-
 -- Full update of layout, colours, data & events outside of combat.
 -- Usually called after changing configuration settings.
 function UUF:FullFrameUpdate(unit)
