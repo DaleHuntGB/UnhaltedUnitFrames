@@ -1,5 +1,4 @@
 local _, UUF = ...
-
 UUF.Defaults = {
     global = {
         UseGlobalProfile = false,
@@ -62,6 +61,7 @@ UUF.Defaults = {
                 Absorbs = {
                     Enabled = true,
                     Colour = {255/255, 204/255, 0/255, 1},
+                    GrowthDirection = "RIGHT",
                 }
             },
             CastBar = {
@@ -187,6 +187,7 @@ UUF.Defaults = {
                 Absorbs = {
                     Enabled = true,
                     Colour = {255/255, 204/255, 0/255, 1},
+                    GrowthDirection = "RIGHT",
                 }
             },
             CastBar = {
@@ -295,6 +296,7 @@ UUF.Defaults = {
                 Absorbs = {
                     Enabled = true,
                     Colour = {255/255, 204/255, 0/255, 1},
+                    GrowthDirection = "RIGHT",
                 }
             },
             PowerBar = {
@@ -372,6 +374,7 @@ UUF.Defaults = {
                 Absorbs = {
                     Enabled = true,
                     Colour = {255/255, 204/255, 0/255, 1},
+                    GrowthDirection = "RIGHT",
                 }
             },
             Indicators = {
@@ -430,6 +433,7 @@ UUF.Defaults = {
                 Absorbs = {
                     Enabled = true,
                     Colour = {255/255, 204/255, 0/255, 1},
+                    GrowthDirection = "RIGHT",
                 }
             },
             Indicators = {
@@ -489,6 +493,7 @@ UUF.Defaults = {
                 Absorbs = {
                     Enabled = true,
                     Colour = {255/255, 204/255, 0/255, 1},
+                    GrowthDirection = "RIGHT",
                 }
             },
             CastBar = {

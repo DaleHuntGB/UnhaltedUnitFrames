@@ -159,8 +159,16 @@ local function ApplyFrameLayout(unitFrame, unit, DB, GeneralDB)
             unitFrame.absorbsBar:SetWidth(unitFrame:GetWidth() - 2)
             unitFrame.absorbsBar:SetHeight(unitFrame.healthBar:GetHeight() - 2)
             unitFrame.absorbsBar:SetStatusBarTexture(UUF.Media.ForegroundTexture)
-            unitFrame.absorbsBar:SetPoint("TOPLEFT", unitHealthBar:GetStatusBarTexture(), "TOPLEFT")
-            unitFrame.absorbsBar:SetPoint("BOTTOMRIGHT", unitHealthBar:GetStatusBarTexture(), "BOTTOMRIGHT")
+            unitFrame.absorbsBar:ClearAllPoints()
+            if absorbDB.GrowthDirection == "RIGHT" then
+                unitFrame.absorbsBar:SetReverseFill(false)
+                unitFrame.absorbsBar:SetPoint("TOPLEFT", unitHealthBar:GetStatusBarTexture(), "TOPLEFT")
+                unitFrame.absorbsBar:SetPoint("BOTTOMRIGHT", unitHealthBar:GetStatusBarTexture(), "BOTTOMRIGHT")
+            else
+                unitFrame.absorbsBar:SetReverseFill(true)
+                unitFrame.absorbsBar:SetPoint("TOPRIGHT", unitHealthBar:GetStatusBarTexture(), "TOPRIGHT")
+                unitFrame.absorbsBar:SetPoint("BOTTOMLEFT", unitHealthBar:GetStatusBarTexture(), "BOTTOMLEFT")
+            end
             local r,g,b,a = unpack(absorbDB.Colour)
             unitFrame.absorbsBar:SetStatusBarColor(r,g,b,a)
         else
