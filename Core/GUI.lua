@@ -259,7 +259,15 @@ local function CreatePowerBarSettings(containerParent, unit)
     local normalizedUnit = GetNormalizedUnit(unit)
     local PowerBarDB = UUFDB[normalizedUnit].PowerBar
 
-    local TogglesContainer = CreateInlineGroup(containerParent, "Toggles")
+    local Wrapper = AG:Create("SimpleGroup")
+    Wrapper:SetFullWidth(true)
+    Wrapper:SetFullHeight(true)
+    Wrapper:SetLayout("Fill")
+    containerParent:AddChild(Wrapper)
+
+    local ScrollFrame = CreateScrollFrame(Wrapper)
+
+    local TogglesContainer = CreateInlineGroup(ScrollFrame, "Toggles")
 
     local EnableCheckBox = AG:Create("CheckBox")
     EnableCheckBox:SetLabel("Enable Power Bar")
@@ -282,7 +290,7 @@ local function CreatePowerBarSettings(containerParent, unit)
     ColourBackgroundByType:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.ColourBackgroundByType = value UUF:UpdateUnitFrame(unit) UUFGUI.BGColourPicker:SetDisabled(value) UUFGUI.DarkenFactorSlider:SetDisabled(not value) end)
     TogglesContainer:AddChild(ColourBackgroundByType)
 
-    local ColourContainer = CreateInlineGroup(containerParent, "Colours")
+    local ColourContainer = CreateInlineGroup(ScrollFrame, "Colours")
     UUFGUI.ColourContainer = ColourContainer
 
     local FGColourPicker = AG:Create("ColorPicker")
@@ -312,7 +320,7 @@ local function CreatePowerBarSettings(containerParent, unit)
     ColourContainer:AddChild(DarkenFactorSlider)
     UUFGUI.DarkenFactorSlider = DarkenFactorSlider
 
-    local LayoutContainer = CreateInlineGroup(containerParent, "Layout")
+    local LayoutContainer = CreateInlineGroup(ScrollFrame, "Layout")
     UUFGUI.LayoutContainer = LayoutContainer
 
     local HeightSlider = AG:Create("Slider")
@@ -331,15 +339,96 @@ local function CreatePowerBarSettings(containerParent, unit)
     AlignmentDropdown:SetRelativeWidth(0.5)
     LayoutContainer:AddChild(AlignmentDropdown)
 
+    local TextContainer = CreateInlineGroup(ScrollFrame, "Text")
+
+    local TextToggleContainer = CreateInlineGroup(TextContainer, "Toggles")
+
+    local EnableTextCheckBox = AG:Create("CheckBox")
+    EnableTextCheckBox:SetLabel("Enable Power Text")
+    EnableTextCheckBox:SetValue(PowerBarDB.Text.Enabled)
+    EnableTextCheckBox:SetRelativeWidth(0.5)
+    EnableTextCheckBox:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.Text.Enabled = value UUF:UpdateUnitFrame(unit) end)
+    TextToggleContainer:AddChild(EnableTextCheckBox)
+
+    local ColourTextByPowerType = AG:Create("CheckBox")
+    ColourTextByPowerType:SetLabel("Colour Text By Power Type")
+    ColourTextByPowerType:SetValue(PowerBarDB.Text.ColourByType)
+    ColourTextByPowerType:SetRelativeWidth(0.5)
+    ColourTextByPowerType:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.Text.ColourByType = value UUF:UpdateUnitFrame(unit) end)
+    TextToggleContainer:AddChild(ColourTextByPowerType)
+
+    local TextColourContainer = CreateInlineGroup(TextContainer, "Colours")
+
+    local TextColourPicker = AG:Create("ColorPicker")
+    TextColourPicker:SetLabel("Text Colour")
+    TextColourPicker:SetColor(unpack(PowerBarDB.Text.Colour))
+    TextColourPicker:SetHasAlpha(true)
+    TextColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) PowerBarDB.Text.Colour = {r, g, b, a} UUF:UpdateUnitFrame(unit) end)
+    TextColourPicker:SetRelativeWidth(0.5)
+    TextColourContainer:AddChild(TextColourPicker)
+
+    local TextLayoutContainer = CreateInlineGroup(TextContainer, "Layout")
+
+    local AnchorFromDropdown = AG:Create("Dropdown")
+    AnchorFromDropdown:SetLabel("Anchor From")
+    AnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
+    AnchorFromDropdown:SetValue(PowerBarDB.Text.AnchorFrom)
+    AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.Text.AnchorFrom = value UUF:UpdateUnitFrame(unit) end)
+    AnchorFromDropdown:SetRelativeWidth(0.3)
+    TextLayoutContainer:AddChild(AnchorFromDropdown)
+
+    local AnchorParentDropdown = AG:Create("Dropdown")
+    AnchorParentDropdown:SetLabel("Anchor Parent")
+    AnchorParentDropdown:SetList({ ["POWER"] = "Power Bar", ["FRAME"] = "Unit Frame", })
+    AnchorParentDropdown:SetValue(PowerBarDB.Text.AnchorParent)
+    AnchorParentDropdown:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.Text.AnchorParent = value UUF:UpdateUnitFrame(unit) end)
+    AnchorParentDropdown:SetRelativeWidth(0.3)
+    TextLayoutContainer:AddChild(AnchorParentDropdown)
+
+    local AnchorToDropdown = AG:Create("Dropdown")
+    AnchorToDropdown:SetLabel("Anchor To")
+    AnchorToDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
+    AnchorToDropdown:SetValue(PowerBarDB.Text.AnchorTo)
+    AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.Text.AnchorTo = value UUF:UpdateUnitFrame(unit) end)
+    AnchorToDropdown:SetRelativeWidth(0.3)
+    TextLayoutContainer:AddChild(AnchorToDropdown)
+
+    local XPositionSlider = AG:Create("Slider")
+    XPositionSlider:SetLabel("X Offset")
+    XPositionSlider:SetValue(PowerBarDB.Text.OffsetX)
+    XPositionSlider:SetSliderValues(-500, 500, 0.1)
+    XPositionSlider:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.Text.OffsetX = value UUF:UpdateUnitFrame(unit) end)
+    XPositionSlider:SetRelativeWidth(0.33)
+    TextLayoutContainer:AddChild(XPositionSlider)
+
+    local YPositionSlider = AG:Create("Slider")
+    YPositionSlider:SetLabel("Y Offset")
+    YPositionSlider:SetValue(PowerBarDB.Text.OffsetY)
+    YPositionSlider:SetSliderValues(-500, 500, 0.1)
+    YPositionSlider:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.Text.OffsetY = value UUF:UpdateUnitFrame(unit) end)
+    YPositionSlider:SetRelativeWidth(0.33)
+    TextLayoutContainer:AddChild(YPositionSlider)
+
+    local FontSizeSlider = AG:Create("Slider")
+    FontSizeSlider:SetLabel("Font Size")
+    FontSizeSlider:SetValue(PowerBarDB.Text.FontSize)
+    FontSizeSlider:SetSliderValues(6, 72, 1)
+    FontSizeSlider:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.Text.FontSize = value UUF:UpdateUnitFrame(unit) end)
+    FontSizeSlider:SetRelativeWidth(0.33)
+    TextLayoutContainer:AddChild(FontSizeSlider)
+
     DeepDisable(TogglesContainer, not PowerBarDB.Enabled, EnableCheckBox)
     DeepDisable(ColourContainer, not PowerBarDB.Enabled, EnableCheckBox)
     DeepDisable(LayoutContainer, not PowerBarDB.Enabled, EnableCheckBox)
+    DeepDisable(TextContainer, not PowerBarDB.Enabled, EnableCheckBox)
 
     FGColourPicker:SetDisabled(PowerBarDB.ColourByType)
     BGColourPicker:SetDisabled(PowerBarDB.ColourBackgroundByType)
     DarkenFactorSlider:SetDisabled(not PowerBarDB.ColourBackgroundByType)
 
-    return containerParent
+    ScrollFrame:DoLayout()
+
+    return ScrollFrame
 end
 
 function UUF:CreateGUI()
@@ -722,10 +811,17 @@ function UUF:CreateGUI()
 
     local function SelectedGroup(GUIContainer, _, MainGroup)
         GUIContainer:ReleaseChildren()
+
+        local Wrapper = AG:Create("SimpleGroup")
+        Wrapper:SetFullWidth(true)
+        Wrapper:SetFullHeight(true)
+        Wrapper:SetLayout("Fill")   -- IMPORTANT
+        GUIContainer:AddChild(Wrapper)
+
         if MainGroup == "General" then
-            DrawGeneralSettings(GUIContainer)
+            DrawGeneralSettings(Wrapper)
         elseif MainGroup == "player" then
-            DrawPlayerSettings(GUIContainer)
+            DrawPlayerSettings(Wrapper)
         elseif MainGroup == "target" then
         elseif MainGroup == "targettarget" then
         elseif MainGroup == "pet" then
