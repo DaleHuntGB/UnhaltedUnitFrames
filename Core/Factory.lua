@@ -75,11 +75,17 @@ local function UpdateUnitHealth(self, _, unit)
     local unitMaxHP  = UnitHealthMax(unitToken)
     local unitHPMissing = UnitHealthMissing(unitToken, true)
 
+    -- Update Health Bar Values
     self.HealthBar:SetMinMaxValues(0, unitMaxHP)
     self.HealthBar:SetValue(unitHP)
-
     self.HealthBG:SetMinMaxValues(0, unitMaxHP)
     self.HealthBG:SetValue(unitHPMissing)
+
+    -- Update Health Bar Colour
+    local r, g, b, a = FetchUnitColour(unitToken)
+    self.HealthBar:SetStatusBarColor(r, g, b, a)
+
+    -- Update Tags
     UpdateTags(self, nil, unitToken)
 end
 
@@ -150,11 +156,13 @@ local function UpdateHealthBar(self, unit)
 
     if self.HealthBG then
         self.HealthBG:SetStatusBarColor(FrameDB.BGColour[1], FrameDB.BGColour[2], FrameDB.BGColour[3], FrameDB.BGColour[4])
+        self.HealthBG:SetStatusBarTexture(UUF.Media.BackgroundTexture)
     end
 
     if self.HealthBar then
         local r, g, b, a = FetchUnitColour(unit)
         self.HealthBar:SetStatusBarColor(r, g, b, a)
+        self.HealthBar:SetStatusBarTexture(UUF.Media.ForegroundTexture)
     end
 
     if UUFDB[normalizedUnit].Enabled then
@@ -256,7 +264,8 @@ function UUF:UpdateUnitFrame(unit)
 
     unitFrame:ClearAllPoints()
     unitFrame:SetSize(UUF.db.profile[GetNormalizedUnit(unit)].Frame.Width, UUF.db.profile[GetNormalizedUnit(unit)].Frame.Height)
-    unitFrame:SetPoint(UUF.db.profile[GetNormalizedUnit(unit)].Frame.AnchorFrom, UIParent, UUF.db.profile[GetNormalizedUnit(unit)].Frame.AnchorTo, UUF.db.profile[GetNormalizedUnit(unit)].Frame.XOffset, UUF.db.profile[GetNormalizedUnit(unit)].Frame.YOffset)
+    local anchorParent = UUF.db.profile[GetNormalizedUnit(unit)].Frame.AnchorParent or "UIParent"
+    unitFrame:SetPoint(UUF.db.profile[GetNormalizedUnit(unit)].Frame.AnchorFrom, anchorParent, UUF.db.profile[GetNormalizedUnit(unit)].Frame.AnchorTo, UUF.db.profile[GetNormalizedUnit(unit)].Frame.XPosition, UUF.db.profile[GetNormalizedUnit(unit)].Frame.YPosition)
 
     UpdateHealthBar(unitFrame, unit)
     UpdateTag(unitFrame, unit, "TagOne")
@@ -265,9 +274,6 @@ function UUF:UpdateUnitFrame(unit)
 end
 
 function UUF:RefreshUnitFrame(unit)
-end
-
-function UUF:FullFrameUpdate(unit)
 end
 
 function UUF:LayoutBossFrames()
