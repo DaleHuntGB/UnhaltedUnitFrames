@@ -1,5 +1,5 @@
 local _, UUF = ...
-
+local GetNormalizedUnit = UUF.GetNormalizedUnit
 --------------------------------------------------------------
 --- Helper Functions
 --------------------------------------------------------------
@@ -58,6 +58,22 @@ local function FetchPowerBarColour(unit)
     end
 end
 
+local function FetchPowerBarBackgroundColour(unit)
+    local UUFDB = UUF.db.profile
+    local GeneralDB = UUFDB.General
+    local normalizedUnit = GetNormalizedUnit(unit)
+    local PowerBarDB = UUFDB[normalizedUnit].PowerBar
+    if PowerBarDB then
+        if PowerBarDB.ColourBackgroundByType then
+            local DarkenFactor = PowerBarDB.DarkenFactor
+            local powerType = UnitPowerType(unit)
+            local powerColour = GeneralDB.CustomColours.Power[powerType]
+            if powerColour then return (GeneralDB.CustomColours.Power[powerType][1] * (1 - DarkenFactor)), (GeneralDB.CustomColours.Power[powerType][2] * (1 - DarkenFactor)), (GeneralDB.CustomColours.Power[powerType][3] * (1 - DarkenFactor)), GeneralDB.CustomColours.Power[powerType][4] end
+        end
+        return PowerBarDB.BGColour[1], PowerBarDB.BGColour[2], PowerBarDB.BGColour[3], PowerBarDB.BGColour[4]
+    end
+end
+
 local function ToggleUnitWatch(unitFrame)
     if UUF.db.profile[GetNormalizedUnit(unitFrame.unit)].Enabled then
         RegisterUnitWatch(unitFrame)
@@ -102,7 +118,6 @@ local function UpdateTags(self, _, unit)
         self.TagThree:SetText(UUF:EvaluateTagString(self.unit, UUF.db.profile[GetNormalizedUnit(self.unit)].Tags.TagThree.Tag or ""))
     end
 end
-
 
 local function UpdateUnitHealthBar(self, event, unit)
     if unit and unit ~= self.unit then return end
@@ -157,6 +172,9 @@ local function UpdateUnitFrameData(self, event, unit)
     local r, g, b, a = FetchPowerBarColour(self.unit)
     self.PowerBar:SetStatusBarColor(r, g, b, a)
 
+    local rBG, gBG, bBG, aBG = FetchPowerBarBackgroundColour(self.unit)
+    self.PowerBarBG:SetStatusBarColor(rBG, gBG, bBG, aBG)
+
     -- Update Tags
     UpdateTags(self, nil, self.unit)
 end
@@ -168,12 +186,11 @@ end
 local function CreateContainer(self, unit)
     if not self.Container then
         self.Container = CreateFrame("Frame", ResolveFrameName(unit) .. "_Container", self, "BackdropTemplate")
-        local Container = self.Container
-        Container:SetBackdrop(UUF.BackdropTemplate)
-        Container:SetBackdropColor(0, 0, 0, 0)
-        Container:SetBackdropBorderColor(0, 0, 0, 1)
-        Container:SetAllPoints(self)
-        Container:SetFrameLevel(self:GetFrameLevel() + 1)
+        self.Container:SetBackdrop(UUF.BackdropTemplate)
+        self.Container:SetBackdropColor(0, 0, 0, 0)
+        self.Container:SetBackdropBorderColor(0, 0, 0, 1)
+        self.Container:SetAllPoints(self)
+        self.Container:SetFrameLevel(self:GetFrameLevel() + 1)
     end
 end
 
@@ -202,6 +219,13 @@ local function CreateHealthBar(self, unit)
         self.HealthBar.unit = unit
     end
 
+    if not self.HighLevelContainer then
+        self.HighLevelContainer = CreateFrame("Frame", ResolveFrameName(unit) .. "_HighLevelContainer", unitContainer)
+        self.HighLevelContainer:SetSize(self:GetWidth(), self:GetHeight())
+        self.HighLevelContainer:SetAllPoints(self)
+        self.HighLevelContainer:SetFrameLevel(999)
+    end
+
     -- Global Events
     self:RegisterEvent("PLAYER_LOGIN")
     self:RegisterEvent("PLAYER_ENTERING_WORLD")
@@ -215,29 +239,35 @@ local function CreateHealthBar(self, unit)
     self:RegisterUnitEvent("UNIT_NAME_UPDATE", UnitIsReal(unit) and unit)
     -- Update
     self:SetScript("OnEvent", UpdateUnitFrameData)
-
-    if not self.HighLevelContainer then
-        self.HighLevelContainer = CreateFrame("Frame", ResolveFrameName(unit) .. "_HighLevelContainer", unitContainer)
-        self.HighLevelContainer:SetSize(self:GetWidth(), self:GetHeight())
-        self.HighLevelContainer:SetPoint("CENTER", 0, 0)
-        self.HighLevelContainer:SetFrameLevel(999)
-    end
 end
 
 local function UpdateHealthBar(self, unit)
     local UUFDB = UUF.db.profile
     local normalizedUnit = GetNormalizedUnit(unit)
     local FrameDB = UUFDB[normalizedUnit].Frame
+    local unitContainer = self.Container
 
     if self.HealthBG then
+        self.HealthBG:ClearAllPoints()
+        self.HealthBG:SetPoint("TOPLEFT", unitContainer, "TOPLEFT", 1, -1)
         self.HealthBG:SetStatusBarColor(FrameDB.BGColour[1], FrameDB.BGColour[2], FrameDB.BGColour[3], FrameDB.BGColour[4])
         self.HealthBG:SetStatusBarTexture(UUF.Media.BackgroundTexture)
+        self.HealthBG:SetSize(FrameDB.Width - 2, FrameDB.Height - 2)
     end
 
     if self.HealthBar then
         local r, g, b, a = FetchUnitColour(unit)
+        self.HealthBar:ClearAllPoints()
+        self.HealthBar:SetPoint("TOPLEFT", unitContainer, "TOPLEFT", 1, -1)
         self.HealthBar:SetStatusBarColor(r, g, b, a)
         self.HealthBar:SetStatusBarTexture(UUF.Media.ForegroundTexture)
+        self.HealthBar:SetSize(FrameDB.Width - 2, FrameDB.Height - 2)
+    end
+
+    if self.HighLevelContainer then
+        self.HighLevelContainer:ClearAllPoints()
+        self.HighLevelContainer:SetAllPoints(self)
+        self.HighLevelContainer:SetSize(self:GetWidth(), self:GetHeight())
     end
 
     if UUFDB[normalizedUnit].Enabled then
@@ -268,7 +298,8 @@ local function CreateAbsorbBar(self, unit)
     if not self.AbsorbBar then
         self.AbsorbBar = CreateFrame("StatusBar", ResolveFrameName(unit).."_AbsorbBar", unitContainer)
         self.AbsorbBar:SetFrameLevel(self.HealthBar:GetFrameLevel() + 1)
-        self.AbsorbBar:SetReverseFill(HealPredictionDB.Absorbs.GrowthDirection == "RIGHT" and false or true)
+        local isRight = HealPredictionDB.Absorbs.GrowthDirection == "RIGHT"
+        self.AbsorbBar:SetReverseFill(not isRight)
         if HealPredictionDB.Absorbs.GrowthDirection == "RIGHT" then
             self.AbsorbBar:SetPoint("TOPLEFT", self.HealthBar, "TOPLEFT", 0, 0)
             self.AbsorbBar:SetPoint("BOTTOMRIGHT", self.HealthBar, "BOTTOMRIGHT", 0, 0)
@@ -281,7 +312,7 @@ local function CreateAbsorbBar(self, unit)
         self.AbsorbBar.unit = unit
     end
     if HealPredictionDB.Absorbs.Enabled then
-        self:RegisterUnitEvent("UNIT_ABSORB_AMOUNT_CHANGED", UnitIsReal(unit) and unit)
+        self:RegisterEvent("UNIT_ABSORB_AMOUNT_CHANGED")
     end
 end
 
@@ -291,11 +322,14 @@ local function UpdateAbsorbBar(self, unit)
     local HealPredictionDB = UUFDB[normalizedUnit].HealPrediction
 
     if self.AbsorbBar then
-        self.AbsorbBar:SetReverseFill(HealPredictionDB.Absorbs.GrowthDirection == "RIGHT" and false or true)
+        local isRight = HealPredictionDB.Absorbs.GrowthDirection == "RIGHT"
+        self.AbsorbBar:SetReverseFill(not isRight)
         if HealPredictionDB.Absorbs.GrowthDirection == "RIGHT" then
+            self.AbsorbBar:ClearAllPoints()
             self.AbsorbBar:SetPoint("TOPLEFT", self.HealthBar, "TOPLEFT", 0, 0)
             self.AbsorbBar:SetPoint("BOTTOMRIGHT", self.HealthBar, "BOTTOMRIGHT", 0, 0)
         else
+            self.AbsorbBar:ClearAllPoints()
             self.AbsorbBar:SetPoint("TOPRIGHT", self.HealthBar, "TOPRIGHT", 0, 0)
             self.AbsorbBar:SetPoint("BOTTOMLEFT", self.HealthBar, "BOTTOMLEFT", 0, 0)
         end
@@ -303,9 +337,9 @@ local function UpdateAbsorbBar(self, unit)
         self.AbsorbBar:SetStatusBarColor(HealPredictionDB.Absorbs.Colour[1], HealPredictionDB.Absorbs.Colour[2], HealPredictionDB.Absorbs.Colour[3], HealPredictionDB.Absorbs.Colour[4])
     end
     if HealPredictionDB.Absorbs.Enabled then
-        self:RegisterUnitEvent("UNIT_ABSORB_AMOUNT_CHANGED", UnitIsReal(unit) and unit)
+        self:RegisterEvent("UNIT_ABSORB_AMOUNT_CHANGED")
     else
-        self:UnregisterUnitEvent("UNIT_ABSORB_AMOUNT_CHANGED", UnitIsReal(unit) and unit)
+        self:UnregisterEvent("UNIT_ABSORB_AMOUNT_CHANGED")
     end
 end
 
@@ -387,8 +421,8 @@ local function UpdatePowerBar(self, unit)
             self.PowerBarBG:Show()
             self.PowerBarBorder:Show()
         else
-            self.HealthBG:SetHeight(UUFDB[normalizedUnit].Frame.Height)
-            self.HealthBar:SetHeight(UUFDB[normalizedUnit].Frame.Height)
+            self.HealthBG:SetHeight(UUFDB[normalizedUnit].Frame.Height - 2)
+            self.HealthBar:SetHeight(UUFDB[normalizedUnit].Frame.Height - 2)
             self.PowerBar:Hide()
             self.PowerBarBG:Hide()
             self.PowerBarBorder:Hide()
@@ -426,6 +460,7 @@ local function UpdateTag(self, unit, tag)
     local TagDB = Tags[tag]
     if not TagDB then return end
     if self[tag] then
+        self[tag]:ClearAllPoints()
         self[tag]:SetFont(UUF.Media.Font, TagDB.FontSize, UUFDB.General.FontFlag)
         self[tag]:SetPoint(TagDB.AnchorFrom, self.HighLevelContainer, TagDB.AnchorTo, TagDB.OffsetX, TagDB.OffsetY)
         self[tag]:SetTextColor(TagDB.Colour[1], TagDB.Colour[2], TagDB.Colour[3], TagDB.Colour[4])
@@ -489,9 +524,6 @@ function UUF:UpdateUnitFrame(unit)
     UpdateTag(unitFrame, unit, "TagTwo")
     UpdateTag(unitFrame, unit, "TagThree")
     UpdateUnitFrameData(unitFrame, nil, unit)
-end
-
-function UUF:RefreshUnitFrame(unit)
 end
 
 function UUF:LayoutBossFrames()
