@@ -92,6 +92,7 @@ local function ApplyFrameLayout(unitFrame, unit, DB, GeneralDB)
         unitPowerBar:ClearAllPoints()
         unitPowerBar:SetPoint("BOTTOMLEFT",  unitFrame, "BOTTOMLEFT", 1, 1)
         unitPowerBar:SetPoint("BOTTOMRIGHT", unitFrame, "BOTTOMRIGHT", -1, 1)
+        unitPowerBar:SetFrameLevel(unitHealthBar:GetFrameLevel() + 1)
         if not unitPowerBar.BG then unitPowerBar.BG = unitPowerBar:CreateTexture(nil, "BACKGROUND") end
         unitPowerBar.BG:SetAllPoints()
         unitPowerBar.BG:SetTexture(UUF.Media.BackgroundTexture)
