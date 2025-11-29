@@ -353,7 +353,11 @@ local function CreatePowerBar(self, unit)
     if PowerBarDB then
         if not self.PowerBarBG then
             self.PowerBarBG = CreateFrame("StatusBar", ResolveFrameName(unit).."_PowerBarBG", unitContainer)
-            self.PowerBarBG:SetPoint("BOTTOMLEFT", unitContainer, "BOTTOMLEFT", 1, 1)
+            if PowerBarDB.Alignment == "TOP" then
+                self.PowerBarBG:SetPoint("TOPLEFT", unitContainer, "TOPLEFT", 1, -1)
+            else
+                self.PowerBarBG:SetPoint("BOTTOMLEFT", unitContainer, "BOTTOMLEFT", 1, 1)
+            end
             self.PowerBarBG:SetSize(FrameDB.Width - 2, PowerBarDB.Height)
             self.PowerBarBG:SetStatusBarTexture(UUF.Media.BackgroundTexture)
             self.PowerBarBG:SetStatusBarColor(PowerBarDB.BGColour[1], PowerBarDB.BGColour[2], PowerBarDB.BGColour[3], PowerBarDB.BGColour[4])
@@ -361,7 +365,11 @@ local function CreatePowerBar(self, unit)
 
         if not self.PowerBar then
             self.PowerBar = CreateFrame("StatusBar", ResolveFrameName(unit).."_PowerBar", unitContainer)
-            self.PowerBar:SetPoint("BOTTOMLEFT", unitContainer, "BOTTOMLEFT", 1, 1)
+            if PowerBarDB.Alignment == "TOP" then
+                self.PowerBar:SetPoint("TOPLEFT", unitContainer, "TOPLEFT", 1, -1)
+            else
+                self.PowerBar:SetPoint("BOTTOMLEFT", unitContainer, "BOTTOMLEFT", 1, 1)
+            end
             self.PowerBar:SetSize(FrameDB.Width - 2, PowerBarDB.Height)
             self.PowerBar:SetStatusBarTexture(UUF.Media.ForegroundTexture)
             self.PowerBar:SetStatusBarColor(PowerBarDB.FGColour[1], PowerBarDB.FGColour[2], PowerBarDB.FGColour[3], PowerBarDB.FGColour[4])
@@ -372,8 +380,6 @@ local function CreatePowerBar(self, unit)
         if not self.PowerBarBorder then
             self.PowerBarBorder = self.PowerBar:CreateTexture(nil, "OVERLAY")
             self.PowerBarBorder:SetHeight(1)
-            self.PowerBarBorder:SetPoint("TOPLEFT", self.PowerBar, "TOPLEFT", 0, 1)
-            self.PowerBarBorder:SetPoint("TOPRIGHT", self.PowerBar, "TOPRIGHT", 0, 1)
             self.PowerBarBorder:SetTexture("Interface\\Buttons\\WHITE8x8")
             self.PowerBarBorder:SetVertexColor(0,0,0,1)
         end
@@ -381,8 +387,27 @@ local function CreatePowerBar(self, unit)
         if PowerBarDB.Enabled then
             self:RegisterUnitEvent("UNIT_POWER_UPDATE", UnitIsReal(unit) and unit)
             self:RegisterUnitEvent("UNIT_MAXPOWER", UnitIsReal(unit) and unit)
-            self.HealthBG:SetHeight(FrameDB.Height - (self.PowerBar:GetHeight() + 3))
-            self.HealthBar:SetHeight(FrameDB.Height - (self.PowerBar:GetHeight() + 3))
+            if PowerBarDB.Alignment == "TOP" then
+                self.HealthBar:ClearAllPoints()
+                self.HealthBG:ClearAllPoints()
+                self.HealthBar:SetPoint("BOTTOMLEFT", self.Container, "BOTTOMLEFT", 1, 1)
+                self.HealthBG:SetPoint("BOTTOMLEFT", self.Container, "BOTTOMLEFT", 1, 1)
+                self.HealthBG:SetHeight(UUFDB[normalizedUnit].Frame.Height - (self.PowerBar:GetHeight() + 3))
+                self.HealthBar:SetHeight(UUFDB[normalizedUnit].Frame.Height - (self.PowerBar:GetHeight() + 3))
+                self.PowerBarBorder:ClearAllPoints()
+                self.PowerBarBorder:SetPoint("BOTTOMLEFT", self.PowerBar, "BOTTOMLEFT", 0, -1)
+                self.PowerBarBorder:SetPoint("BOTTOMRIGHT", self.PowerBar, "BOTTOMRIGHT", 0, -1)
+            else
+                self.HealthBar:ClearAllPoints()
+                self.HealthBG:ClearAllPoints()
+                self.HealthBar:SetPoint("TOPLEFT", self.Container, "TOPLEFT", 1, -1)
+                self.HealthBG:SetPoint("TOPLEFT", self.Container, "TOPLEFT", 1, -1)
+                self.HealthBG:SetHeight(UUFDB[normalizedUnit].Frame.Height - (self.PowerBar:GetHeight() + 3))
+                self.HealthBar:SetHeight(UUFDB[normalizedUnit].Frame.Height - (self.PowerBar:GetHeight() + 3))
+                self.PowerBarBorder:ClearAllPoints()
+                self.PowerBarBorder:SetPoint("TOPLEFT", self.PowerBar, "TOPLEFT", 0, 1)
+                self.PowerBarBorder:SetPoint("TOPRIGHT", self.PowerBar, "TOPRIGHT", 0, 1)
+            end
             self.PowerBar:Show()
             self.PowerBarBG:Show()
             self.PowerBarBorder:Show()
@@ -398,15 +423,28 @@ local function UpdatePowerBar(self, unit)
     local UUFDB = UUF.db.profile
     local normalizedUnit = GetNormalizedUnit(unit)
     local PowerBarDB = UUFDB[normalizedUnit].PowerBar
+    local unitContainer = self.Container
 
     if PowerBarDB then
         if self.PowerBarBG then
+            self.PowerBarBG:ClearAllPoints()
+            if PowerBarDB.Alignment == "TOP" then
+                self.PowerBarBG:SetPoint("TOPLEFT", unitContainer, "TOPLEFT", 1, -1)
+            else
+                self.PowerBarBG:SetPoint("BOTTOMLEFT", unitContainer, "BOTTOMLEFT", 1, 1)
+            end
             self.PowerBarBG:SetStatusBarColor(PowerBarDB.BGColour[1], PowerBarDB.BGColour[2], PowerBarDB.BGColour[3], PowerBarDB.BGColour[4])
             self.PowerBarBG:SetStatusBarTexture(UUF.Media.BackgroundTexture)
             self.PowerBarBG:SetHeight(PowerBarDB.Height)
         end
 
         if self.PowerBar then
+            self.PowerBar:ClearAllPoints()
+            if PowerBarDB.Alignment == "TOP" then
+                self.PowerBar:SetPoint("TOPLEFT", unitContainer, "TOPLEFT", 1, -1)
+            else
+                self.PowerBar:SetPoint("BOTTOMLEFT", unitContainer, "BOTTOMLEFT", 1, 1)
+            end
             self.PowerBar:SetStatusBarColor(PowerBarDB.FGColour[1], PowerBarDB.FGColour[2], PowerBarDB.FGColour[3], PowerBarDB.FGColour[4])
             self.PowerBar:SetStatusBarTexture(UUF.Media.ForegroundTexture)
             self.PowerBar:SetHeight(PowerBarDB.Height)
@@ -415,12 +453,35 @@ local function UpdatePowerBar(self, unit)
         if PowerBarDB.Enabled then
             self:RegisterUnitEvent("UNIT_POWER_UPDATE", UnitIsReal(unit) and unit)
             self:RegisterUnitEvent("UNIT_MAXPOWER", UnitIsReal(unit) and unit)
-            self.HealthBG:SetHeight(UUFDB[normalizedUnit].Frame.Height - (self.PowerBar:GetHeight() + 3))
-            self.HealthBar:SetHeight(UUFDB[normalizedUnit].Frame.Height - (self.PowerBar:GetHeight() + 3))
+            if PowerBarDB.Alignment == "TOP" then
+                self.HealthBar:ClearAllPoints()
+                self.HealthBG:ClearAllPoints()
+                self.HealthBar:SetPoint("BOTTOMLEFT", self.Container, "BOTTOMLEFT", 1, 1)
+                self.HealthBG:SetPoint("BOTTOMLEFT", self.Container, "BOTTOMLEFT", 1, 1)
+                self.HealthBG:SetHeight(UUFDB[normalizedUnit].Frame.Height - (self.PowerBar:GetHeight() + 3))
+                self.HealthBar:SetHeight(UUFDB[normalizedUnit].Frame.Height - (self.PowerBar:GetHeight() + 3))
+                self.PowerBarBorder:ClearAllPoints()
+                self.PowerBarBorder:SetPoint("BOTTOMLEFT", self.PowerBar, "BOTTOMLEFT", 0, -1)
+                self.PowerBarBorder:SetPoint("BOTTOMRIGHT", self.PowerBar, "BOTTOMRIGHT", 0, -1)
+            else
+                self.HealthBar:ClearAllPoints()
+                self.HealthBG:ClearAllPoints()
+                self.HealthBar:SetPoint("TOPLEFT", self.Container, "TOPLEFT", 1, -1)
+                self.HealthBG:SetPoint("TOPLEFT", self.Container, "TOPLEFT", 1, -1)
+                self.HealthBG:SetHeight(UUFDB[normalizedUnit].Frame.Height - (self.PowerBar:GetHeight() + 3))
+                self.HealthBar:SetHeight(UUFDB[normalizedUnit].Frame.Height - (self.PowerBar:GetHeight() + 3))
+                self.PowerBarBorder:ClearAllPoints()
+                self.PowerBarBorder:SetPoint("TOPLEFT", self.PowerBar, "TOPLEFT", 0, 1)
+                self.PowerBarBorder:SetPoint("TOPRIGHT", self.PowerBar, "TOPRIGHT", 0, 1)
+            end
             self.PowerBar:Show()
             self.PowerBarBG:Show()
             self.PowerBarBorder:Show()
         else
+            self.HealthBar:ClearAllPoints()
+            self.HealthBG:ClearAllPoints()
+            self.HealthBar:SetPoint("TOPLEFT", self.Container, "TOPLEFT", 1, -1)
+            self.HealthBG:SetPoint("TOPLEFT", self.Container, "TOPLEFT", 1, -1)
             self.HealthBG:SetHeight(UUFDB[normalizedUnit].Frame.Height - 2)
             self.HealthBar:SetHeight(UUFDB[normalizedUnit].Frame.Height - 2)
             self.PowerBar:Hide()

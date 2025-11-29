@@ -100,6 +100,7 @@ UUF.Defaults = {
                 Height = 3,
                 ColourByType = true,
                 ColourBackgroundByType = true,
+                Alignment = "BOTTOM",
                 FGColour = {8/255, 8/255, 8/255, 0.8},
                 BGColour = {26/255, 26/255, 26/255, 1},
                 DarkenFactor = 0.75,

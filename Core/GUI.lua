@@ -265,7 +265,7 @@ local function CreatePowerBarSettings(containerParent, unit)
     EnableCheckBox:SetLabel("Enable Power Bar")
     EnableCheckBox:SetValue(PowerBarDB.Enabled)
     EnableCheckBox:SetRelativeWidth(0.33)
-    EnableCheckBox:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.Enabled = value UUF:UpdateUnitFrame(unit) DeepDisable(TogglesContainer, not value, EnableCheckBox) end)
+    EnableCheckBox:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.Enabled = value UUF:UpdateUnitFrame(unit) DeepDisable(TogglesContainer, not value, EnableCheckBox) DeepDisable(UUFGUI.ColourContainer, not value, EnableCheckBox) DeepDisable(UUFGUI.LayoutContainer, not value, EnableCheckBox) end)
     TogglesContainer:AddChild(EnableCheckBox)
 
     local ColourByType = AG:Create("CheckBox")
@@ -283,6 +283,7 @@ local function CreatePowerBarSettings(containerParent, unit)
     TogglesContainer:AddChild(ColourBackgroundByType)
 
     local ColourContainer = CreateInlineGroup(containerParent, "Colours")
+    UUFGUI.ColourContainer = ColourContainer
 
     local FGColourPicker = AG:Create("ColorPicker")
     FGColourPicker:SetLabel("Foreground Colour")
@@ -290,7 +291,6 @@ local function CreatePowerBarSettings(containerParent, unit)
     FGColourPicker:SetHasAlpha(true)
     FGColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) PowerBarDB.FGColour = {r, g, b, a} UUF:UpdateUnitFrame(unit) end)
     FGColourPicker:SetRelativeWidth(0.33)
-    FGColourPicker:SetDisabled(PowerBarDB.ColourByType)
     ColourContainer:AddChild(FGColourPicker)
     UUFGUI.FGColourPicker = FGColourPicker
 
@@ -300,7 +300,6 @@ local function CreatePowerBarSettings(containerParent, unit)
     BGColourPicker:SetHasAlpha(true)
     BGColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) PowerBarDB.BGColour = {r, g, b, a} UUF:UpdateUnitFrame(unit) end)
     BGColourPicker:SetRelativeWidth(0.33)
-    BGColourPicker:SetDisabled(PowerBarDB.ColourByType)
     ColourContainer:AddChild(BGColourPicker)
     UUFGUI.BGColourPicker = BGColourPicker
 
@@ -310,11 +309,35 @@ local function CreatePowerBarSettings(containerParent, unit)
     DarkenFactorSlider:SetSliderValues(0.1, 1.0, 0.01)
     DarkenFactorSlider:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.DarkenFactor = value UUF:UpdateUnitFrame(unit) end)
     DarkenFactorSlider:SetRelativeWidth(0.33)
-    DarkenFactorSlider:SetDisabled(not PowerBarDB.ColourBackgroundByType)
     ColourContainer:AddChild(DarkenFactorSlider)
     UUFGUI.DarkenFactorSlider = DarkenFactorSlider
 
+    local LayoutContainer = CreateInlineGroup(containerParent, "Layout")
+    UUFGUI.LayoutContainer = LayoutContainer
+
+    local HeightSlider = AG:Create("Slider")
+    HeightSlider:SetLabel("Height")
+    HeightSlider:SetValue(PowerBarDB.Height)
+    HeightSlider:SetSliderValues(1, 500, 0.1)
+    HeightSlider:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.Height = value UUF:UpdateUnitFrame(unit) end)
+    HeightSlider:SetRelativeWidth(0.5)
+    LayoutContainer:AddChild(HeightSlider)
+
+    local AlignmentDropdown = AG:Create("Dropdown")
+    AlignmentDropdown:SetLabel("Alignment")
+    AlignmentDropdown:SetList({ ["TOP"] = "Top", ["BOTTOM"] = "Bottom", })
+    AlignmentDropdown:SetValue(PowerBarDB.Alignment)
+    AlignmentDropdown:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.Alignment = value UUF:UpdateUnitFrame(unit) end)
+    AlignmentDropdown:SetRelativeWidth(0.5)
+    LayoutContainer:AddChild(AlignmentDropdown)
+
     DeepDisable(TogglesContainer, not PowerBarDB.Enabled, EnableCheckBox)
+    DeepDisable(ColourContainer, not PowerBarDB.Enabled, EnableCheckBox)
+    DeepDisable(LayoutContainer, not PowerBarDB.Enabled, EnableCheckBox)
+
+    FGColourPicker:SetDisabled(PowerBarDB.ColourByType)
+    BGColourPicker:SetDisabled(PowerBarDB.ColourBackgroundByType)
+    DarkenFactorSlider:SetDisabled(not PowerBarDB.ColourBackgroundByType)
 
     return containerParent
 end
