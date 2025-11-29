@@ -61,19 +61,19 @@ end
 local function UpdateTags(self, _, unit)
     local unitToken = unit or self.unit
     if not unitToken or not UnitExists(unitToken) then return end
-    if not self.TagOne or not self.TagTwo or not self.TagThree then return end
     self.TagOne:SetText(UUF:EvaluateTagString(unitToken, (UUF.db.profile[GetNormalizedUnit(unitToken)].Tags.TagOne.Tag or "")))
     self.TagTwo:SetText(UUF:EvaluateTagString(unitToken, (UUF.db.profile[GetNormalizedUnit(unitToken)].Tags.TagTwo.Tag or "")))
     self.TagThree:SetText(UUF:EvaluateTagString(unitToken, (UUF.db.profile[GetNormalizedUnit(unitToken)].Tags.TagThree.Tag or "")))
 end
 
-local function UpdateUnitHealth(self, _, unit)
+local function UpdateUnitHealth(self, event, unit)
     local unitToken = unit or self.unit
     if not unitToken or not UnitExists(unitToken) then return end
 
     local unitHP  = UnitHealth(unitToken)
     local unitMaxHP  = UnitHealthMax(unitToken)
     local unitHPMissing = UnitHealthMissing(unitToken, true)
+    local absorbAmount = UnitGetTotalAbsorbs(unitToken)
 
     -- Update Health Bar Values
     self.HealthBar:SetMinMaxValues(0, unitMaxHP)
@@ -81,9 +81,15 @@ local function UpdateUnitHealth(self, _, unit)
     self.HealthBG:SetMinMaxValues(0, unitMaxHP)
     self.HealthBG:SetValue(unitHPMissing)
 
-    -- Update Health Bar Colour
-    local r, g, b, a = FetchUnitColour(unitToken)
-    self.HealthBar:SetStatusBarColor(r, g, b, a)
+    if event == "PLAYER_TARGET_CHANGED" or event == "PLAYER_FOCUS_CHANGED" then
+        -- Update Health Bar Colour
+        local r, g, b, a = FetchUnitColour(unitToken)
+        self.HealthBar:SetStatusBarColor(r, g, b, a)
+    end
+
+    -- Update Absorbs
+    self.AbsorbBar:SetMinMaxValues(0, unitMaxHP)
+    self.AbsorbBar:SetValue(absorbAmount)
 
     -- Update Tags
     UpdateTags(self, nil, unitToken)
@@ -134,9 +140,13 @@ local function CreateHealthBar(self, unit)
     self:RegisterEvent("PLAYER_LOGIN")
     self:RegisterEvent("PLAYER_ENTERING_WORLD")
     self:RegisterEvent("PLAYER_TARGET_CHANGED")
+    self:RegisterEvent("PLAYER_FOCUS_CHANGED")
+    self:RegisterEvent("PLAYER_REGEN_ENABLED")
+    self:RegisterEvent("PLAYER_REGEN_DISABLED")
     -- Unit Events
     self:RegisterUnitEvent("UNIT_HEALTH", unit)
     self:RegisterUnitEvent("UNIT_MAXHEALTH", unit)
+    self:RegisterUnitEvent("UNIT_NAME_UPDATE", unit)
     -- Update
     self:SetScript("OnEvent", UpdateUnitHealth)
 
@@ -152,7 +162,6 @@ local function UpdateHealthBar(self, unit)
     local UUFDB = UUF.db.profile
     local normalizedUnit = GetNormalizedUnit(unit)
     local FrameDB = UUFDB[normalizedUnit].Frame
-    local unitContainer = self.Container
 
     if self.HealthBG then
         self.HealthBG:SetStatusBarColor(FrameDB.BGColour[1], FrameDB.BGColour[2], FrameDB.BGColour[3], FrameDB.BGColour[4])
@@ -181,6 +190,58 @@ local function UpdateHealthBar(self, unit)
         -- Unit Events
         self:UnregisterEvent("UNIT_HEALTH", unit)
         self:UnregisterEvent("UNIT_MAXHEALTH", unit)
+    end
+end
+
+local function CreateAbsorbBar(self, unit)
+    local UUFDB = UUF.db.profile
+    local normalizedUnit = GetNormalizedUnit(unit)
+    local HealPredictionDB = UUFDB[normalizedUnit].HealPrediction
+    local unitContainer = self.Container
+
+    if not self.AbsorbBar then
+        self.AbsorbBar = CreateFrame("StatusBar", ResolveFrameName(unit).."_AbsorbBar", unitContainer)
+        self.AbsorbBar:SetFrameLevel(self.HealthBar:GetFrameLevel() + 1)
+        self.AbsorbBar:SetReverseFill(HealPredictionDB.Absorbs.GrowthDirection == "RIGHT" and false or true)
+        if HealPredictionDB.Absorbs.GrowthDirection == "RIGHT" then
+            self.AbsorbBar:SetPoint("TOPLEFT", unitContainer, "TOPLEFT", 1, -1)
+            self.AbsorbBar:SetPoint("BOTTOMRIGHT", unitContainer, "BOTTOMRIGHT", -1, 1)
+        else
+            self.AbsorbBar:SetPoint("TOPRIGHT", unitContainer, "TOPRIGHT", -1, 1)
+            self.AbsorbBar:SetPoint("BOTTOMLEFT", unitContainer, "BOTTOMLEFT", 1, -1)
+        end
+        self.AbsorbBar:SetStatusBarTexture(UUF.Media.ForegroundTexture)
+        self.AbsorbBar:SetStatusBarColor(HealPredictionDB.Absorbs.Colour[1], HealPredictionDB.Absorbs.Colour[2], HealPredictionDB.Absorbs.Colour[3], HealPredictionDB.Absorbs.Colour[4])
+        self.AbsorbBar.unit = unit
+    end
+    if UUFDB[normalizedUnit].Enabled then
+        self:RegisterUnitEvent("UNIT_ABSORB_AMOUNT_CHANGED", unit)
+    else
+        self:UnregisterUnitEvent("UNIT_ABSORB_AMOUNT_CHANGED", unit)
+    end
+end
+
+local function UpdateAbsorbBar(self, unit)
+    local UUFDB = UUF.db.profile
+    local normalizedUnit = GetNormalizedUnit(unit)
+    local HealPredictionDB = UUFDB[normalizedUnit].HealPrediction
+
+    if self.AbsorbBar then
+        self.AbsorbBar:SetReverseFill(HealPredictionDB.Absorbs.GrowthDirection == "RIGHT" and false or true)
+        if HealPredictionDB.Absorbs.GrowthDirection == "RIGHT" then
+            self.AbsorbBar:SetPoint("TOPLEFT", self.Container, "TOPLEFT", 1, -1)
+            self.AbsorbBar:SetPoint("BOTTOMRIGHT", self.Container, "BOTTOMRIGHT", -1, 1)
+        else
+            self.AbsorbBar:SetPoint("TOPRIGHT", self.Container, "TOPRIGHT", -1, 1)
+            self.AbsorbBar:SetPoint("BOTTOMLEFT", self.Container, "BOTTOMLEFT", 1, -1)
+        end
+        self.AbsorbBar:SetStatusBarTexture(UUF.Media.ForegroundTexture)
+        self.AbsorbBar:SetStatusBarColor(HealPredictionDB.Absorbs.Colour[1], HealPredictionDB.Absorbs.Colour[2], HealPredictionDB.Absorbs.Colour[3], HealPredictionDB.Absorbs.Colour[4])
+    end
+    if UUFDB[normalizedUnit].Enabled then
+        self:RegisterUnitEvent("UNIT_ABSORB_AMOUNT_CHANGED", unit)
+    else
+        self:UnregisterUnitEvent("UNIT_ABSORB_AMOUNT_CHANGED", unit)
     end
 end
 
@@ -247,6 +308,7 @@ function UUF:CreateUnitFrame(unit)
 
     CreateContainer(unitFrame, unit)
     CreateHealthBar(unitFrame, unit)
+    CreateAbsorbBar(unitFrame, unit)
     CreateTag(unitFrame, unit, "TagOne")
     CreateTag(unitFrame, unit, "TagTwo")
     CreateTag(unitFrame, unit, "TagThree")
@@ -269,6 +331,7 @@ function UUF:UpdateUnitFrame(unit)
     unitFrame:SetPoint(UUF.db.profile[GetNormalizedUnit(unit)].Frame.AnchorFrom, anchorParent, UUF.db.profile[GetNormalizedUnit(unit)].Frame.AnchorTo, UUF.db.profile[GetNormalizedUnit(unit)].Frame.XPosition, UUF.db.profile[GetNormalizedUnit(unit)].Frame.YPosition)
 
     UpdateHealthBar(unitFrame, unit)
+    UpdateAbsorbBar(unitFrame, unit)
     UpdateTag(unitFrame, unit, "TagOne")
     UpdateTag(unitFrame, unit, "TagTwo")
     UpdateTag(unitFrame, unit, "TagThree")
