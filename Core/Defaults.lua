@@ -147,7 +147,6 @@ UUF.Defaults = {
                     OffsetY = 0,
                     FontSize = 12,
                     Colour = {1, 1, 1, 1},
-                    ColourByStatus = false,
                 },
                 TagTwo = {
                     AnchorFrom = "RIGHT",
@@ -255,7 +254,6 @@ UUF.Defaults = {
                     OffsetY = 0,
                     FontSize = 12,
                     Colour = {1, 1, 1, 1},
-                    ColourByStatus = false,
                 },
                 TagTwo = {
                     AnchorFrom = "RIGHT",
@@ -333,7 +331,6 @@ UUF.Defaults = {
                     OffsetY = 0,
                     FontSize = 12,
                     Colour = {1, 1, 1, 1},
-                    ColourByStatus = false,
                 },
                 TagTwo = {
                     AnchorFrom = "CENTER",
@@ -392,7 +389,6 @@ UUF.Defaults = {
                     OffsetY = 0,
                     FontSize = 12,
                     Colour = {1, 1, 1, 1},
-                    ColourByStatus = false,
                 },
                 TagTwo = {
                     AnchorFrom = "CENTER",
@@ -451,7 +447,6 @@ UUF.Defaults = {
                     OffsetY = 0,
                     FontSize = 12,
                     Colour = {1, 1, 1, 1},
-                    ColourByStatus = false,
                 },
                 TagTwo = {
                     AnchorFrom = "CENTER",
