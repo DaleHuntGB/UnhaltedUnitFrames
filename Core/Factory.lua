@@ -387,8 +387,6 @@ local function UpdatePowerBar(self, unit)
             self.PowerBarBG:Show()
             self.PowerBarBorder:Show()
         else
-            self:UnregisterUnitEvent("UNIT_POWER_UPDATE", UnitIsReal(unit) and unit)
-            self:UnregisterUnitEvent("UNIT_MAXPOWER", UnitIsReal(unit) and unit)
             self.HealthBG:SetHeight(UUFDB[normalizedUnit].Frame.Height)
             self.HealthBar:SetHeight(UUFDB[normalizedUnit].Frame.Height)
             self.PowerBar:Hide()
@@ -490,6 +488,7 @@ function UUF:UpdateUnitFrame(unit)
     UpdateTag(unitFrame, unit, "TagOne")
     UpdateTag(unitFrame, unit, "TagTwo")
     UpdateTag(unitFrame, unit, "TagThree")
+    UpdateUnitFrameData(unitFrame, nil, unit)
 end
 
 function UUF:RefreshUnitFrame(unit)
