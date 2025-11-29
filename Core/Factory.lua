@@ -43,6 +43,21 @@ local function FetchUnitColour(unit)
     return FrameDB.FGColour[1], FrameDB.FGColour[2], FrameDB.FGColour[3], FrameDB.FGColour[4]
 end
 
+local function FetchPowerBarColour(unit)
+    local UUFDB = UUF.db.profile
+    local GeneralDB = UUFDB.General
+    local normalizedUnit = GetNormalizedUnit(unit)
+    local PowerBarDB = UUFDB[normalizedUnit].PowerBar
+    if PowerBarDB then
+        if PowerBarDB.ColourByType then
+            local powerType = UnitPowerType(unit)
+            local powerColour = GeneralDB.CustomColours.Power[powerType]
+            if powerColour then return GeneralDB.CustomColours.Power[powerType][1], GeneralDB.CustomColours.Power[powerType][2], GeneralDB.CustomColours.Power[powerType][3], GeneralDB.CustomColours.Power[powerType][4] or 1 end
+        end
+        return PowerBarDB.FGColour[1], PowerBarDB.FGColour[2], PowerBarDB.FGColour[3], PowerBarDB.FGColour[4]
+    end
+end
+
 local function ToggleUnitWatch(unitFrame)
     if UUF.db.profile[GetNormalizedUnit(unitFrame.unit)].Enabled then
         RegisterUnitWatch(unitFrame)
@@ -54,36 +69,83 @@ local function ToggleUnitWatch(unitFrame)
     end
 end
 
+local function UnitIsReal(unit)
+    local unitlessUnits = {
+        ["player"] = true,
+        ["target"] = true,
+        ["focus"] = true,
+        ["pet"] = true,
+        ["boss1"] = true,
+        ["boss2"] = true,
+        ["boss3"] = true,
+        ["boss4"] = true,
+        ["boss5"] = true,
+    }
+    return unitlessUnits[unit] or false
+end
+
 --------------------------------------------------------------
 --- Event Functions
 --------------------------------------------------------------
 
 local function UpdateTags(self, _, unit)
-    local unitToken = unit or self.unit
-    if not unitToken or not UnitExists(unitToken) then return end
-    self.TagOne:SetText(UUF:EvaluateTagString(unitToken, (UUF.db.profile[GetNormalizedUnit(unitToken)].Tags.TagOne.Tag or "")))
-    self.TagTwo:SetText(UUF:EvaluateTagString(unitToken, (UUF.db.profile[GetNormalizedUnit(unitToken)].Tags.TagTwo.Tag or "")))
-    self.TagThree:SetText(UUF:EvaluateTagString(unitToken, (UUF.db.profile[GetNormalizedUnit(unitToken)].Tags.TagThree.Tag or "")))
+    if unit and unit ~= self.unit then return end
+    if not UnitExists(self.unit) then return end
+
+    if self.TagOne then
+        self.TagOne:SetText(UUF:EvaluateTagString(self.unit, UUF.db.profile[GetNormalizedUnit(self.unit)].Tags.TagOne.Tag or ""))
+    end
+    if self.TagTwo then
+        self.TagTwo:SetText(UUF:EvaluateTagString(self.unit, UUF.db.profile[GetNormalizedUnit(self.unit)].Tags.TagTwo.Tag or ""))
+    end
+    if self.TagThree then
+        self.TagThree:SetText(UUF:EvaluateTagString(self.unit, UUF.db.profile[GetNormalizedUnit(self.unit)].Tags.TagThree.Tag or ""))
+    end
 end
 
-local function UpdateUnitHealth(self, event, unit)
-    local unitToken = unit or self.unit
-    if not unitToken or not UnitExists(unitToken) then return end
 
-    local unitHP  = UnitHealth(unitToken)
-    local unitMaxHP  = UnitHealthMax(unitToken)
-    local unitHPMissing = UnitHealthMissing(unitToken, true)
-    local absorbAmount = UnitGetTotalAbsorbs(unitToken)
+local function UpdateUnitHealthBar(self, event, unit)
+    if unit and unit ~= self.unit then return end
+    if not UnitExists(self.unit) then return end
+
+    local unitHP  = UnitHealth(self.unit)
+    local unitMaxHP  = UnitHealthMax(self.unit)
+    local unitHPMissing = UnitHealthMissing(self.unit, true)
 
     -- Update Health Bar Values
     self.HealthBar:SetMinMaxValues(0, unitMaxHP)
     self.HealthBar:SetValue(unitHP)
     self.HealthBG:SetMinMaxValues(0, unitMaxHP)
     self.HealthBG:SetValue(unitHPMissing)
+end
+
+local function UpdateUnitPowerBar(self, event, unit)
+    if unit and unit ~= self.unit then return end
+    if not UnitExists(self.unit) then return end
+
+    local unitPower  = UnitPower(self.unit)
+    local unitMaxPower  = UnitPowerMax(self.unit)
+    local powerType = UnitPowerType(self.unit)
+    local unitPowerMissing = UnitPowerMissing(self.unit, powerType, true)
+
+    -- Update Power Bar Values
+    self.PowerBar:SetMinMaxValues(0, unitMaxPower)
+    self.PowerBar:SetValue(unitPower)
+end
+
+local function UpdateUnitFrameData(self, event, unit)
+    if unit and unit ~= self.unit then return end
+    if not UnitExists(self.unit) then return end
+
+    local unitMaxHP  = UnitHealthMax(self.unit)
+    local absorbAmount = UnitGetTotalAbsorbs(self.unit)
+
+    UpdateUnitHealthBar(self, event, self.unit)
+    UpdateUnitPowerBar(self, event, self.unit)
 
     if event == "PLAYER_TARGET_CHANGED" or event == "PLAYER_FOCUS_CHANGED" then
         -- Update Health Bar Colour
-        local r, g, b, a = FetchUnitColour(unitToken)
+        local r, g, b, a = FetchUnitColour(self.unit)
         self.HealthBar:SetStatusBarColor(r, g, b, a)
     end
 
@@ -91,8 +153,12 @@ local function UpdateUnitHealth(self, event, unit)
     self.AbsorbBar:SetMinMaxValues(0, unitMaxHP)
     self.AbsorbBar:SetValue(absorbAmount)
 
+    -- Update Power Bar Colour
+    local r, g, b, a = FetchPowerBarColour(self.unit)
+    self.PowerBar:SetStatusBarColor(r, g, b, a)
+
     -- Update Tags
-    UpdateTags(self, nil, unitToken)
+    UpdateTags(self, nil, self.unit)
 end
 
 --------------------------------------------------------------
@@ -119,8 +185,8 @@ local function CreateHealthBar(self, unit)
 
     if not self.HealthBG then
         self.HealthBG = CreateFrame("StatusBar", ResolveFrameName(unit).."_HealthBG", self.Container)
-        self.HealthBG:SetPoint("TOPLEFT", self.Container, "TOPLEFT", 1, -1)
-        self.HealthBG:SetPoint("BOTTOMRIGHT", self.Container, "BOTTOMRIGHT", -1, 1)
+        self.HealthBG:SetPoint("TOPLEFT", unitContainer, "TOPLEFT", 1, -1)
+        self.HealthBG:SetSize(FrameDB.Width - 2, FrameDB.Height - 2)
         self.HealthBG:SetStatusBarTexture(UUF.Media.BackgroundTexture)
         self.HealthBG:SetStatusBarColor(FrameDB.BGColour[1], FrameDB.BGColour[2], FrameDB.BGColour[3], FrameDB.BGColour[4])
         self.HealthBG:SetReverseFill(true)
@@ -128,8 +194,8 @@ local function CreateHealthBar(self, unit)
 
     if not self.HealthBar then
         self.HealthBar = CreateFrame("StatusBar", ResolveFrameName(unit).."_HealthBar", self.Container)
-        self.HealthBar:SetPoint("TOPLEFT", self.Container, "TOPLEFT", 1, -1)
-        self.HealthBar:SetPoint("BOTTOMRIGHT", self.Container, "BOTTOMRIGHT", -1, 1)
+        self.HealthBar:SetPoint("TOPLEFT", unitContainer, "TOPLEFT", 1, -1)
+        self.HealthBar:SetSize(FrameDB.Width - 2, FrameDB.Height - 2)
         self.HealthBar:SetStatusBarTexture(UUF.Media.ForegroundTexture)
         local r, g, b, a = FetchUnitColour(unit)
         self.HealthBar:SetStatusBarColor(r, g, b, a)
@@ -144,11 +210,11 @@ local function CreateHealthBar(self, unit)
     self:RegisterEvent("PLAYER_REGEN_ENABLED")
     self:RegisterEvent("PLAYER_REGEN_DISABLED")
     -- Unit Events
-    self:RegisterUnitEvent("UNIT_HEALTH", unit)
-    self:RegisterUnitEvent("UNIT_MAXHEALTH", unit)
-    self:RegisterUnitEvent("UNIT_NAME_UPDATE", unit)
+    self:RegisterUnitEvent("UNIT_HEALTH", UnitIsReal(unit) and unit)
+    self:RegisterUnitEvent("UNIT_MAXHEALTH", UnitIsReal(unit) and unit)
+    self:RegisterUnitEvent("UNIT_NAME_UPDATE", UnitIsReal(unit) and unit)
     -- Update
-    self:SetScript("OnEvent", UpdateUnitHealth)
+    self:SetScript("OnEvent", UpdateUnitFrameData)
 
     if not self.HighLevelContainer then
         self.HighLevelContainer = CreateFrame("Frame", ResolveFrameName(unit) .. "_HighLevelContainer", unitContainer)
@@ -180,16 +246,16 @@ local function UpdateHealthBar(self, unit)
         self:RegisterEvent("PLAYER_ENTERING_WORLD")
         self:RegisterEvent("PLAYER_TARGET_CHANGED")
         -- Unit Events
-        self:RegisterUnitEvent("UNIT_HEALTH", unit)
-        self:RegisterUnitEvent("UNIT_MAXHEALTH", unit)
+        self:RegisterUnitEvent("UNIT_HEALTH", UnitIsReal(unit) and unit)
+        self:RegisterUnitEvent("UNIT_MAXHEALTH", UnitIsReal(unit) and unit)
     else
         -- Global Events
         self:UnregisterEvent("PLAYER_LOGIN")
         self:UnregisterEvent("PLAYER_ENTERING_WORLD")
         self:UnregisterEvent("PLAYER_TARGET_CHANGED")
         -- Unit Events
-        self:UnregisterEvent("UNIT_HEALTH", unit)
-        self:UnregisterEvent("UNIT_MAXHEALTH", unit)
+        self:UnregisterEvent("UNIT_HEALTH", UnitIsReal(unit) and unit)
+        self:UnregisterEvent("UNIT_MAXHEALTH", UnitIsReal(unit) and unit)
     end
 end
 
@@ -204,20 +270,18 @@ local function CreateAbsorbBar(self, unit)
         self.AbsorbBar:SetFrameLevel(self.HealthBar:GetFrameLevel() + 1)
         self.AbsorbBar:SetReverseFill(HealPredictionDB.Absorbs.GrowthDirection == "RIGHT" and false or true)
         if HealPredictionDB.Absorbs.GrowthDirection == "RIGHT" then
-            self.AbsorbBar:SetPoint("TOPLEFT", unitContainer, "TOPLEFT", 1, -1)
-            self.AbsorbBar:SetPoint("BOTTOMRIGHT", unitContainer, "BOTTOMRIGHT", -1, 1)
+            self.AbsorbBar:SetPoint("TOPLEFT", self.HealthBar, "TOPLEFT", 0, 0)
+            self.AbsorbBar:SetPoint("BOTTOMRIGHT", self.HealthBar, "BOTTOMRIGHT", 0, 0)
         else
-            self.AbsorbBar:SetPoint("TOPRIGHT", unitContainer, "TOPRIGHT", -1, 1)
-            self.AbsorbBar:SetPoint("BOTTOMLEFT", unitContainer, "BOTTOMLEFT", 1, -1)
+            self.AbsorbBar:SetPoint("TOPRIGHT", self.HealthBar, "TOPRIGHT", 0, 0)
+            self.AbsorbBar:SetPoint("BOTTOMLEFT", self.HealthBar, "BOTTOMLEFT", 0, 0)
         end
         self.AbsorbBar:SetStatusBarTexture(UUF.Media.ForegroundTexture)
         self.AbsorbBar:SetStatusBarColor(HealPredictionDB.Absorbs.Colour[1], HealPredictionDB.Absorbs.Colour[2], HealPredictionDB.Absorbs.Colour[3], HealPredictionDB.Absorbs.Colour[4])
         self.AbsorbBar.unit = unit
     end
-    if UUFDB[normalizedUnit].Enabled then
-        self:RegisterUnitEvent("UNIT_ABSORB_AMOUNT_CHANGED", unit)
-    else
-        self:UnregisterUnitEvent("UNIT_ABSORB_AMOUNT_CHANGED", unit)
+    if HealPredictionDB.Absorbs.Enabled then
+        self:RegisterUnitEvent("UNIT_ABSORB_AMOUNT_CHANGED", UnitIsReal(unit) and unit)
     end
 end
 
@@ -229,19 +293,108 @@ local function UpdateAbsorbBar(self, unit)
     if self.AbsorbBar then
         self.AbsorbBar:SetReverseFill(HealPredictionDB.Absorbs.GrowthDirection == "RIGHT" and false or true)
         if HealPredictionDB.Absorbs.GrowthDirection == "RIGHT" then
-            self.AbsorbBar:SetPoint("TOPLEFT", self.Container, "TOPLEFT", 1, -1)
-            self.AbsorbBar:SetPoint("BOTTOMRIGHT", self.Container, "BOTTOMRIGHT", -1, 1)
+            self.AbsorbBar:SetPoint("TOPLEFT", self.HealthBar, "TOPLEFT", 0, 0)
+            self.AbsorbBar:SetPoint("BOTTOMRIGHT", self.HealthBar, "BOTTOMRIGHT", 0, 0)
         else
-            self.AbsorbBar:SetPoint("TOPRIGHT", self.Container, "TOPRIGHT", -1, 1)
-            self.AbsorbBar:SetPoint("BOTTOMLEFT", self.Container, "BOTTOMLEFT", 1, -1)
+            self.AbsorbBar:SetPoint("TOPRIGHT", self.HealthBar, "TOPRIGHT", 0, 0)
+            self.AbsorbBar:SetPoint("BOTTOMLEFT", self.HealthBar, "BOTTOMLEFT", 0, 0)
         end
         self.AbsorbBar:SetStatusBarTexture(UUF.Media.ForegroundTexture)
         self.AbsorbBar:SetStatusBarColor(HealPredictionDB.Absorbs.Colour[1], HealPredictionDB.Absorbs.Colour[2], HealPredictionDB.Absorbs.Colour[3], HealPredictionDB.Absorbs.Colour[4])
     end
-    if UUFDB[normalizedUnit].Enabled then
-        self:RegisterUnitEvent("UNIT_ABSORB_AMOUNT_CHANGED", unit)
+    if HealPredictionDB.Absorbs.Enabled then
+        self:RegisterUnitEvent("UNIT_ABSORB_AMOUNT_CHANGED", UnitIsReal(unit) and unit)
     else
-        self:UnregisterUnitEvent("UNIT_ABSORB_AMOUNT_CHANGED", unit)
+        self:UnregisterUnitEvent("UNIT_ABSORB_AMOUNT_CHANGED", UnitIsReal(unit) and unit)
+    end
+end
+
+local function CreatePowerBar(self, unit)
+    local UUFDB = UUF.db.profile
+    local normalizedUnit = GetNormalizedUnit(unit)
+    local FrameDB = UUFDB[normalizedUnit].Frame
+    local PowerBarDB = UUFDB[normalizedUnit].PowerBar
+    local unitContainer = self.Container
+
+    if PowerBarDB then
+        if not self.PowerBarBG then
+            self.PowerBarBG = CreateFrame("StatusBar", ResolveFrameName(unit).."_PowerBarBG", unitContainer)
+            self.PowerBarBG:SetPoint("BOTTOMLEFT", unitContainer, "BOTTOMLEFT", 1, 1)
+            self.PowerBarBG:SetSize(FrameDB.Width - 2, PowerBarDB.Height)
+            self.PowerBarBG:SetStatusBarTexture(UUF.Media.BackgroundTexture)
+            self.PowerBarBG:SetStatusBarColor(PowerBarDB.BGColour[1], PowerBarDB.BGColour[2], PowerBarDB.BGColour[3], PowerBarDB.BGColour[4])
+        end
+
+        if not self.PowerBar then
+            self.PowerBar = CreateFrame("StatusBar", ResolveFrameName(unit).."_PowerBar", unitContainer)
+            self.PowerBar:SetPoint("BOTTOMLEFT", unitContainer, "BOTTOMLEFT", 1, 1)
+            self.PowerBar:SetSize(FrameDB.Width - 2, PowerBarDB.Height)
+            self.PowerBar:SetStatusBarTexture(UUF.Media.ForegroundTexture)
+            self.PowerBar:SetStatusBarColor(PowerBarDB.FGColour[1], PowerBarDB.FGColour[2], PowerBarDB.FGColour[3], PowerBarDB.FGColour[4])
+            self.PowerBar:SetFrameLevel(unitContainer:GetFrameLevel() + 2)
+            self.PowerBar.unit = unit
+        end
+
+        if not self.PowerBarBorder then
+            self.PowerBarBorder = self.PowerBar:CreateTexture(nil, "OVERLAY")
+            self.PowerBarBorder:SetHeight(1)
+            self.PowerBarBorder:SetPoint("TOPLEFT", self.PowerBar, "TOPLEFT", 0, 1)
+            self.PowerBarBorder:SetPoint("TOPRIGHT", self.PowerBar, "TOPRIGHT", 0, 1)
+            self.PowerBarBorder:SetTexture("Interface\\Buttons\\WHITE8x8")
+            self.PowerBarBorder:SetVertexColor(0,0,0,1)
+        end
+
+        if PowerBarDB.Enabled then
+            self:RegisterUnitEvent("UNIT_POWER_UPDATE", UnitIsReal(unit) and unit)
+            self:RegisterUnitEvent("UNIT_MAXPOWER", UnitIsReal(unit) and unit)
+            self.HealthBG:SetHeight(FrameDB.Height - (self.PowerBar:GetHeight() + 3))
+            self.HealthBar:SetHeight(FrameDB.Height - (self.PowerBar:GetHeight() + 3))
+            self.PowerBar:Show()
+            self.PowerBarBG:Show()
+            self.PowerBarBorder:Show()
+        else
+            self.PowerBar:Hide()
+            self.PowerBarBG:Hide()
+            self.PowerBarBorder:Hide()
+        end
+    end
+end
+
+local function UpdatePowerBar(self, unit)
+    local UUFDB = UUF.db.profile
+    local normalizedUnit = GetNormalizedUnit(unit)
+    local PowerBarDB = UUFDB[normalizedUnit].PowerBar
+
+    if PowerBarDB then
+        if self.PowerBarBG then
+            self.PowerBarBG:SetStatusBarColor(PowerBarDB.BGColour[1], PowerBarDB.BGColour[2], PowerBarDB.BGColour[3], PowerBarDB.BGColour[4])
+            self.PowerBarBG:SetStatusBarTexture(UUF.Media.BackgroundTexture)
+            self.PowerBarBG:SetHeight(PowerBarDB.Height)
+        end
+
+        if self.PowerBar then
+            self.PowerBar:SetStatusBarColor(PowerBarDB.FGColour[1], PowerBarDB.FGColour[2], PowerBarDB.FGColour[3], PowerBarDB.FGColour[4])
+            self.PowerBar:SetStatusBarTexture(UUF.Media.ForegroundTexture)
+            self.PowerBar:SetHeight(PowerBarDB.Height)
+        end
+
+        if PowerBarDB.Enabled then
+            self:RegisterUnitEvent("UNIT_POWER_UPDATE", UnitIsReal(unit) and unit)
+            self:RegisterUnitEvent("UNIT_MAXPOWER", UnitIsReal(unit) and unit)
+            self.HealthBG:SetHeight(UUFDB[normalizedUnit].Frame.Height - (self.PowerBar:GetHeight() + 3))
+            self.HealthBar:SetHeight(UUFDB[normalizedUnit].Frame.Height - (self.PowerBar:GetHeight() + 3))
+            self.PowerBar:Show()
+            self.PowerBarBG:Show()
+            self.PowerBarBorder:Show()
+        else
+            self:UnregisterUnitEvent("UNIT_POWER_UPDATE", UnitIsReal(unit) and unit)
+            self:UnregisterUnitEvent("UNIT_MAXPOWER", UnitIsReal(unit) and unit)
+            self.HealthBG:SetHeight(UUFDB[normalizedUnit].Frame.Height)
+            self.HealthBar:SetHeight(UUFDB[normalizedUnit].Frame.Height)
+            self.PowerBar:Hide()
+            self.PowerBarBG:Hide()
+            self.PowerBarBorder:Hide()
+        end
     end
 end
 
@@ -309,6 +462,7 @@ function UUF:CreateUnitFrame(unit)
     CreateContainer(unitFrame, unit)
     CreateHealthBar(unitFrame, unit)
     CreateAbsorbBar(unitFrame, unit)
+    CreatePowerBar(unitFrame, unit)
     CreateTag(unitFrame, unit, "TagOne")
     CreateTag(unitFrame, unit, "TagTwo")
     CreateTag(unitFrame, unit, "TagThree")
@@ -332,6 +486,7 @@ function UUF:UpdateUnitFrame(unit)
 
     UpdateHealthBar(unitFrame, unit)
     UpdateAbsorbBar(unitFrame, unit)
+    UpdatePowerBar(unitFrame, unit)
     UpdateTag(unitFrame, unit, "TagOne")
     UpdateTag(unitFrame, unit, "TagTwo")
     UpdateTag(unitFrame, unit, "TagThree")
