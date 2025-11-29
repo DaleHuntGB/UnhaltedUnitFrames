@@ -22,12 +22,12 @@ function UnhaltedUF:OnEnable()
     LSM.RegisterCallback(UUF, "LibSharedMedia_SetGlobal", "ResolveMedia")
     UUF:CreateUnitFrame("player")
     UUF:CreateUnitFrame("target")
-    -- UUF:CreateUnitFrame("targettarget")
-    -- UUF:CreateUnitFrame("pet")
-    -- UUF:CreateUnitFrame("focus")
-    -- for i = 1, UUF.MaxBossFrames do
-    --     local BossFrame = UUF:CreateUnitFrame("boss" .. i)
-    --     UUF.BossFrames[i] = BossFrame
-    -- end
-    -- UUF:LayoutBossFrames()
+    UUF:CreateUnitFrame("targettarget")
+    UUF:CreateUnitFrame("pet")
+    UUF:CreateUnitFrame("focus")
+    for i = 1, UUF.MaxBossFrames do
+        local BossFrame = UUF:CreateUnitFrame("boss" .. i)
+        UUF.BossFrames[i] = BossFrame
+    end
+    UUF:LayoutBossFrames()
 end

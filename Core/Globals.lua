@@ -57,6 +57,18 @@ UUF.StatusTextureMap = {
     ["RESTING7"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Resting\\Resting7.tga",
 }
 
+UUF.LayoutConfig = {
+    TOPLEFT     = { anchor="TOPLEFT",   offsetMultiplier=0   },
+    TOP         = { anchor="TOP",       offsetMultiplier=0   },
+    TOPRIGHT    = { anchor="TOPRIGHT",  offsetMultiplier=0   },
+    BOTTOMLEFT  = { anchor="TOPLEFT",   offsetMultiplier=1   },
+    BOTTOM      = { anchor="TOP",       offsetMultiplier=1   },
+    BOTTOMRIGHT = { anchor="TOPRIGHT",  offsetMultiplier=1   },
+    CENTER      = { anchor="CENTER",    offsetMultiplier=0.5, isCenter=true },
+    LEFT        = { anchor="LEFT",      offsetMultiplier=0.5, isCenter=true },
+    RIGHT       = { anchor="RIGHT",     offsetMultiplier=0.5, isCenter=true },
+}
+
 function UUF:Print(MSG)
     print(UUF.AddOnName .. ":|r " .. MSG)
 end

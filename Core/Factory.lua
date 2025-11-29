@@ -240,7 +240,8 @@ function UUF:CreateUnitFrame(unit)
     unitFrame:SetAttribute("*type2", "togglemenu")
 
     unitFrame:SetSize(unitDB.Frame.Width, unitDB.Frame.Height)
-    unitFrame:SetPoint(unitDB.Frame.AnchorFrom, UIParent, unitDB.Frame.AnchorTo, unitDB.Frame.XOffset, unitDB.Frame.YOffset)
+    local anchorParent = unitDB.Frame.AnchorParent or "UIParent"
+    unitFrame:SetPoint(unitDB.Frame.AnchorFrom, anchorParent, unitDB.Frame.AnchorTo, unitDB.Frame.XPosition, unitDB.Frame.YPosition)
 
     ToggleUnitWatch(unitFrame)
 
@@ -277,4 +278,18 @@ function UUF:RefreshUnitFrame(unit)
 end
 
 function UUF:LayoutBossFrames()
+    local Frame = UUF.db.profile.boss.Frame
+    if #UUF.BossFrames == 0 then return end
+    local bossFrames = UUF.BossFrames
+    if Frame.GrowthDirection == "UP" then
+        bossFrames = {}
+        for i = #UUF.BossFrames, 1, -1 do bossFrames[#bossFrames+1] = UUF.BossFrames[i] end
+    end
+    local layoutConfig = UUF.LayoutConfig[Frame.AnchorFrom]
+    local frameHeight = bossFrames[1]:GetHeight()
+    local containerHeight = (frameHeight + Frame.Spacing) * #bossFrames - Frame.Spacing
+    local offsetY = containerHeight * layoutConfig.offsetMultiplier
+    if layoutConfig.isCenter then offsetY = offsetY - (frameHeight / 2) end
+    local initialAnchor = AnchorUtil.CreateAnchor(layoutConfig.anchor, UIParent, Frame.AnchorTo, Frame.XPosition, Frame.YPosition + offsetY)
+    AnchorUtil.VerticalLayout(bossFrames, initialAnchor, Frame.Spacing)
 end
