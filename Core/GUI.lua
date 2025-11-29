@@ -267,7 +267,9 @@ local function CreatePowerBarSettings(containerParent, unit)
 
     local ScrollFrame = CreateScrollFrame(Wrapper)
 
-    local TogglesContainer = CreateInlineGroup(ScrollFrame, "Toggles")
+    local BarContainer = CreateInlineGroup(ScrollFrame, "Bar")
+
+    local TogglesContainer = CreateInlineGroup(BarContainer, "Toggles")
 
     local EnableCheckBox = AG:Create("CheckBox")
     EnableCheckBox:SetLabel("Enable Power Bar")
@@ -290,7 +292,7 @@ local function CreatePowerBarSettings(containerParent, unit)
     ColourBackgroundByType:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.ColourBackgroundByType = value UUF:UpdateUnitFrame(unit) UUFGUI.BGColourPicker:SetDisabled(value) UUFGUI.DarkenFactorSlider:SetDisabled(not value) end)
     TogglesContainer:AddChild(ColourBackgroundByType)
 
-    local ColourContainer = CreateInlineGroup(ScrollFrame, "Colours")
+    local ColourContainer = CreateInlineGroup(BarContainer, "Colours")
     UUFGUI.ColourContainer = ColourContainer
 
     local FGColourPicker = AG:Create("ColorPicker")
@@ -320,7 +322,7 @@ local function CreatePowerBarSettings(containerParent, unit)
     ColourContainer:AddChild(DarkenFactorSlider)
     UUFGUI.DarkenFactorSlider = DarkenFactorSlider
 
-    local LayoutContainer = CreateInlineGroup(ScrollFrame, "Layout")
+    local LayoutContainer = CreateInlineGroup(BarContainer, "Layout")
     UUFGUI.LayoutContainer = LayoutContainer
 
     local HeightSlider = AG:Create("Slider")
@@ -382,7 +384,7 @@ local function CreatePowerBarSettings(containerParent, unit)
     AnchorParentDropdown:SetList({ ["POWER"] = "Power Bar", ["FRAME"] = "Unit Frame", })
     AnchorParentDropdown:SetValue(PowerBarDB.Text.AnchorParent)
     AnchorParentDropdown:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.Text.AnchorParent = value UUF:UpdateUnitFrame(unit) end)
-    AnchorParentDropdown:SetRelativeWidth(0.3)
+    AnchorParentDropdown:SetRelativeWidth(0.33)
     TextLayoutContainer:AddChild(AnchorParentDropdown)
 
     local AnchorToDropdown = AG:Create("Dropdown")
@@ -390,7 +392,7 @@ local function CreatePowerBarSettings(containerParent, unit)
     AnchorToDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
     AnchorToDropdown:SetValue(PowerBarDB.Text.AnchorTo)
     AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.Text.AnchorTo = value UUF:UpdateUnitFrame(unit) end)
-    AnchorToDropdown:SetRelativeWidth(0.3)
+    AnchorToDropdown:SetRelativeWidth(0.33)
     TextLayoutContainer:AddChild(AnchorToDropdown)
 
     local XPositionSlider = AG:Create("Slider")
@@ -417,10 +419,9 @@ local function CreatePowerBarSettings(containerParent, unit)
     FontSizeSlider:SetRelativeWidth(0.33)
     TextLayoutContainer:AddChild(FontSizeSlider)
 
-    DeepDisable(TogglesContainer, not PowerBarDB.Enabled, EnableCheckBox)
-    DeepDisable(ColourContainer, not PowerBarDB.Enabled, EnableCheckBox)
-    DeepDisable(LayoutContainer, not PowerBarDB.Enabled, EnableCheckBox)
+    DeepDisable(BarContainer, not PowerBarDB.Enabled, EnableCheckBox)
     DeepDisable(TextContainer, not PowerBarDB.Enabled, EnableCheckBox)
+    DeepDisable(TextContainer, not PowerBarDB.Text.Enabled, EnableTextCheckBox)
 
     FGColourPicker:SetDisabled(PowerBarDB.ColourByType)
     BGColourPicker:SetDisabled(PowerBarDB.ColourBackgroundByType)
