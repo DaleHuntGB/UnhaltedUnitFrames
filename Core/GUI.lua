@@ -313,26 +313,162 @@ function UUF:CreateGUI()
         ScrollFrame:DoLayout()
     end
 
+    local function DrawProfileSettings(GUIContainer)
+        local profileKeys = {}
+
+        local ScrollFrame = CreateScrollFrame(GUIContainer)
+
+        local ProfileContainer = CreateInlineGroup(ScrollFrame, "Profile Management")
+
+        local ActiveProfileHeading = AG:Create("Heading")
+        ActiveProfileHeading:SetFullWidth(true)
+        ProfileContainer:AddChild(ActiveProfileHeading)
+
+        local function RefreshProfiles()
+            wipe(profileKeys)
+            local tmp = {}
+            for _, name in ipairs(UUF.db:GetProfiles(tmp, true)) do profileKeys[name] = name end
+            SelectProfileDropdown:SetList(profileKeys)
+            CopyFromProfileDropdown:SetList(profileKeys)
+            DeleteProfileDropdown:SetList(profileKeys)
+            SelectProfileDropdown:SetValue(UUF.db:GetCurrentProfile())
+            CopyFromProfileDropdown:SetValue(nil)
+            DeleteProfileDropdown:SetValue(nil)
+            local isUsingGlobal = UUF.db.global.UseGlobalProfile
+            ActiveProfileHeading:SetText( "Active Profile: |cFFFFFFFF" .. UUF.db:GetCurrentProfile() .. (isUsingGlobal and " (|cFFFFCC00Global|r)" or "") .. "|r" )
+        end
+
+        UUFG.RefreshProfiles = RefreshProfiles -- Exposed for Share.lua
+
+        SelectProfileDropdown = AG:Create("Dropdown")
+        SelectProfileDropdown:SetLabel("Select...")
+        SelectProfileDropdown:SetRelativeWidth(0.25)
+        SelectProfileDropdown:SetCallback("OnValueChanged", function(_, _, value) UUF.db:SetProfile(value) UIParent:SetScale(UUF.db.profile.General.UIScale or 1) for unit in pairs(UnitToFrameName) do UUF:UpdateUnitFrame(unit) end RefreshProfiles() end)
+        ProfileContainer:AddChild(SelectProfileDropdown)
+
+        CopyFromProfileDropdown = AG:Create("Dropdown")
+        CopyFromProfileDropdown:SetLabel("Copy From...")
+        CopyFromProfileDropdown:SetRelativeWidth(0.25)
+        CopyFromProfileDropdown:SetCallback("OnValueChanged", function(_, _, value) UUF:CreatePrompt("Copy Profile", "Are you sure you want to copy from |cFF8080FF" .. value .. "|r?\nThis will |cFFFF4040overwrite|r your current profile settings.", function() UUF.db:CopyProfile(value) UIParent:SetScale(UUF.db.profile.General.UIScale or 1) for unit in pairs(UnitToFrameName) do UUF:UpdateUnitFrame(unit) end RefreshProfiles() end) end)
+        ProfileContainer:AddChild(CopyFromProfileDropdown)
+
+        DeleteProfileDropdown = AG:Create("Dropdown")
+        DeleteProfileDropdown:SetLabel("Delete...")
+        DeleteProfileDropdown:SetRelativeWidth(0.25)
+        DeleteProfileDropdown:SetCallback("OnValueChanged", function(_, _, value) if value ~= UUF.db:GetCurrentProfile() then UUF:CreatePrompt("Delete Profile", "Are you sure you want to delete |cFF8080FF" .. value .. "|r?", function() UUF.db:DeleteProfile(value) RefreshProfiles() end) end end)
+        ProfileContainer:AddChild(DeleteProfileDropdown)
+
+        local ResetProfileButton = AG:Create("Button")
+        ResetProfileButton:SetText("Reset |cFF8080FF" .. UUF.db:GetCurrentProfile() .. "|r Profile")
+        ResetProfileButton:SetRelativeWidth(0.25)
+        ResetProfileButton:SetCallback("OnClick", function() UUF.db:ResetProfile() UUF:ResolveMedia() for unit in pairs(UnitToFrameName) do UUF:UpdateUnitFrame(unit) end UIParent:SetScale(UUF.db.profile.General.UIScale or 1) RefreshProfiles() end)
+        ProfileContainer:AddChild(ResetProfileButton)
+
+        local CreateProfileEditBox = AG:Create("EditBox")
+        CreateProfileEditBox:SetLabel("Profile Name:")
+        CreateProfileEditBox:SetText("")
+        CreateProfileEditBox:SetRelativeWidth(0.5)
+        CreateProfileEditBox:DisableButton(true)
+        CreateProfileEditBox:SetCallback("OnEnterPressed", function() CreateProfileEditBox:ClearFocus() end)
+        ProfileContainer:AddChild(CreateProfileEditBox)
+
+        local CreateProfileButton = AG:Create("Button")
+        CreateProfileButton:SetText("Create Profile")
+        CreateProfileButton:SetRelativeWidth(0.5)
+        CreateProfileButton:SetCallback("OnClick", function() local profileName = strtrim(CreateProfileEditBox:GetText() or "") if profileName ~= "" then UUF.db:SetProfile(profileName) UIParent:SetScale(UUF.db.profile.General.UIScale or 1) for unit in pairs(UnitToFrameName) do UUF:FullFrameUpdate(unit) end RefreshProfiles() CreateProfileEditBox:SetText("") end end)
+        ProfileContainer:AddChild(CreateProfileButton)
+
+        local GlobalProfileHeading = AG:Create("Heading")
+        GlobalProfileHeading:SetText("Global Profile Settings")
+        GlobalProfileHeading:SetFullWidth(true)
+        ProfileContainer:AddChild(GlobalProfileHeading)
+
+        local GlobalProfileInfoTag = CreateInfoTag("If |cFF8080FFUse Global Profile Settings|r is enabled, the profile selected below will be used as your active profile.\nThis is useful if you want to use the same profile across multiple characters.")
+        GlobalProfileInfoTag:SetFullWidth(true)
+        ProfileContainer:AddChild(GlobalProfileInfoTag)
+
+        UseGlobalProfileToggle = AG:Create("CheckBox")
+        UseGlobalProfileToggle:SetLabel("Use Global Profile Settings")
+        UseGlobalProfileToggle:SetValue(UUF.db.global.UseGlobalProfile)
+        UseGlobalProfileToggle:SetRelativeWidth(0.5)
+        UseGlobalProfileToggle:SetCallback("OnValueChanged", function(_, _, value) UUF.db.global.UseGlobalProfile = value if value and UUF.db.global.GlobalProfile and UUF.db.global.GlobalProfile ~= "" then UUF.db:SetProfile(UUF.db.global.GlobalProfile) UIParent:SetScale(UUF.db.profile.General.UIScale or 1) for unit in pairs(UnitToFrameName) do UUF:FullFrameUpdate(unit) end end GlobalProfileDropdown:SetDisabled(not value) for _, child in ipairs(ProfileContainer.children) do if child ~= UseGlobalProfileToggle and child ~= GlobalProfileDropdown then DeepDisable(child, value) end end RefreshProfiles() end)
+        ProfileContainer:AddChild(UseGlobalProfileToggle)
+
+        RefreshProfiles()
+
+        GlobalProfileDropdown = AG:Create("Dropdown")
+        GlobalProfileDropdown:SetLabel("Global Profile...")
+        GlobalProfileDropdown:SetRelativeWidth(0.5)
+        GlobalProfileDropdown:SetList(profileKeys)
+        GlobalProfileDropdown:SetValue(UUF.db.global.GlobalProfile)
+        GlobalProfileDropdown:SetCallback("OnValueChanged", function(_, _, value) UUF.db:SetProfile(value) UUF.db.global.GlobalProfile = value UIParent:SetScale(UUF.db.profile.General.UIScale or 1) for unit in pairs(UnitToFrameName) do UUF:UpdateUnitFrame(unit) end RefreshProfiles() end)
+        ProfileContainer:AddChild(GlobalProfileDropdown)
+
+        local SharingContainer = CreateInlineGroup(ScrollFrame, "Profile Sharing")
+
+        local ExportingHeading = AG:Create("Heading")
+        ExportingHeading:SetText("Exporting")
+        ExportingHeading:SetFullWidth(true)
+        SharingContainer:AddChild(ExportingHeading)
+
+        local ExportingImportingDesc = CreateInfoTag("You can export your profile by pressing |cFF8080FFExport Profile|r button below & share the string with other |cFF8080FFUnhalted|r Unit Frame users.")
+        SharingContainer:AddChild(ExportingImportingDesc)
+
+        local ExportingEditBox = AG:Create("EditBox")
+        ExportingEditBox:SetLabel("Export String...")
+        ExportingEditBox:SetText("")
+        ExportingEditBox:SetFullWidth(true)
+        ExportingEditBox:DisableButton(true)
+        ExportingEditBox:SetCallback("OnEnterPressed", function() ExportingEditBox:ClearFocus() end)
+        SharingContainer:AddChild(ExportingEditBox)
+
+        local ExportProfileButton = AG:Create("Button")
+        ExportProfileButton:SetText("Export Profile")
+        ExportProfileButton:SetFullWidth(true)
+        ExportProfileButton:SetCallback("OnClick", function() ExportingEditBox:SetText(UUF:ExportSavedVariables()) ExportingEditBox:HighlightText() ExportingEditBox:SetFocus() end)
+        SharingContainer:AddChild(ExportProfileButton)
+
+        local ImportingHeading = AG:Create("Heading")
+        ImportingHeading:SetText("Importing")
+        ImportingHeading:SetFullWidth(true)
+        SharingContainer:AddChild(ImportingHeading)
+
+        local ImportingDesc = CreateInfoTag("If you have an exported string, paste it in the |cFF8080FFImport String|r box below & press |cFF8080FFImport Profile|r.")
+        SharingContainer:AddChild(ImportingDesc)
+
+        local ImportingEditBox = AG:Create("EditBox")
+        ImportingEditBox:SetLabel("Import String...")
+        ImportingEditBox:SetText("")
+        ImportingEditBox:SetFullWidth(true)
+        ImportingEditBox:DisableButton(true)
+        ImportingEditBox:SetCallback("OnEnterPressed", function() ImportingEditBox:ClearFocus() end)
+        SharingContainer:AddChild(ImportingEditBox)
+
+        local ImportProfileButton = AG:Create("Button")
+        ImportProfileButton:SetText("Import Profile")
+        ImportProfileButton:SetFullWidth(true)
+        ImportProfileButton:SetCallback("OnClick", function() if ImportingEditBox:GetText() ~= "" then UUF:ImportSavedVariables(ImportingEditBox:GetText()) ImportingEditBox:SetText("") end end)
+        SharingContainer:AddChild(ImportProfileButton)
+        GlobalProfileDropdown:SetDisabled(not UUF.db.global.UseGlobalProfile)
+        if UUF.db.global.UseGlobalProfile then for _, child in ipairs(ProfileContainer.children) do if child ~= UseGlobalProfileToggle and child ~= GlobalProfileDropdown then DeepDisable(child, true) end end end
+
+        ScrollFrame:DoLayout()
+    end
+
     local function SelectedGroup(GUIContainer, _, MainGroup)
         GUIContainer:ReleaseChildren()
         if MainGroup == "General" then
             DrawGeneralSettings(GUIContainer)
         elseif MainGroup == "player" then
-            DrawUnitFrameContainer(GUIContainer, "player")
         elseif MainGroup == "target" then
-            DrawUnitFrameContainer(GUIContainer, "target")
         elseif MainGroup == "targettarget" then
-            DrawUnitFrameContainer(GUIContainer, "targettarget")
         elseif MainGroup == "pet" then
-            DrawUnitFrameContainer(GUIContainer, "pet")
         elseif MainGroup == "focus" then
-            DrawUnitFrameContainer(GUIContainer, "focus")
         elseif MainGroup == "boss" then
-            DrawUnitFrameContainer(GUIContainer, "boss")
         elseif MainGroup == "Tags" then
             DrawTagsContainer(GUIContainer)
         elseif MainGroup == "Profiles" then
-            DrawProfilesContainer(GUIContainer)
+            DrawProfileSettings(GUIContainer)
         end
     end
 

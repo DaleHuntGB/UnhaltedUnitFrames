@@ -10,6 +10,7 @@ function UnhaltedUF:OnInitialize()
         end
     end
     UUF.HealthSeparator = UUF.db.profile.General.HealthSeparator or "-"
+    if UUF.db.global.UseGlobalProfile then UUF.db:SetProfile(UUF.db.global.GlobalProfile or "Default") end
 end
 
 function UnhaltedUF:OnEnable()
@@ -17,6 +18,8 @@ function UnhaltedUF:OnEnable()
     UUF:Init()
     UUF:HideDefaultUnitFrames()
     UUF:ResolveMedia()
+    LSM.RegisterCallback(UUF, "LibSharedMedia_Registered", "ResolveMedia")
+    LSM.RegisterCallback(UUF, "LibSharedMedia_SetGlobal", "ResolveMedia")
     UUF:CreateUnitFrame("player")
     UUF:CreateUnitFrame("target")
     -- UUF:CreateUnitFrame("targettarget")
