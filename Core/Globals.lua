@@ -177,3 +177,9 @@ function UUF:SetUIScale()
         UIParent:SetScale(UUF.db.profile.General.UIScale)
     end
 end
+
+function UUF:GetPixelPerfectScale()
+    local _, screenHeight = GetPhysicalScreenSize()
+    local pixelSize = 768 / screenHeight
+    return pixelSize
+end

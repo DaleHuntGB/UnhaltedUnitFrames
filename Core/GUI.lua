@@ -2,9 +2,9 @@ local _, UUF = ...
 local AG = LibStub("AceGUI-3.0")
 local GUIFrame;
 local OpenedGUI = false
-local EMOTE_PATH = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Emotes\\"
 local LSM = UUF.LSM
 local UnitToFrameName = UUF.UnitToFrameName
+
 local AnchorPoints = {
     ["TOPLEFT"] = "Top Left",
     ["TOP"] = "Top",
@@ -14,9 +14,10 @@ local AnchorPoints = {
     ["RIGHT"] = "Right",
     ["BOTTOMLEFT"] = "Bottom Left",
     ["BOTTOM"] = "Bottom",
-    ["BOTTOMRIGHT"] = "Bottom Right"
+    ["BOTTOMRIGHT"] = "Bottom Right",
+    { "TOPLEFT", "TOP", "TOPRIGHT", "LEFT", "CENTER", "RIGHT", "BOTTOMLEFT", "BOTTOM", "BOTTOMRIGHT", }
 }
-local AnchorOrder = { "TOPLEFT", "TOP", "TOPRIGHT", "LEFT", "CENTER", "RIGHT", "BOTTOMLEFT", "BOTTOM", "BOTTOMRIGHT", }
+
 local PowerNames = {
     [0] = "Mana",
     [1] = "Rage",
@@ -33,6 +34,7 @@ local PowerNames = {
     [17] = "Fury",
     [18] = "Pain"
 }
+
 local ReactionNames = {
     [1] = "Hated",
     [2] = "Hostile",
@@ -43,6 +45,7 @@ local ReactionNames = {
     [7] = "Revered",
     [8] = "Exalted",
 }
+
 local CombatTextures = {
     ["DEFAULT"] = "|TInterface\\CharacterFrame\\UI-StateIcon:20:20:0:0:64:64:32:64:0:31|t",
     ["COMBAT0"] = "|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Combat\\Combat0.tga:18:18|t",
@@ -54,6 +57,7 @@ local CombatTextures = {
     ["COMBAT6"] = "|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Combat\\Combat6.tga:18:18|t",
     ["COMBAT7"] = "|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Combat\\Combat7.tga:18:18|t",
 }
+
 local RestingTextures = {
     ["DEFAULT"] = "|TInterface\\CharacterFrame\\UI-StateIcon:18:18:0:0:64:64:0:32:0:27|t",
     ["RESTING0"] = "|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Resting\\Resting0.tga:18:18|t",
@@ -65,7 +69,7 @@ local RestingTextures = {
     ["RESTING6"] = "|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Resting\\Resting6.tga:18:18|t",
     ["RESTING7"] = "|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Resting\\Resting7.tga:18:18|t",
 }
-local SLIDER_STEP, SLIDER_MIN, SLIDER_MAX = 0.1, -3000, 3000
+
 local function CreateInfoTag(Description)
     local InfoDesc = AG:Create("Label")
     InfoDesc:SetText(UUF.InfoButton .. Description)
@@ -76,6 +80,24 @@ local function CreateInfoTag(Description)
     InfoDesc:SetJustifyV("MIDDLE")
     return InfoDesc
 end
+
+local function CreateScrollFrame(containerParent)
+    local scrollFrame = AG:Create("ScrollFrame")
+    scrollFrame:SetLayout("Flow")
+    scrollFrame:SetFullWidth(true)
+    containerParent:AddChild(scrollFrame)
+    return scrollFrame
+end
+
+local function CreateInlineGroup(containerParent, containerTitle)
+    local inlineGroup = AG:Create("InlineGroup")
+    inlineGroup:SetTitle("|cFFFFFFFF" .. containerTitle .. "|r")
+    inlineGroup:SetFullWidth(true)
+    inlineGroup:SetLayout("Flow")
+    containerParent:AddChild(inlineGroup)
+    return inlineGroup
+end
+
 local function DeepDisable(widget, disabled, skipWidget)
     if widget == skipWidget then return end
     if widget.SetDisabled then widget:SetDisabled(disabled) end
@@ -85,9 +107,11 @@ local function DeepDisable(widget, disabled, skipWidget)
         end
     end
 end
+
 function UUF:CreateGUI()
     if OpenedGUI then return end
     if InCombatLockdown() then return end
+
     OpenedGUI = true
     GUIFrame = AG:Create("Frame")
     GUIFrame:SetTitle(UUF.AddOnName)
@@ -96,1539 +120,202 @@ function UUF:CreateGUI()
     GUIFrame:SetHeight(550)
     GUIFrame:EnableResize(false)
     GUIFrame:SetCallback("OnClose", function(widget) AG:Release(widget) OpenedGUI = false end)
-    local function DrawGeneralContainer(Container)
-        local General = UUF.db.profile.General
-        local ScrollFrame = AG:Create("ScrollFrame")
-        ScrollFrame:SetLayout("Flow")
-        ScrollFrame:SetFullWidth(true)
-        ScrollFrame:SetFullHeight(true)
-        Container:AddChild(ScrollFrame)
-        local UIScaleContainer = AG:Create("InlineGroup")
-        UIScaleContainer:SetTitle("UI Scale")
-        UIScaleContainer:SetLayout("Flow")
-        UIScaleContainer:SetFullWidth(true)
-        ScrollFrame:AddChild(UIScaleContainer)
+
+    local function DrawGeneralSettings(Container)
+        local ScrollFrame = CreateScrollFrame(Container)
+        --------------------------------------------------------------
+        --- UI Scale
+        --------------------------------------------------------------
+        local UIScaleContainer = CreateInlineGroup(ScrollFrame, "UI Scale")
         local UIScaleInfo = CreateInfoTag("This can force the UI Scale to be lower than |cFF08B6FFBlizzard|r intends which can cause some |cFFFFCC00unexpected effects|r.\nIf you experience issues, please |cFFFF4040disable|r the feature.")
         UIScaleInfo:SetRelativeWidth(1)
+        UIScaleContainer:AddChild(UIScaleInfo)
+
+        local EnableUIScaleCheckBox = AG:Create("CheckBox")
+        EnableUIScaleCheckBox:SetLabel("Enable UI Scale")
+        EnableUIScaleCheckBox:SetValue(UUF.db.profile.General.AllowUIScaling)
+        EnableUIScaleCheckBox:SetRelativeWidth(0.5)
+        EnableUIScaleCheckBox:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.General.AllowUIScaling = value end)
+        UIScaleContainer:AddChild(EnableUIScaleCheckBox)
+
         local UIScaleSlider = AG:Create("Slider")
         UIScaleSlider:SetLabel("UI Scale")
-        UIScaleSlider:SetValue(UUF.db.profile.General.UIScale or 1)
-        UIScaleSlider:SetSliderValues(0.3, 1.5, 0.01)
-        UIScaleSlider:SetRelativeWidth(0.33)
-        UIScaleSlider:SetCallback("OnMouseUp", function(_, _, value)
-            if not UUF.db.global.ApplyUIScale then return end
-            if value > 0.8 then
-                UUF:CreatePrompt(
-                "UI Scale Warning",
-                "Setting the UI Scale to |cFF8080FF" .. value .. "|r\nThis may cause UI Elements to appear very large.\nAre you sure you want to continue?",
-                function() UUF.db.profile.General.UIScale = value UIParent:SetScale(value) end,
-                function() UIParent:SetScale(UUF.db.profile.General.UIScale) UIScaleSlider:SetValue(UUF.db.profile.General.UIScale) UIScaleSlider:SetLabel("UI Scale") end,
-                "Set |cFF8080FF" .. value .. "|r UI Scale"
-            )
-            else
-                UUF.db.profile.General.UIScale = value
-                UIParent:SetScale(value)
-            end
-        end)
-        UIScaleSlider:SetCallback("OnValueChanged", function(_, _, value)
-            if value > 0.8 then
-                UIScaleSlider:SetLabel("UI Scale |cFFFF4040(Warning)|r")
-            else
-                UIScaleSlider:SetLabel("UI Scale")
-            end
-        end)
-        local TenEightyUIScaleButton = AG:Create("Button")
-        TenEightyUIScaleButton:SetText("1080p")
-        TenEightyUIScaleButton:SetRelativeWidth(0.33)
-        TenEightyUIScaleButton:SetCallback("OnClick", function()
-            if not UUF.db.profile.General.AllowUIScaling then return end
-            UUF.db.profile.General.UIScale = 0.7111111111111
-            UIParent:SetScale(0.7111111111111)
-            UIScaleSlider:SetValue(0.7111111111111)
-        end)
-        TenEightyUIScaleButton:SetCallback("OnEnter", function()
-            GameTooltip:SetOwner(TenEightyUIScaleButton.frame, "ANCHOR_TOP")
-            GameTooltip:AddLine("UI Scale is set to |cFF8080FF0.7111111111111|r", 1, 1, 1)
-            GameTooltip:Show()
-        end)
-        TenEightyUIScaleButton:SetCallback("OnLeave", function() GameTooltip:Hide() end)
-        local FourteenFortyUIScaleButton = AG:Create("Button")
-        FourteenFortyUIScaleButton:SetText("1440p")
-        FourteenFortyUIScaleButton:SetRelativeWidth(0.33)
-        FourteenFortyUIScaleButton:SetCallback("OnClick", function()
-            if not UUF.db.profile.General.AllowUIScaling then return end
-            UUF.db.profile.General.UIScale = 0.5333333333333
-            UIParent:SetScale(0.5333333333333)
-            UIScaleSlider:SetValue(0.5333333333333)
-        end)
-        FourteenFortyUIScaleButton:SetCallback("OnEnter", function()
-            GameTooltip:SetOwner(FourteenFortyUIScaleButton.frame, "ANCHOR_TOP")
-            GameTooltip:AddLine("UI Scale is set to |cFF8080FF0.5333333333333|r", 1, 1, 1)
-            GameTooltip:Show()
-        end)
-        FourteenFortyUIScaleButton:SetCallback("OnLeave", function() GameTooltip:Hide() end)
-        local EnableUIScaleToggle = AG:Create("CheckBox")
-        EnableUIScaleToggle:SetLabel("Enable UI Scale")
-        EnableUIScaleToggle:SetValue(UUF.db.profile.General.AllowUIScaling)
-        EnableUIScaleToggle:SetRelativeWidth(1)
-        EnableUIScaleToggle:SetCallback("OnValueChanged", function(_, _, value)
-            UUF.db.profile.General.AllowUIScaling = value
-            if not value then
-                UUF.db.profile.General.UIScale = 1
-                UIParent:SetScale(1)
-                UIScaleSlider:SetValue(1)
-            else
-                UIParent:SetScale(UUF.db.profile.General.UIScale)
-                UIScaleSlider:SetValue(UUF.db.profile.General.UIScale)
-            end
-            if not UUF.db.global.ApplyUIScale then
-                UIScaleSlider:SetDisabled(true)
-                TenEightyUIScaleButton:SetDisabled(true)
-                FourteenFortyUIScaleButton:SetDisabled(true)
-                UIScaleContainer:DoLayout()
-            else
-                UIScaleSlider:SetDisabled(false)
-                TenEightyUIScaleButton:SetDisabled(false)
-                FourteenFortyUIScaleButton:SetDisabled(false)
-                UIScaleContainer:DoLayout()
-            end
-            DeepDisable(UIScaleContainer, not value, EnableUIScaleToggle)
-        end)
-        UIScaleContainer:AddChild(UIScaleInfo)
-        UIScaleContainer:AddChild(EnableUIScaleToggle)
+        UIScaleSlider:SetValue(UUF.db.profile.General.UIScale)
+        UIScaleSlider:SetRelativeWidth(0.5)
+        UIScaleSlider:SetSliderValues(0.1, 1.0, 0.1)
+        UIScaleSlider:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.General.UIScale = value; UUF:SetUIScale() end)
         UIScaleContainer:AddChild(UIScaleSlider)
-        UIScaleContainer:AddChild(TenEightyUIScaleButton)
-        UIScaleContainer:AddChild(FourteenFortyUIScaleButton)
-        DeepDisable(UIScaleContainer, not UUF.db.profile.General.AllowUIScaling, EnableUIScaleToggle)
-        local TexturesContainer = AG:Create("InlineGroup")
-        TexturesContainer:SetTitle("Textures & Colours")
-        TexturesContainer:SetLayout("Flow")
-        TexturesContainer:SetFullWidth(true)
-        ScrollFrame:AddChild(TexturesContainer)
-        local TexturesInfoTag = CreateInfoTag("|cFF8080FFTextures|r are applied globally to all elements & unit frames, where appropriate.")
-        TexturesInfoTag:SetRelativeWidth(1)
-        TexturesContainer:AddChild(TexturesInfoTag)
-        local ForegroundTextureDropdown = AG:Create("LSM30_Statusbar")
-        ForegroundTextureDropdown:SetList(LSM:HashTable("statusbar"))
-        ForegroundTextureDropdown:SetLabel("Foreground Texture")
-        ForegroundTextureDropdown:SetValue(UUF.db.profile.General.ForegroundTexture)
-        ForegroundTextureDropdown:SetRelativeWidth(0.5)
-        ForegroundTextureDropdown:SetCallback("OnValueChanged", function(widget, _, value)
-            widget:SetValue(value)
-            UUF.db.profile.General.ForegroundTexture = value
-            UUF:ResolveMedia()
-            for unit in pairs(UnitToFrameName) do
-                UUF:FullFrameUpdate(unit)
-            end
-        end)
-        TexturesContainer:AddChild(ForegroundTextureDropdown)
-        local BackgroundTextureDropdown = AG:Create("LSM30_Statusbar")
-        BackgroundTextureDropdown:SetList(LSM:HashTable("statusbar"))
-        BackgroundTextureDropdown:SetLabel("Background Texture")
-        BackgroundTextureDropdown:SetValue(UUF.db.profile.General.BackgroundTexture)
-        BackgroundTextureDropdown:SetRelativeWidth(0.5)
-        BackgroundTextureDropdown:SetCallback("OnValueChanged", function(widget, _, value)
-            widget:SetValue(value)
-            UUF.db.profile.General.BackgroundTexture = value
-            UUF:ResolveMedia()
-            for unit in pairs(UnitToFrameName) do
-                UUF:FullFrameUpdate(unit)
-            end
-        end)
-        TexturesContainer:AddChild(BackgroundTextureDropdown)
-        local ColourPickerInfoTag = CreateInfoTag("|cFF8080FFForeground|r & |cFF8080FFBackground|r Colours are applied to all frames. This will override individual unit frame settings.")
-        ColourPickerInfoTag:SetRelativeWidth(1)
-        TexturesContainer:AddChild(ColourPickerInfoTag)
-        local FGColourPicker = AG:Create("ColorPicker")
-        FGColourPicker:SetLabel("Foreground Colour (Global)")
-        FGColourPicker:SetColor(26/255, 26/255, 26/255, 1)
-        FGColourPicker:SetHasAlpha(true)
-        FGColourPicker:SetRelativeWidth(0.5)
-        FGColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a)
-            for unit in pairs(UnitToFrameName) do
-                UUF.db.profile[unit].Frame.FGColour = {r, g, b, a}
-                UUF:FullFrameUpdate(unit)
-            end
-        end)
-        TexturesContainer:AddChild(FGColourPicker)
-        local BGColourPicker = AG:Create("ColorPicker")
-        BGColourPicker:SetLabel("Background Colour (Global)")
-        BGColourPicker:SetColor(128/255, 128/255, 128/255, 1)
-        BGColourPicker:SetHasAlpha(true)
-        BGColourPicker:SetRelativeWidth(0.5)
-        BGColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a)
-            for unit in pairs(UnitToFrameName) do
-                UUF.db.profile[unit].Frame.BGColour = {r, g, b, a}
-                UUF:FullFrameUpdate(unit)
-            end
-        end)
-        TexturesContainer:AddChild(BGColourPicker)
-        local ColourSwappingInfoTag = CreateInfoTag("|cFF8080FFClass & Reaction Colours|r or |cFF8080FFDark Colours|r can be applied here. Background Colours will also be adjusted for aesthetics.")
-        ColourSwappingInfoTag:SetRelativeWidth(1)
-        TexturesContainer:AddChild(ColourSwappingInfoTag)
-        local ColouredModeButton = AG:Create("Button")
-        ColouredModeButton:SetText("Use Class & Reaction Colours")
-        ColouredModeButton:SetRelativeWidth(0.5)
-        ColouredModeButton:SetCallback("OnClick", function()
-            for unit in pairs(UnitToFrameName) do
-                UUF.db.profile[unit].Frame.ClassColour = true
-                UUF.db.profile[unit].Frame.ReactionColour = true
-                UUF.db.profile[unit].Frame.BGColour = {26/255, 26/255, 26/255, 1}
-                UUF:FullFrameUpdate(unit)
-            end
-        end)
-        TexturesContainer:AddChild(ColouredModeButton)
-        local DarkModeButton = AG:Create("Button")
-        DarkModeButton:SetText("Use Dark Colours")
-        DarkModeButton:SetRelativeWidth(0.5)
-        DarkModeButton:SetCallback("OnClick", function()
-            for unit in pairs(UnitToFrameName) do
-                UUF.db.profile[unit].Frame.ClassColour = false
-                UUF.db.profile[unit].Frame.ReactionColour = false
-                UUF.db.profile[unit].Frame.BGColour = {128/255, 128/255, 128/255, 1}
-                UUF:FullFrameUpdate(unit)
-            end
-        end)
-        TexturesContainer:AddChild(DarkModeButton)
-        local FontsContainer = AG:Create("InlineGroup")
-        FontsContainer:SetTitle("Fonts")
-        FontsContainer:SetLayout("Flow")
-        FontsContainer:SetFullWidth(true)
-        ScrollFrame:AddChild(FontsContainer)
+
+        local PixelPerfectButton = AG:Create("Button")
+        PixelPerfectButton:SetText("Apply Pixel Perfect Scaling")
+        PixelPerfectButton:SetRelativeWidth(0.33)
+        PixelPerfectButton:SetCallback("OnClick", function() UUF.db.profile.General.UIScale = UUF:GetPixelPerfectScale() UUF:SetUIScale() UIScaleSlider:SetValue(UUF.db.profile.General.UIScale) end)
+        PixelPerfectButton:SetCallback("OnEnter", function() GameTooltip:SetOwner(PixelPerfectButton.frame, "ANCHOR_CURSOR") GameTooltip:AddLine("|cFF8080FFUI Scale Detected|r: " .. string.format("%.2f", UUF:GetPixelPerfectScale()), 1, 1, 1) GameTooltip:Show() end)
+        PixelPerfectButton:SetCallback("OnLeave", function() GameTooltip:Hide() end)
+        UIScaleContainer:AddChild(PixelPerfectButton)
+
+        local Apply1080PScale = AG:Create("Button")
+        Apply1080PScale:SetText("Apply 1080p Scaling")
+        Apply1080PScale:SetRelativeWidth(0.33)
+        Apply1080PScale:SetCallback("OnClick", function() UUF.db.profile.General.UIScale = 0.7111111111111 UUF:SetUIScale() UIScaleSlider:SetValue(UUF.db.profile.General.UIScale) end)
+        UIScaleContainer:AddChild(Apply1080PScale)
+
+        local Apply1440PScale = AG:Create("Button")
+        Apply1440PScale:SetText("Apply 1440p Scaling")
+        Apply1440PScale:SetRelativeWidth(0.33)
+        Apply1440PScale:SetCallback("OnClick", function() UUF.db.profile.General.UIScale = 0.5333333333333 UUF:SetUIScale() UIScaleSlider:SetValue(UUF.db.profile.General.UIScale) end)
+        UIScaleContainer:AddChild(Apply1440PScale)
+
+        DeepDisable(UIScaleContainer, not UUF.db.profile.General.AllowUIScaling, EnableUIScaleCheckBox)
+
+        --------------------------------------------------------------
+        --- Fonts
+        --------------------------------------------------------------
+        local FontsContainer = CreateInlineGroup(ScrollFrame, "Fonts")
+
+        local FontDropdownInfo = CreateInfoTag("|cFF8080FFFonts|r can be added via |cFFFFCC00Shared Media|r.")
+        FontDropdownInfo:SetRelativeWidth(1)
+        FontsContainer:AddChild(FontDropdownInfo)
+
         local FontDropdown = AG:Create("LSM30_Font")
         FontDropdown:SetList(LSM:HashTable("font"))
         FontDropdown:SetLabel("Font")
         FontDropdown:SetValue(UUF.db.profile.General.Font)
         FontDropdown:SetRelativeWidth(0.5)
-        FontDropdown:SetCallback("OnValueChanged", function(widget, _, value)
-            widget:SetValue(value)
-            UUF.db.profile.General.Font = value
-            UUF:ResolveMedia()
-            for unit in pairs(UnitToFrameName) do
-                UUF:FullFrameUpdate(unit)
-            end
-        end)
+        FontDropdown:SetCallback("OnValueChanged", function(widget, _, value) widget:SetValue(value) UUF.db.profile.General.Font = value UUF:ResolveMedia() for unit in pairs(UnitToFrameName) do UUF:FullFrameUpdate(unit) end end)
         FontsContainer:AddChild(FontDropdown)
+
         local FontFlagsDropdown = AG:Create("Dropdown")
-        FontFlagsDropdown:SetList({
-            ["OUTLINE"] = "Outline",
-            ["THICKOUTLINE"] = "Thick Outline",
-            ["MONOCHROME"] = "Monochrome",
-            ["NONE"] = "None",
-        })
+        FontFlagsDropdown:SetList({ ["OUTLINE"] = "Outline", ["THICKOUTLINE"] = "Thick Outline", ["MONOCHROME"] = "Monochrome", ["NONE"] = "None", })
         FontFlagsDropdown:SetLabel("Font Flags")
         FontFlagsDropdown:SetValue(UUF.db.profile.General.FontFlag)
         FontFlagsDropdown:SetRelativeWidth(0.5)
-        FontFlagsDropdown:SetCallback("OnValueChanged", function(_, _, value)
-            UUF.db.profile.General.FontFlag = value
-            for unit in pairs(UnitToFrameName) do
-                UUF:FullFrameUpdate(unit)
-            end
-        end)
+        FontFlagsDropdown:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.General.FontFlag = value for unit in pairs(UnitToFrameName) do UUF:FullFrameUpdate(unit) end end)
         FontsContainer:AddChild(FontFlagsDropdown)
-        local FontShadowsContainer = AG:Create("InlineGroup")
-        FontShadowsContainer:SetTitle("Shadow")
-        FontShadowsContainer:SetLayout("Flow")
-        FontShadowsContainer:SetFullWidth(true)
-        FontsContainer:AddChild(FontShadowsContainer)
+
+        local FontShadowsContainer = CreateInlineGroup(FontsContainer, "Font Shadows")
+
         local FontShadowXOffsetSlider = AG:Create("Slider")
         FontShadowXOffsetSlider:SetLabel("X Offset")
         FontShadowXOffsetSlider:SetValue(UUF.db.profile.General.FontShadows.OffsetX)
         FontShadowXOffsetSlider:SetSliderValues(-10, 10, 1)
-        FontShadowXOffsetSlider:SetCallback("OnValueChanged", function(_, _, value)
-            UUF.db.profile.General.FontShadows.OffsetX = value
-            for unit in pairs(UnitToFrameName) do
-                UUF:FullFrameUpdate(unit)
-            end
-        end)
+        FontShadowXOffsetSlider:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.General.FontShadows.OffsetX = value for unit in pairs(UnitToFrameName) do UUF:FullFrameUpdate(unit) end end)
         FontShadowsContainer:AddChild(FontShadowXOffsetSlider)
+
         local FontShadowYOffsetSlider = AG:Create("Slider")
         FontShadowYOffsetSlider:SetLabel("Y Offset")
         FontShadowYOffsetSlider:SetValue(UUF.db.profile.General.FontShadows.OffsetY)
         FontShadowYOffsetSlider:SetSliderValues(-10, 10, 1)
-        FontShadowYOffsetSlider:SetCallback("OnValueChanged", function(_, _, value)
-            UUF.db.profile.General.FontShadows.OffsetY = value
-            for unit in pairs(UnitToFrameName) do
-                UUF:FullFrameUpdate(Unit)
-            end
-        end)
+        FontShadowYOffsetSlider:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.General.FontShadows.OffsetY = value for unit in pairs(UnitToFrameName) do UUF:FullFrameUpdate(unit) end end)
         FontShadowsContainer:AddChild(FontShadowYOffsetSlider)
+
         local FontShadowColourPicker = AG:Create("ColorPicker")
         FontShadowColourPicker:SetLabel("Shadow Colour")
         FontShadowColourPicker:SetColor(unpack(UUF.db.profile.General.FontShadows.Colour))
         FontShadowColourPicker:SetHasAlpha(true)
-        FontShadowColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a)
-            UUF.db.profile.General.FontShadows.Colour = {r, g, b, a}
-            for unit in pairs(UnitToFrameName) do
-                UUF:FullFrameUpdate(unit)
-            end
-        end)
+        FontShadowColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) UUF.db.profile.General.FontShadows.Colour = {r, g, b, a} for unit in pairs(UnitToFrameName) do UUF:FullFrameUpdate(unit) end end)
         FontShadowsContainer:AddChild(FontShadowColourPicker)
-        local CustomColoursContainer = AG:Create("InlineGroup")
-        CustomColoursContainer:SetTitle("Custom Colours")
-        CustomColoursContainer:SetLayout("Flow")
-        CustomColoursContainer:SetFullWidth(true)
-        ScrollFrame:AddChild(CustomColoursContainer)
-        local PowerColours = AG:Create("InlineGroup")
-        PowerColours:SetTitle("Power Colours")
-        PowerColours:SetLayout("Flow")
-        PowerColours:SetFullWidth(true)
-        CustomColoursContainer:AddChild(PowerColours)
+        --------------------------------------------------------------
+        --- Textures & Colours
+        --------------------------------------------------------------
+        local TexturesColourContainer = CreateInlineGroup(ScrollFrame, "Textures & Colours")
+
+        local TexturesColoursInfo = CreateInfoTag("|cFF8080FFTextures|r and |cFF8080FFColours|r set here will be applied |cFFFFCC00GLOBALLY|r!")
+        TexturesColoursInfo:SetRelativeWidth(1)
+        TexturesColourContainer:AddChild(TexturesColoursInfo)
+
+        local TexturesContainer = CreateInlineGroup(TexturesColourContainer, "Textures")
+
+        local TexturesInfo = CreateInfoTag("|cFF8080FFTextures|r can be added via |cFFFFCC00Shared Media|r.")
+        TexturesInfo:SetRelativeWidth(1)
+        TexturesContainer:AddChild(TexturesInfo)
+
+        local ForegroundTextureDropdown = AG:Create("LSM30_Statusbar")
+        ForegroundTextureDropdown:SetList(LSM:HashTable("statusbar"))
+        ForegroundTextureDropdown:SetLabel("Foreground Texture")
+        ForegroundTextureDropdown:SetValue(UUF.db.profile.General.ForegroundTexture)
+        ForegroundTextureDropdown:SetRelativeWidth(0.5)
+        ForegroundTextureDropdown:SetCallback("OnValueChanged", function(widget, _, value) widget:SetValue(value) UUF.db.profile.General.ForegroundTexture = value UUF:ResolveMedia() for unit in pairs(UnitToFrameName) do UUF:FullFrameUpdate(unit) end end)
+        TexturesContainer:AddChild(ForegroundTextureDropdown)
+
+        local BackgroundTextureDropdown = AG:Create("LSM30_Statusbar")
+        BackgroundTextureDropdown:SetList(LSM:HashTable("statusbar"))
+        BackgroundTextureDropdown:SetLabel("Background Texture")
+        BackgroundTextureDropdown:SetValue(UUF.db.profile.General.BackgroundTexture)
+        BackgroundTextureDropdown:SetRelativeWidth(0.5)
+        BackgroundTextureDropdown:SetCallback("OnValueChanged", function(widget, _, value) widget:SetValue(value) UUF.db.profile.General.BackgroundTexture = value UUF:ResolveMedia() for unit in pairs(UnitToFrameName) do UUF:FullFrameUpdate(unit) end end)
+        TexturesContainer:AddChild(BackgroundTextureDropdown)
+
+        local ColoursContainer = CreateInlineGroup(TexturesColourContainer, "Colours")
+
+        local ColoursInfo = CreateInfoTag("|cFF8080FFButtons|r will allow you to swap between |cFFFFCC00Class / Reaction Mode|r and |cFFFFCC00Dark Mode|r.")
+        ColoursInfo:SetRelativeWidth(1)
+        ColoursContainer:AddChild(ColoursInfo)
+
+        local ColouredModeButton = AG:Create("Button")
+        ColouredModeButton:SetText("Class / Reaction Mode")
+        ColouredModeButton:SetRelativeWidth(0.5)
+        ColouredModeButton:SetCallback("OnClick", function() for unit in pairs(UnitToFrameName) do UUF.db.profile[unit].Frame.ClassColour = true UUF.db.profile[unit].Frame.ReactionColour = true UUF.db.profile[unit].Frame.BGColour = {26/255, 26/255, 26/255, 1} UUF:FullFrameUpdate(unit) end end)
+        ColoursContainer:AddChild(ColouredModeButton)
+
+        local DarkModeButton = AG:Create("Button")
+        DarkModeButton:SetText("Dark Mode")
+        DarkModeButton:SetRelativeWidth(0.5)
+        DarkModeButton:SetCallback("OnClick", function() for unit in pairs(UnitToFrameName) do UUF.db.profile[unit].Frame.ClassColour = false UUF.db.profile[unit].Frame.ReactionColour = false UUF.db.profile[unit].Frame.BGColour = {128/255, 128/255, 128/255, 1} UUF:FullFrameUpdate(unit) end end)
+        ColoursContainer:AddChild(DarkModeButton)
+
+        local FGColourPicker = AG:Create("ColorPicker")
+        FGColourPicker:SetLabel("Foreground Colour (Global)")
+        FGColourPicker:SetColor(26/255, 26/255, 26/255, 1)
+        FGColourPicker:SetHasAlpha(true)
+        FGColourPicker:SetRelativeWidth(0.5)
+        FGColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) for unit in pairs(UnitToFrameName) do UUF.db.profile[unit].Frame.FGColour = {r, g, b, a} UUF:FullFrameUpdate(unit) end end)
+        TexturesContainer:AddChild(FGColourPicker)
+
+        local BGColourPicker = AG:Create("ColorPicker")
+        BGColourPicker:SetLabel("Background Colour (Global)")
+        BGColourPicker:SetColor(128/255, 128/255, 128/255, 1)
+        BGColourPicker:SetHasAlpha(true)
+        BGColourPicker:SetRelativeWidth(0.5)
+        BGColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) for unit in pairs(UnitToFrameName) do UUF.db.profile[unit].Frame.BGColour = {r, g, b, a} UUF:FullFrameUpdate(unit) end end)
+        TexturesContainer:AddChild(BGColourPicker)
+
+        --------------------------------------------------------------
+        --- Custom Colours
+        --------------------------------------------------------------
+        local CustomColoursContainer = CreateInlineGroup(ScrollFrame, "Custom Colours")
+
+        local PowerColours = CreateInlineGroup(CustomColoursContainer, "Power")
         local PowerOrder = {0, 1, 2, 3, 6, 8, 11, 13, 17, 18}
         for _, powerType in ipairs(PowerOrder) do
-            local powerColour = General.CustomColours.Power[powerType]
+            local powerColour = UUF.db.profile.General.CustomColours.Power[powerType]
             local PowerColour = AG:Create("ColorPicker")
             PowerColour:SetLabel(PowerNames[powerType])
             local R, G, B = unpack(powerColour)
             PowerColour:SetColor(R, G, B)
-            PowerColour:SetCallback("OnValueChanged", function(widget, _, r, g, b) General.CustomColours.Power[powerType] = {r, g, b} for unit in pairs(UnitToFrameName) do UUF:FullFrameUpdate(unit) end end)
+            PowerColour:SetCallback("OnValueChanged", function(widget, _, r, g, b) UUF.db.profile.General.CustomColours.Power[powerType] = {r, g, b} for unit in pairs(UnitToFrameName) do UUF:FullFrameUpdate(unit) end end)
             PowerColour:SetHasAlpha(false)
             PowerColour:SetRelativeWidth(0.25)
             PowerColours:AddChild(PowerColour)
         end
-        local ReactionColours = AG:Create("InlineGroup")
-        ReactionColours:SetTitle("Reaction Colours")
-        ReactionColours:SetLayout("Flow")
-        ReactionColours:SetFullWidth(true)
-        CustomColoursContainer:AddChild(ReactionColours)
-        for reactionType, reactionColour in pairs(General.CustomColours.Reaction) do
+
+        local ReactionColours = CreateInlineGroup(CustomColoursContainer, "Reaction")
+        for reactionType, reactionColour in pairs(UUF.db.profile.General.CustomColours.Reaction) do
             local ReactionColour = AG:Create("ColorPicker")
             ReactionColour:SetLabel(ReactionNames[reactionType])
             local R, G, B = unpack(reactionColour)
             ReactionColour:SetColor(R, G, B)
-            ReactionColour:SetCallback("OnValueChanged", function(widget, _, r, g, b) General.CustomColours.Reaction[reactionType] = {r, g, b} for unit in pairs(UnitToFrameName) do UUF:FullFrameUpdate(unit) end end)
+            ReactionColour:SetCallback("OnValueChanged", function(widget, _, r, g, b) UUF.db.profile.General.CustomColours.Reaction[reactionType] = {r, g, b} for unit in pairs(UnitToFrameName) do UUF:FullFrameUpdate(unit) end end)
             ReactionColour:SetHasAlpha(false)
             ReactionColour:SetRelativeWidth(0.25)
             ReactionColours:AddChild(ReactionColour)
         end
-        local SupportMeContainer = AG:Create("InlineGroup")
-        SupportMeContainer:SetTitle("|T" .. EMOTE_PATH .. "peepoLove.png:18:18|t  How To Support " .. UUF.AddOnName .. " Development")
-        SupportMeContainer:SetLayout("Flow")
-        SupportMeContainer:SetFullWidth(true)
-        ScrollFrame:AddChild(SupportMeContainer)
-        local KoFiInteractive = AG:Create("InteractiveLabel")
-        KoFiInteractive:SetText("|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Support\\Ko-Fi.png:16:21|t |cFF8080FFKo-Fi|r")
-        KoFiInteractive:SetFont("Fonts\\FRIZQT__.TTF", 13, "OUTLINE")
-        KoFiInteractive:SetJustifyV("MIDDLE")
-        KoFiInteractive:SetRelativeWidth(0.33)
-        KoFiInteractive:SetCallback("OnClick", function() UUF:OpenURL("Support Me on Ko-Fi", "https://ko-fi.com/unhalted") end)
-        SupportMeContainer:AddChild(KoFiInteractive)
-        local PayPalInteractive = AG:Create("InteractiveLabel")
-        PayPalInteractive:SetText("|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Support\\PayPal.png:23:21|t |cFF8080FFPayPal|r")
-        PayPalInteractive:SetFont("Fonts\\FRIZQT__.TTF", 13, "OUTLINE")
-        PayPalInteractive:SetJustifyV("MIDDLE")
-        PayPalInteractive:SetRelativeWidth(0.33)
-        PayPalInteractive:SetCallback("OnClick", function() UUF:OpenURL("Support Me on PayPal", "https://www.paypal.com/paypalme/dhunt1911") end)
-        SupportMeContainer:AddChild(PayPalInteractive)
-        local TwitchInteractive = AG:Create("InteractiveLabel")
-        TwitchInteractive:SetText("|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Support\\Twitch.png:25:21|t |cFF8080FFTwitch|r")
-        TwitchInteractive:SetFont("Fonts\\FRIZQT__.TTF", 13, "OUTLINE")
-        TwitchInteractive:SetJustifyV("MIDDLE")
-        TwitchInteractive:SetRelativeWidth(0.33)
-        TwitchInteractive:SetCallback("OnClick", function() UUF:OpenURL("Support Me on Twitch", "https://www.twitch.tv/unhaltedgb") end)
-        SupportMeContainer:AddChild(TwitchInteractive)
-        local DiscordInteractive = AG:Create("InteractiveLabel")
-        DiscordInteractive:SetText("|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Support\\Discord.png:21:21|t |cFF8080FFDiscord|r")
-        DiscordInteractive:SetFont("Fonts\\FRIZQT__.TTF", 13, "OUTLINE")
-        DiscordInteractive:SetJustifyV("MIDDLE")
-        DiscordInteractive:SetRelativeWidth(0.33)
-        DiscordInteractive:SetCallback("OnClick", function() UUF:OpenURL("Support Me on Discord", "https://discord.gg/UZCgWRYvVE") end)
-        SupportMeContainer:AddChild(DiscordInteractive)
-        local PatreonInteractive = AG:Create("InteractiveLabel")
-        PatreonInteractive:SetText("|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Support\\Patreon.png:21:21|t |cFF8080FFPatreon|r")
-        PatreonInteractive:SetFont("Fonts\\FRIZQT__.TTF", 13, "OUTLINE")
-        PatreonInteractive:SetJustifyV("MIDDLE")
-        PatreonInteractive:SetRelativeWidth(0.33)
-        PatreonInteractive:SetCallback("OnClick", function() UUF:OpenURL("Support Me on Patreon", "https://www.patreon.com/unhalted") end)
-        SupportMeContainer:AddChild(PatreonInteractive)
-        local GithubInteractive = AG:Create("InteractiveLabel")
-        GithubInteractive:SetText("|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Support\\Github.png:21:21|t |cFF8080FFGithub|r")
-        GithubInteractive:SetFont("Fonts\\FRIZQT__.TTF", 13, "OUTLINE")
-        GithubInteractive:SetJustifyV("MIDDLE")
-        GithubInteractive:SetRelativeWidth(0.33)
-        GithubInteractive:SetCallback("OnClick", function() UUF:OpenURL("Support Me on Github", "https://github.com/dalehuntgb/UnhaltedUnitFrames") end)
-        SupportMeContainer:AddChild(GithubInteractive)
-        ScrollFrame:DoLayout()
     end
-    local function DrawUnitFrameContainer(Container, Unit)
-        local dbUnit = Unit
-        if Unit:match("^boss%d+$") then dbUnit = "boss" end
-        local DB = UUF.db.profile[dbUnit]
-        local ScrollFrame = AG:Create("ScrollFrame")
-        local isBoss = Unit == "boss"
-        local isParentableFrame = Unit == "targettarget" or Unit == "focus" or Unit == "pet"
-        ScrollFrame:SetLayout("Flow")
-        ScrollFrame:SetFullWidth(true)
-        ScrollFrame:SetFullHeight(true)
-        Container:AddChild(ScrollFrame)
-        local EnableCheckBox = AG:Create("CheckBox")
-        EnableCheckBox:SetLabel("Enable")
-        EnableCheckBox:SetValue(DB.Enabled)
-        EnableCheckBox:SetFullWidth(true)
-        EnableCheckBox:SetCallback("OnValueChanged", function(_, _, value)
-            DB.Enabled = value
-            UUF:FullFrameUpdate(Unit)
-        end)
-        ScrollFrame:AddChild(EnableCheckBox)
-        if Unit == "boss" then
-            local niceRemarks = {
-                [1] = "You bet!",
-                [2] = "Of course!",
-                [3] = "No problem!",
-                [4] = "Absolutely!",
-            }
-            local sassyRemarks = {
-                [1] = "Yes, fine.",
-                [2] = "Why ask?",
-                [3] = "Whatever...",
-                [4] = "K.",
-            }
-            local TestBossFrames = AG:Create("Button")
-            TestBossFrames:SetText("Test Boss Frames")
-            TestBossFrames:SetRelativeWidth(0.5)
-            TestBossFrames:SetCallback("OnClick", function()
-                UUF.BossTestMode = not UUF.BossTestMode
-                UUF:TestBossFrames()
-                if UUF.BossTestMode then
-                    TestBossFrames:SetText("Disable Test Frames")
-                else
-                    TestBossFrames:SetText("Enable Test Frames")
-                    UUF:CreatePrompt(
-                        "Reload UI |cFF8080FFRequired|r",
-                        "Reload Now?",
-                        function() ReloadUI() end,
-                        function() ReloadUI() end,
-                        niceRemarks[math.random(1, #niceRemarks)],
-                        sassyRemarks[math.random(1, #sassyRemarks)]
-                    )
-                end
-            end)
-            ScrollFrame:AddChild(TestBossFrames)
-            EnableCheckBox:SetRelativeWidth(0.5)
-        end
-        local function SelectedModuleGroup(UnitFrameContainer, _, ModuleGroup)
-            UnitFrameContainer:ReleaseChildren()
-            local function DrawColourContainer()
-                local UseClassColourCheckBox = AG:Create("CheckBox")
-                UseClassColourCheckBox:SetLabel("Use Class Colour")
-                UseClassColourCheckBox:SetValue(DB.Frame.ClassColour)
-                UseClassColourCheckBox:SetRelativeWidth(0.5)
-                UseClassColourCheckBox:SetCallback("OnValueChanged", function(_, _, value)
-                    DB.Frame.ClassColour = value
-                    UUF:FullFrameUpdate(Unit)
-                end)
-                UnitFrameContainer:AddChild(UseClassColourCheckBox)
-                local FGColourPicker = AG:Create("ColorPicker")
-                FGColourPicker:SetLabel("Foreground Colour")
-                FGColourPicker:SetColor(unpack(DB.Frame.FGColour))
-                FGColourPicker:SetHasAlpha(true)
-                FGColourPicker:SetRelativeWidth(0.5)
-                FGColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a)
-                    DB.Frame.FGColour = {r, g, b, a}
-                    UUF:FullFrameUpdate(Unit)
-                end)
-                UnitFrameContainer:AddChild(FGColourPicker)
-                local UseReactionColourCheckBox = AG:Create("CheckBox")
-                UseReactionColourCheckBox:SetLabel("Use Reaction Colour")
-                UseReactionColourCheckBox:SetValue(DB.Frame.ReactionColour)
-                UseReactionColourCheckBox:SetRelativeWidth(0.5)
-                UseReactionColourCheckBox:SetCallback("OnValueChanged", function(_, _, value)
-                    DB.Frame.ReactionColour = value
-                    UUF:FullFrameUpdate(Unit)
-                end)
-                UnitFrameContainer:AddChild(UseReactionColourCheckBox)
-                local BGColourPicker = AG:Create("ColorPicker")
-                BGColourPicker:SetLabel("Background Colour")
-                BGColourPicker:SetColor(unpack(DB.Frame.BGColour))
-                BGColourPicker:SetHasAlpha(true)
-                BGColourPicker:SetRelativeWidth(0.5)
-                BGColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a)
-                    DB.Frame.BGColour = {r, g, b, a}
-                    UUF:FullFrameUpdate(Unit)
-                end)
-                UnitFrameContainer:AddChild(BGColourPicker)
-            end
-            local function DrawFrameContainer()
-                local WidthSlider = AG:Create("Slider")
-                WidthSlider:SetLabel("Width")
-                WidthSlider:SetValue(DB.Frame.Width)
-                WidthSlider:SetSliderValues(50, 1000, 1)
-                WidthSlider:SetRelativeWidth(isBoss and 0.33 or 0.5)
-                WidthSlider:SetCallback("OnValueChanged", function(_, _, value)
-                    DB.Frame.Width = value
-                    if isBoss then
-                        for i=1, 10 do
-                            UUF:FullFrameUpdate("boss" .. i)
-                        end
-                        UUF:LayoutBossFrames()
-                    else
-                        UUF:FullFrameUpdate(Unit)
-                    end
-                end)
-                UnitFrameContainer:AddChild(WidthSlider)
-                local HeightSlider = AG:Create("Slider")
-                HeightSlider:SetLabel("Height")
-                HeightSlider:SetValue(DB.Frame.Height)
-                HeightSlider:SetSliderValues(20, 500, 1)
-                HeightSlider:SetRelativeWidth(isBoss and 0.33 or 0.5)
-                HeightSlider:SetCallback("OnValueChanged", function(_, _, value)
-                    DB.Frame.Height = value
-                    if isBoss then
-                        for i=1, 10 do
-                            UUF:FullFrameUpdate("boss" .. i)
-                        end
-                        UUF:LayoutBossFrames()
-                    else
-                        UUF:FullFrameUpdate(Unit)
-                    end
-                end)
-                UnitFrameContainer:AddChild(HeightSlider)
-                if isBoss then
-                    local SpacingSlider = AG:Create("Slider")
-                    SpacingSlider:SetLabel("Spacing")
-                    SpacingSlider:SetValue(DB.Frame.Spacing)
-                    SpacingSlider:SetSliderValues(-1, 100, 1)
-                    SpacingSlider:SetRelativeWidth(0.33)
-                    SpacingSlider:SetCallback("OnValueChanged", function(_, _, value)
-                        DB.Frame.Spacing = value
-                        UUF:LayoutBossFrames()
-                    end)
-                    UnitFrameContainer:AddChild(SpacingSlider)
-                end
-                local AnchorFromDropdown = AG:Create("Dropdown")
-                AnchorFromDropdown:SetList(AnchorPoints)
-                AnchorFromDropdown:SetLabel("Anchor From")
-                AnchorFromDropdown:SetValue(DB.Frame.AnchorFrom)
-                AnchorFromDropdown:SetRelativeWidth((isBoss or isParentableFrame) and 0.33 or 0.5)
-                AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value)
-                    DB.Frame.AnchorFrom = value
-                    if isBoss then
-                        UUF:LayoutBossFrames()
-                    else
-                        UUF:FullFrameUpdate(Unit)
-                    end
-                end)
-                UnitFrameContainer:AddChild(AnchorFromDropdown)
-                if isParentableFrame then
-                    local AnchorParentEditBox = AG:Create("EditBox")
-                    AnchorParentEditBox:SetLabel("Anchor Parent Frame")
-                    AnchorParentEditBox:SetText(DB.Frame.AnchorParent)
-                    AnchorParentEditBox:SetRelativeWidth(0.33)
-                    AnchorParentEditBox:SetCallback("OnEnterPressed", function(_, _, value)
-                        DB.Frame.AnchorParent = value
-                        UUF:FullFrameUpdate(Unit)
-                    end)
-                    UnitFrameContainer:AddChild(AnchorParentEditBox)
-                end
-                local AnchorToDropdown = AG:Create("Dropdown")
-                AnchorToDropdown:SetList(AnchorPoints)
-                AnchorToDropdown:SetLabel("Anchor To")
-                AnchorToDropdown:SetValue(DB.Frame.AnchorTo)
-                AnchorToDropdown:SetRelativeWidth((isBoss or isParentableFrame) and 0.33 or 0.5)
-                AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value)
-                    DB.Frame.AnchorTo = value
-                    if isBoss then
-                        UUF:LayoutBossFrames()
-                    else
-                        UUF:FullFrameUpdate(Unit)
-                    end
-                end)
-                UnitFrameContainer:AddChild(AnchorToDropdown)
-                if isBoss then
-                    local GrowthDirectionDropdown = AG:Create("Dropdown")
-                    GrowthDirectionDropdown:SetList({
-                        ["UP"] = "Up",
-                        ["DOWN"] = "Down",
-                    })
-                    GrowthDirectionDropdown:SetLabel("Growth Direction")
-                    GrowthDirectionDropdown:SetValue(DB.Frame.GrowthDirection)
-                    GrowthDirectionDropdown:SetRelativeWidth(0.33)
-                    GrowthDirectionDropdown:SetCallback("OnValueChanged", function(_, _, value)
-                        DB.Frame.GrowthDirection = value
-                        UUF:LayoutBossFrames()
-                    end)
-                    UnitFrameContainer:AddChild(GrowthDirectionDropdown)
-                end
-                local XPositionSlider = AG:Create("Slider")
-                XPositionSlider:SetLabel("X Position")
-                XPositionSlider:SetValue(DB.Frame.XPosition)
-                XPositionSlider:SetSliderValues(SLIDER_MIN, SLIDER_MAX, SLIDER_STEP)
-                XPositionSlider:SetRelativeWidth(0.5)
-                XPositionSlider:SetCallback("OnValueChanged", function(_, _, value)
-                    DB.Frame.XPosition = value
-                    if isBoss then
-                        UUF:LayoutBossFrames()
-                    else
-                        UUF:FullFrameUpdate(Unit)
-                    end
-                end)
-                UnitFrameContainer:AddChild(XPositionSlider)
-                local YPositionSlider = AG:Create("Slider")
-                YPositionSlider:SetLabel("Y Position")
-                YPositionSlider:SetValue(DB.Frame.YPosition)
-                YPositionSlider:SetSliderValues(SLIDER_MIN, SLIDER_MAX, SLIDER_STEP)
-                YPositionSlider:SetRelativeWidth(0.5)
-                YPositionSlider:SetCallback("OnValueChanged", function(_, _, value)
-                    DB.Frame.YPosition = value
-                    if isBoss then
-                        UUF:LayoutBossFrames()
-                    else
-                        UUF:FullFrameUpdate(Unit)
-                    end
-                end)
-                UnitFrameContainer:AddChild(YPositionSlider)
-            end
-            local function DrawHealPredictionContainer()
-                local AbsorbsContainer = AG:Create("InlineGroup")
-                AbsorbsContainer:SetTitle("Absorbs")
-                AbsorbsContainer:SetLayout("Flow")
-                AbsorbsContainer:SetFullWidth(true)
-                UnitFrameContainer:AddChild(AbsorbsContainer)
-                local ShowAbsorbsCheckBox = AG:Create("CheckBox")
-                ShowAbsorbsCheckBox:SetLabel("Show Absorbs")
-                ShowAbsorbsCheckBox:SetValue(DB.HealPrediction.Absorbs.Enabled)
-                ShowAbsorbsCheckBox:SetRelativeWidth(1)
-                ShowAbsorbsCheckBox:SetCallback("OnValueChanged", function(_, _, value)
-                    DB.HealPrediction.Absorbs.Enabled = value
-                    UUF:FullFrameUpdate(Unit)
-                end)
-                AbsorbsContainer:AddChild(ShowAbsorbsCheckBox)
-                local AbsorbsColourPicker = AG:Create("ColorPicker")
-                AbsorbsColourPicker:SetLabel("Absorbs Colour")
-                AbsorbsColourPicker:SetColor(unpack(DB.HealPrediction.Absorbs.Colour))
-                AbsorbsColourPicker:SetHasAlpha(true)
-                AbsorbsColourPicker:SetRelativeWidth(0.5)
-                AbsorbsColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a)
-                    DB.HealPrediction.Absorbs.Colour = {r, g, b, a}
-                    UUF:FullFrameUpdate(Unit)
-                end)
-                AbsorbsContainer:AddChild(AbsorbsColourPicker)
-                local AbsorbsGrowthDirectionDropdown = AG:Create("Dropdown")
-                AbsorbsGrowthDirectionDropdown:SetList({
-                    ["RIGHT"] = "Right",
-                    ["LEFT"] = "Left",
-                })
-                AbsorbsGrowthDirectionDropdown:SetLabel("Growth Direction")
-                AbsorbsGrowthDirectionDropdown:SetValue(DB.HealPrediction.Absorbs.GrowthDirection)
-                AbsorbsGrowthDirectionDropdown:SetRelativeWidth(0.5)
-                AbsorbsGrowthDirectionDropdown:SetCallback("OnValueChanged", function(_, _, value)
-                    DB.HealPrediction.Absorbs.GrowthDirection = value
-                    UUF:FullFrameUpdate(Unit)
-                end)
-                AbsorbsContainer:AddChild(AbsorbsGrowthDirectionDropdown)
-            end
-            local function DrawPowerBarContainer()
-                local PowerBarDB = DB.PowerBar
-                local PowerBarEnabledCheckBox = AG:Create("CheckBox")
-                PowerBarEnabledCheckBox:SetLabel("Enable Power Bar")
-                PowerBarEnabledCheckBox:SetValue(PowerBarDB.Enabled)
-                PowerBarEnabledCheckBox:SetRelativeWidth(0.5)
-                PowerBarEnabledCheckBox:SetCallback("OnValueChanged", function(_, _, value)
-                    PowerBarDB.Enabled = value
-                    if isBoss then
-                        for i=1, 10 do
-                            UUF:FullFrameUpdate("boss" .. i)
-                        end
-                        UUF:LayoutBossFrames()
-                    else
-                        UUF:FullFrameUpdate(Unit)
-                    end
-                    DeepDisable(UnitFrameContainer, not value, PowerBarEnabledCheckBox)
-                end)
-                UnitFrameContainer:AddChild(PowerBarEnabledCheckBox)
-                local PowerBarHeightSlider = AG:Create("Slider")
-                PowerBarHeightSlider:SetLabel("Power Bar Height")
-                PowerBarHeightSlider:SetValue(PowerBarDB.Height)
-                PowerBarHeightSlider:SetSliderValues(1, 100, 1)
-                PowerBarHeightSlider:SetRelativeWidth(0.5)
-                PowerBarHeightSlider:SetCallback("OnValueChanged", function(_, _, value)
-                    PowerBarDB.Height = value
-                    if isBoss then
-                        for i=1, 10 do
-                            UUF:FullFrameUpdate("boss" .. i)
-                        end
-                        UUF:LayoutBossFrames()
-                    else
-                        UUF:FullFrameUpdate(Unit)
-                    end
-                end)
-                UnitFrameContainer:AddChild(PowerBarHeightSlider)
-                local ColourContainer = AG:Create("InlineGroup")
-                ColourContainer:SetTitle("Colours")
-                ColourContainer:SetLayout("Flow")
-                ColourContainer:SetFullWidth(true)
-                UnitFrameContainer:AddChild(ColourContainer)
-                local ColourByTypeCheckBox = AG:Create("CheckBox")
-                ColourByTypeCheckBox:SetLabel("Colour By Power Type")
-                ColourByTypeCheckBox:SetValue(PowerBarDB.ColourByType)
-                ColourByTypeCheckBox:SetRelativeWidth(0.5)
-                ColourByTypeCheckBox:SetCallback("OnValueChanged", function(_, _, value)
-                    PowerBarDB.ColourByType = value
-                    if isBoss then
-                        for i=1, 10 do
-                            UUF:FullFrameUpdate("boss" .. i)
-                        end
-                        UUF:LayoutBossFrames()
-                    else
-                        UUF:FullFrameUpdate(Unit)
-                    end
-                end)
-                ColourContainer:AddChild(ColourByTypeCheckBox)
-                local PowerBarFGColourPicker = AG:Create("ColorPicker")
-                PowerBarFGColourPicker:SetLabel("Foreground Colour")
-                PowerBarFGColourPicker:SetColor(unpack(PowerBarDB.FGColour))
-                PowerBarFGColourPicker:SetHasAlpha(true)
-                PowerBarFGColourPicker:SetRelativeWidth(0.5)
-                PowerBarFGColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a)
-                    PowerBarDB.FGColour = {r, g, b, a}
-                    if isBoss then
-                        for i=1, 10 do
-                            UUF:FullFrameUpdate("boss" .. i)
-                        end
-                        UUF:LayoutBossFrames()
-                    else
-                        UUF:FullFrameUpdate(Unit)
-                    end
-                end)
-                ColourContainer:AddChild(PowerBarFGColourPicker)
-                local ColourByBackgroundTypeCheckBox = AG:Create("CheckBox")
-                ColourByBackgroundTypeCheckBox:SetLabel("Colour Background By Power Type")
-                ColourByBackgroundTypeCheckBox:SetValue(PowerBarDB.ColourBackgroundByType)
-                ColourByBackgroundTypeCheckBox:SetRelativeWidth(0.5)
-                ColourByBackgroundTypeCheckBox:SetCallback("OnValueChanged", function(_, _, value)
-                    PowerBarDB.ColourBackgroundByType = value
-                    if isBoss then
-                        for i=1, 10 do
-                            UUF:FullFrameUpdate("boss" .. i)
-                        end
-                        UUF:LayoutBossFrames()
-                    else
-                        UUF:FullFrameUpdate(Unit)
-                    end
-                end)
-                ColourContainer:AddChild(ColourByBackgroundTypeCheckBox)
-                local PowerBarBGColourPicker = AG:Create("ColorPicker")
-                PowerBarBGColourPicker:SetLabel("Background Colour")
-                PowerBarBGColourPicker:SetColor(unpack(PowerBarDB.BGColour))
-                PowerBarBGColourPicker:SetHasAlpha(true)
-                PowerBarBGColourPicker:SetRelativeWidth(0.5)
-                PowerBarBGColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a)
-                    PowerBarDB.BGColour = {r, g, b, a}
-                    if isBoss then
-                        for i=1, 10 do
-                            UUF:FullFrameUpdate("boss" .. i)
-                        end
-                        UUF:LayoutBossFrames()
-                    else
-                        UUF:FullFrameUpdate(Unit)
-                    end
-                end)
-                ColourContainer:AddChild(PowerBarBGColourPicker)
-                local PowerBarTextContainer = AG:Create("InlineGroup")
-                PowerBarTextContainer:SetTitle("Text")
-                PowerBarTextContainer:SetLayout("Flow")
-                PowerBarTextContainer:SetFullWidth(true)
-                UnitFrameContainer:AddChild(PowerBarTextContainer)
-                local PowerBarTextEnabledCheckBox = AG:Create("CheckBox")
-                PowerBarTextEnabledCheckBox:SetLabel("Enable Power Text")
-                PowerBarTextEnabledCheckBox:SetValue(PowerBarDB.Text.Enabled)
-                PowerBarTextEnabledCheckBox:SetRelativeWidth(1)
-                PowerBarTextEnabledCheckBox:SetCallback("OnValueChanged", function(_, _, value)
-                    PowerBarDB.Text.Enabled = value
-                    if isBoss then
-                        for i=1, 10 do
-                            UUF:FullFrameUpdate("boss" .. i)
-                        end
-                        UUF:LayoutBossFrames()
-                    else
-                        UUF:FullFrameUpdate(Unit)
-                    end
-                    DeepDisable(PowerBarTextContainer, not value, PowerBarTextEnabledCheckBox)
-                end)
-                PowerBarTextContainer:AddChild(PowerBarTextEnabledCheckBox)
-                local PowerBarTextColourByTypeCheckBox = AG:Create("CheckBox")
-                PowerBarTextColourByTypeCheckBox:SetLabel("Colour Text By Power Type")
-                PowerBarTextColourByTypeCheckBox:SetValue(PowerBarDB.Text.ColourByType)
-                PowerBarTextColourByTypeCheckBox:SetRelativeWidth(0.33)
-                PowerBarTextColourByTypeCheckBox:SetCallback("OnValueChanged", function(_, _, value)
-                    PowerBarDB.Text.ColourByType = value
-                    if isBoss then
-                        for i=1, 10 do
-                            UUF:FullFrameUpdate("boss" .. i)
-                        end
-                        UUF:LayoutBossFrames()
-                    else
-                        UUF:FullFrameUpdate(Unit)
-                    end
-                end)
-                PowerBarTextContainer:AddChild(PowerBarTextColourByTypeCheckBox)
-                local PowerBarTextColourColourPicker = AG:Create("ColorPicker")
-                PowerBarTextColourColourPicker:SetLabel("Text Colour")
-                PowerBarTextColourColourPicker:SetColor(unpack(PowerBarDB.Text.Colour))
-                PowerBarTextColourColourPicker:SetHasAlpha(true)
-                PowerBarTextColourColourPicker:SetRelativeWidth(0.33)
-                PowerBarTextColourColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a)
-                    PowerBarDB.Text.Colour = {r, g, b, a}
-                    if isBoss then
-                        for i=1, 10 do
-                            UUF:FullFrameUpdate("boss" .. i)
-                        end
-                        UUF:LayoutBossFrames()
-                    else
-                        UUF:FullFrameUpdate(Unit)
-                    end
-                end)
-                PowerBarTextContainer:AddChild(PowerBarTextColourColourPicker)
-                local PowerBarTextAnchorParentDropdown = AG:Create("Dropdown")
-                PowerBarTextAnchorParentDropdown:SetList({
-                    ["POWER"] = "Power Bar",
-                    ["FRAME"] = "Unit Frame",
-                })
-                PowerBarTextAnchorParentDropdown:SetLabel("Anchor Parent")
-                PowerBarTextAnchorParentDropdown:SetValue(PowerBarDB.Text.AnchorParent)
-                PowerBarTextAnchorParentDropdown:SetRelativeWidth(0.33)
-                PowerBarTextAnchorParentDropdown:SetCallback("OnValueChanged", function(_, _, value)
-                    PowerBarDB.Text.AnchorParent = value
-                    if isBoss then
-                        for i=1, 10 do
-                            UUF:FullFrameUpdate("boss" .. i)
-                        end
-                        UUF:LayoutBossFrames()
-                    else
-                        UUF:FullFrameUpdate(Unit)
-                    end
-                end)
-                PowerBarTextContainer:AddChild(PowerBarTextAnchorParentDropdown)
-                local PowerBarTextAnchorFromDropdown = AG:Create("Dropdown")
-                PowerBarTextAnchorFromDropdown:SetList(AnchorPoints)
-                PowerBarTextAnchorFromDropdown:SetLabel("Anchor From")
-                PowerBarTextAnchorFromDropdown:SetValue(PowerBarDB.Text.AnchorFrom)
-                PowerBarTextAnchorFromDropdown:SetRelativeWidth(0.5)
-                PowerBarTextAnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value)
-                    PowerBarDB.Text.AnchorFrom = value
-                    if isBoss then
-                        for i=1, 10 do
-                            UUF:FullFrameUpdate("boss" .. i)
-                        end
-                        UUF:LayoutBossFrames()
-                    else
-                        UUF:FullFrameUpdate(Unit)
-                    end
-                end)
-                PowerBarTextContainer:AddChild(PowerBarTextAnchorFromDropdown)
-                local PowerBarTextAnchorToDropdown = AG:Create("Dropdown")
-                PowerBarTextAnchorToDropdown:SetList(AnchorPoints)
-                PowerBarTextAnchorToDropdown:SetLabel("Anchor To")
-                PowerBarTextAnchorToDropdown:SetValue(PowerBarDB.Text.AnchorTo)
-                PowerBarTextAnchorToDropdown:SetRelativeWidth(0.5)
-                PowerBarTextAnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value)
-                    PowerBarDB.Text.AnchorTo = value
-                    if isBoss then
-                        for i=1, 10 do
-                            UUF:FullFrameUpdate("boss" .. i)
-                        end
-                        UUF:LayoutBossFrames()
-                    else
-                        UUF:FullFrameUpdate(Unit)
-                    end
-                end)
-                PowerBarTextContainer:AddChild(PowerBarTextAnchorToDropdown)
-                local PowerBarTextOffsetXSlider = AG:Create("Slider")
-                PowerBarTextOffsetXSlider:SetLabel("Offset X")
-                PowerBarTextOffsetXSlider:SetValue(PowerBarDB.Text.OffsetX)
-                PowerBarTextOffsetXSlider:SetSliderValues(SLIDER_MIN, SLIDER_MAX, SLIDER_STEP)
-                PowerBarTextOffsetXSlider:SetRelativeWidth(0.33)
-                PowerBarTextOffsetXSlider:SetCallback("OnValueChanged", function(_, _, value)
-                    PowerBarDB.Text.OffsetX = value
-                    if isBoss then
-                        for i=1, 10 do
-                            UUF:FullFrameUpdate("boss" .. i)
-                        end
-                        UUF:LayoutBossFrames()
-                    else
-                        UUF:FullFrameUpdate(Unit)
-                    end
-                end)
-                PowerBarTextContainer:AddChild(PowerBarTextOffsetXSlider)
-                local PowerBarTextOffsetYSlider = AG:Create("Slider")
-                PowerBarTextOffsetYSlider:SetLabel("Offset Y")
-                PowerBarTextOffsetYSlider:SetValue(PowerBarDB.Text.OffsetY)
-                PowerBarTextOffsetYSlider:SetSliderValues(SLIDER_MIN, SLIDER_MAX, SLIDER_STEP)
-                PowerBarTextOffsetYSlider:SetRelativeWidth(0.33)
-                PowerBarTextOffsetYSlider:SetCallback("OnValueChanged", function(_, _, value)
-                    PowerBarDB.Text.OffsetY = value
-                    if isBoss then
-                        for i=1, 10 do
-                            UUF:FullFrameUpdate("boss" .. i)
-                        end
-                        UUF:LayoutBossFrames()
-                    else
-                        UUF:FullFrameUpdate(Unit)
-                    end
-                end)
-                PowerBarTextContainer:AddChild(PowerBarTextOffsetYSlider)
-                local PowerBarTextFontSizeSlider = AG:Create("Slider")
-                PowerBarTextFontSizeSlider:SetLabel("Font Size")
-                PowerBarTextFontSizeSlider:SetValue(PowerBarDB.Text.FontSize)
-                PowerBarTextFontSizeSlider:SetSliderValues(6, 40, 1)
-                PowerBarTextFontSizeSlider:SetRelativeWidth(0.33)
-                PowerBarTextFontSizeSlider:SetCallback("OnValueChanged", function(_, _, value)
-                    PowerBarDB.Text.FontSize = value
-                    if isBoss then
-                        for i=1, 10 do
-                            UUF:FullFrameUpdate("boss" .. i)
-                        end
-                        UUF:LayoutBossFrames()
-                    else
-                        UUF:FullFrameUpdate(Unit)
-                    end
-                end)
-                PowerBarTextContainer:AddChild(PowerBarTextFontSizeSlider)
-                DeepDisable(UnitFrameContainer, not PowerBarDB.Enabled, PowerBarEnabledCheckBox)
-                DeepDisable(PowerBarTextContainer, not PowerBarDB.Text.Enabled, PowerBarTextEnabledCheckBox)
-                ScrollFrame:DoLayout()
-            end
-            local function DrawAlternatePowerBarContainer()
-                local AlternatePowerDB = DB.AlternatePowerBar
-                local AlternatePowerEnabledCheckBox = AG:Create("CheckBox")
-                AlternatePowerEnabledCheckBox:SetLabel("Enable Alternate Power Bar")
-                AlternatePowerEnabledCheckBox:SetValue(AlternatePowerDB.Enabled)
-                AlternatePowerEnabledCheckBox:SetRelativeWidth(0.5)
-                AlternatePowerEnabledCheckBox:SetCallback("OnValueChanged", function(_, _, value)
-                    AlternatePowerDB.Enabled = value
-                    if isBoss then
-                        for i=1, 10 do
-                            UUF:FullFrameUpdate("boss" .. i)
-                        end
-                        UUF:LayoutBossFrames()
-                    else
-                        UUF:FullFrameUpdate(Unit)
-                    end
-                    DeepDisable(UnitFrameContainer, not value, AlternatePowerEnabledCheckBox)
-                end)
-                UnitFrameContainer:AddChild(AlternatePowerEnabledCheckBox)
-                local AlternatePowerHeightSlider = AG:Create("Slider")
-                AlternatePowerHeightSlider:SetLabel("Power Bar Height")
-                AlternatePowerHeightSlider:SetValue(AlternatePowerDB.Height)
-                AlternatePowerHeightSlider:SetSliderValues(1, 100, 1)
-                AlternatePowerHeightSlider:SetRelativeWidth(0.5)
-                AlternatePowerHeightSlider:SetCallback("OnValueChanged", function(_, _, value)
-                    AlternatePowerDB.Height = value
-                    if isBoss then
-                        for i=1, 10 do
-                            UUF:FullFrameUpdate("boss" .. i)
-                        end
-                        UUF:LayoutBossFrames()
-                    else
-                        UUF:FullFrameUpdate(Unit)
-                    end
-                end)
-                UnitFrameContainer:AddChild(AlternatePowerHeightSlider)
-                local AlternatePowerColourContainer = AG:Create("InlineGroup")
-                AlternatePowerColourContainer:SetTitle("Colours")
-                AlternatePowerColourContainer:SetLayout("Flow")
-                AlternatePowerColourContainer:SetFullWidth(true)
-                UnitFrameContainer:AddChild(AlternatePowerColourContainer)
-                local AlternatePowerColourByTypeCheckBox = AG:Create("CheckBox")
-                AlternatePowerColourByTypeCheckBox:SetLabel("Colour By Power Type")
-                AlternatePowerColourByTypeCheckBox:SetValue(AlternatePowerDB.ColourByType)
-                AlternatePowerColourByTypeCheckBox:SetRelativeWidth(0.33)
-                AlternatePowerColourByTypeCheckBox:SetCallback("OnValueChanged", function(_, _, value)
-                    AlternatePowerDB.ColourByType = value
-                    if isBoss then
-                        for i=1, 10 do
-                            UUF:FullFrameUpdate("boss" .. i)
-                        end
-                        UUF:LayoutBossFrames()
-                    else
-                        UUF:FullFrameUpdate(Unit)
-                    end
-                end)
-                AlternatePowerColourContainer:AddChild(AlternatePowerColourByTypeCheckBox)
-                local AlternatePowerFGColourPicker = AG:Create("ColorPicker")
-                AlternatePowerFGColourPicker:SetLabel("Foreground Colour")
-                AlternatePowerFGColourPicker:SetColor(unpack(AlternatePowerDB.FGColour))
-                AlternatePowerFGColourPicker:SetHasAlpha(true)
-                AlternatePowerFGColourPicker:SetRelativeWidth(0.33)
-                AlternatePowerFGColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a)
-                    AlternatePowerDB.FGColour = {r, g, b, a}
-                    if isBoss then
-                        for i=1, 10 do
-                            UUF:FullFrameUpdate("boss" .. i)
-                        end
-                        UUF:LayoutBossFrames()
-                    else
-                        UUF:FullFrameUpdate(Unit)
-                    end
-                end)
-                AlternatePowerColourContainer:AddChild(AlternatePowerFGColourPicker)
-                local AlternatePowerBGColourPicker = AG:Create("ColorPicker")
-                AlternatePowerBGColourPicker:SetLabel("Background Colour")
-                AlternatePowerBGColourPicker:SetColor(unpack(AlternatePowerDB.BGColour))
-                AlternatePowerBGColourPicker:SetHasAlpha(true)
-                AlternatePowerBGColourPicker:SetRelativeWidth(0.33)
-                AlternatePowerBGColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a)
-                    AlternatePowerDB.BGColour = {r, g, b, a}
-                    if isBoss then
-                        for i=1, 10 do
-                            UUF:FullFrameUpdate("boss" .. i)
-                        end
-                        UUF:LayoutBossFrames()
-                    else
-                        UUF:FullFrameUpdate(Unit)
-                    end
-                end)
-                AlternatePowerColourContainer:AddChild(AlternatePowerBGColourPicker)
-                ScrollFrame:DoLayout()
-                DeepDisable(AlternatePowerColourContainer, not AlternatePowerDB.Enabled, AlternatePowerEnabledCheckBox)
-            end
-            local function DrawTextsContainer()
-                local TagsDB = DB.Tags
-                local TagOneDB = TagsDB.TagOne
-                local TagTwoDB = TagsDB.TagTwo
-                local TagThreeDB = TagsDB.TagThree
-                local TagInfoTag = CreateInfoTag("Tags are limited to one per field.")
-                TagInfoTag:SetRelativeWidth(1)
-                UnitFrameContainer:AddChild(TagInfoTag)
-                local function TagOptions(parentContainer, TagDB, TagName)
-                    local TagEditBox = AG:Create("EditBox")
-                    TagEditBox:SetLabel("Tag")
-                    TagEditBox:SetText(TagDB.Tag)
-                    TagEditBox:SetRelativeWidth(0.5)
-                    TagEditBox:SetCallback("OnEnterPressed", function(_, _, value) TagDB.Tag = value UUF:FullFrameUpdate(Unit) end)
-                    parentContainer:AddChild(TagEditBox)
-                    local ColourPicker = AG:Create("ColorPicker")
-                    ColourPicker:SetLabel("Colour")
-                    ColourPicker:SetColor(unpack(TagDB.Colour))
-                    ColourPicker:SetHasAlpha(true)
-                    ColourPicker:SetRelativeWidth(0.5)
-                    ColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) TagDB.Colour = {r, g, b, a} UUF:FullFrameUpdate(Unit) end)
-                    parentContainer:AddChild(ColourPicker)
-                    local AnchorFromDropdown = AG:Create("Dropdown")
-                    AnchorFromDropdown:SetList(AnchorPoints)
-                    AnchorFromDropdown:SetLabel("Anchor From")
-                    AnchorFromDropdown:SetValue(TagDB.AnchorFrom)
-                    AnchorFromDropdown:SetRelativeWidth(0.5)
-                    AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) TagDB.AnchorFrom = value UUF:FullFrameUpdate(Unit) end)
-                    parentContainer:AddChild(AnchorFromDropdown)
-                    local AnchorToDropdown = AG:Create("Dropdown")
-                    AnchorToDropdown:SetList(AnchorPoints)
-                    AnchorToDropdown:SetLabel("Anchor To")
-                    AnchorToDropdown:SetValue(TagDB.AnchorTo)
-                    AnchorToDropdown:SetRelativeWidth(0.5)
-                    AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) TagDB.AnchorTo = value UUF:FullFrameUpdate(Unit) end)
-                    parentContainer:AddChild(AnchorToDropdown)
-                    local OffsetXSlider = AG:Create("Slider")
-                    OffsetXSlider:SetLabel("Offset X")
-                    OffsetXSlider:SetValue(TagDB.OffsetX)
-                    OffsetXSlider:SetSliderValues(SLIDER_MIN, SLIDER_MAX, SLIDER_STEP)
-                    OffsetXSlider:SetRelativeWidth(0.33)
-                    OffsetXSlider:SetCallback("OnValueChanged", function(_, _, value) TagDB.OffsetX = value UUF:FullFrameUpdate(Unit) end)
-                    parentContainer:AddChild(OffsetXSlider)
-                    local OffsetYSlider = AG:Create("Slider")
-                    OffsetYSlider:SetLabel("Offset Y")
-                    OffsetYSlider:SetValue(TagDB.OffsetY)
-                    OffsetYSlider:SetSliderValues(SLIDER_MIN, SLIDER_MAX, SLIDER_STEP)
-                    OffsetYSlider:SetRelativeWidth(0.33)
-                    OffsetYSlider:SetCallback("OnValueChanged", function(_, _, value) TagDB.OffsetY = value UUF:FullFrameUpdate(Unit) end)
-                    parentContainer:AddChild(OffsetYSlider)
-                    local FontSizeSlider = AG:Create("Slider")
-                    FontSizeSlider:SetLabel("Font Size")
-                    FontSizeSlider:SetValue(TagDB.FontSize)
-                    FontSizeSlider:SetSliderValues(6, 72, 1)
-                    FontSizeSlider:SetRelativeWidth(0.33)
-                    FontSizeSlider:SetCallback("OnValueChanged", function(_, _, value) TagDB.FontSize = value UUF:FullFrameUpdate(Unit) end)
-                    parentContainer:AddChild(FontSizeSlider)
-                end
-                local TagOneContainer = AG:Create("InlineGroup")
-                TagOneContainer:SetTitle("Tag One")
-                TagOneContainer:SetLayout("Flow")
-                TagOneContainer:SetFullWidth(true)
-                UnitFrameContainer:AddChild(TagOneContainer)
-                TagOptions(TagOneContainer, TagOneDB, "TagOne")
-                local TagTwoContainer = AG:Create("InlineGroup")
-                TagTwoContainer:SetTitle("Tag Two")
-                TagTwoContainer:SetLayout("Flow")
-                TagTwoContainer:SetFullWidth(true)
-                UnitFrameContainer:AddChild(TagTwoContainer)
-                TagOptions(TagTwoContainer, TagTwoDB, "TagTwo")
-                local TagThreeContainer = AG:Create("InlineGroup")
-                TagThreeContainer:SetTitle("Tag Three")
-                TagThreeContainer:SetLayout("Flow")
-                TagThreeContainer:SetFullWidth(true)
-                UnitFrameContainer:AddChild(TagThreeContainer)
-                TagOptions(TagThreeContainer, TagThreeDB, "TagThree")
-                ScrollFrame:DoLayout()
-            end
-            local function DrawIndicatorsContainer()
-                local IndicatorsDB = DB.Indicators
-                local MouseoverHighlightContainer = AG:Create("InlineGroup")
-                MouseoverHighlightContainer:SetTitle("Mouseover Highlight")
-                MouseoverHighlightContainer:SetLayout("Flow")
-                MouseoverHighlightContainer:SetFullWidth(true)
-                UnitFrameContainer:AddChild(MouseoverHighlightContainer)
-                local MouseoverHighlightEnabledCheckBox = AG:Create("CheckBox")
-                MouseoverHighlightEnabledCheckBox:SetLabel("Enable Mouseover Highlight")
-                MouseoverHighlightEnabledCheckBox:SetValue(IndicatorsDB.MouseoverHighlight.Enabled)
-                MouseoverHighlightEnabledCheckBox:SetRelativeWidth(0.5)
-                MouseoverHighlightEnabledCheckBox:SetCallback("OnValueChanged", function(_, _, value)
-                    IndicatorsDB.MouseoverHighlight.Enabled = value
-                    UUF:FullFrameUpdate(Unit)
-                    DeepDisable(MouseoverHighlightContainer, not value, MouseoverHighlightEnabledCheckBox)
-                end)
-                MouseoverHighlightContainer:AddChild(MouseoverHighlightEnabledCheckBox)
-                local MouseoverHighlightColourPicker = AG:Create("ColorPicker")
-                MouseoverHighlightColourPicker:SetLabel("Highlight Colour")
-                MouseoverHighlightColourPicker:SetColor(unpack(IndicatorsDB.MouseoverHighlight.Colour))
-                MouseoverHighlightColourPicker:SetHasAlpha(true)
-                MouseoverHighlightColourPicker:SetRelativeWidth(0.5)
-                MouseoverHighlightColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a)
-                    IndicatorsDB.MouseoverHighlight.Colour = {r, g, b, a}
-                    UUF:FullFrameUpdate(Unit)
-                end)
-                MouseoverHighlightContainer:AddChild(MouseoverHighlightColourPicker)
-                if Unit == "player" then
-                    local Status = IndicatorsDB.Status
-                    local StatusContainer = AG:Create("InlineGroup")
-                    StatusContainer:SetTitle("Combat / Resting Indicators")
-                    StatusContainer:SetLayout("Flow")
-                    StatusContainer:SetFullWidth(true)
-                    UnitFrameContainer:AddChild(StatusContainer)
-                    local StatusDesc = AG:Create("Label")
-                    StatusDesc:SetText(UUF.InfoButton .. "|cFF8080FFCombat|r / |cFF8080FFResting|r Indicators share the same position & size settings.")
-                    StatusDesc:SetFont("Fonts\\FRIZQT__.TTF", 12, "OUTLINE")
-                    StatusDesc:SetFullWidth(true)
-                    StatusDesc:SetJustifyH("CENTER")
-                    StatusContainer:AddChild(StatusDesc)
-                    local DisplayCombatIndicatorCheckBox = AG:Create("CheckBox")
-                    DisplayCombatIndicatorCheckBox:SetLabel("Display Combat Indicator")
-                    DisplayCombatIndicatorCheckBox:SetValue(Status.Combat)
-                    DisplayCombatIndicatorCheckBox:SetRelativeWidth(0.5)
-                    DisplayCombatIndicatorCheckBox:SetCallback("OnValueChanged", function(_, _, value)
-                        Status.Combat = value
-                        UUF:FullFrameUpdate(Unit)
-                        if not value and not Status.Resting then
-                            DeepDisable(StatusContainer, true, DisplayCombatIndicatorCheckBox)
-                        else
-                            DeepDisable(StatusContainer, false)
-                        end
-                    end)
-                    StatusContainer:AddChild(DisplayCombatIndicatorCheckBox)
-                    local DisplayRestingIndicatorCheckBox = AG:Create("CheckBox")
-                    DisplayRestingIndicatorCheckBox:SetLabel("Display Resting Indicator")
-                    DisplayRestingIndicatorCheckBox:SetValue(Status.Resting)
-                    DisplayRestingIndicatorCheckBox:SetRelativeWidth(0.5)
-                    DisplayRestingIndicatorCheckBox:SetCallback("OnValueChanged", function(_, _, value)
-                        Status.Resting = value
-                        UUF:FullFrameUpdate(Unit)
-                        if not value and not Status.Combat then
-                            DeepDisable(StatusContainer, true, DisplayRestingIndicatorCheckBox)
-                        else
-                            DeepDisable(StatusContainer, false)
-                        end
-                    end)
-                    StatusContainer:AddChild(DisplayRestingIndicatorCheckBox)
-                    local CombatTextureIndicatorDropdown = AG:Create("Dropdown")
-                    CombatTextureIndicatorDropdown:SetList(CombatTextures)
-                    CombatTextureIndicatorDropdown:SetLabel("Combat Indicator Texture")
-                    CombatTextureIndicatorDropdown:SetValue(Status.CombatTexture)
-                    CombatTextureIndicatorDropdown:SetRelativeWidth(0.5)
-                    CombatTextureIndicatorDropdown:SetCallback("OnValueChanged", function(_, _, value)
-                        Status.CombatTexture = value
-                        UUF:FullFrameUpdate(Unit)
-                    end)
-                    StatusContainer:AddChild(CombatTextureIndicatorDropdown)
-                    local RestingTextureIndicatorDropdown = AG:Create("Dropdown")
-                    RestingTextureIndicatorDropdown:SetList(RestingTextures)
-                    RestingTextureIndicatorDropdown:SetLabel("Resting Indicator Texture")
-                    RestingTextureIndicatorDropdown:SetValue(Status.RestingTexture)
-                    RestingTextureIndicatorDropdown:SetRelativeWidth(0.5)
-                    RestingTextureIndicatorDropdown:SetCallback("OnValueChanged", function(_, _, value)
-                        Status.RestingTexture = value
-                        UUF:FullFrameUpdate(Unit)
-                    end)
-                    StatusContainer:AddChild(RestingTextureIndicatorDropdown)
-                    local StatusAnchorFromDropdown = AG:Create("Dropdown")
-                    StatusAnchorFromDropdown:SetList(AnchorPoints)
-                    StatusAnchorFromDropdown:SetLabel("Anchor From")
-                    StatusAnchorFromDropdown:SetValue(Status.AnchorFrom)
-                    StatusAnchorFromDropdown:SetRelativeWidth(0.5)
-                    StatusAnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value)
-                        Status.AnchorFrom = value
-                        UUF:FullFrameUpdate(Unit)
-                    end)
-                    StatusContainer:AddChild(StatusAnchorFromDropdown)
-                    local StatusAnchorToDropdown = AG:Create("Dropdown")
-                    StatusAnchorToDropdown:SetList(AnchorPoints)
-                    StatusAnchorToDropdown:SetLabel("Anchor To")
-                    StatusAnchorToDropdown:SetValue(Status.AnchorTo)
-                    StatusAnchorToDropdown:SetRelativeWidth(0.5)
-                    StatusAnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value)
-                        Status.AnchorTo = value
-                        UUF:FullFrameUpdate(Unit)
-                    end)
-                    StatusContainer:AddChild(StatusAnchorToDropdown)
-                    local StatusOffsetXSlider = AG:Create("Slider")
-                    StatusOffsetXSlider:SetLabel("Offset X")
-                    StatusOffsetXSlider:SetValue(Status.OffsetX)
-                    StatusOffsetXSlider:SetSliderValues(SLIDER_MIN, SLIDER_MAX, SLIDER_STEP)
-                    StatusOffsetXSlider:SetRelativeWidth(0.33)
-                    StatusOffsetXSlider:SetCallback("OnValueChanged", function(_, _, value)
-                        Status.OffsetX = value
-                        UUF:FullFrameUpdate(Unit)
-                    end)
-                    StatusContainer:AddChild(StatusOffsetXSlider)
-                    local StatusOffsetYSlider = AG:Create("Slider")
-                    StatusOffsetYSlider:SetLabel("Offset Y")
-                    StatusOffsetYSlider:SetValue(Status.OffsetY)
-                    StatusOffsetYSlider:SetSliderValues(SLIDER_MIN, SLIDER_MAX, SLIDER_STEP)
-                    StatusOffsetYSlider:SetRelativeWidth(0.33)
-                    StatusOffsetYSlider:SetCallback("OnValueChanged", function(_, _, value)
-                        Status.OffsetY = value
-                        UUF:FullFrameUpdate(Unit)
-                    end)
-                    StatusContainer:AddChild(StatusOffsetYSlider)
-                    local StatusSizeSlider = AG:Create("Slider")
-                    StatusSizeSlider:SetLabel("Size")
-                    StatusSizeSlider:SetValue(Status.Size)
-                    StatusSizeSlider:SetSliderValues(8, 128, 1)
-                    StatusSizeSlider:SetRelativeWidth(0.33)
-                    StatusSizeSlider:SetCallback("OnValueChanged", function(_, _, value)
-                        Status.Size = value
-                        UUF:FullFrameUpdate(Unit)
-                    end)
-                    StatusContainer:AddChild(StatusSizeSlider)
-                    for _, child in ipairs(StatusContainer.children) do
-                        if child ~= DisplayCombatIndicatorCheckBox and child ~= DisplayRestingIndicatorCheckBox then
-                            DeepDisable(child, not (Status.Combat or Status.Resting))
-                        end
-                    end
-                    DeepDisable(RestingTextureIndicatorDropdown, not Status.Resting)
-                    DeepDisable(CombatTextureIndicatorDropdown, not Status.Combat)
-                end
-            end
-            if ModuleGroup == "Colours" then
-                DrawColourContainer()
-            elseif ModuleGroup == "Frame" then
-                DrawFrameContainer()
-            elseif ModuleGroup == "HealPrediction" then
-                DrawHealPredictionContainer()
-            elseif ModuleGroup == "PowerBar" then
-                if Unit ~= "pet" and Unit ~= "focus" then
-                    DrawPowerBarContainer()
-                end
-            elseif ModuleGroup == "AlternatePowerBar" then
-                if Unit == "player" then
-                    DrawAlternatePowerBarContainer()
-                end
-            elseif ModuleGroup == "Texts" then
-                DrawTextsContainer()
-            elseif ModuleGroup == "Indicators" then
-                DrawIndicatorsContainer()
-            end
-        end
-        local ModuleTabGroup = AG:Create("TabGroup")
-        ModuleTabGroup:SetLayout("Flow")
-        ModuleTabGroup:SetFullWidth(true)
-        if Unit == "player" then
-            ModuleTabGroup:SetTabs({
-                { text = "Colours", value = "Colours"},
-                { text = "Frame", value = "Frame"},
-                { text = "Heal Prediction", value = "HealPrediction"},
-                { text = "Power Bar", value = "PowerBar"},
-                { text = "Alternate Power Bar", value = "AlternatePowerBar"},
-                { text = "Texts", value = "Texts"},
-                { text = "Indicators", value = "Indicators"},
-            })
-        elseif Unit ~= "pet" and Unit ~= "focus" then
-            ModuleTabGroup:SetTabs({
-                { text = "Colours", value = "Colours"},
-                { text = "Frame", value = "Frame"},
-                { text = "Heal Prediction", value = "HealPrediction"},
-                { text = "Power Bar", value = "PowerBar"},
-                { text = "Texts", value = "Texts"},
-                { text = "Indicators", value = "Indicators"},
-            })
-        else
-            ModuleTabGroup:SetTabs({
-                { text = "Colours", value = "Colours"},
-                { text = "Frame", value = "Frame"},
-                { text = "Heal Prediction", value = "HealPrediction"},
-                { text = "Texts", value = "Texts"},
-                { text = "Indicators", value = "Indicators"},
-            })
-        end
-        ModuleTabGroup:SetCallback("OnGroupSelected", SelectedModuleGroup)
-        ModuleTabGroup:SelectTab("Colours")
-        ScrollFrame:AddChild(ModuleTabGroup)
-    end
-    local function DrawTagsContainer(Container)
-        local ScrollFrame = AG:Create("ScrollFrame")
-        ScrollFrame:SetLayout("Flow")
-        ScrollFrame:SetFullWidth(true)
-        ScrollFrame:SetFullHeight(true)
-        Container:AddChild(ScrollFrame)
-        local HealthSeparatorDropdown = AG:Create("Dropdown")
-        HealthSeparatorDropdown:SetList({
-            ["-"] = "-",
-            ["||"] = "|",
-            ["/"] = "/",
-            ["»"] = "»",
-            ["•"] = "•",
-        })
-        HealthSeparatorDropdown:SetLabel("Health Separator")
-        HealthSeparatorDropdown:SetValue(UUF.db.profile.General.HealthSeparator)
-        HealthSeparatorDropdown:SetRelativeWidth(1)
-        HealthSeparatorDropdown:SetCallback("OnValueChanged", function(_, _, value) UUF.HealthSeparator = value UUF.db.profile.General.HealthSeparator = value for unit in pairs(UnitToFrameName) do UUF:FullFrameUpdate(unit) end end)
-        ScrollFrame:AddChild(HealthSeparatorDropdown)
-        local function DrawTagContainer(TagContainer, tagGroup)
-            local TagsList = UUF:GetTagsForGroup(tagGroup)
-            for Tag, Desc in pairs(TagsList) do
-                local TagDesc = AG:Create("Heading")
-                TagDesc:SetText(Desc)
-                TagDesc:SetFullWidth(true)
-                TagContainer:AddChild(TagDesc)
-                local TagValue = AG:Create("EditBox")
-                TagValue:SetText("[" .. Tag .. "]")
-                TagValue:SetCallback("OnTextChanged", function(widget, event, value)
-                    TagValue:ClearFocus()
-                    TagValue:SetText("[" .. Tag .. "]")
-                end)
-                TagValue:SetRelativeWidth(1)
-                TagContainer:AddChild(TagValue)
-            end
-        end
-        local function SelectedGroup(TagContainer, _, subGroup)
-            TagContainer:ReleaseChildren()
-            if subGroup == "Health" then
-                DrawTagContainer(TagContainer, "Health")
-            elseif subGroup == "Name" then
-                DrawTagContainer(TagContainer, "Name")
-            elseif subGroup == "Power" then
-                DrawTagContainer(TagContainer, "Power")
-            end
-            ScrollFrame:DoLayout()
-        end
-        local GUIContainerTabGroup = AG:Create("TabGroup")
-        GUIContainerTabGroup:SetLayout("Flow")
-        GUIContainerTabGroup:SetTabs({
-            { text = "Health", value = "Health" },
-            { text = "Name", value = "Name" },
-            { text = "Power", value = "Power" },
-        })
-        GUIContainerTabGroup:SetCallback("OnGroupSelected", SelectedGroup)
-        GUIContainerTabGroup:SelectTab("Health")
-        GUIContainerTabGroup:SetFullWidth(true)
-        ScrollFrame:AddChild(GUIContainerTabGroup)
-        ScrollFrame:DoLayout()
-    end
-    local function DrawProfilesContainer(Container)
-        local ScrollFrame = AG:Create("ScrollFrame")
-        ScrollFrame:SetLayout("Flow")
-        ScrollFrame:SetFullWidth(true)
-        ScrollFrame:SetFullHeight(true)
-        Container:AddChild(ScrollFrame)
-        local ProfileContainer = AG:Create("InlineGroup")
-        ProfileContainer:SetTitle("Profiles")
-        ProfileContainer:SetLayout("Flow")
-        ProfileContainer:SetFullWidth(true)
-        ScrollFrame:AddChild(ProfileContainer)
-        local ActiveProfileHeading = AG:Create("Heading")
-        ActiveProfileHeading:SetFullWidth(true)
-        ProfileContainer:AddChild(ActiveProfileHeading)
-        local profileKeys = {}
-        local function RefreshProfiles()
-            wipe(profileKeys)
-            local tmp = {}
-            for _, name in ipairs(UUF.db:GetProfiles(tmp, true)) do
-                profileKeys[name] = name
-            end
-            SelectProfileDropdown:SetList(profileKeys)
-            CopyFromProfileDropdown:SetList(profileKeys)
-            DeleteProfileDropdown:SetList(profileKeys)
-            SelectProfileDropdown:SetValue(UUF.db:GetCurrentProfile())
-            CopyFromProfileDropdown:SetValue(nil)
-            DeleteProfileDropdown:SetValue(nil)
-            local isUsingGlobal = UUF.db.global.UseGlobalProfile
-            ActiveProfileHeading:SetText( "Active Profile: |cFFFFFFFF" .. UUF.db:GetCurrentProfile() .. (isUsingGlobal and " (|cFFFFCC00Global|r)" or "") .. "|r" )
-        end
-        UUFG.RefreshProfiles = RefreshProfiles -- Exposed for Share.lua
-        SelectProfileDropdown = AG:Create("Dropdown")
-        SelectProfileDropdown:SetLabel("Select...")
-        SelectProfileDropdown:SetRelativeWidth(0.25)
-        SelectProfileDropdown:SetCallback("OnValueChanged", function(_, _, value)
-            UUF.db:SetProfile(value)
-            UIParent:SetScale(UUF.db.profile.General.UIScale or 1)
-            for unit in pairs(UnitToFrameName) do
-                UUF:FullFrameUpdate(unit)
-            end
-            RefreshProfiles()
-        end)
-        ProfileContainer:AddChild(SelectProfileDropdown)
-        CopyFromProfileDropdown = AG:Create("Dropdown")
-        CopyFromProfileDropdown:SetLabel("Copy From...")
-        CopyFromProfileDropdown:SetRelativeWidth(0.25)
-        CopyFromProfileDropdown:SetCallback("OnValueChanged", function(_, _, value)
-            UUF:CreatePrompt("Copy Profile", "Are you sure you want to copy from |cFF8080FF" .. value .. "|r?\nThis will |cFFFF4040overwrite|r your current profile settings.", function()
-                UUF.db:CopyProfile(value)
-                UIParent:SetScale(UUF.db.profile.General.UIScale or 1)
-                for unit in pairs(UnitToFrameName) do
-                    UUF:FullFrameUpdate(unit)
-                end
-                RefreshProfiles()
-            end)
-        end)
-        ProfileContainer:AddChild(CopyFromProfileDropdown)
-        DeleteProfileDropdown = AG:Create("Dropdown")
-        DeleteProfileDropdown:SetLabel("Delete...")
-        DeleteProfileDropdown:SetRelativeWidth(0.25)
-        DeleteProfileDropdown:SetCallback("OnValueChanged", function(_, _, value)
-            if value ~= UUF.db:GetCurrentProfile() then
-                UUF:CreatePrompt("Delete Profile", "Are you sure you want to delete |cFF8080FF" .. value .. "|r?", function()
-                    UUF.db:DeleteProfile(value)
-                    RefreshProfiles()
-                end)
-            end
-        end)
-        ProfileContainer:AddChild(DeleteProfileDropdown)
-        local ResetProfileButton = AG:Create("Button")
-        ResetProfileButton:SetText("Reset Current Profile")
-        ResetProfileButton:SetRelativeWidth(0.25)
-        ResetProfileButton:SetCallback("OnClick", function()
-            UUF.db:ResetProfile()
-            UUF:ResolveMedia()
-            for unit in pairs(UnitToFrameName) do
-                UUF:FullFrameUpdate(unit)
-            end
-            UIParent:SetScale(UUF.db.profile.General.UIScale or 1)
-            RefreshProfiles()
-        end)
-        ProfileContainer:AddChild(ResetProfileButton)
-        local CreateProfileEditBox = AG:Create("EditBox")
-        CreateProfileEditBox:SetLabel("Create Profile...")
-        CreateProfileEditBox:SetText("")
-        CreateProfileEditBox:SetRelativeWidth(0.5)
-        CreateProfileEditBox:DisableButton(true)
-        CreateProfileEditBox:SetCallback("OnEnterPressed", function() CreateProfileEditBox:ClearFocus() end)
-        ProfileContainer:AddChild(CreateProfileEditBox)
-        local CreateProfileButton = AG:Create("Button")
-        CreateProfileButton:SetText("Create Profile")
-        CreateProfileButton:SetRelativeWidth(0.5)
-        CreateProfileButton:SetCallback("OnClick", function()
-            local profileName = strtrim(CreateProfileEditBox:GetText() or "")
-            if profileName ~= "" then
-                UUF.db:SetProfile(profileName)
-                UIParent:SetScale(UUF.db.profile.General.UIScale or 1)
-                for unit in pairs(UnitToFrameName) do
-                    UUF:FullFrameUpdate(unit)
-                end
-                RefreshProfiles()
-                CreateProfileEditBox:SetText("")
-            end
-        end)
-        ProfileContainer:AddChild(CreateProfileButton)
-        local GlobalProfileHeading = AG:Create("Heading")
-        GlobalProfileHeading:SetText("Global Profile Settings")
-        GlobalProfileHeading:SetFullWidth(true)
-        ProfileContainer:AddChild(GlobalProfileHeading)
-        local GlobalProfileInfoTag = CreateInfoTag("If |cFF8080FFUse Global Profile Settings|r is enabled, the profile selected below will be used as your active profile.\nThis is useful if you want to use the same profile across multiple characters.")
-        GlobalProfileInfoTag:SetFullWidth(true)
-        ProfileContainer:AddChild(GlobalProfileInfoTag)
-        local UseGlobalProfileToggle = AG:Create("CheckBox")
-        local GlobalProfileDropdown = AG:Create("Dropdown")
-        UseGlobalProfileToggle:SetLabel("Use Global Profile Settings")
-        UseGlobalProfileToggle:SetValue(UUF.db.global.UseGlobalProfile)
-        UseGlobalProfileToggle:SetRelativeWidth(0.5)
-        UseGlobalProfileToggle:SetCallback("OnValueChanged", function(_, _, value)
-            UUF.db.global.UseGlobalProfile = value
-            if value and UUF.db.global.GlobalProfile and UUF.db.global.GlobalProfile ~= "" then
-                UUF.db:SetProfile(UUF.db.global.GlobalProfile)
-                UIParent:SetScale(UUF.db.profile.General.UIScale or 1)
-                for unit in pairs(UnitToFrameName) do
-                    UUF:FullFrameUpdate(unit)
-                end
-            end
-            GlobalProfileDropdown:SetDisabled(not value)
-            for _, child in ipairs(ProfileContainer.children) do
-                if child ~= UseGlobalProfileToggle and child ~= GlobalProfileDropdown then
-                    DeepDisable(child, value)
-                end
-            end
-            RefreshProfiles()
-        end)
-        ProfileContainer:AddChild(UseGlobalProfileToggle)
-        RefreshProfiles()
-        GlobalProfileDropdown:SetLabel("Global Profile...")
-        GlobalProfileDropdown:SetRelativeWidth(0.5)
-        GlobalProfileDropdown:SetList(profileKeys)
-        GlobalProfileDropdown:SetValue(UUF.db.global.GlobalProfile)
-        GlobalProfileDropdown:SetCallback("OnValueChanged", function(_, _, value)
-            UUF.db:SetProfile(value)
-            UUF.db.global.GlobalProfile = value
-            UIParent:SetScale(UUF.db.profile.General.UIScale or 1)
-            for unit in pairs(UnitToFrameName) do
-                UUF:FullFrameUpdate(unit)
-            end
-            RefreshProfiles()
-        end)
-        ProfileContainer:AddChild(GlobalProfileDropdown)
-        ProfileContainer:DoLayout()
-        local SharingContainer = AG:Create("InlineGroup")
-        SharingContainer:SetTitle("Sharing")
-        SharingContainer:SetLayout("Flow")
-        SharingContainer:SetFullWidth(true)
-        ScrollFrame:AddChild(SharingContainer)
-        local ExportingHeading = AG:Create("Heading")
-        ExportingHeading:SetText("Exporting")
-        ExportingHeading:SetFullWidth(true)
-        SharingContainer:AddChild(ExportingHeading)
-        local ExportingImportingDesc = CreateInfoTag("You can export your profile by pressing |cFF8080FFExport Profile|r button below & share the string with other |cFF8080FFUnhalted|r Unit Frame users.")
-        SharingContainer:AddChild(ExportingImportingDesc)
-        local ExportingEditBox = AG:Create("EditBox")
-        ExportingEditBox:SetLabel("Export String...")
-        ExportingEditBox:SetText("")
-        ExportingEditBox:SetFullWidth(true)
-        ExportingEditBox:DisableButton(true)
-        ExportingEditBox:SetCallback("OnEnterPressed", function() ExportingEditBox:ClearFocus() end)
-        SharingContainer:AddChild(ExportingEditBox)
-        local ExportProfileButton = AG:Create("Button")
-        ExportProfileButton:SetText("Export Profile")
-        ExportProfileButton:SetFullWidth(true)
-        ExportProfileButton:SetCallback("OnClick", function() ExportingEditBox:SetText(UUF:ExportSavedVariables()) ExportingEditBox:HighlightText() ExportingEditBox:SetFocus() end)
-        SharingContainer:AddChild(ExportProfileButton)
-        local ImportingHeading = AG:Create("Heading")
-        ImportingHeading:SetText("Importing")
-        ImportingHeading:SetFullWidth(true)
-        SharingContainer:AddChild(ImportingHeading)
-        local ImportingDesc = CreateInfoTag("If you have an exported string, paste it in the |cFF8080FFImport String|r box below & press |cFF8080FFImport Profile|r.")
-        SharingContainer:AddChild(ImportingDesc)
-        local ImportingEditBox = AG:Create("EditBox")
-        ImportingEditBox:SetLabel("Import String...")
-        ImportingEditBox:SetText("")
-        ImportingEditBox:SetFullWidth(true)
-        ImportingEditBox:DisableButton(true)
-        ImportingEditBox:SetCallback("OnEnterPressed", function() ImportingEditBox:ClearFocus() end)
-        SharingContainer:AddChild(ImportingEditBox)
-        local ImportProfileButton = AG:Create("Button")
-        ImportProfileButton:SetText("Import Profile")
-        ImportProfileButton:SetFullWidth(true)
-        ImportProfileButton:SetCallback("OnClick", function() UUF:ImportSavedVariables(ImportingEditBox:GetText()) ImportingEditBox:SetText("") end)
-        SharingContainer:AddChild(ImportProfileButton)
-        GlobalProfileDropdown:SetDisabled(not UUF.db.global.UseGlobalProfile)
-        if UUF.db.global.UseGlobalProfile then
-            for _, child in ipairs(ProfileContainer.children) do
-                if child ~= UseGlobalProfileToggle and child ~= GlobalProfileDropdown then
-                    DeepDisable(child, true)
-                end
-            end
-        end
-        SharingContainer:DoLayout()
-        ScrollFrame:DoLayout()
-    end
+
     local function SelectedGroup(GUIContainer, _, MainGroup)
         GUIContainer:ReleaseChildren()
         if MainGroup == "General" then
-            DrawGeneralContainer(GUIContainer)
+            DrawGeneralSettings(GUIContainer)
         elseif MainGroup == "player" then
             DrawUnitFrameContainer(GUIContainer, "player")
         elseif MainGroup == "target" then
@@ -1647,6 +334,7 @@ function UUF:CreateGUI()
             DrawProfilesContainer(GUIContainer)
         end
     end
+
     local GUIContainerTabGroup = AG:Create("TabGroup")
     GUIContainerTabGroup:SetLayout("Flow")
     GUIContainerTabGroup:SetTabs({
