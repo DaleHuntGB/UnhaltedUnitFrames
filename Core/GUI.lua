@@ -201,7 +201,7 @@ function UUF:CreateGUI()
         UIScaleContainer:AddChild(FourteenFortyUIScaleButton)
         DeepDisable(UIScaleContainer, not UUF.db.profile.General.AllowUIScaling, EnableUIScaleToggle)
         local TexturesContainer = AG:Create("InlineGroup")
-        TexturesContainer:SetTitle("Textures")
+        TexturesContainer:SetTitle("Textures & Colours")
         TexturesContainer:SetLayout("Flow")
         TexturesContainer:SetFullWidth(true)
         ScrollFrame:AddChild(TexturesContainer)
@@ -263,6 +263,33 @@ function UUF:CreateGUI()
             end
         end)
         TexturesContainer:AddChild(BGColourPicker)
+        local ColourSwappingInfoTag = CreateInfoTag("|cFF8080FFClass & Reaction Colours|r or |cFF8080FFDark Colours|r can be applied here. Background Colours will also be adjusted for aesthetics.")
+        ColourSwappingInfoTag:SetRelativeWidth(1)
+        TexturesContainer:AddChild(ColourSwappingInfoTag)
+        local ColouredModeButton = AG:Create("Button")
+        ColouredModeButton:SetText("Use Class & Reaction Colours")
+        ColouredModeButton:SetRelativeWidth(0.5)
+        ColouredModeButton:SetCallback("OnClick", function()
+            for unit in pairs(UnitToFrameName) do
+                UUF.db.profile[unit].Frame.ClassColour = true
+                UUF.db.profile[unit].Frame.ReactionColour = true
+                UUF.db.profile[unit].Frame.BGColour = {26/255, 26/255, 26/255, 1}
+                UUF:FullFrameUpdate(unit)
+            end
+        end)
+        TexturesContainer:AddChild(ColouredModeButton)
+        local DarkModeButton = AG:Create("Button")
+        DarkModeButton:SetText("Use Dark Colours")
+        DarkModeButton:SetRelativeWidth(0.5)
+        DarkModeButton:SetCallback("OnClick", function()
+            for unit in pairs(UnitToFrameName) do
+                UUF.db.profile[unit].Frame.ClassColour = false
+                UUF.db.profile[unit].Frame.ReactionColour = false
+                UUF.db.profile[unit].Frame.BGColour = {128/255, 128/255, 128/255, 1}
+                UUF:FullFrameUpdate(unit)
+            end
+        end)
+        TexturesContainer:AddChild(DarkModeButton)
         local FontsContainer = AG:Create("InlineGroup")
         FontsContainer:SetTitle("Fonts")
         FontsContainer:SetLayout("Flow")
