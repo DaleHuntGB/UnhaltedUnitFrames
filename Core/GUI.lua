@@ -550,13 +550,25 @@ local function CreateTagsSettings(containerParent, unit)
     local function SelectTagTab(TagContainer, _, TagName)
         TagContainer:ReleaseChildren()
         if TagName == "TagOne" then
-            local TagOneContainer = CreateInlineGroup(TagContainer, "Tag One Settings")
+            local TagOneContainer = AG:Create("SimpleGroup")
+            TagOneContainer:SetLayout("Flow")
+            TagOneContainer:SetFullWidth(true)
+            TagOneContainer:SetFullHeight(true)
+            TagContainer:AddChild(TagOneContainer)
             CreateTagSettings(TagOneContainer, unit, "TagOne")
         elseif TagName == "TagTwo" then
-            local TagTwoContainer = CreateInlineGroup(TagContainer, "Tag Two Settings")
+            local TagTwoContainer = AG:Create("SimpleGroup")
+            TagTwoContainer:SetLayout("Flow")
+            TagTwoContainer:SetFullWidth(true)
+            TagTwoContainer:SetFullHeight(true)
+            TagContainer:AddChild(TagTwoContainer)
             CreateTagSettings(TagTwoContainer, unit, "TagTwo")
         elseif TagName == "TagThree" then
-            local TagThreeContainer = CreateInlineGroup(TagContainer, "Tag Three Settings")
+            local TagThreeContainer = AG:Create("SimpleGroup")
+            TagThreeContainer:SetLayout("Flow")
+            TagThreeContainer:SetFullWidth(true)
+            TagThreeContainer:SetFullHeight(true)
+            TagContainer:AddChild(TagThreeContainer)
             CreateTagSettings(TagThreeContainer, unit, "TagThree")
         end
     end
