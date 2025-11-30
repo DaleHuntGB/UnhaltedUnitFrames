@@ -270,11 +270,32 @@ local function CreatePowerBarSettings(containerParent, unit)
 
     local TogglesContainer = CreateInlineGroup(BarContainer, "Toggles")
 
+    local function GUIRefresh()
+        if not PowerBarDB.Enabled then
+            DeepDisable(BarContainer, true, UUFGUI.EnableCheckBox)
+            DeepDisable(UUFGUI.TextContainer, true, UUFGUI.EnableTextCheckBox)
+            ScrollFrame:DoLayout()
+            return
+        end
+        DeepDisable(BarContainer, false, nil)
+
+        if not PowerBarDB.Text.Enabled then
+            DeepDisable(UUFGUI.TextContainer, true, UUFGUI.EnableTextCheckBox)
+            ScrollFrame:DoLayout()
+            return
+        end
+
+        DeepDisable(UUFGUI.TextContainer, false, nil)
+        ScrollFrame:DoLayout()
+    end
+
+
     local EnableCheckBox = AG:Create("CheckBox")
     EnableCheckBox:SetLabel("Enable Power Bar")
     EnableCheckBox:SetValue(PowerBarDB.Enabled)
     EnableCheckBox:SetRelativeWidth(0.33)
-    EnableCheckBox:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.Enabled = value UUF:UpdateUnitFrame(unit) end)
+    EnableCheckBox:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.Enabled = value UUF:UpdateUnitFrame(unit) GUIRefresh() UUFGUI.EnableTextCheckBox:SetDisabled(not value) end)
+    UUFGUI.EnableCheckBox = EnableCheckBox
     TogglesContainer:AddChild(EnableCheckBox)
 
     local ColourByType = AG:Create("CheckBox")
@@ -420,9 +441,12 @@ local function CreatePowerBarSettings(containerParent, unit)
     FontSizeSlider:SetRelativeWidth(0.33)
     TextLayoutContainer:AddChild(FontSizeSlider)
 
+    GUIRefresh()
+
     FGColourPicker:SetDisabled(PowerBarDB.ColourByType)
     BGColourPicker:SetDisabled(PowerBarDB.ColourBackgroundByType)
     DarkenFactorSlider:SetDisabled(not PowerBarDB.ColourBackgroundByType)
+    EnableTextCheckBox:SetDisabled(not PowerBarDB.Enabled)
 
     ScrollFrame:DoLayout()
 
@@ -807,6 +831,37 @@ function UUF:CreateGUI()
         GUIContainer:AddChild(UnitFrameTabGroup)
     end
 
+    local function DrawTargetSettings(GUIContainer)
+        local function UnitFrameSelectedGroup(UnitFrameContainer, _, UnitFrameGroup)
+            UnitFrameContainer:ReleaseChildren()
+            if UnitFrameGroup == "Frame" then
+                CreateUnitFrameFrameSettings(UnitFrameContainer, "target")
+            elseif UnitFrameGroup == "HealPrediction" then
+                CreateHealPredictionSettings(UnitFrameContainer, "target")
+            elseif UnitFrameGroup == "PowerBar" then
+                CreatePowerBarSettings(UnitFrameContainer, "target")
+            elseif UnitFrameGroup == "AlternatePowerBar" then
+            elseif UnitFrameGroup == "Indicators" then
+            elseif UnitFrameGroup == "Tags" then
+            end
+        end
+
+        local UnitFrameTabGroup = AG:Create("TabGroup")
+        UnitFrameTabGroup:SetLayout("Flow")
+        UnitFrameTabGroup:SetFullWidth(true)
+        UnitFrameTabGroup:SetTabs({
+            { text = "Frame", value = "Frame"},
+            { text = "Heal Prediction", value = "HealPrediction"},
+            { text = "Power Bar", value = "PowerBar"},
+            { text = "Alternate Power Bar", value = "AlternatePowerBar"},
+            { text = "Indicators", value = "Indicators"},
+            { text = "Tags", value = "Tags"},
+        })
+        UnitFrameTabGroup:SetCallback("OnGroupSelected", UnitFrameSelectedGroup)
+        UnitFrameTabGroup:SelectTab("Frame")
+        GUIContainer:AddChild(UnitFrameTabGroup)
+    end
+
     local function SelectedGroup(GUIContainer, _, MainGroup)
         GUIContainer:ReleaseChildren()
 
@@ -821,6 +876,7 @@ function UUF:CreateGUI()
         elseif MainGroup == "player" then
             DrawPlayerSettings(Wrapper)
         elseif MainGroup == "target" then
+            DrawTargetSettings(Wrapper)
         elseif MainGroup == "targettarget" then
         elseif MainGroup == "pet" then
         elseif MainGroup == "focus" then
