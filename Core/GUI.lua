@@ -747,7 +747,7 @@ function UUF:CreateGUI()
         EnableUIScaleCheckBox:SetLabel("Enable UI Scale")
         EnableUIScaleCheckBox:SetValue(UUF.db.profile.General.AllowUIScaling)
         EnableUIScaleCheckBox:SetRelativeWidth(0.5)
-        EnableUIScaleCheckBox:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.General.AllowUIScaling = value end)
+        EnableUIScaleCheckBox:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.General.AllowUIScaling = value DeepDisable(UIScaleContainer, not value, EnableUIScaleCheckBox) end)
         UIScaleContainer:AddChild(EnableUIScaleCheckBox)
 
         local UIScaleSlider = AG:Create("Slider")
