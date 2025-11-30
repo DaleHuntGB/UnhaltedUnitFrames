@@ -463,6 +463,7 @@ end
 local function UpdatePowerBar(self, unit)
     local UUFDB = UUF.db.profile
     local normalizedUnit = GetNormalizedUnit(unit)
+    local FrameDB = UUFDB[normalizedUnit].Frame
     local PowerBarDB = UUFDB[normalizedUnit].PowerBar
     local unitContainer = self.Container
 
@@ -474,9 +475,9 @@ local function UpdatePowerBar(self, unit)
             else
                 self.PowerBarBG:SetPoint("BOTTOMLEFT", unitContainer, "BOTTOMLEFT", 1, 1)
             end
-            self.PowerBarBG:SetStatusBarColor(PowerBarDB.BGColour[1], PowerBarDB.BGColour[2], PowerBarDB.BGColour[3], PowerBarDB.BGColour[4])
+            self.PowerBarBG:SetSize(FrameDB.Width - 2, PowerBarDB.Height)
             self.PowerBarBG:SetStatusBarTexture(UUF.Media.BackgroundTexture)
-            self.PowerBarBG:SetHeight(PowerBarDB.Height)
+            self.PowerBarBG:SetStatusBarColor(PowerBarDB.BGColour[1], PowerBarDB.BGColour[2], PowerBarDB.BGColour[3], PowerBarDB.BGColour[4])
         end
 
         if self.PowerBar then
@@ -486,9 +487,11 @@ local function UpdatePowerBar(self, unit)
             else
                 self.PowerBar:SetPoint("BOTTOMLEFT", unitContainer, "BOTTOMLEFT", 1, 1)
             end
-            self.PowerBar:SetStatusBarColor(PowerBarDB.FGColour[1], PowerBarDB.FGColour[2], PowerBarDB.FGColour[3], PowerBarDB.FGColour[4])
+            self.PowerBar:SetSize(FrameDB.Width - 2, PowerBarDB.Height)
             self.PowerBar:SetStatusBarTexture(UUF.Media.ForegroundTexture)
-            self.PowerBar:SetHeight(PowerBarDB.Height)
+            self.PowerBar:SetStatusBarColor(PowerBarDB.FGColour[1], PowerBarDB.FGColour[2], PowerBarDB.FGColour[3], PowerBarDB.FGColour[4])
+            self.PowerBar:SetFrameLevel(unitContainer:GetFrameLevel() + 2)
+
         end
 
         if self.PowerBarText then
@@ -712,8 +715,8 @@ function UUF:CreateUnitFrame(unit)
     if not frameName then return end
     local normalizedUnit = GetNormalizedUnit(unit)
     local unitDB = UUF.db.profile[normalizedUnit]
-    local unitFrame = CreateFrame("Button", frameName, UIParent, "SecureUnitButtonTemplate,BackdropTemplate,PingableUnitFrameTemplate")
 
+    local unitFrame = CreateFrame("Button", frameName, UIParent, "SecureUnitButtonTemplate,BackdropTemplate,PingableUnitFrameTemplate")
     unitFrame.unit = unit
     unitFrame:RegisterForClicks("AnyUp")
     unitFrame:SetAttribute("unit", unit)
@@ -721,8 +724,13 @@ function UUF:CreateUnitFrame(unit)
     unitFrame:SetAttribute("*type2", "togglemenu")
 
     unitFrame:SetSize(unitDB.Frame.Width, unitDB.Frame.Height)
-    local anchorParent = unitDB.Frame.AnchorParent or "UIParent"
-    unitFrame:SetPoint(unitDB.Frame.AnchorFrom, anchorParent, unitDB.Frame.AnchorTo, unitDB.Frame.XPosition, unitDB.Frame.YPosition)
+    if unitDB.Frame.AnchorToEssentialCooldowns then
+        local anchorParent = _G["UUF_CDMAnchor"] or "UIParent"
+        unitFrame:SetPoint(unitDB.Frame.AnchorFrom, anchorParent, unitDB.Frame.AnchorTo, unitDB.Frame.XPosition, unitDB.Frame.YPosition)
+    else
+        local anchorParent = unitDB.Frame.AnchorParent or "UIParent"
+        unitFrame:SetPoint(unitDB.Frame.AnchorFrom, anchorParent, unitDB.Frame.AnchorTo, unitDB.Frame.XPosition, unitDB.Frame.YPosition)
+    end
 
     ToggleUnitWatch(unitFrame)
 
@@ -745,14 +753,20 @@ function UUF:UpdateUnitFrame(unit)
     if not frameName then return end
     local unitFrame = _G[frameName]
     if not unitFrame then return end
+    local normalizedUnit = GetNormalizedUnit(unit)
+    local unitDB = UUF.db.profile[normalizedUnit]
 
     ToggleUnitWatch(unitFrame)
 
     unitFrame:ClearAllPoints()
-    unitFrame:SetSize(UUF.db.profile[GetNormalizedUnit(unit)].Frame.Width, UUF.db.profile[GetNormalizedUnit(unit)].Frame.Height)
-    local anchorParent = UUF.db.profile[GetNormalizedUnit(unit)].Frame.AnchorParent or "UIParent"
-    unitFrame:SetPoint(UUF.db.profile[GetNormalizedUnit(unit)].Frame.AnchorFrom, anchorParent, UUF.db.profile[GetNormalizedUnit(unit)].Frame.AnchorTo, UUF.db.profile[GetNormalizedUnit(unit)].Frame.XPosition, UUF.db.profile[GetNormalizedUnit(unit)].Frame.YPosition)
-
+    unitFrame:SetSize(unitDB.Frame.Width, unitDB.Frame.Height)
+    if unitDB.Frame.AnchorToEssentialCooldowns then
+        local anchorParent = _G["UUF_CDMAnchor"] or "UIParent"
+        unitFrame:SetPoint(unitDB.Frame.AnchorFrom, anchorParent, unitDB.Frame.AnchorTo, unitDB.Frame.XPosition, unitDB.Frame.YPosition)
+    else
+        local anchorParent = unitDB.Frame.AnchorParent or "UIParent"
+        unitFrame:SetPoint(unitDB.Frame.AnchorFrom, anchorParent, unitDB.Frame.AnchorTo, unitDB.Frame.XPosition, unitDB.Frame.YPosition)
+    end
     UpdateHealthBar(unitFrame, unit)
     UpdateAbsorbBar(unitFrame, unit)
     UpdatePowerBar(unitFrame, unit)

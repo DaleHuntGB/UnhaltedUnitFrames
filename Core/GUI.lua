@@ -121,22 +121,35 @@ local function CreateUnitFrameFrameSettings(containerParent, unit)
     local GeneralDB = UUFDB.General
     local normalizedUnit = GetNormalizedUnit(unit)
     local FrameDB = UUFDB[normalizedUnit].Frame
+    local isPlayerorTarget = (unit == "player" or unit == "target")
 
     local TogglesContainer = CreateInlineGroup(containerParent, "Toggles")
 
     local ClassColourCheckBox = AG:Create("CheckBox")
     ClassColourCheckBox:SetLabel("Class Colour")
     ClassColourCheckBox:SetValue(FrameDB.ClassColour)
-    ClassColourCheckBox:SetRelativeWidth(0.5)
+    ClassColourCheckBox:SetRelativeWidth(isPlayerorTarget and 0.33 or 0.5)
     ClassColourCheckBox:SetCallback("OnValueChanged", function(_, _, value) FrameDB.ClassColour = value UUF:UpdateUnitFrame(unit) end)
     TogglesContainer:AddChild(ClassColourCheckBox)
 
     local ReactionColourCheckBox = AG:Create("CheckBox")
     ReactionColourCheckBox:SetLabel("Reaction Colour")
     ReactionColourCheckBox:SetValue(FrameDB.ReactionColour)
-    ReactionColourCheckBox:SetRelativeWidth(0.5)
+    ReactionColourCheckBox:SetRelativeWidth(isPlayerorTarget and 0.33 or 0.5)
     ReactionColourCheckBox:SetCallback("OnValueChanged", function(_, _, value) FrameDB.ReactionColour = value UUF:UpdateUnitFrame(unit) end)
     TogglesContainer:AddChild(ReactionColourCheckBox)
+
+    if unit == "player" or unit == "target" then
+        local AnchorToEssentialCooldownsCheckBox = AG:Create("CheckBox")
+        AnchorToEssentialCooldownsCheckBox:SetLabel("Anchor To Essential Cooldowns")
+        AnchorToEssentialCooldownsCheckBox:SetValue(FrameDB.AnchorToEssentialCooldowns)
+        AnchorToEssentialCooldownsCheckBox:SetRelativeWidth(0.33)
+        AnchorToEssentialCooldownsCheckBox:SetCallback("OnValueChanged", function(_, _, value) FrameDB.AnchorToEssentialCooldowns = value UUF:UpdateUnitFrame(unit) end)
+        AnchorToEssentialCooldownsCheckBox:SetCallback("OnEnter", function() GameTooltip:SetOwner(AnchorToEssentialCooldownsCheckBox.frame, "ANCHOR_CURSOR") GameTooltip:AddLine("|cFF8080FFPositions|r / |cFF8080FFAnchors|r can be used to fine tune position", 1, 1, 1) GameTooltip:Show() end)
+        AnchorToEssentialCooldownsCheckBox:SetCallback("OnLeave", function() GameTooltip:Hide() end)
+        AnchorToEssentialCooldownsCheckBox:SetDisabled(not UUF:IsCDMAnchorActive())
+        TogglesContainer:AddChild(AnchorToEssentialCooldownsCheckBox)
+    end
 
     local ColoursContainer = CreateInlineGroup(containerParent, "Colours")
     local FGColourPicker = AG:Create("ColorPicker")

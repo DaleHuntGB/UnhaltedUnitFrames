@@ -56,6 +56,7 @@ UUF.Defaults = {
                 ReactionColour = true,
                 FGColour = {26/255, 26/255, 26/255, 1.0},
                 BGColour = {26/255, 26/255, 26/255, 1.0},
+                AnchorToEssentialCooldowns = false,
             },
             HealPrediction = {
                 Absorbs = {
@@ -189,6 +190,7 @@ UUF.Defaults = {
                 FGColour = {26/255, 26/255, 26/255, 1.0},
                 BGColour = {26/255, 26/255, 26/255, 1.0},
                 DarkenFactor = 0.75,
+                AnchorToEssentialCooldowns = false,
             },
             HealPrediction = {
                 Absorbs = {
