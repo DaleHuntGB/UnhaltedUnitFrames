@@ -942,17 +942,24 @@ function UUF:CreateGUI()
         local function DrawTagContainer(TagContainer, tagGroup)
             local TagsList = UUF:GetTagsForGroup(tagGroup)
             for Tag, Desc in pairs(TagsList) do
-                local TagDesc = AG:Create("Heading")
+                local TagDesc = AG:Create("Label")
                 TagDesc:SetText(Desc)
-                TagDesc:SetFullWidth(true)
+                TagDesc:SetRelativeWidth(0.3)
+                TagDesc:SetFont(STANDARD_TEXT_FONT, 12, "OUTLINE")
+                TagDesc:SetJustifyH("LEFT")
+                TagDesc:SetJustifyV("MIDDLE")
                 TagContainer:AddChild(TagDesc)
 
                 local TagValue = AG:Create("EditBox")
                 TagValue:SetText("[" .. Tag .. "]")
                 TagValue:SetCallback("OnTextChanged", function(widget, event, value) TagValue:ClearFocus() TagValue:SetText("[" .. Tag .. "]") end)
-                TagValue:SetRelativeWidth(1)
+                TagValue:SetRelativeWidth(0.7)
                 TagContainer:AddChild(TagValue)
 
+                local TagSpacer = AG:Create("Label")
+                TagSpacer:SetText(" ")
+                TagSpacer:SetRelativeWidth(1)
+                TagContainer:AddChild(TagSpacer)
             end
         end
 
