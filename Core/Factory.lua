@@ -543,6 +543,40 @@ local function UpdatePowerBar(self, unit)
     end
 end
 
+local function CreateMouseoverHighlight(self, unit)
+    local UUFDB = UUF.db.profile
+    local normalizedUnit = GetNormalizedUnit(unit)
+    local MouseoverHighlightDB = UUFDB[normalizedUnit].Indicators.MouseoverHighlight
+    if not self.MouseoverHighlight then
+        self.MouseoverHighlight = CreateFrame("Frame", nil, self.Container, "BackdropTemplate")
+        self.MouseoverHighlight:SetAllPoints()
+        self.MouseoverHighlight:SetBackdrop({ bgFile="Interface\\Buttons\\WHITE8x8", edgeFile="Interface\\Buttons\\WHITE8x8", edgeSize=1 })
+        self.MouseoverHighlight:SetBackdropColor(0,0,0,0)
+        self.MouseoverHighlight:SetBackdropBorderColor(MouseoverHighlightDB.Colour[1], MouseoverHighlightDB.Colour[2], MouseoverHighlightDB.Colour[3], MouseoverHighlightDB.Colour[4])
+        self.MouseoverHighlight:Hide()
+        self:SetScript("OnEnter", function(self) local DB = UUF.db.profile[GetNormalizedUnit(unit)] if DB.Indicators.MouseoverHighlight.Enabled then self.MouseoverHighlight:Show() end end)
+        self:SetScript("OnLeave", function(self) local DB = UUF.db.profile[GetNormalizedUnit(unit)] if DB.Indicators.MouseoverHighlight.Enabled then self.MouseoverHighlight:Hide() end end)
+    end
+end
+
+local function UpdateMouseoverHighlight(self, unit)
+    local UUFDB = UUF.db.profile
+    local normalizedUnit = GetNormalizedUnit(unit)
+    local MouseoverHighlightDB = UUFDB[normalizedUnit].Indicators.MouseoverHighlight
+
+    if self.MouseoverHighlight then
+        if MouseoverHighlightDB.Enabled then
+            self.MouseoverHighlight:SetBackdropBorderColor(MouseoverHighlightDB.Colour[1], MouseoverHighlightDB.Colour[2], MouseoverHighlightDB.Colour[3], MouseoverHighlightDB.Colour[4])
+            self:SetScript("OnEnter", function(self) self.MouseoverHighlight:Show() end)
+            self:SetScript("OnLeave", function(self) self.MouseoverHighlight:Hide() end)
+        else
+            self:SetScript("OnEnter", function(self) end)
+            self:SetScript("OnLeave", function(self) end)
+            self.MouseoverHighlight:Hide()
+        end
+    end
+end
+
 local function CreateTag(self, unit, tag)
     if not unit or not tag then return end
     local UUFDB = UUF.db.profile
@@ -609,6 +643,7 @@ function UUF:CreateUnitFrame(unit)
     CreateHealthBar(unitFrame, unit)
     CreateAbsorbBar(unitFrame, unit)
     CreatePowerBar(unitFrame, unit)
+    CreateMouseoverHighlight(unitFrame, unit)
     CreateTag(unitFrame, unit, "TagOne")
     CreateTag(unitFrame, unit, "TagTwo")
     CreateTag(unitFrame, unit, "TagThree")
@@ -633,6 +668,7 @@ function UUF:UpdateUnitFrame(unit)
     UpdateHealthBar(unitFrame, unit)
     UpdateAbsorbBar(unitFrame, unit)
     UpdatePowerBar(unitFrame, unit)
+    UpdateMouseoverHighlight(unitFrame, unit)
     UpdateTag(unitFrame, unit, "TagOne")
     UpdateTag(unitFrame, unit, "TagTwo")
     UpdateTag(unitFrame, unit, "TagThree")

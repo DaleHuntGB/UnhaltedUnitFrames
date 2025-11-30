@@ -542,6 +542,38 @@ local function CreatePowerBarSettings(containerParent, unit)
     return ScrollFrame
 end
 
+local function CreateIndicatorSettings(containerParent, unit)
+    local UUFDB = UUF.db.profile
+    local normalizedUnit = GetNormalizedUnit(unit)
+    local IndicatorsDB = UUFDB[normalizedUnit].Indicators
+
+    local Wrapper = AG:Create("SimpleGroup")
+    Wrapper:SetFullWidth(true)
+    Wrapper:SetFullHeight(true)
+    Wrapper:SetLayout("Fill")
+    containerParent:AddChild(Wrapper)
+
+    local ScrollFrame = CreateScrollFrame(Wrapper)
+
+    local MouseoverHighlightContainer = CreateInlineGroup(ScrollFrame, "Mouseover Highlight")
+    local EnableCheckBox = AG:Create("CheckBox")
+    EnableCheckBox:SetLabel("Enable Mouseover Highlight")
+    EnableCheckBox:SetValue(IndicatorsDB.MouseoverHighlight.Enabled)
+    EnableCheckBox:SetRelativeWidth(0.5)
+    EnableCheckBox:SetCallback("OnValueChanged", function(_, _, value) IndicatorsDB.MouseoverHighlight.Enabled = value UUF:UpdateUnitFrame(unit) end)
+    MouseoverHighlightContainer:AddChild(EnableCheckBox)
+
+    local ColourPicker = AG:Create("ColorPicker")
+    ColourPicker:SetLabel("Highlight Colour")
+    ColourPicker:SetColor(unpack(IndicatorsDB.MouseoverHighlight.Colour))
+    ColourPicker:SetHasAlpha(true)
+    ColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) IndicatorsDB.MouseoverHighlight.Colour = {r, g, b, a} UUF:UpdateUnitFrame(unit) end)
+    ColourPicker:SetRelativeWidth(0.5)
+    MouseoverHighlightContainer:AddChild(ColourPicker)
+
+    return ScrollFrame
+end
+
 local function CreateTagsSettings(containerParent, unit)
     local UUFDB = UUF.db.profile
     local normalizedUnit = GetNormalizedUnit(unit)
@@ -1000,6 +1032,7 @@ function UUF:CreateGUI()
                 CreatePowerBarSettings(UnitFrameContainer, "player")
             elseif UnitFrameGroup == "AlternatePowerBar" then
             elseif UnitFrameGroup == "Indicators" then
+                CreateIndicatorSettings(UnitFrameContainer, "player")
             elseif UnitFrameGroup == "Tags" then
                 CreateTagsSettings(UnitFrameContainer, "player")
             end
