@@ -723,6 +723,11 @@ function UUF:CreateUnitFrame(unit)
     unitFrame:SetAttribute("*type1", "target")
     unitFrame:SetAttribute("*type2", "togglemenu")
 
+    -- Enable Clique Support (Thanks @Mapko)
+    if ClickCastFrames then
+        ClickCastFrames[unitFrame] = true
+    end
+
     unitFrame:SetSize(unitDB.Frame.Width, unitDB.Frame.Height)
     if unitDB.Frame.AnchorToEssentialCooldowns then
         local anchorParent = _G["UUF_CDMAnchor"] or "UIParent"
