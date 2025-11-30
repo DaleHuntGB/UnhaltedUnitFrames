@@ -78,7 +78,6 @@ local function GetNormalizedUnit(unit)
     return normalizedUnit
 end
 
-
 local function DeepDisable(widget, disabled, skipWidget)
     if widget == skipWidget then return end
     if widget.SetDisabled then widget:SetDisabled(disabled) end
@@ -275,7 +274,7 @@ local function CreatePowerBarSettings(containerParent, unit)
     EnableCheckBox:SetLabel("Enable Power Bar")
     EnableCheckBox:SetValue(PowerBarDB.Enabled)
     EnableCheckBox:SetRelativeWidth(0.33)
-    EnableCheckBox:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.Enabled = value UUF:UpdateUnitFrame(unit) DeepDisable(TogglesContainer, not value, EnableCheckBox) DeepDisable(UUFGUI.ColourContainer, not value, EnableCheckBox) DeepDisable(UUFGUI.LayoutContainer, not value, EnableCheckBox) end)
+    EnableCheckBox:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.Enabled = value UUF:UpdateUnitFrame(unit) end)
     TogglesContainer:AddChild(EnableCheckBox)
 
     local ColourByType = AG:Create("CheckBox")
@@ -342,6 +341,7 @@ local function CreatePowerBarSettings(containerParent, unit)
     LayoutContainer:AddChild(AlignmentDropdown)
 
     local TextContainer = CreateInlineGroup(ScrollFrame, "Text")
+    UUFGUI.TextContainer = TextContainer
 
     local TextToggleContainer = CreateInlineGroup(TextContainer, "Toggles")
 
@@ -349,7 +349,8 @@ local function CreatePowerBarSettings(containerParent, unit)
     EnableTextCheckBox:SetLabel("Enable Power Text")
     EnableTextCheckBox:SetValue(PowerBarDB.Text.Enabled)
     EnableTextCheckBox:SetRelativeWidth(0.5)
-    EnableTextCheckBox:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.Text.Enabled = value UUF:UpdateUnitFrame(unit) end)
+    EnableTextCheckBox:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.Text.Enabled = value UUF:UpdateUnitFrame(unit) DeepDisable(TextContainer, not value, EnableTextCheckBox) end)
+    UUFGUI.EnableTextCheckBox = EnableTextCheckBox
     TextToggleContainer:AddChild(EnableTextCheckBox)
 
     local ColourTextByPowerType = AG:Create("CheckBox")
@@ -418,10 +419,6 @@ local function CreatePowerBarSettings(containerParent, unit)
     FontSizeSlider:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.Text.FontSize = value UUF:UpdateUnitFrame(unit) end)
     FontSizeSlider:SetRelativeWidth(0.33)
     TextLayoutContainer:AddChild(FontSizeSlider)
-
-    DeepDisable(BarContainer, not PowerBarDB.Enabled, EnableCheckBox)
-    DeepDisable(TextContainer, not PowerBarDB.Enabled, EnableCheckBox)
-    DeepDisable(TextContainer, not PowerBarDB.Text.Enabled, EnableTextCheckBox)
 
     FGColourPicker:SetDisabled(PowerBarDB.ColourByType)
     BGColourPicker:SetDisabled(PowerBarDB.ColourBackgroundByType)
@@ -816,7 +813,7 @@ function UUF:CreateGUI()
         local Wrapper = AG:Create("SimpleGroup")
         Wrapper:SetFullWidth(true)
         Wrapper:SetFullHeight(true)
-        Wrapper:SetLayout("Fill")   -- IMPORTANT
+        Wrapper:SetLayout("Fill")
         GUIContainer:AddChild(Wrapper)
 
         if MainGroup == "General" then
