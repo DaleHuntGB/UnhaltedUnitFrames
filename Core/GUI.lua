@@ -542,6 +542,105 @@ local function CreatePowerBarSettings(containerParent, unit)
     return ScrollFrame
 end
 
+local function CreateAlternatePowerBarSettings(containerParent, unit)
+    local UUFDB = UUF.db.profile
+    local normalizedUnit = GetNormalizedUnit(unit)
+    local AlternatePowerBarDB = UUFDB[normalizedUnit].AlternatePowerBar
+
+    local Wrapper = AG:Create("SimpleGroup")
+    Wrapper:SetFullWidth(true)
+    Wrapper:SetFullHeight(true)
+    Wrapper:SetLayout("Fill")
+    containerParent:AddChild(Wrapper)
+
+    local ScrollFrame = CreateScrollFrame(Wrapper)
+
+    local TogglesContainer = CreateInlineGroup(ScrollFrame, "Toggles")
+
+    local EnableCheckBox = AG:Create("CheckBox")
+    EnableCheckBox:SetLabel("Enable Alternate Power Bar")
+    EnableCheckBox:SetValue(AlternatePowerBarDB.Enabled)
+    EnableCheckBox:SetRelativeWidth(0.5)
+    EnableCheckBox:SetCallback("OnValueChanged", function(_, _, value) AlternatePowerBarDB.Enabled = value UUF:UpdateUnitFrame(unit) DeepDisable(Wrapper, not value, EnableCheckBox) end)
+    TogglesContainer:AddChild(EnableCheckBox)
+
+    local ColourByType = AG:Create("CheckBox")
+    ColourByType:SetLabel("Colour By Power Type")
+    ColourByType:SetValue(AlternatePowerBarDB.ColourByType)
+    ColourByType:SetRelativeWidth(0.5)
+    ColourByType:SetCallback("OnValueChanged", function(_, _, value) AlternatePowerBarDB.ColourByType = value UUF:UpdateUnitFrame(unit) end)
+    TogglesContainer:AddChild(ColourByType)
+
+    local ColoursContainer = CreateInlineGroup(ScrollFrame, "Colours")
+    local FGColourPicker = AG:Create("ColorPicker")
+    FGColourPicker:SetLabel("Foreground Colour")
+    FGColourPicker:SetColor(unpack(AlternatePowerBarDB.FGColour))
+    FGColourPicker:SetHasAlpha(true)
+    FGColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) AlternatePowerBarDB.FGColour = {r, g, b, a} UUF:UpdateUnitFrame(unit) end)
+    ColoursContainer:AddChild(FGColourPicker)
+
+    local BGColourPicker = AG:Create("ColorPicker")
+    BGColourPicker:SetLabel("Background Colour")
+    BGColourPicker:SetColor(unpack(AlternatePowerBarDB.BGColour))
+    BGColourPicker:SetHasAlpha(true)
+    BGColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) AlternatePowerBarDB.BGColour = {r, g, b, a} UUF:UpdateUnitFrame(unit) end)
+    ColoursContainer:AddChild(BGColourPicker)
+
+    local LayoutContainer = CreateInlineGroup(ScrollFrame, "Layout")
+
+    local WidthSlider = AG:Create("Slider")
+    WidthSlider:SetLabel("Width")
+    WidthSlider:SetValue(AlternatePowerBarDB.Width)
+    WidthSlider:SetSliderValues(1, 3000, 0.1)
+    WidthSlider:SetCallback("OnValueChanged", function(_, _, value) AlternatePowerBarDB.Width = value UUF:UpdateUnitFrame(unit) end)
+    WidthSlider:SetRelativeWidth(0.5)
+    LayoutContainer:AddChild(WidthSlider)
+
+    local HeightSlider = AG:Create("Slider")
+    HeightSlider:SetLabel("Height")
+    HeightSlider:SetValue(AlternatePowerBarDB.Height)
+    HeightSlider:SetSliderValues(1, 500, 0.1)
+    HeightSlider:SetCallback("OnValueChanged", function(_, _, value) AlternatePowerBarDB.Height = value UUF:UpdateUnitFrame(unit) end)
+    HeightSlider:SetRelativeWidth(0.5)
+    LayoutContainer:AddChild(HeightSlider)
+
+    local AnchorFromDropdown = AG:Create("Dropdown")
+    AnchorFromDropdown:SetLabel("Anchor From")
+    AnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
+    AnchorFromDropdown:SetValue(AlternatePowerBarDB.AnchorFrom)
+    AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) AlternatePowerBarDB.AnchorFrom = value UUF:UpdateUnitFrame(unit) end)
+    AnchorFromDropdown:SetRelativeWidth(0.5)
+    LayoutContainer:AddChild(AnchorFromDropdown)
+
+    local AnchorToDropdown = AG:Create("Dropdown")
+    AnchorToDropdown:SetLabel("Anchor To")
+    AnchorToDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
+    AnchorToDropdown:SetValue(AlternatePowerBarDB.AnchorTo)
+    AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) AlternatePowerBarDB.AnchorTo = value UUF:UpdateUnitFrame(unit) end)
+    AnchorToDropdown:SetRelativeWidth(0.5)
+    LayoutContainer:AddChild(AnchorToDropdown)
+
+    local XPositionSlider = AG:Create("Slider")
+    XPositionSlider:SetLabel("X Position")
+    XPositionSlider:SetValue(AlternatePowerBarDB.XPosition)
+    XPositionSlider:SetSliderValues(-3000, 3000, 0.1)
+    XPositionSlider:SetCallback("OnValueChanged", function(_, _, value) AlternatePowerBarDB.XPosition = value UUF:UpdateUnitFrame(unit) end)
+    XPositionSlider:SetRelativeWidth(0.5)
+    LayoutContainer:AddChild(XPositionSlider)
+
+    local YPositionSlider = AG:Create("Slider")
+    YPositionSlider:SetLabel("Y Position")
+    YPositionSlider:SetValue(AlternatePowerBarDB.YPosition)
+    YPositionSlider:SetSliderValues(-3000, 3000, 0.1)
+    YPositionSlider:SetCallback("OnValueChanged", function(_, _, value) AlternatePowerBarDB.YPosition = value UUF:UpdateUnitFrame(unit) end)
+    YPositionSlider:SetRelativeWidth(0.5)
+    LayoutContainer:AddChild(YPositionSlider)
+
+    DeepDisable(Wrapper, not AlternatePowerBarDB.Enabled, EnableCheckBox)
+
+    return ScrollFrame
+end
+
 local function CreateIndicatorSettings(containerParent, unit)
     local UUFDB = UUF.db.profile
     local normalizedUnit = GetNormalizedUnit(unit)
@@ -1031,6 +1130,7 @@ function UUF:CreateGUI()
             elseif UnitFrameGroup == "PowerBar" then
                 CreatePowerBarSettings(UnitFrameContainer, "player")
             elseif UnitFrameGroup == "AlternatePowerBar" then
+                CreateAlternatePowerBarSettings(UnitFrameContainer, "player")
             elseif UnitFrameGroup == "Indicators" then
                 CreateIndicatorSettings(UnitFrameContainer, "player")
             elseif UnitFrameGroup == "Tags" then
@@ -1041,14 +1141,24 @@ function UUF:CreateGUI()
         local UnitFrameTabGroup = AG:Create("TabGroup")
         UnitFrameTabGroup:SetLayout("Flow")
         UnitFrameTabGroup:SetFullWidth(true)
-        UnitFrameTabGroup:SetTabs({
-            { text = "Frame", value = "Frame"},
-            { text = "Heal Prediction", value = "HealPrediction"},
-            { text = "Power Bar", value = "PowerBar"},
-            { text = "Alternate Power Bar", value = "AlternatePowerBar"},
-            { text = "Indicators", value = "Indicators"},
-            { text = "Tags", value = "Tags"},
-        })
+        if UUF:RequiresAlternatePowerBar("player") then
+            UnitFrameTabGroup:SetTabs({
+                { text = "Frame", value = "Frame"},
+                { text = "Heal Prediction", value = "HealPrediction"},
+                { text = "Power Bar", value = "PowerBar"},
+                { text = "Alternate Power Bar", value = "AlternatePowerBar"},
+                { text = "Indicators", value = "Indicators"},
+                { text = "Tags", value = "Tags"},
+            })
+        else
+            UnitFrameTabGroup:SetTabs({
+                { text = "Frame", value = "Frame"},
+                { text = "Heal Prediction", value = "HealPrediction"},
+                { text = "Power Bar", value = "PowerBar"},
+                { text = "Indicators", value = "Indicators"},
+                { text = "Tags", value = "Tags"},
+            })
+        end
         UnitFrameTabGroup:SetCallback("OnGroupSelected", UnitFrameSelectedGroup)
         UnitFrameTabGroup:SelectTab("Frame")
         GUIContainer:AddChild(UnitFrameTabGroup)

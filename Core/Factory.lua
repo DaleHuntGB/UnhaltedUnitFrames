@@ -139,8 +139,7 @@ local function UpdateUnitPowerBar(self, event, unit)
 
     local unitPower  = UnitPower(self.unit)
     local unitMaxPower  = UnitPowerMax(self.unit)
-    local powerType = UnitPowerType(self.unit)
-    local unitPowerMissing = UnitPowerMissing(self.unit, powerType, true)
+    local alternatePower = UnitPower("player", Enum.PowerType.Mana)
 
     -- Update Power Bar Values
     self.PowerBar:SetMinMaxValues(0, unitMaxPower)
@@ -156,6 +155,10 @@ local function UpdateUnitPowerBar(self, event, unit)
         end
         self.PowerBarText:SetText(unitPower)
     end
+    if self.AlternatePowerBar and unit == "player" then
+        self.AlternatePowerBar:SetMinMaxValues(0, UnitPowerMax("player", Enum.PowerType.Mana))
+        self.AlternatePowerBar:SetValue(alternatePower)
+    end
 end
 
 local function UpdateUnitFrameData(self, event, unit)
@@ -167,6 +170,10 @@ local function UpdateUnitFrameData(self, event, unit)
 
     UpdateUnitHealthBar(self, event, self.unit)
     UpdateUnitPowerBar(self, event, self.unit)
+
+    if event == "PLAYER_SPECIALIZATION_CHANGED" then
+        UUF:UpdateUnitFrame(self.unit)
+    end
 
     if event == "PLAYER_TARGET_CHANGED" or event == "PLAYER_FOCUS_CHANGED" then
         -- Update Health Bar Colour
@@ -243,6 +250,7 @@ local function CreateHealthBar(self, unit)
     self:RegisterEvent("PLAYER_FOCUS_CHANGED")
     self:RegisterEvent("PLAYER_REGEN_ENABLED")
     self:RegisterEvent("PLAYER_REGEN_DISABLED")
+    self:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
     -- Unit Events
     self:RegisterUnitEvent("UNIT_HEALTH", UnitIsReal(unit) and unit)
     self:RegisterUnitEvent("UNIT_MAXHEALTH", UnitIsReal(unit) and unit)
@@ -543,6 +551,85 @@ local function UpdatePowerBar(self, unit)
     end
 end
 
+local function CreateAlternatePowerBar(self, unit)
+    local UUFDB = UUF.db.profile
+    local normalizedUnit = GetNormalizedUnit(unit)
+    local AlternatePowerBarDB = UUFDB[normalizedUnit].AlternatePowerBar
+    local unitContainer = self.Container
+
+    if not self.AlternatePowerBarBG then
+        self.AlternatePowerBarBG = CreateFrame("Frame", ResolveFrameName(unit).."_AlternatePowerBarBG", unitContainer, "BackdropTemplate")
+        self.AlternatePowerBarBG:SetPoint(AlternatePowerBarDB.AnchorFrom, unitContainer, AlternatePowerBarDB.AnchorTo, AlternatePowerBarDB.XPosition, AlternatePowerBarDB.YPosition)
+        self.AlternatePowerBarBG:SetSize(AlternatePowerBarDB.Width, AlternatePowerBarDB.Height)
+        self.AlternatePowerBarBG:SetBackdrop(UUF.BackdropTemplate)
+        self.AlternatePowerBarBG:SetBackdropColor(AlternatePowerBarDB.BGColour[1], AlternatePowerBarDB.BGColour[2], AlternatePowerBarDB.BGColour[3], AlternatePowerBarDB.BGColour[4])
+        self.AlternatePowerBarBG:SetBackdropBorderColor(0, 0, 0, 1)
+        self.AlternatePowerBarBG:SetFrameLevel(unitContainer:GetFrameLevel() + 2)
+    end
+
+    if not self.AlternatePowerBar then
+        self.AlternatePowerBar = CreateFrame("StatusBar", ResolveFrameName(unit).."_AlternatePowerBar", unitContainer)
+        self.AlternatePowerBar:SetPoint("TOPLEFT", self.AlternatePowerBarBG, "TOPLEFT", 1, -1)
+        self.AlternatePowerBar:SetPoint("BOTTOMRIGHT", self.AlternatePowerBarBG, "BOTTOMRIGHT", -1, 1)
+        self.AlternatePowerBar:SetSize(AlternatePowerBarDB.Width, AlternatePowerBarDB.Height)
+        self.AlternatePowerBar:SetStatusBarTexture(UUF.Media.ForegroundTexture)
+        self.AlternatePowerBar:SetFrameLevel(self.AlternatePowerBarBG:GetFrameLevel() + 1)
+        if AlternatePowerBarDB.ColourByType then
+            local powerColour = UUFDB.General.CustomColours.Power[0]
+            if powerColour then self.AlternatePowerBar:SetStatusBarColor(powerColour[1], powerColour[2], powerColour[3], powerColour[4]) end
+        else
+            self.AlternatePowerBar:SetStatusBarColor(AlternatePowerBarDB.FGColour[1], AlternatePowerBarDB.FGColour[2], AlternatePowerBarDB.FGColour[3], AlternatePowerBarDB.FGColour[4])
+        end
+        self.AlternatePowerBar.unit = unit
+    end
+
+    if AlternatePowerBarDB.Enabled and UUF:RequiresAlternatePowerBar() then
+        self:RegisterUnitEvent("UNIT_POWER_UPDATE", UnitIsReal(unit) and unit)
+        self:RegisterUnitEvent("UNIT_MAXPOWER", UnitIsReal(unit) and unit)
+        self.AlternatePowerBarBG:Show()
+        self.AlternatePowerBar:Show()
+    else
+        self.AlternatePowerBarBG:Hide()
+        self.AlternatePowerBar:Hide()
+    end
+end
+
+local function UpdateAlternatePowerBar(self, unit)
+    local UUFDB = UUF.db.profile
+    local normalizedUnit = GetNormalizedUnit(unit)
+    local AlternatePowerBarDB = UUFDB[normalizedUnit].AlternatePowerBar
+    local unitContainer = self.Container
+
+    if self.AlternatePowerBarBG then
+        self.AlternatePowerBarBG:ClearAllPoints()
+        self.AlternatePowerBarBG:SetPoint(AlternatePowerBarDB.AnchorFrom, unitContainer, AlternatePowerBarDB.AnchorTo, AlternatePowerBarDB.XPosition, AlternatePowerBarDB.YPosition)
+        self.AlternatePowerBarBG:SetSize(AlternatePowerBarDB.Width, AlternatePowerBarDB.Height)
+        self.AlternatePowerBarBG:SetBackdropColor(AlternatePowerBarDB.BGColour[1], AlternatePowerBarDB.BGColour[2], AlternatePowerBarDB.BGColour[3], AlternatePowerBarDB.BGColour[4])
+    end
+
+    if self.AlternatePowerBar then
+        self.AlternatePowerBar:ClearAllPoints()
+        self.AlternatePowerBar:SetPoint("TOPLEFT", self.AlternatePowerBarBG, "TOPLEFT", 1, -1)
+        self.AlternatePowerBar:SetPoint("BOTTOMRIGHT", self.AlternatePowerBarBG, "BOTTOMRIGHT", -1, 1)
+        self.AlternatePowerBar:SetSize(AlternatePowerBarDB.Width, AlternatePowerBarDB.Height)
+        self.AlternatePowerBar:SetStatusBarTexture(UUF.Media.ForegroundTexture)
+        if AlternatePowerBarDB.ColourByType then
+            local powerColour = UUFDB.General.CustomColours.Power[0]
+            if powerColour then self.AlternatePowerBar:SetStatusBarColor(powerColour[1], powerColour[2], powerColour[3], powerColour[4] or 1) end
+        else
+            self.AlternatePowerBar:SetStatusBarColor(AlternatePowerBarDB.FGColour[1], AlternatePowerBarDB.FGColour[2], AlternatePowerBarDB.FGColour[3], AlternatePowerBarDB.FGColour[4])
+        end
+    end
+
+    if AlternatePowerBarDB.Enabled and UUF:RequiresAlternatePowerBar() then
+        self.AlternatePowerBarBG:Show()
+        self.AlternatePowerBar:Show()
+    else
+        self.AlternatePowerBarBG:Hide()
+        self.AlternatePowerBar:Hide()
+    end
+end
+
 local function CreateMouseoverHighlight(self, unit)
     local UUFDB = UUF.db.profile
     local normalizedUnit = GetNormalizedUnit(unit)
@@ -643,6 +730,7 @@ function UUF:CreateUnitFrame(unit)
     CreateHealthBar(unitFrame, unit)
     CreateAbsorbBar(unitFrame, unit)
     CreatePowerBar(unitFrame, unit)
+    if unit == "player" then CreateAlternatePowerBar(unitFrame, "player") end
     CreateMouseoverHighlight(unitFrame, unit)
     CreateTag(unitFrame, unit, "TagOne")
     CreateTag(unitFrame, unit, "TagTwo")
@@ -668,6 +756,7 @@ function UUF:UpdateUnitFrame(unit)
     UpdateHealthBar(unitFrame, unit)
     UpdateAbsorbBar(unitFrame, unit)
     UpdatePowerBar(unitFrame, unit)
+    if unit == "player" then UpdateAlternatePowerBar(unitFrame, "player") end
     UpdateMouseoverHighlight(unitFrame, unit)
     UpdateTag(unitFrame, unit, "TagOne")
     UpdateTag(unitFrame, unit, "TagTwo")
