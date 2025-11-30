@@ -943,7 +943,7 @@ function UUF:CreateGUI()
             local TagsList = UUF:GetTagsForGroup(tagGroup)
             for Tag, Desc in pairs(TagsList) do
                 local TagDesc = AG:Create("Label")
-                TagDesc:SetText(Desc)
+                TagDesc:SetText("|cFFFFCC00" .. Desc .. "|r")
                 TagDesc:SetRelativeWidth(0.3)
                 TagDesc:SetFont(STANDARD_TEXT_FONT, 12, "OUTLINE")
                 TagDesc:SetJustifyH("LEFT")
