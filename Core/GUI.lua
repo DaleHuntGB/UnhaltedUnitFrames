@@ -597,8 +597,8 @@ function UUF:CreateGUI()
     GUIFrame = AG:Create("Frame")
     GUIFrame:SetTitle(UUF.AddOnName)
     GUIFrame:SetLayout("Fill")
-    GUIFrame:SetWidth(900)
-    GUIFrame:SetHeight(550)
+    GUIFrame:SetWidth(1000)
+    GUIFrame:SetHeight(600)
     GUIFrame:EnableResize(false)
     GUIFrame:SetCallback("OnClose", function(widget) AG:Release(widget) OpenedGUI = false end)
 
@@ -936,6 +936,52 @@ function UUF:CreateGUI()
         ScrollFrame:DoLayout()
     end
 
+    local function DrawTagsSettings(GUIContainer)
+        local ScrollFrame = CreateScrollFrame(GUIContainer)
+
+        local function DrawTagContainer(TagContainer, tagGroup)
+            local TagsList = UUF:GetTagsForGroup(tagGroup)
+            for Tag, Desc in pairs(TagsList) do
+                local TagDesc = AG:Create("Heading")
+                TagDesc:SetText(Desc)
+                TagDesc:SetFullWidth(true)
+                TagContainer:AddChild(TagDesc)
+
+                local TagValue = AG:Create("EditBox")
+                TagValue:SetText("[" .. Tag .. "]")
+                TagValue:SetCallback("OnTextChanged", function(widget, event, value) TagValue:ClearFocus() TagValue:SetText("[" .. Tag .. "]") end)
+                TagValue:SetRelativeWidth(1)
+                TagContainer:AddChild(TagValue)
+
+            end
+        end
+
+        local function SelectedGroup(TagContainer, _, subGroup)
+            TagContainer:ReleaseChildren()
+            if subGroup == "Health" then
+                DrawTagContainer(TagContainer, "Health")
+            elseif subGroup == "Name" then
+                DrawTagContainer(TagContainer, "Name")
+            elseif subGroup == "Power" then
+                DrawTagContainer(TagContainer, "Power")
+            end
+            ScrollFrame:DoLayout()
+        end
+
+        local GUIContainerTabGroup = AG:Create("TabGroup")
+        GUIContainerTabGroup:SetLayout("Flow")
+        GUIContainerTabGroup:SetTabs({
+            { text = "Health", value = "Health" },
+            { text = "Power", value = "Power" },
+            { text = "Name", value = "Name" },
+        })
+        GUIContainerTabGroup:SetCallback("OnGroupSelected", SelectedGroup)
+        GUIContainerTabGroup:SelectTab("Health")
+        GUIContainerTabGroup:SetFullWidth(true)
+        ScrollFrame:AddChild(GUIContainerTabGroup)
+        ScrollFrame:DoLayout()
+    end
+
     local function DrawPlayerSettings(GUIContainer)
         local function UnitFrameSelectedGroup(UnitFrameContainer, _, UnitFrameGroup)
             UnitFrameContainer:ReleaseChildren()
@@ -987,6 +1033,7 @@ function UUF:CreateGUI()
         elseif MainGroup == "focus" then
         elseif MainGroup == "boss" then
         elseif MainGroup == "Tags" then
+            DrawTagsSettings(Wrapper)
         elseif MainGroup == "Profiles" then
             DrawProfileSettings(Wrapper)
         end
