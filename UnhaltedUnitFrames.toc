@@ -3,6 +3,7 @@
 ## Version: @project-version@
 ## Author: UnhaltedGB
 ## SavedVariables: UnhaltedUFDB
+## IconTexture: Interface\AddOns\UnhaltedUnitFrames\Media\Logo.tga
 ## Category-enUS: Unit Frames
 ## X-Curse-Project-ID: 1235670
 ## X-Wago-ID: 96do35NO
