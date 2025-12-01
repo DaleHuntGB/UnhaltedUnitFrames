@@ -970,6 +970,44 @@ function UUF:CreateGUI()
 
         local ColoursContainer = CreateInlineGroup(TexturesColourContainer, "Colours")
 
+        local GlobalColoursInfo = CreateInfoTag("|cFF8080FFColours|r & |cFF8080FFOpacity|r values are static, but it can be used to change all units at once.")
+        GlobalColoursInfo:SetRelativeWidth(1)
+        ColoursContainer:AddChild(GlobalColoursInfo)
+
+        local FGColourPicker = AG:Create("ColorPicker")
+        FGColourPicker:SetLabel("Foreground Colour (Global)")
+        FGColourPicker:SetColor(26/255, 26/255, 26/255, 1)
+        FGColourPicker:SetHasAlpha(true)
+        FGColourPicker:SetRelativeWidth(0.5)
+        FGColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) for unit in pairs(UnitToFrameName) do UUF.db.profile[unit].Frame.FGColour = {r, g, b, a} UUF:UpdateUnitFrame(unit) end end)
+        ColoursContainer:AddChild(FGColourPicker)
+
+        local ForegroundOpacitySlider = AG:Create("Slider")
+        ForegroundOpacitySlider:SetLabel("Foreground Opacity (Global)")
+        ForegroundOpacitySlider:SetValue(0.8)
+        ForegroundOpacitySlider:SetSliderValues(0, 1, 0.01)
+        ForegroundOpacitySlider:SetRelativeWidth(0.5)
+        ForegroundOpacitySlider:SetIsPercent(true)
+        ForegroundOpacitySlider:SetCallback("OnValueChanged", function(_, _, value) for unit in pairs(UnitToFrameName) do local r, g, b = unpack(UUF.db.profile[unit].Frame.FGColour) UUF.db.profile[unit].Frame.FGColour = {r, g, b, value} UUF:UpdateUnitFrame(unit) end end)
+        ColoursContainer:AddChild(ForegroundOpacitySlider)
+
+        local BGColourPicker = AG:Create("ColorPicker")
+        BGColourPicker:SetLabel("Background Colour (Global)")
+        BGColourPicker:SetColor(128/255, 128/255, 128/255, 1)
+        BGColourPicker:SetHasAlpha(true)
+        BGColourPicker:SetRelativeWidth(0.5)
+        BGColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) for unit in pairs(UnitToFrameName) do UUF.db.profile[unit].Frame.BGColour = {r, g, b, a} UUF:UpdateUnitFrame(unit) end end)
+        ColoursContainer:AddChild(BGColourPicker)
+
+        local BackgroundOpacitySlider = AG:Create("Slider")
+        BackgroundOpacitySlider:SetLabel("Background Opacity (Global)")
+        BackgroundOpacitySlider:SetValue(1)
+        BackgroundOpacitySlider:SetSliderValues(0, 1, 0.01)
+        BackgroundOpacitySlider:SetRelativeWidth(0.5)
+        BackgroundOpacitySlider:SetIsPercent(true)
+        BackgroundOpacitySlider:SetCallback("OnValueChanged", function(_, _, value) for unit in pairs(UnitToFrameName) do local r, g, b = unpack(UUF.db.profile[unit].Frame.BGColour) UUF.db.profile[unit].Frame.BGColour = {r, g, b, value} UUF:UpdateUnitFrame(unit) end end)
+        ColoursContainer:AddChild(BackgroundOpacitySlider)
+
         local ColoursInfo = CreateInfoTag("|cFF8080FFButtons|r will allow you to swap between |cFFFFCC00Class / Reaction Mode|r and |cFFFFCC00Dark Mode|r.")
         ColoursInfo:SetRelativeWidth(1)
         ColoursContainer:AddChild(ColoursInfo)
@@ -985,23 +1023,6 @@ function UUF:CreateGUI()
         DarkModeButton:SetRelativeWidth(0.5)
         DarkModeButton:SetCallback("OnClick", function() for unit in pairs(UnitToFrameName) do UUF.db.profile[unit].Frame.ClassColour = false UUF.db.profile[unit].Frame.ReactionColour = false UUF.db.profile[unit].Frame.BGColour = {128/255, 128/255, 128/255, 1} UUF:UpdateUnitFrame(unit) end end)
         ColoursContainer:AddChild(DarkModeButton)
-
-        local FGColourPicker = AG:Create("ColorPicker")
-        FGColourPicker:SetLabel("Foreground Colour (Global)")
-        FGColourPicker:SetColor(26/255, 26/255, 26/255, 1)
-        FGColourPicker:SetHasAlpha(true)
-        FGColourPicker:SetRelativeWidth(0.5)
-        FGColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) for unit in pairs(UnitToFrameName) do UUF.db.profile[unit].Frame.FGColour = {r, g, b, a} UUF:UpdateUnitFrame(unit) end end)
-        TexturesContainer:AddChild(FGColourPicker)
-
-        local BGColourPicker = AG:Create("ColorPicker")
-        BGColourPicker:SetLabel("Background Colour (Global)")
-        BGColourPicker:SetColor(128/255, 128/255, 128/255, 1)
-        BGColourPicker:SetHasAlpha(true)
-        BGColourPicker:SetRelativeWidth(0.5)
-        BGColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) for unit in pairs(UnitToFrameName) do UUF.db.profile[unit].Frame.BGColour = {r, g, b, a} UUF:UpdateUnitFrame(unit) end end)
-        TexturesContainer:AddChild(BGColourPicker)
-
         --------------------------------------------------------------
         --- Custom Colours
         --------------------------------------------------------------
