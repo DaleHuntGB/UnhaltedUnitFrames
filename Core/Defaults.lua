@@ -1,4 +1,5 @@
 local _, UUF = ...
+
 UUF.Defaults = {
     global = {
         UseGlobalProfile = false,
@@ -169,6 +170,15 @@ UUF.Defaults = {
                     OffsetY = 0,
                 },
             },
+            Portrait = {
+                Enabled = true,
+                Size = 42,
+                AnchorFrom = "RIGHT",
+                AnchorTo = "LEFT",
+                OffsetX = -1,
+                OffsetY = 0,
+                Zoom = 0.3,
+            },
             Tags = {
                 TagOne = {
                     AnchorFrom = "CENTER",
@@ -295,6 +305,15 @@ UUF.Defaults = {
                     OffsetX = 3,
                     OffsetY = 0,
                 },
+            },
+            Portrait = {
+                Enabled = true,
+                Size = 42,
+                AnchorFrom = "LEFT",
+                AnchorTo = "RIGHT",
+                OffsetX = 1,
+                OffsetY = 0,
+                Zoom = 0.3,
             },
             Tags = {
                 TagOne = {
@@ -633,6 +652,15 @@ UUF.Defaults = {
                     OffsetX = 0,
                     OffsetY = 0,
                 },
+            },
+            Portrait = {
+                Enabled = true,
+                Size = 42,
+                AnchorFrom = "RIGHT",
+                AnchorTo = "LEFT",
+                OffsetX = -1,
+                OffsetY = 0,
+                Zoom = 0.3,
             },
             Tags = {
                 TagOne = {

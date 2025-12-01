@@ -941,6 +941,84 @@ local function CreateIndicatorSettings(containerParent, unit)
     return ScrollFrame
 end
 
+local function CreatePortraitSettings(containerParent, unit)
+    local UUFDB = UUF.db.profile
+    local normalizedUnit = GetNormalizedUnit(unit)
+    local PortraitDB = UUFDB[normalizedUnit].Portrait
+
+    local Wrapper = AG:Create("SimpleGroup")
+    Wrapper:SetFullWidth(true)
+    Wrapper:SetFullHeight(true)
+    Wrapper:SetLayout("Fill")
+    containerParent:AddChild(Wrapper)
+
+    local ScrollFrame = CreateScrollFrame(Wrapper)
+
+    local TogglesContainer = CreateInlineGroup(ScrollFrame, "Toggles")
+
+    local EnableCheckBox = AG:Create("CheckBox")
+    EnableCheckBox:SetLabel("Enable Portrait")
+    EnableCheckBox:SetValue(PortraitDB.Enabled)
+    EnableCheckBox:SetRelativeWidth(1)
+    EnableCheckBox:SetCallback("OnValueChanged", function(_, _, value) PortraitDB.Enabled = value UUF:UpdateUnitFrame(unit) DeepDisable(Wrapper, not value, EnableCheckBox) end)
+    TogglesContainer:AddChild(EnableCheckBox)
+
+    local LayoutContainer = CreateInlineGroup(ScrollFrame, "Layout")
+
+    local AnchorFromDropdown = AG:Create("Dropdown")
+    AnchorFromDropdown:SetLabel("Anchor From")
+    AnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
+    AnchorFromDropdown:SetValue(PortraitDB.AnchorFrom)
+    AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) PortraitDB.AnchorFrom = value UUF:UpdateUnitFrame(unit) end)
+    AnchorFromDropdown:SetRelativeWidth(0.5)
+    LayoutContainer:AddChild(AnchorFromDropdown)
+
+    local AnchorToDropdown = AG:Create("Dropdown")
+    AnchorToDropdown:SetLabel("Anchor To")
+    AnchorToDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
+    AnchorToDropdown:SetValue(PortraitDB.AnchorTo)
+    AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) PortraitDB.AnchorTo = value UUF:UpdateUnitFrame(unit) end)
+    AnchorToDropdown:SetRelativeWidth(0.5)
+    LayoutContainer:AddChild(AnchorToDropdown)
+
+    local XPositionSlider = AG:Create("Slider")
+    XPositionSlider:SetLabel("X Position")
+    XPositionSlider:SetValue(PortraitDB.OffsetX)
+    XPositionSlider:SetSliderValues(-3000, 3000, 0.1)
+    XPositionSlider:SetCallback("OnValueChanged", function(_, _, value) PortraitDB.OffsetX = value UUF:UpdateUnitFrame(unit) end)
+    XPositionSlider:SetRelativeWidth(0.5)
+    LayoutContainer:AddChild(XPositionSlider)
+
+    local YPositionSlider = AG:Create("Slider")
+    YPositionSlider:SetLabel("Y Position")
+    YPositionSlider:SetValue(PortraitDB.OffsetY)
+    YPositionSlider:SetSliderValues(-3000, 3000, 0.1)
+    YPositionSlider:SetCallback("OnValueChanged", function(_, _, value) PortraitDB.OffsetY = value UUF:UpdateUnitFrame(unit) end)
+    YPositionSlider:SetRelativeWidth(0.5)
+    LayoutContainer:AddChild(YPositionSlider)
+
+    local SizeSlider = AG:Create("Slider")
+    SizeSlider:SetLabel("Size")
+    SizeSlider:SetValue(PortraitDB.Size)
+    SizeSlider:SetSliderValues(1, 500, 0.1)
+    SizeSlider:SetCallback("OnValueChanged", function(_, _, value) PortraitDB.Size = value UUF:UpdateUnitFrame(unit) end)
+    SizeSlider:SetRelativeWidth(0.5)
+    LayoutContainer:AddChild(SizeSlider)
+
+    local ZoomSlider = AG:Create("Slider")
+    ZoomSlider:SetLabel("Zoom Level")
+    ZoomSlider:SetValue(PortraitDB.Zoom)
+    ZoomSlider:SetSliderValues(0, 1, 0.1)
+    ZoomSlider:SetIsPercent(true)
+    ZoomSlider:SetCallback("OnValueChanged", function(_, _, value) PortraitDB.Zoom = value UUF:UpdateUnitFrame(unit) end)
+    ZoomSlider:SetRelativeWidth(0.5)
+    LayoutContainer:AddChild(ZoomSlider)
+
+    DeepDisable(Wrapper, not PortraitDB.Enabled, EnableCheckBox)
+
+    return ScrollFrame
+end
+
 local function CreateTagsSettings(containerParent, unit)
     local UUFDB = UUF.db.profile
     local normalizedUnit = GetNormalizedUnit(unit)
@@ -1511,6 +1589,8 @@ function UUF:CreateGUI()
                 CreateAlternatePowerBarSettings(UnitFrameContainer, "player")
             elseif UnitFrameGroup == "Indicators" then
                 CreateIndicatorSettings(UnitFrameContainer, "player")
+            elseif UnitFrameGroup == "Portrait" then
+                CreatePortraitSettings(UnitFrameContainer, "player")
             elseif UnitFrameGroup == "Tags" then
                 CreateTagsSettings(UnitFrameContainer, "player")
             end
@@ -1526,6 +1606,7 @@ function UUF:CreateGUI()
                 { text = "Power Bar", value = "PowerBar"},
                 { text = "Alternate Power Bar", value = "AlternatePowerBar"},
                 { text = "Indicators", value = "Indicators"},
+                { text = "Portrait", value = "Portrait"},
                 { text = "Tags", value = "Tags"},
             })
         else
@@ -1534,6 +1615,7 @@ function UUF:CreateGUI()
                 { text = "Heal Prediction", value = "HealPrediction"},
                 { text = "Power Bar", value = "PowerBar"},
                 { text = "Indicators", value = "Indicators"},
+                { text = "Portrait", value = "Portrait"},
                 { text = "Tags", value = "Tags"},
             })
         end
@@ -1553,6 +1635,8 @@ function UUF:CreateGUI()
                 CreatePowerBarSettings(UnitFrameContainer, "target")
             elseif UnitFrameGroup == "Indicators" then
                 CreateIndicatorSettings(UnitFrameContainer, "target")
+            elseif UnitFrameGroup == "Portrait" then
+                CreatePortraitSettings(UnitFrameContainer, "target")
             elseif UnitFrameGroup == "Tags" then
                 CreateTagsSettings(UnitFrameContainer, "target")
             end
@@ -1566,6 +1650,7 @@ function UUF:CreateGUI()
             { text = "Heal Prediction", value = "HealPrediction"},
             { text = "Power Bar", value = "PowerBar"},
             { text = "Indicators", value = "Indicators"},
+            { text = "Portrait", value = "Portrait"},
             { text = "Tags", value = "Tags"},
         })
         UnitFrameTabGroup:SetCallback("OnGroupSelected", UnitFrameSelectedGroup)

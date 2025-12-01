@@ -85,18 +85,18 @@ local function ToggleUnitWatch(unitFrame)
 end
 
 local function UnitIsReal(unit)
-    local unitlessUnits = {
+    local realUnits = {
         ["player"] = true,
         ["target"] = true,
         ["focus"] = true,
         ["pet"] = true,
-        ["boss1"] = true,
-        ["boss2"] = true,
-        ["boss3"] = true,
-        ["boss4"] = true,
-        ["boss5"] = true,
+        ["boss6"] = true,
+        ["boss7"] = true,
+        ["boss8"] = true,
+        ["boss9"] = true,
+        ["boss10"] = true,
     }
-    return unitlessUnits[unit] or false
+    return realUnits[unit] or false
 end
 
 --------------------------------------------------------------
@@ -676,6 +676,7 @@ local function CreateMouseoverHighlight(self, unit)
         self.MouseoverHighlight:SetBackdropColor(0,0,0,0)
         self.MouseoverHighlight:SetBackdropBorderColor(MouseoverHighlightDB.Colour[1], MouseoverHighlightDB.Colour[2], MouseoverHighlightDB.Colour[3], MouseoverHighlightDB.Colour[4])
         self.MouseoverHighlight:Hide()
+        self.MouseoverHighlight:SetFrameLevel(self.Container:GetFrameLevel() + 3)
         self:SetScript("OnEnter", function(self) local DB = UUF.db.profile[GetNormalizedUnit(unit)] if DB.Indicators.MouseoverHighlight.Enabled then self.MouseoverHighlight:Show() end end)
         self:SetScript("OnLeave", function(self) local DB = UUF.db.profile[GetNormalizedUnit(unit)] if DB.Indicators.MouseoverHighlight.Enabled then self.MouseoverHighlight:Hide() end end)
     end
@@ -857,6 +858,70 @@ local function UpdateLeaderIndicator(self, unit)
     end
 end
 
+local function CreatePortrait(self, unit)
+    local UUFDB = UUF.db.profile
+    local normalizedUnit = GetNormalizedUnit(unit)
+    local PortraitDB = UUFDB[normalizedUnit].Portrait
+    local unitContainer = self.Container
+
+    if PortraitDB then
+        if not self.Portrait then
+            self.Portrait = CreateFrame("Frame", ResolveFrameName(unit).."_Portrait", unitContainer, "BackdropTemplate")
+            self.Portrait:SetBackdrop(UUF.BackdropTemplate)
+            self.Portrait:SetBackdropColor(26/255, 26/255, 26/255, 1)
+            self.Portrait:SetBackdropBorderColor(0, 0, 0, 1)
+            self.Portrait:SetSize(PortraitDB.Size, PortraitDB.Size)
+            self.Portrait:SetPoint(PortraitDB.AnchorFrom, unitContainer, PortraitDB.AnchorTo, PortraitDB.OffsetX, PortraitDB.OffsetY)
+            self.Portrait.Texture = self.Portrait:CreateTexture(nil, "ARTWORK")
+            self.Portrait.Texture:SetPoint("TOPLEFT", self.Portrait, "TOPLEFT", 1, -1)
+            self.Portrait.Texture:SetPoint("BOTTOMRIGHT", self.Portrait, "BOTTOMRIGHT", -1, 1)
+            self.Portrait.Texture:SetTexCoord((PortraitDB.Zoom or 0)*0.5, 1-(PortraitDB.Zoom or 0)*0.5, (PortraitDB.Zoom or 0)*0.5, 1-(PortraitDB.Zoom or 0)*0.5)
+            self.Portrait.unit = unit
+
+            if PortraitDB.Enabled then
+                self.Portrait:RegisterUnitEvent("UNIT_PORTRAIT_UPDATE", unit)
+                self.Portrait:RegisterEvent("PLAYER_TARGET_CHANGED")
+                self.Portrait:SetScript("OnEvent", function(self) SetPortraitTexture(self.Texture, self.unit, true) end)
+                SetPortraitTexture(self.Portrait.Texture, unit, true)
+                if self.Portrait then self.Portrait:Show() end
+            else
+                if self.Portrait then self.Portrait:Hide() end
+                self.Portrait:UnregisterAllEvents()
+                self.Portrait:SetScript("OnEvent", nil)
+            end
+        end
+    end
+end
+
+local function UpdatePortrait(self, unit)
+    local UUFDB = UUF.db.profile
+    local normalizedUnit = GetNormalizedUnit(unit)
+    local PortraitDB = UUFDB[normalizedUnit].Portrait
+    local unitContainer = self.Container
+
+    if PortraitDB then
+        if self.Portrait then
+            self.Portrait:ClearAllPoints()
+            self.Portrait:SetSize(PortraitDB.Size, PortraitDB.Size)
+            self.Portrait:SetPoint(PortraitDB.AnchorFrom, unitContainer, PortraitDB.AnchorTo, PortraitDB.OffsetX, PortraitDB.OffsetY)
+            self.Portrait.Texture:ClearAllPoints()
+            self.Portrait.Texture:SetPoint("TOPLEFT", self.Portrait, "TOPLEFT", 1, -1)
+            self.Portrait.Texture:SetPoint("BOTTOMRIGHT", self.Portrait, "BOTTOMRIGHT", -1, 1)
+            self.Portrait.Texture:SetTexCoord((PortraitDB.Zoom or 0)*0.5, 1-(PortraitDB.Zoom or 0)*0.5, (PortraitDB.Zoom or 0)*0.5, 1-(PortraitDB.Zoom or 0)*0.5)
+            SetPortraitTexture(self.Portrait.Texture, unit, true)
+        end
+        if PortraitDB.Enabled then
+            self.Portrait:RegisterUnitEvent("UNIT_PORTRAIT_UPDATE", unit)
+            self.Portrait:RegisterEvent("PLAYER_TARGET_CHANGED")
+            if self.Portrait then self.Portrait:Show() end
+        else
+            if self.Portrait then self.Portrait:Hide() end
+            self.Portrait:UnregisterAllEvents()
+            self.Portrait:SetScript("OnEvent", nil)
+        end
+    end
+end
+
 local function CreateTag(self, unit, tag)
     if not unit or not tag then return end
     local UUFDB = UUF.db.profile
@@ -938,6 +1003,7 @@ function UUF:CreateUnitFrame(unit)
     CreateRaidTargetMarker(unitFrame, unit)
     if unit == "player" then CreateCombatIndicator(unitFrame, unit) CreateRestingIndicator(unitFrame, unit) end
     if unit == "player" or unit == "target" then CreateLeaderIndicator(unitFrame, unit) end
+    CreatePortrait(unitFrame, unit)
     CreateTag(unitFrame, unit, "TagOne")
     CreateTag(unitFrame, unit, "TagTwo")
     CreateTag(unitFrame, unit, "TagThree")
@@ -973,6 +1039,7 @@ function UUF:UpdateUnitFrame(unit)
     UpdateRaidTargetMarker(unitFrame, unit)
     if unit == "player" then UpdateCombatIndicator(unitFrame, unit) UpdateRestingIndicator(unitFrame, unit) end
     if unit == "player" or unit == "target" then UpdateLeaderIndicator(unitFrame, unit) end
+    UpdatePortrait(unitFrame, unit)
     UpdateTag(unitFrame, unit, "TagOne")
     UpdateTag(unitFrame, unit, "TagTwo")
     UpdateTag(unitFrame, unit, "TagThree")
