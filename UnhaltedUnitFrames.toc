@@ -10,4 +10,8 @@
 # Load Libraries
 Libs/Init.xml
 
+# Load Core
 Core/Core.xml
+
+# Load Modules
+Modules/Modules.xml
