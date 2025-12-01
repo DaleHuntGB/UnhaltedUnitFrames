@@ -776,6 +776,58 @@ local function CreateIndicatorSettings(containerParent, unit)
     SizeRTMSlider:SetRelativeWidth(0.33)
     RaidTargetMarkerContainer:AddChild(SizeRTMSlider)
 
+    if unit == "player" or unit == "target" then
+        local LeaderIndicatorContainer = CreateInlineGroup(ScrollFrame, "Leader Indicator")
+        local EnableLeaderCheckBox = AG:Create("CheckBox")
+        EnableLeaderCheckBox:SetLabel("Enable Leader Indicator")
+        EnableLeaderCheckBox:SetValue(IndicatorsDB.Leader.Enabled)
+        EnableLeaderCheckBox:SetRelativeWidth(1)
+        EnableLeaderCheckBox:SetCallback("OnValueChanged", function(_, _, value) IndicatorsDB.Leader.Enabled = value UUF:UpdateUnitFrame(unit) DeepDisable(LeaderIndicatorContainer, not IndicatorsDB.Leader.Enabled, EnableLeaderCheckBox) end)
+        LeaderIndicatorContainer:AddChild(EnableLeaderCheckBox)
+
+        local AnchorFromLeaderDropdown = AG:Create("Dropdown")
+        AnchorFromLeaderDropdown:SetLabel("Anchor From")
+        AnchorFromLeaderDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
+        AnchorFromLeaderDropdown:SetValue(IndicatorsDB.Leader.AnchorFrom)
+        AnchorFromLeaderDropdown:SetCallback("OnValueChanged", function(_, _, value) IndicatorsDB.Leader.AnchorFrom = value UUF:UpdateUnitFrame(unit) end)
+        AnchorFromLeaderDropdown:SetRelativeWidth(0.5)
+        LeaderIndicatorContainer:AddChild(AnchorFromLeaderDropdown)
+
+        local AnchorToLeaderDropdown = AG:Create("Dropdown")
+        AnchorToLeaderDropdown:SetLabel("Anchor To")
+        AnchorToLeaderDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
+        AnchorToLeaderDropdown:SetValue(IndicatorsDB.Leader.AnchorTo)
+        AnchorToLeaderDropdown:SetCallback("OnValueChanged", function(_, _, value) IndicatorsDB.Leader.AnchorTo = value UUF:UpdateUnitFrame(unit) end)
+        AnchorToLeaderDropdown:SetRelativeWidth(0.5)
+        LeaderIndicatorContainer:AddChild(AnchorToLeaderDropdown)
+
+        local OffsetXLeaderSlider = AG:Create("Slider")
+        OffsetXLeaderSlider:SetLabel("Offset X")
+        OffsetXLeaderSlider:SetValue(IndicatorsDB.Leader.OffsetX)
+        OffsetXLeaderSlider:SetSliderValues(-3000, 3000, 0.1)
+        OffsetXLeaderSlider:SetCallback("OnValueChanged", function(_, _, value) IndicatorsDB.Leader.OffsetX = value UUF:UpdateUnitFrame(unit) end)
+        OffsetXLeaderSlider:SetRelativeWidth(0.33)
+        LeaderIndicatorContainer:AddChild(OffsetXLeaderSlider)
+
+        local OffsetYLeaderSlider = AG:Create("Slider")
+        OffsetYLeaderSlider:SetLabel("Offset Y")
+        OffsetYLeaderSlider:SetValue(IndicatorsDB.Leader.OffsetY)
+        OffsetYLeaderSlider:SetSliderValues(-3000, 3000, 0.1)
+        OffsetYLeaderSlider:SetCallback("OnValueChanged", function(_, _, value) IndicatorsDB.Leader.OffsetY = value UUF:UpdateUnitFrame(unit) end)
+        OffsetYLeaderSlider:SetRelativeWidth(0.33)
+        LeaderIndicatorContainer:AddChild(OffsetYLeaderSlider)
+
+        local SizeLeaderSlider = AG:Create("Slider")
+        SizeLeaderSlider:SetLabel("Size")
+        SizeLeaderSlider:SetValue(IndicatorsDB.Leader.Size)
+        SizeLeaderSlider:SetSliderValues(1, 500, 1)
+        SizeLeaderSlider:SetCallback("OnValueChanged", function(_, _, value) IndicatorsDB.Leader.Size = value UUF:UpdateUnitFrame(unit) end)
+        SizeLeaderSlider:SetRelativeWidth(0.33)
+        LeaderIndicatorContainer:AddChild(SizeLeaderSlider)
+
+        DeepDisable(LeaderIndicatorContainer, not IndicatorsDB.Leader.Enabled, EnableLeaderCheckBox)
+    end
+
     if unit == "player" then
 
         local Status = IndicatorsDB.Status

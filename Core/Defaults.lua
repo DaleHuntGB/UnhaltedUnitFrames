@@ -160,6 +160,14 @@ UUF.Defaults = {
                     RestingTexture = "DEFAULT",
                     CombatTexture = "RESTING5",
                 },
+                Leader = {
+                    Enabled = true,
+                    Size = 15,
+                    AnchorFrom = "RIGHT",
+                    AnchorTo = "TOPRIGHT",
+                    OffsetX = -3,
+                    OffsetY = 0,
+                },
             },
             Tags = {
                 TagOne = {
@@ -277,6 +285,14 @@ UUF.Defaults = {
                     AnchorFrom = "CENTER",
                     AnchorTo = "CENTER",
                     OffsetX = 0,
+                    OffsetY = 0,
+                },
+                Leader = {
+                    Enabled = true,
+                    Size = 15,
+                    AnchorFrom = "LEFT",
+                    AnchorTo = "TOPLEFT",
+                    OffsetX = 3,
                     OffsetY = 0,
                 },
             },

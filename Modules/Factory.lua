@@ -207,8 +207,19 @@ local function UpdateUnitFrameData(self, event, unit)
     if (event == "PLAYER_REGEN_ENABLED" or event == "PLAYER_REGEN_DISABLED") then
         local inCombat  = UUF.db.profile[GetNormalizedUnit("player")].Indicators.Status.Combat  and UnitAffectingCombat("player")
         local isResting = UUF.db.profile[GetNormalizedUnit("player")].Indicators.Status.Resting and IsResting()
-        if self.CombatTexture then if inCombat then self.CombatTexture:Show() else self.CombatTexture:Hide() end end
-        if self.RestingTexture then if isResting and not inCombat then self.RestingTexture:Show() else self.RestingTexture:Hide() end end
+        if self.CombatIndicator then if inCombat then self.CombatIndicator:Show() else self.CombatIndicator:Hide() end end
+        if self.RestingIndicator then if isResting and not inCombat then self.RestingIndicator:Show() else self.RestingIndicator:Hide() end end
+    end
+
+    if (event == "GROUP_ROSTER_UPDATE" or event == "PLAYER_TARGET_CHANGED") then
+        if self.LeaderIndicator then
+            local IndicatorsDB = UUF.db.profile[GetNormalizedUnit(self.unit)].Indicators
+            if (UnitIsGroupLeader(self.unit) or UnitIsGroupAssistant(self.unit)) and IndicatorsDB.Leader.Enabled then
+                self.LeaderIndicator:Show()
+            else
+                self.LeaderIndicator:Hide()
+            end
+        end
     end
 
     -- Update Tags
@@ -271,6 +282,7 @@ local function CreateHealthBar(self, unit)
     self:RegisterEvent("PLAYER_REGEN_DISABLED")
     self:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
     self:RegisterEvent("RAID_TARGET_UPDATE")
+    self:RegisterEvent("GROUP_ROSTER_UPDATE")
     -- Unit Events
     self:RegisterUnitEvent("UNIT_HEALTH", UnitIsReal(unit) and unit)
     self:RegisterUnitEvent("UNIT_MAXHEALTH", UnitIsReal(unit) and unit)
@@ -721,91 +733,127 @@ local function UpdateRaidTargetMarker(self, unit)
     end
 end
 
-local function CreateCombatTexture(self, unit)
+local function CreateCombatIndicator(self, unit)
     local UUFDB = UUF.db.profile
     local normalizedUnit = GetNormalizedUnit(unit)
     local StatusDB = UUFDB[normalizedUnit].Indicators.Status
 
-    if not self.CombatTexture then
-        self.CombatTexture = self.HighLevelContainer:CreateTexture(ResolveFrameName(unit).."_".."CombatTexture", "OVERLAY")
-        self.CombatTexture:SetSize(StatusDB.Size, StatusDB.Size)
-        self.CombatTexture:SetPoint(StatusDB.AnchorFrom, self.HighLevelContainer, StatusDB.AnchorTo, StatusDB.OffsetX, StatusDB.OffsetY)
-        if StatusDB.CombatTexture == "DEFAULT" then
-            self.CombatTexture:SetTexture([[Interface\CharacterFrame\UI-StateIcon]])
-            self.CombatTexture:SetTexCoord(0.5, 1, 0, 0.49)
+    if not self.CombatIndicator then
+        self.CombatIndicator = self.HighLevelContainer:CreateTexture(ResolveFrameName(unit).."_".."CombatIndicator", "OVERLAY")
+        self.CombatIndicator:SetSize(StatusDB.Size, StatusDB.Size)
+        self.CombatIndicator:SetPoint(StatusDB.AnchorFrom, self.HighLevelContainer, StatusDB.AnchorTo, StatusDB.OffsetX, StatusDB.OffsetY)
+        if StatusDB.CombatIndicator == "DEFAULT" then
+            self.CombatIndicator:SetTexture([[Interface\CharacterFrame\UI-StateIcon]])
+            self.CombatIndicator:SetTexCoord(0.5, 1, 0, 0.49)
         else
-            self.CombatTexture:SetTexture(UUF.StatusTextureMap[StatusDB.CombatTexture])
-            self.CombatTexture:SetTexCoord(0, 1, 0, 1)
+            self.CombatIndicator:SetTexture(UUF.StatusTextureMap[StatusDB.CombatIndicator])
+            self.CombatIndicator:SetTexCoord(0, 1, 0, 1)
         end
-        self.CombatTexture.unit = unit
+        self.CombatIndicator.unit = unit
         if UnitAffectingCombat(unit) and StatusDB.Combat then
-            self.CombatTexture:Show()
+            self.CombatIndicator:Show()
         else
-            self.CombatTexture:Hide()
+            self.CombatIndicator:Hide()
         end
     end
 end
 
-local function CreateRestingTexture(self, unit)
+local function CreateRestingIndicator(self, unit)
     local UUFDB = UUF.db.profile
     local normalizedUnit = GetNormalizedUnit(unit)
     local StatusDB = UUFDB[normalizedUnit].Indicators.Status
 
-    if not self.RestingTexture then
-        self.RestingTexture = self.HighLevelContainer:CreateTexture(ResolveFrameName(unit).."_".."RestingTexture", "OVERLAY")
-        self.RestingTexture:SetSize(StatusDB.Size, StatusDB.Size)
-        self.RestingTexture:SetPoint(StatusDB.AnchorFrom, self.HighLevelContainer, StatusDB.AnchorTo, StatusDB.OffsetX, StatusDB.OffsetY)
-        if StatusDB.RestingTexture == "DEFAULT" then
-            self.RestingTexture:SetTexture([[Interface\CharacterFrame\UI-StateIcon]])
-            self.RestingTexture:SetTexCoord(0, 0.5, 0, 0.421875)
+    if not self.RestingIndicator then
+        self.RestingIndicator = self.HighLevelContainer:CreateTexture(ResolveFrameName(unit).."_".."RestingIndicator", "OVERLAY")
+        self.RestingIndicator:SetSize(StatusDB.Size, StatusDB.Size)
+        self.RestingIndicator:SetPoint(StatusDB.AnchorFrom, self.HighLevelContainer, StatusDB.AnchorTo, StatusDB.OffsetX, StatusDB.OffsetY)
+        if StatusDB.RestingIndicator == "DEFAULT" then
+            self.RestingIndicator:SetTexture([[Interface\CharacterFrame\UI-StateIcon]])
+            self.RestingIndicator:SetTexCoord(0, 0.5, 0, 0.421875)
         else
-            self.RestingTexture:SetTexture(UUF.StatusTextureMap[StatusDB.RestingTexture])
-            self.RestingTexture:SetTexCoord(0, 1, 0, 1)
+            self.RestingIndicator:SetTexture(UUF.StatusTextureMap[StatusDB.RestingIndicator])
+            self.RestingIndicator:SetTexCoord(0, 1, 0, 1)
         end
-        self.RestingTexture.unit = unit
+        self.RestingIndicator.unit = unit
         if (IsResting() and unit == "player") and StatusDB.Resting then
-            self.RestingTexture:Show()
+            self.RestingIndicator:Show()
         else
-            self.RestingTexture:Hide()
+            self.RestingIndicator:Hide()
         end
     end
 end
 
-local function UpdateCombatTexture(self, unit)
+local function UpdateCombatIndicator(self, unit)
     local UUFDB = UUF.db.profile
     local normalizedUnit = GetNormalizedUnit(unit)
     local StatusDB = UUFDB[normalizedUnit].Indicators.Status
 
-    if self.CombatTexture then
-        self.CombatTexture:ClearAllPoints()
-        self.CombatTexture:SetSize(StatusDB.Size, StatusDB.Size)
-        self.CombatTexture:SetPoint(StatusDB.AnchorFrom, self.HighLevelContainer, StatusDB.AnchorTo, StatusDB.OffsetX, StatusDB.OffsetY)
-        if StatusDB.CombatTexture == "DEFAULT" then
-            self.CombatTexture:SetTexture([[Interface\CharacterFrame\UI-StateIcon]])
-            self.CombatTexture:SetTexCoord(0.5, 1, 0, 0.49)
+    if self.CombatIndicator then
+        self.CombatIndicator:ClearAllPoints()
+        self.CombatIndicator:SetSize(StatusDB.Size, StatusDB.Size)
+        self.CombatIndicator:SetPoint(StatusDB.AnchorFrom, self.HighLevelContainer, StatusDB.AnchorTo, StatusDB.OffsetX, StatusDB.OffsetY)
+        if StatusDB.CombatIndicator == "DEFAULT" then
+            self.CombatIndicator:SetTexture([[Interface\CharacterFrame\UI-StateIcon]])
+            self.CombatIndicator:SetTexCoord(0.5, 1, 0, 0.49)
         else
-            self.CombatTexture:SetTexture(UUF.StatusTextureMap[StatusDB.CombatTexture])
-            self.CombatTexture:SetTexCoord(0, 1, 0, 1)
+            self.CombatIndicator:SetTexture(UUF.StatusTextureMap[StatusDB.CombatIndicator])
+            self.CombatIndicator:SetTexCoord(0, 1, 0, 1)
         end
     end
 end
 
-local function UpdateRestingTexture(self, unit)
+local function UpdateRestingIndicator(self, unit)
     local UUFDB = UUF.db.profile
     local normalizedUnit = GetNormalizedUnit(unit)
     local StatusDB = UUFDB[normalizedUnit].Indicators.Status
 
-    if self.RestingTexture then
-        self.RestingTexture:ClearAllPoints()
-        self.RestingTexture:SetSize(StatusDB.Size, StatusDB.Size)
-        self.RestingTexture:SetPoint(StatusDB.AnchorFrom, self.HighLevelContainer, StatusDB.AnchorTo, StatusDB.OffsetX, StatusDB.OffsetY)
-        if StatusDB.RestingTexture == "DEFAULT" then
-            self.RestingTexture:SetTexture([[Interface\CharacterFrame\UI-StateIcon]])
-            self.RestingTexture:SetTexCoord(0, 0.5, 0, 0.421875)
+    if self.RestingIndicator then
+        self.RestingIndicator:ClearAllPoints()
+        self.RestingIndicator:SetSize(StatusDB.Size, StatusDB.Size)
+        self.RestingIndicator:SetPoint(StatusDB.AnchorFrom, self.HighLevelContainer, StatusDB.AnchorTo, StatusDB.OffsetX, StatusDB.OffsetY)
+        if StatusDB.RestingIndicator == "DEFAULT" then
+            self.RestingIndicator:SetTexture([[Interface\CharacterFrame\UI-StateIcon]])
+            self.RestingIndicator:SetTexCoord(0, 0.5, 0, 0.421875)
         else
-            self.RestingTexture:SetTexture(UUF.StatusTextureMap[StatusDB.RestingTexture])
-            self.RestingTexture:SetTexCoord(0, 1, 0, 1)
+            self.RestingIndicator:SetTexture(UUF.StatusTextureMap[StatusDB.RestingIndicator])
+            self.RestingIndicator:SetTexCoord(0, 1, 0, 1)
         end
+    end
+end
+
+local function CreateLeaderIndicator(self, unit)
+    local UUFDB = UUF.db.profile
+    local normalizedUnit = GetNormalizedUnit(unit)
+    local IndicatorsDB = UUFDB[normalizedUnit].Indicators
+
+    if not self.LeaderIndicator then
+        self.LeaderIndicator = self.HighLevelContainer:CreateTexture(ResolveFrameName(unit).."_".."LeaderIndicator", "OVERLAY")
+        self.LeaderIndicator:SetSize(IndicatorsDB.Leader.Size, IndicatorsDB.Leader.Size)
+        self.LeaderIndicator:SetPoint(IndicatorsDB.Leader.AnchorFrom, self.HighLevelContainer, IndicatorsDB.Leader.AnchorTo, IndicatorsDB.Leader.OffsetX, IndicatorsDB.Leader.OffsetY)
+        self.LeaderIndicator:SetTexture([[Interface\GroupFrame\UI-Group-LeaderIcon]])
+        self.LeaderIndicator.unit = unit
+        if (UnitIsGroupLeader(unit) or UnitIsGroupAssistant(unit)) and IndicatorsDB.Leader.Enabled then
+            self.LeaderIndicator:Show()
+        else
+            self.LeaderIndicator:Hide()
+        end
+    end
+end
+
+local function UpdateLeaderIndicator(self, unit)
+    local UUFDB = UUF.db.profile
+    local normalizedUnit = GetNormalizedUnit(unit)
+    local IndicatorsDB = UUFDB[normalizedUnit].Indicators
+
+    if self.LeaderIndicator then
+        self.LeaderIndicator:ClearAllPoints()
+        self.LeaderIndicator:SetSize(IndicatorsDB.Leader.Size, IndicatorsDB.Leader.Size)
+        self.LeaderIndicator:SetPoint(IndicatorsDB.Leader.AnchorFrom, self.HighLevelContainer, IndicatorsDB.Leader.AnchorTo, IndicatorsDB.Leader.OffsetX, IndicatorsDB.Leader.OffsetY)
+    end
+    if (UnitIsGroupLeader(unit) or UnitIsGroupAssistant(unit)) and IndicatorsDB.Leader.Enabled then
+        self.LeaderIndicator:Show()
+    else
+        self.LeaderIndicator:Hide()
     end
 end
 
@@ -888,7 +936,8 @@ function UUF:CreateUnitFrame(unit)
     if unit == "player" then CreateAlternatePowerBar(unitFrame, "player") end
     CreateMouseoverHighlight(unitFrame, unit)
     CreateRaidTargetMarker(unitFrame, unit)
-    if unit == "player" then CreateCombatTexture(unitFrame, unit) CreateRestingTexture(unitFrame, unit) end
+    if unit == "player" then CreateCombatIndicator(unitFrame, unit) CreateRestingIndicator(unitFrame, unit) end
+    if unit == "player" or unit == "target" then CreateLeaderIndicator(unitFrame, unit) end
     CreateTag(unitFrame, unit, "TagOne")
     CreateTag(unitFrame, unit, "TagTwo")
     CreateTag(unitFrame, unit, "TagThree")
@@ -922,7 +971,8 @@ function UUF:UpdateUnitFrame(unit)
     if unit == "player" then UpdateAlternatePowerBar(unitFrame, "player") end
     UpdateMouseoverHighlight(unitFrame, unit)
     UpdateRaidTargetMarker(unitFrame, unit)
-    if unit == "player" then UpdateCombatTexture(unitFrame, unit) UpdateRestingTexture(unitFrame, unit) end
+    if unit == "player" then UpdateCombatIndicator(unitFrame, unit) UpdateRestingIndicator(unitFrame, unit) end
+    if unit == "player" or unit == "target" then UpdateLeaderIndicator(unitFrame, unit) end
     UpdateTag(unitFrame, unit, "TagOne")
     UpdateTag(unitFrame, unit, "TagTwo")
     UpdateTag(unitFrame, unit, "TagThree")
