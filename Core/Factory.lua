@@ -192,6 +192,18 @@ local function UpdateUnitFrameData(self, event, unit)
     local rBG, gBG, bBG, aBG = FetchPowerBarBackgroundColour(self.unit)
     self.PowerBarBG:SetStatusBarColor(rBG, gBG, bBG, aBG)
 
+    if event == "RAID_TARGET_UPDATE" or event == "PLAYER_TARGET_CHANGED" then
+        if self.RaidTargetMarker and UUF.db.profile[GetNormalizedUnit(self.unit)].Indicators.RaidTargetMarker.Enabled then
+            local raidTargetIndex = GetRaidTargetIndex(self.unit)
+            if raidTargetIndex then
+                self.RaidTargetMarker:SetTexture(UUF:FetchRaidTargetMarkerTexture(raidTargetIndex))
+                self.RaidTargetMarker:Show()
+            else
+                self.RaidTargetMarker:Hide()
+            end
+        end
+    end
+
     -- Update Tags
     UpdateTags(self, nil, self.unit)
 end
@@ -251,6 +263,7 @@ local function CreateHealthBar(self, unit)
     self:RegisterEvent("PLAYER_REGEN_ENABLED")
     self:RegisterEvent("PLAYER_REGEN_DISABLED")
     self:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
+    self:RegisterEvent("RAID_TARGET_UPDATE")
     -- Unit Events
     self:RegisterUnitEvent("UNIT_HEALTH", UnitIsReal(unit) and unit)
     self:RegisterUnitEvent("UNIT_MAXHEALTH", UnitIsReal(unit) and unit)
@@ -667,6 +680,40 @@ local function UpdateMouseoverHighlight(self, unit)
     end
 end
 
+local function CreateRaidTargetMarker(self, unit)
+    local UUFDB = UUF.db.profile
+    local normalizedUnit = GetNormalizedUnit(unit)
+    local RaidTargetMarkerDB = UUFDB[normalizedUnit].Indicators.RaidTargetMarker
+    if not self.RaidTargetMarker then
+        self.RaidTargetMarker = self.HighLevelContainer:CreateTexture(ResolveFrameName(unit).."_".."RaidTargetMarker", "OVERLAY")
+        self.RaidTargetMarker:SetSize(RaidTargetMarkerDB.Size, RaidTargetMarkerDB.Size)
+        self.RaidTargetMarker:SetPoint(RaidTargetMarkerDB.AnchorFrom, self.HighLevelContainer, RaidTargetMarkerDB.AnchorTo, RaidTargetMarkerDB.OffsetX, RaidTargetMarkerDB.OffsetY)
+        self.RaidTargetMarker.unit = unit
+    end
+    if RaidTargetMarkerDB.Enabled then
+        self.RaidTargetMarker:Show()
+    else
+        self.RaidTargetMarker:Hide()
+    end
+end
+
+local function UpdateRaidTargetMarker(self, unit)
+    local UUFDB = UUF.db.profile
+    local normalizedUnit = GetNormalizedUnit(unit)
+    local RaidTargetMarkerDB = UUFDB[normalizedUnit].Indicators.RaidTargetMarker
+
+    if self.RaidTargetMarker then
+        self.RaidTargetMarker:ClearAllPoints()
+        self.RaidTargetMarker:SetSize(RaidTargetMarkerDB.Size, RaidTargetMarkerDB.Size)
+        self.RaidTargetMarker:SetPoint(RaidTargetMarkerDB.AnchorFrom, self.HighLevelContainer, RaidTargetMarkerDB.AnchorTo, RaidTargetMarkerDB.OffsetX, RaidTargetMarkerDB.OffsetY)
+    end
+    if RaidTargetMarkerDB.Enabled then
+        self.RaidTargetMarker:Show()
+    else
+        self.RaidTargetMarker:Hide()
+    end
+end
+
 local function CreateTag(self, unit, tag)
     if not unit or not tag then return end
     local UUFDB = UUF.db.profile
@@ -745,6 +792,7 @@ function UUF:CreateUnitFrame(unit)
     CreatePowerBar(unitFrame, unit)
     if unit == "player" then CreateAlternatePowerBar(unitFrame, "player") end
     CreateMouseoverHighlight(unitFrame, unit)
+    CreateRaidTargetMarker(unitFrame, unit)
     CreateTag(unitFrame, unit, "TagOne")
     CreateTag(unitFrame, unit, "TagTwo")
     CreateTag(unitFrame, unit, "TagThree")
@@ -777,6 +825,7 @@ function UUF:UpdateUnitFrame(unit)
     UpdatePowerBar(unitFrame, unit)
     if unit == "player" then UpdateAlternatePowerBar(unitFrame, "player") end
     UpdateMouseoverHighlight(unitFrame, unit)
+    UpdateRaidTargetMarker(unitFrame, unit)
     UpdateTag(unitFrame, unit, "TagOne")
     UpdateTag(unitFrame, unit, "TagTwo")
     UpdateTag(unitFrame, unit, "TagThree")

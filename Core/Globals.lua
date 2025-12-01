@@ -69,6 +69,17 @@ UUF.LayoutConfig = {
     RIGHT       = { anchor="RIGHT",     offsetMultiplier=0.5, isCenter=true },
 }
 
+local IndexToRaidTargetMarker = {
+    [1] = "STAR",
+    [2] = "CIRCLE",
+    [3] = "DIAMOND",
+    [4] = "TRIANGLE",
+    [5] = "MOON",
+    [6] = "SQUARE",
+    [7] = "CROSS",
+    [8] = "SKULL",
+}
+
 function UUF:Print(MSG)
     print(UUF.AddOnName .. ":|r " .. MSG)
 end
@@ -230,4 +241,10 @@ function UUF:IsCDMAnchorActive()
     local ECDM = _G["EssentialCooldownViewer"]
     local CDMAnchor = _G["UUF_CDMAnchor"]
     return  ECDM and ECDM:IsShown() and CDMAnchor and CDMAnchor:IsShown()
+end
+
+function UUF:FetchRaidTargetMarkerTexture(index)
+    if not index then return end
+    if issecretvalue and issecretvalue(index) then return end
+    return IndexToRaidTargetMarker[index]
 end

@@ -388,6 +388,13 @@ local function CreatePowerBarSettings(containerParent, unit)
         end
 
         DeepDisable(UUFGUI.TextContainer, false, nil)
+
+        if PowerBarDB.ColourByType then
+            TextColourPicker:SetDisabled(true)
+        else
+            TextColourPicker:SetDisabled(false)
+        end
+
         ScrollFrame:DoLayout()
     end
 
@@ -472,7 +479,7 @@ local function CreatePowerBarSettings(containerParent, unit)
     EnableTextCheckBox:SetLabel("Enable Power Text")
     EnableTextCheckBox:SetValue(PowerBarDB.Text.Enabled)
     EnableTextCheckBox:SetRelativeWidth(0.5)
-    EnableTextCheckBox:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.Text.Enabled = value UUF:UpdateUnitFrame(unit) DeepDisable(TextContainer, not value, EnableTextCheckBox) end)
+    EnableTextCheckBox:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.Text.Enabled = value UUF:UpdateUnitFrame(unit) DeepDisable(TextContainer, not value, EnableTextCheckBox) GUIRefresh() end)
     UUFGUI.EnableTextCheckBox = EnableTextCheckBox
     TextToggleContainer:AddChild(EnableTextCheckBox)
 
@@ -480,12 +487,12 @@ local function CreatePowerBarSettings(containerParent, unit)
     ColourTextByPowerType:SetLabel("Colour Text By Power Type")
     ColourTextByPowerType:SetValue(PowerBarDB.Text.ColourByType)
     ColourTextByPowerType:SetRelativeWidth(0.5)
-    ColourTextByPowerType:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.Text.ColourByType = value UUF:UpdateUnitFrame(unit) end)
+    ColourTextByPowerType:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.Text.ColourByType = value UUF:UpdateUnitFrame(unit) TextColourPicker:SetDisabled(value) end)
     TextToggleContainer:AddChild(ColourTextByPowerType)
 
     local TextColourContainer = CreateInlineGroup(TextContainer, "Colours")
 
-    local TextColourPicker = AG:Create("ColorPicker")
+    TextColourPicker = AG:Create("ColorPicker")
     TextColourPicker:SetLabel("Text Colour")
     TextColourPicker:SetColor(unpack(PowerBarDB.Text.Colour))
     TextColourPicker:SetHasAlpha(true)
@@ -672,7 +679,7 @@ local function CreateIndicatorSettings(containerParent, unit)
     EnableCheckBox:SetLabel("Enable Mouseover Highlight")
     EnableCheckBox:SetValue(IndicatorsDB.MouseoverHighlight.Enabled)
     EnableCheckBox:SetRelativeWidth(0.5)
-    EnableCheckBox:SetCallback("OnValueChanged", function(_, _, value) IndicatorsDB.MouseoverHighlight.Enabled = value UUF:UpdateUnitFrame(unit) end)
+    EnableCheckBox:SetCallback("OnValueChanged", function(_, _, value) IndicatorsDB.MouseoverHighlight.Enabled = value UUF:UpdateUnitFrame(unit) DeepDisable(MouseoverHighlightContainer, not IndicatorsDB.MouseoverHighlight.Enabled, EnableCheckBox) end)
     MouseoverHighlightContainer:AddChild(EnableCheckBox)
 
     local ColourPicker = AG:Create("ColorPicker")
@@ -682,6 +689,57 @@ local function CreateIndicatorSettings(containerParent, unit)
     ColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) IndicatorsDB.MouseoverHighlight.Colour = {r, g, b, a} UUF:UpdateUnitFrame(unit) end)
     ColourPicker:SetRelativeWidth(0.5)
     MouseoverHighlightContainer:AddChild(ColourPicker)
+
+    local RaidTargetMarkerContainer = CreateInlineGroup(ScrollFrame, "Raid Target Marker")
+    local EnableRTMCheckBox = AG:Create("CheckBox")
+    EnableRTMCheckBox:SetLabel("Enable Raid Target Marker")
+    EnableRTMCheckBox:SetValue(IndicatorsDB.RaidTargetMarker.Enabled)
+    EnableRTMCheckBox:SetRelativeWidth(1)
+    EnableRTMCheckBox:SetCallback("OnValueChanged", function(_, _, value) IndicatorsDB.RaidTargetMarker.Enabled = value UUF:UpdateUnitFrame(unit) DeepDisable(RaidTargetMarkerContainer, not IndicatorsDB.RaidTargetMarker.Enabled, EnableRTMCheckBox) end)
+    RaidTargetMarkerContainer:AddChild(EnableRTMCheckBox)
+
+    local AnchorFromRTMDropdown = AG:Create("Dropdown")
+    AnchorFromRTMDropdown:SetLabel("Anchor From")
+    AnchorFromRTMDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
+    AnchorFromRTMDropdown:SetValue(IndicatorsDB.RaidTargetMarker.AnchorFrom)
+    AnchorFromRTMDropdown:SetCallback("OnValueChanged", function(_, _, value) IndicatorsDB.RaidTargetMarker.AnchorFrom = value UUF:UpdateUnitFrame(unit) end)
+    AnchorFromRTMDropdown:SetRelativeWidth(0.5)
+    RaidTargetMarkerContainer:AddChild(AnchorFromRTMDropdown)
+
+    local AnchorToRTMDropdown = AG:Create("Dropdown")
+    AnchorToRTMDropdown:SetLabel("Anchor To")
+    AnchorToRTMDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
+    AnchorToRTMDropdown:SetValue(IndicatorsDB.RaidTargetMarker.AnchorTo)
+    AnchorToRTMDropdown:SetCallback("OnValueChanged", function(_, _, value) IndicatorsDB.RaidTargetMarker.AnchorTo = value UUF:UpdateUnitFrame(unit) end)
+    AnchorToRTMDropdown:SetRelativeWidth(0.5)
+    RaidTargetMarkerContainer:AddChild(AnchorToRTMDropdown)
+
+    local OffsetXRTMSlider = AG:Create("Slider")
+    OffsetXRTMSlider:SetLabel("Offset X")
+    OffsetXRTMSlider:SetValue(IndicatorsDB.RaidTargetMarker.OffsetX)
+    OffsetXRTMSlider:SetSliderValues(-3000, 3000, 0.1)
+    OffsetXRTMSlider:SetCallback("OnValueChanged", function(_, _, value) IndicatorsDB.RaidTargetMarker.OffsetX = value UUF:UpdateUnitFrame(unit) end)
+    OffsetXRTMSlider:SetRelativeWidth(0.33)
+    RaidTargetMarkerContainer:AddChild(OffsetXRTMSlider)
+
+    local OffsetYRTMSlider = AG:Create("Slider")
+    OffsetYRTMSlider:SetLabel("Offset Y")
+    OffsetYRTMSlider:SetValue(IndicatorsDB.RaidTargetMarker.OffsetY)
+    OffsetYRTMSlider:SetSliderValues(-3000, 3000, 0.1)
+    OffsetYRTMSlider:SetCallback("OnValueChanged", function(_, _, value) IndicatorsDB.RaidTargetMarker.OffsetY = value UUF:UpdateUnitFrame(unit) end)
+    OffsetYRTMSlider:SetRelativeWidth(0.33)
+    RaidTargetMarkerContainer:AddChild(OffsetYRTMSlider)
+
+    local SizeRTMSlider = AG:Create("Slider")
+    SizeRTMSlider:SetLabel("Size")
+    SizeRTMSlider:SetValue(IndicatorsDB.RaidTargetMarker.Size)
+    SizeRTMSlider:SetSliderValues(1, 500, 1)
+    SizeRTMSlider:SetCallback("OnValueChanged", function(_, _, value) IndicatorsDB.RaidTargetMarker.Size = value UUF:UpdateUnitFrame(unit) end)
+    SizeRTMSlider:SetRelativeWidth(0.33)
+    RaidTargetMarkerContainer:AddChild(SizeRTMSlider)
+
+    DeepDisable(MouseoverHighlightContainer, not IndicatorsDB.MouseoverHighlight.Enabled, EnableCheckBox)
+    DeepDisable(RaidTargetMarkerContainer, not IndicatorsDB.RaidTargetMarker.Enabled, EnableRTMCheckBox)
 
     return ScrollFrame
 end

@@ -134,6 +134,14 @@ UUF.Defaults = {
                     Enabled = true,
                     Colour = {1, 1, 1, 1},
                 },
+                RaidTargetMarker = {
+                    Enabled = true,
+                    Size = 24,
+                    AnchorFrom = "CENTER",
+                    AnchorTo = "CENTER",
+                    OffsetX = 0,
+                    OffsetY = 0,
+                },
                 Status = {
                     Combat = false,
                     Resting = false,
@@ -255,7 +263,15 @@ UUF.Defaults = {
                 MouseoverHighlight = {
                     Enabled = true,
                     Colour = {1, 1, 1, 1},
-                }
+                },
+                RaidTargetMarker = {
+                    Enabled = true,
+                    Size = 24,
+                    AnchorFrom = "CENTER",
+                    AnchorTo = "CENTER",
+                    OffsetX = 0,
+                    OffsetY = 0,
+                },
             },
             Tags = {
                 TagOne = {
@@ -334,7 +350,15 @@ UUF.Defaults = {
                 MouseoverHighlight = {
                     Enabled = true,
                     Colour = {1, 1, 1, 1},
-                }
+                },
+                RaidTargetMarker = {
+                    Enabled = true,
+                    Size = 24,
+                    AnchorFrom = "CENTER",
+                    AnchorTo = "CENTER",
+                    OffsetX = 0,
+                    OffsetY = 0,
+                },
             },
             Tags = {
                 TagOne = {
@@ -392,7 +416,15 @@ UUF.Defaults = {
                 MouseoverHighlight = {
                     Enabled = true,
                     Colour = {1, 1, 1, 1},
-                }
+                },
+                RaidTargetMarker = {
+                    Enabled = true,
+                    Size = 24,
+                    AnchorFrom = "CENTER",
+                    AnchorTo = "CENTER",
+                    OffsetX = 0,
+                    OffsetY = 0,
+                },
             },
             Tags = {
                 TagOne = {
@@ -450,7 +482,15 @@ UUF.Defaults = {
                 MouseoverHighlight = {
                     Enabled = true,
                     Colour = {1, 1, 1, 1},
-                }
+                },
+                RaidTargetMarker = {
+                    Enabled = true,
+                    Size = 24,
+                    AnchorFrom = "CENTER",
+                    AnchorTo = "CENTER",
+                    OffsetX = 0,
+                    OffsetY = 0,
+                },
             },
             Tags = {
                 TagOne = {
@@ -561,6 +601,14 @@ UUF.Defaults = {
                 MouseoverHighlight = {
                     Enabled = true,
                     Colour = {1, 1, 1, 1},
+                },
+                RaidTargetMarker = {
+                    Enabled = true,
+                    Size = 24,
+                    AnchorFrom = "CENTER",
+                    AnchorTo = "CENTER",
+                    OffsetX = 0,
+                    OffsetY = 0,
                 },
             },
             Tags = {
