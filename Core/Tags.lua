@@ -3,6 +3,8 @@ local UUFTags = {}
 function UUF:RegisterTag(name, func)
     UUFTags[name] = func
 end
+local hasBrackets = UUF.HealthTagLayout == "()"
+local hasSquareBrackets = UUF.HealthTagLayout == "[]"
 
 local function FetchUnitColour(unit)
     if UnitIsPlayer(unit) then
@@ -32,8 +34,26 @@ UUF:RegisterTag("curhp:abbr", function(unit) if UnitIsDeadOrGhost(unit) then ret
 UUF:RegisterTag("maxhp", function(unit) return UnitHealthMax(unit) end)
 UUF:RegisterTag("maxhp:abbr", function(unit) return AbbreviateLargeNumbers(UnitHealthMax(unit)) end)
 UUF:RegisterTag("perhp", function(unit) return string.format("%.0f%%", UnitHealthPercent(unit, false, true)) end)
-UUF:RegisterTag("curhpperhp", function(unit) if UnitIsDeadOrGhost(unit) then return "Dead" end return string.format("%s %s %.0f%%", UnitHealth(unit), UUF.HealthSeparator, UnitHealthPercent(unit, false, true)) end)
-UUF:RegisterTag("curhpperhp:abbr", function(unit) if UnitIsDeadOrGhost(unit) then return "Dead" end return string.format("%s %s %.0f%%", AbbreviateLargeNumbers(UnitHealth(unit)), UUF.HealthSeparator, UnitHealthPercent(unit, false, true)) end)
+UUF:RegisterTag("curhpperhp", function(unit)
+    if UnitIsDeadOrGhost(unit) then return "Dead" end
+    if hasBrackets then
+        return string.format("%s (%.0f%%)", UnitHealth(unit), UnitHealthPercent(unit, false, true))
+    elseif hasSquareBrackets then
+        return string.format("%s [%.0f%%]", UnitHealth(unit), UnitHealthPercent(unit, false, true))
+    else
+        return string.format("%s %s %.0f%%", UnitHealth(unit), UUF.HealthTagLayout, UnitHealthPercent(unit, false, true))
+    end
+end)
+UUF:RegisterTag("curhpperhp:abbr", function(unit)
+    if UnitIsDeadOrGhost(unit) then return "Dead" end
+    if hasBrackets then
+        return string.format("%s (%.0f%%)", AbbreviateLargeNumbers(UnitHealth(unit)), UnitHealthPercent(unit, false, true))
+    elseif hasSquareBrackets then
+        return string.format("%s [%.0f%%]", AbbreviateLargeNumbers(UnitHealth(unit)), UnitHealthPercent(unit, false, true))
+    else
+        return string.format("%s %s %.0f%%", AbbreviateLargeNumbers(UnitHealth(unit)), UUF.HealthTagLayout, UnitHealthPercent(unit, false, true))
+    end
+end)
 UUF:RegisterTag("absorbs", function(unit) local absorbs = AbbreviateLargeNumbers(UnitGetTotalAbsorbs(unit)) return absorbs end)
 
 UUF:RegisterTag("curpp", function(unit) return UnitPower(unit) end)

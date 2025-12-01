@@ -41,7 +41,7 @@ UUF.Defaults = {
                     [18] = {1, 0.61, 0}         -- Pain
                 },
             },
-            HealthSeparator = "||",
+            HealthTagLayout = "•",
         },
         player = {
             Enabled = true,

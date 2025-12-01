@@ -73,6 +73,29 @@ local RestingTextures = {
     ["RESTING7"] = "|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Resting\\Resting7.tga:18:18|t",
 }
 
+local HealthTagLayouts = {
+    {
+        [""] = "999K 100%",
+        ["•"] = "999K • 100%",
+        ["-"] = "999K- 100%",
+        ["||"] = "999K | 100%",
+        ["/"] = "999K / 100%",
+        ["»"] = "999K » 100%",
+        ["()"] = "999K (100%)",
+        ["[]"] = "999K [100%]"
+    },
+    {
+        "",
+        "•",
+        "-",
+        "||",
+        "/",
+        "»",
+        "()",
+        "[]"
+    }
+}
+
 local function GetNormalizedUnit(unit)
     local normalizedUnit = unit:match("^boss%d+$") and "boss" or unit
     return normalizedUnit
@@ -1140,6 +1163,14 @@ function UUF:CreateGUI()
 
     local function DrawTagsSettings(GUIContainer)
         local ScrollFrame = CreateScrollFrame(GUIContainer)
+
+        local HealthTagLayout = AG:Create("Dropdown")
+        HealthTagLayout:SetLabel("Health Tag Layout")
+        HealthTagLayout:SetList(HealthTagLayouts[1], HealthTagLayouts[2])
+        HealthTagLayout:SetValue(UUF.db.profile.General.HealthTagLayout)
+        HealthTagLayout:SetRelativeWidth(1)
+        HealthTagLayout:SetCallback("OnValueChanged", function(_, _, value) UUF.HealthTagLayout = value UUF.db.profile.General.HealthTagLayout = value for unit in pairs(UnitToFrameName) do UUF:UpdateUnitFrame(unit) end end)
+        ScrollFrame:AddChild(HealthTagLayout)
 
         local function DrawTagContainer(TagContainer, tagGroup)
             local TagsList = UUF:GetTagsForGroup(tagGroup)

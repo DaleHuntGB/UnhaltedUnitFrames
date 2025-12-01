@@ -9,7 +9,7 @@ function UnhaltedUF:OnInitialize()
             UUF.db.profile[k] = v
         end
     end
-    UUF.HealthSeparator = UUF.db.profile.General.HealthSeparator or "-"
+    UUF.HealthTagLayout = UUF.db.profile.General.HealthTagLayout or "-"
     if UUF.db.global.UseGlobalProfile then UUF.db:SetProfile(UUF.db.global.GlobalProfile or "Default") end
 end
 
