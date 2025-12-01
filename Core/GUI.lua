@@ -317,27 +317,35 @@ local function CreateTagSettings(containerParent, unit, tagDB)
 
     local HealthTagDropdown = AG:Create("Dropdown")
     HealthTagDropdown:SetLabel("Health Tag")
-    HealthTagDropdown:SetList(UUF:GetTagsForGroup("Health"))
+    HealthTagDropdown:SetList(UUF:GetTagsForGroup("Health")[1], UUF:GetTagsForGroup("Health")[2])
     HealthTagDropdown:SetValue(nil)
     HealthTagDropdown:SetCallback("OnValueChanged", function(_, _, value) TagsDB[tagDB].Tag = "[" .. value .. "]" UUF:UpdateUnitFrame(unit) TagEditBox:SetText("[" .. value .. "]") HealthTagDropdown:SetValue(nil) end)
-    HealthTagDropdown:SetRelativeWidth(0.33)
+    HealthTagDropdown:SetRelativeWidth(0.5)
     TagSelectContainer:AddChild(HealthTagDropdown)
 
     local PowerTagDropdown = AG:Create("Dropdown")
     PowerTagDropdown:SetLabel("Power Tag")
-    PowerTagDropdown:SetList(UUF:GetTagsForGroup("Power"))
+    PowerTagDropdown:SetList(UUF:GetTagsForGroup("Power")[1], UUF:GetTagsForGroup("Power")[2])
     PowerTagDropdown:SetValue(nil)
     PowerTagDropdown:SetCallback("OnValueChanged", function(_, _, value) TagsDB[tagDB].Tag = "[" .. value .. "]" UUF:UpdateUnitFrame(unit) TagEditBox:SetText("[" .. value .. "]") PowerTagDropdown:SetValue(nil) end)
-    PowerTagDropdown:SetRelativeWidth(0.33)
+    PowerTagDropdown:SetRelativeWidth(0.5)
     TagSelectContainer:AddChild(PowerTagDropdown)
 
     local NameTagDropdown = AG:Create("Dropdown")
     NameTagDropdown:SetLabel("Name Tag")
-    NameTagDropdown:SetList(UUF:GetTagsForGroup("Name"))
+    NameTagDropdown:SetList(UUF:GetTagsForGroup("Name")[1], UUF:GetTagsForGroup("Name")[2])
     NameTagDropdown:SetValue(nil)
     NameTagDropdown:SetCallback("OnValueChanged", function(_, _, value) TagsDB[tagDB].Tag = "[" .. value .. "]" UUF:UpdateUnitFrame(unit) TagEditBox:SetText("[" .. value .. "]") NameTagDropdown:SetValue(nil) end)
-    NameTagDropdown:SetRelativeWidth(0.33)
+    NameTagDropdown:SetRelativeWidth(0.5)
     TagSelectContainer:AddChild(NameTagDropdown)
+
+    local MiscTagDropdown = AG:Create("Dropdown")
+    MiscTagDropdown:SetLabel("Misc Tag")
+    MiscTagDropdown:SetList(UUF:GetTagsForGroup("Misc")[1], UUF:GetTagsForGroup("Misc")[2])
+    MiscTagDropdown:SetValue(nil)
+    MiscTagDropdown:SetCallback("OnValueChanged", function(_, _, value) TagsDB[tagDB].Tag = "[" .. value .. "]" UUF:UpdateUnitFrame(unit) TagEditBox:SetText("[" .. value .. "]") MiscTagDropdown:SetValue(nil) end)
+    MiscTagDropdown:SetRelativeWidth(0.5)
+    TagSelectContainer:AddChild(MiscTagDropdown)
 
     return containerParent
 end
@@ -1174,7 +1182,12 @@ function UUF:CreateGUI()
 
         local function DrawTagContainer(TagContainer, tagGroup)
             local TagsList = UUF:GetTagsForGroup(tagGroup)
-            for Tag, Desc in pairs(TagsList) do
+            local TagDescriptions = TagsList[1]
+            local TagOrder = TagsList[2]
+
+            for _, Tag in ipairs(TagOrder) do
+                local Desc = TagDescriptions[Tag] or Tag
+
                 local TagDesc = AG:Create("Label")
                 TagDesc:SetText("|cFFFFCC00" .. Desc .. "|r")
                 TagDesc:SetRelativeWidth(0.3)
@@ -1204,6 +1217,8 @@ function UUF:CreateGUI()
                 DrawTagContainer(TagContainer, "Name")
             elseif subGroup == "Power" then
                 DrawTagContainer(TagContainer, "Power")
+            elseif subGroup == "Misc" then
+                DrawTagContainer(TagContainer, "Misc")
             end
             ScrollFrame:DoLayout()
         end
@@ -1214,6 +1229,7 @@ function UUF:CreateGUI()
             { text = "Health", value = "Health" },
             { text = "Power", value = "Power" },
             { text = "Name", value = "Name" },
+            { text = "Misc", value = "Misc" },
         })
         GUIContainerTabGroup:SetCallback("OnGroupSelected", SelectedGroup)
         GUIContainerTabGroup:SelectTab("Health")
@@ -1266,6 +1282,37 @@ function UUF:CreateGUI()
         GUIContainer:AddChild(UnitFrameTabGroup)
     end
 
+    local function DrawTargetSettings(GUIContainer)
+        local function UnitFrameSelectedGroup(UnitFrameContainer, _, UnitFrameGroup)
+            UnitFrameContainer:ReleaseChildren()
+            if UnitFrameGroup == "Frame" then
+                CreateUnitFrameFrameSettings(UnitFrameContainer, "target")
+            elseif UnitFrameGroup == "HealPrediction" then
+                CreateHealPredictionSettings(UnitFrameContainer, "target")
+            elseif UnitFrameGroup == "PowerBar" then
+                CreatePowerBarSettings(UnitFrameContainer, "target")
+            elseif UnitFrameGroup == "Indicators" then
+                CreateIndicatorSettings(UnitFrameContainer, "target")
+            elseif UnitFrameGroup == "Tags" then
+                CreateTagsSettings(UnitFrameContainer, "target")
+            end
+        end
+
+        local UnitFrameTabGroup = AG:Create("TabGroup")
+        UnitFrameTabGroup:SetLayout("Flow")
+        UnitFrameTabGroup:SetFullWidth(true)
+        UnitFrameTabGroup:SetTabs({
+            { text = "Frame", value = "Frame"},
+            { text = "Heal Prediction", value = "HealPrediction"},
+            { text = "Power Bar", value = "PowerBar"},
+            { text = "Indicators", value = "Indicators"},
+            { text = "Tags", value = "Tags"},
+        })
+        UnitFrameTabGroup:SetCallback("OnGroupSelected", UnitFrameSelectedGroup)
+        UnitFrameTabGroup:SelectTab("Frame")
+        GUIContainer:AddChild(UnitFrameTabGroup)
+    end
+
     local function SelectedGroup(GUIContainer, _, MainGroup)
         GUIContainer:ReleaseChildren()
 
@@ -1280,6 +1327,7 @@ function UUF:CreateGUI()
         elseif MainGroup == "player" then
             DrawPlayerSettings(Wrapper)
         elseif MainGroup == "target" then
+            DrawTargetSettings(Wrapper)
         elseif MainGroup == "targettarget" then
         elseif MainGroup == "pet" then
         elseif MainGroup == "focus" then
