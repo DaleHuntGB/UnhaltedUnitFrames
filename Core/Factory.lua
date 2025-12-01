@@ -204,6 +204,13 @@ local function UpdateUnitFrameData(self, event, unit)
         end
     end
 
+    if (event == "PLAYER_REGEN_ENABLED" or event == "PLAYER_REGEN_DISABLED") then
+        local inCombat  = UUF.db.profile[GetNormalizedUnit("player")].Indicators.Status.Combat  and UnitAffectingCombat("player")
+        local isResting = UUF.db.profile[GetNormalizedUnit("player")].Indicators.Status.Resting and IsResting()
+        if self.CombatTexture then if inCombat then self.CombatTexture:Show() else self.CombatTexture:Hide() end end
+        if self.RestingTexture then if isResting and not inCombat then self.RestingTexture:Show() else self.RestingTexture:Hide() end end
+    end
+
     -- Update Tags
     UpdateTags(self, nil, self.unit)
 end
@@ -714,6 +721,94 @@ local function UpdateRaidTargetMarker(self, unit)
     end
 end
 
+local function CreateCombatTexture(self, unit)
+    local UUFDB = UUF.db.profile
+    local normalizedUnit = GetNormalizedUnit(unit)
+    local StatusDB = UUFDB[normalizedUnit].Indicators.Status
+
+    if not self.CombatTexture then
+        self.CombatTexture = self.HighLevelContainer:CreateTexture(ResolveFrameName(unit).."_".."CombatTexture", "OVERLAY")
+        self.CombatTexture:SetSize(StatusDB.Size, StatusDB.Size)
+        self.CombatTexture:SetPoint(StatusDB.AnchorFrom, self.HighLevelContainer, StatusDB.AnchorTo, StatusDB.OffsetX, StatusDB.OffsetY)
+        if StatusDB.CombatTexture == "DEFAULT" then
+            self.CombatTexture:SetTexture([[Interface\CharacterFrame\UI-StateIcon]])
+            self.CombatTexture:SetTexCoord(0.5, 1, 0, 0.49)
+        else
+            self.CombatTexture:SetTexture(UUF.StatusTextureMap[StatusDB.CombatTexture])
+            self.CombatTexture:SetTexCoord(0, 1, 0, 1)
+        end
+        self.CombatTexture.unit = unit
+        if UnitAffectingCombat(unit) and StatusDB.Combat then
+            self.CombatTexture:Show()
+        else
+            self.CombatTexture:Hide()
+        end
+    end
+end
+
+local function CreateRestingTexture(self, unit)
+    local UUFDB = UUF.db.profile
+    local normalizedUnit = GetNormalizedUnit(unit)
+    local StatusDB = UUFDB[normalizedUnit].Indicators.Status
+
+    if not self.RestingTexture then
+        self.RestingTexture = self.HighLevelContainer:CreateTexture(ResolveFrameName(unit).."_".."RestingTexture", "OVERLAY")
+        self.RestingTexture:SetSize(StatusDB.Size, StatusDB.Size)
+        self.RestingTexture:SetPoint(StatusDB.AnchorFrom, self.HighLevelContainer, StatusDB.AnchorTo, StatusDB.OffsetX, StatusDB.OffsetY)
+        if StatusDB.RestingTexture == "DEFAULT" then
+            self.RestingTexture:SetTexture([[Interface\CharacterFrame\UI-StateIcon]])
+            self.RestingTexture:SetTexCoord(0, 0.5, 0, 0.421875)
+        else
+            self.RestingTexture:SetTexture(UUF.StatusTextureMap[StatusDB.RestingTexture])
+            self.RestingTexture:SetTexCoord(0, 1, 0, 1)
+        end
+        self.RestingTexture.unit = unit
+        if (IsResting() and unit == "player") and StatusDB.Resting then
+            self.RestingTexture:Show()
+        else
+            self.RestingTexture:Hide()
+        end
+    end
+end
+
+local function UpdateCombatTexture(self, unit)
+    local UUFDB = UUF.db.profile
+    local normalizedUnit = GetNormalizedUnit(unit)
+    local StatusDB = UUFDB[normalizedUnit].Indicators.Status
+
+    if self.CombatTexture then
+        self.CombatTexture:ClearAllPoints()
+        self.CombatTexture:SetSize(StatusDB.Size, StatusDB.Size)
+        self.CombatTexture:SetPoint(StatusDB.AnchorFrom, self.HighLevelContainer, StatusDB.AnchorTo, StatusDB.OffsetX, StatusDB.OffsetY)
+        if StatusDB.CombatTexture == "DEFAULT" then
+            self.CombatTexture:SetTexture([[Interface\CharacterFrame\UI-StateIcon]])
+            self.CombatTexture:SetTexCoord(0.5, 1, 0, 0.49)
+        else
+            self.CombatTexture:SetTexture(UUF.StatusTextureMap[StatusDB.CombatTexture])
+            self.CombatTexture:SetTexCoord(0, 1, 0, 1)
+        end
+    end
+end
+
+local function UpdateRestingTexture(self, unit)
+    local UUFDB = UUF.db.profile
+    local normalizedUnit = GetNormalizedUnit(unit)
+    local StatusDB = UUFDB[normalizedUnit].Indicators.Status
+
+    if self.RestingTexture then
+        self.RestingTexture:ClearAllPoints()
+        self.RestingTexture:SetSize(StatusDB.Size, StatusDB.Size)
+        self.RestingTexture:SetPoint(StatusDB.AnchorFrom, self.HighLevelContainer, StatusDB.AnchorTo, StatusDB.OffsetX, StatusDB.OffsetY)
+        if StatusDB.RestingTexture == "DEFAULT" then
+            self.RestingTexture:SetTexture([[Interface\CharacterFrame\UI-StateIcon]])
+            self.RestingTexture:SetTexCoord(0, 0.5, 0, 0.421875)
+        else
+            self.RestingTexture:SetTexture(UUF.StatusTextureMap[StatusDB.RestingTexture])
+            self.RestingTexture:SetTexCoord(0, 1, 0, 1)
+        end
+    end
+end
+
 local function CreateTag(self, unit, tag)
     if not unit or not tag then return end
     local UUFDB = UUF.db.profile
@@ -793,6 +888,7 @@ function UUF:CreateUnitFrame(unit)
     if unit == "player" then CreateAlternatePowerBar(unitFrame, "player") end
     CreateMouseoverHighlight(unitFrame, unit)
     CreateRaidTargetMarker(unitFrame, unit)
+    if unit == "player" then CreateCombatTexture(unitFrame, unit) CreateRestingTexture(unitFrame, unit) end
     CreateTag(unitFrame, unit, "TagOne")
     CreateTag(unitFrame, unit, "TagTwo")
     CreateTag(unitFrame, unit, "TagThree")
@@ -826,6 +922,7 @@ function UUF:UpdateUnitFrame(unit)
     if unit == "player" then UpdateAlternatePowerBar(unitFrame, "player") end
     UpdateMouseoverHighlight(unitFrame, unit)
     UpdateRaidTargetMarker(unitFrame, unit)
+    if unit == "player" then UpdateCombatTexture(unitFrame, unit) UpdateRestingTexture(unitFrame, unit) end
     UpdateTag(unitFrame, unit, "TagOne")
     UpdateTag(unitFrame, unit, "TagTwo")
     UpdateTag(unitFrame, unit, "TagThree")

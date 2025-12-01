@@ -151,14 +151,14 @@ UUF.Defaults = {
                 },
                 Status = {
                     Combat = false,
-                    Resting = false,
+                    Resting = true,
                     Size = 24,
                     AnchorFrom = "CENTER",
                     AnchorTo = "TOPLEFT",
                     OffsetX = 3,
                     OffsetY = -3,
                     RestingTexture = "DEFAULT",
-                    CombatTexture = "DEFAULT",
+                    CombatTexture = "RESTING5",
                 },
             },
             Tags = {
