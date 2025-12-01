@@ -248,3 +248,16 @@ function UUF:FetchRaidTargetMarkerTexture(index)
     if issecretvalue and issecretvalue(index) then return end
     return IndexToRaidTargetMarker[index]
 end
+
+function UUF:CopyTable(defaultTable)
+    if type(defaultTable) ~= "table" then return defaultTable end
+    local newTable = {}
+    for k, v in pairs(defaultTable) do
+        if type(v) == "table" then
+            newTable[k] = UUF:CopyTable(v)
+        else
+            newTable[k] = v
+        end
+    end
+    return newTable
+end

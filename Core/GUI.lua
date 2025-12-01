@@ -49,6 +49,14 @@ local ReactionNames = {
     [8] = "Exalted",
 }
 
+local ClassificationNames = {
+    ["worldboss"] = "World Boss",
+    ["rareelite"] = "Rare Elite",
+    ["elite"] = "Elite",
+    ["rare"] = "Rare",
+    ["normal"] = "Normal",
+}
+
 local CombatTextures = {
     ["DEFAULT"] = "|TInterface\\CharacterFrame\\UI-StateIcon:20:20:0:0:64:64:32:64:0:31|t",
     ["COMBAT0"] = "|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Combat\\Combat0.tga:18:18|t",
@@ -999,6 +1007,65 @@ function UUF:CreateGUI()
         --------------------------------------------------------------
         local CustomColoursContainer = CreateInlineGroup(ScrollFrame, "Custom Colours")
 
+        local DefaultColours = {
+                Reaction = {
+                    [1] = {204/255, 64/255, 64/255},            -- Hated
+                    [2] = {204/255, 64/255, 64/255},            -- Hostile
+                    [3] = {204/255, 128/255, 64/255},           -- Unfriendly
+                    [4] = {204/255, 204/255, 64/255},           -- Neutral
+                    [5] = {64/255, 204/255, 64/255},            -- Friendly
+                    [6] = {64/255, 204/255, 64/255},            -- Honored
+                    [7] = {64/255, 204/255, 64/255},            -- Revered
+                    [8] = {64/255, 204/255, 64/255},            -- Exalted
+                },
+                Power = {
+                    [0] = {0, 0, 1},            -- Mana
+                    [1] = {1, 0, 0},            -- Rage
+                    [2] = {1, 0.5, 0.25},       -- Focus
+                    [3] = {1, 1, 0},            -- Energy
+                    [6] = {0, 0.82, 1},         -- Runic Power
+                    [8] = {0.75, 0.52, 0.9},     -- Lunar Power
+                    [11] = {0, 0.5, 1},         -- Maelstrom
+                    [13] = {0.4, 0, 0.8},       -- Insanity
+                    [17] = {0.79, 0.26, 0.99},  -- Fury
+                    [18] = {1, 0.61, 0}         -- Pain
+                },
+                Classification = {
+                    ["worldboss"] = {204/255, 64/255, 64/255},
+                    ["rareelite"] = {128/255, 64/255, 204/255},
+                    ["elite"] = {255/255, 204/255, 64/255},
+                    ["rare"] = {0/255, 112/255, 204/255},
+                    ["normal"] = {255/255, 255/255, 255/255}
+                }
+        }
+
+        local ResetPowerColoursButton = AG:Create("Button")
+        ResetPowerColoursButton:SetText("Reset Power Colours")
+        ResetPowerColoursButton:SetRelativeWidth(0.33)
+        ResetPowerColoursButton:SetCallback("OnClick", function()
+            UUF.db.profile.General.CustomColours.Power = UUF:CopyTable(DefaultColours.Power)
+            for unit in pairs(UnitToFrameName) do UUF:UpdateUnitFrame(unit) end
+        end)
+        CustomColoursContainer:AddChild(ResetPowerColoursButton)
+
+        local ResetReactionColoursButton = AG:Create("Button")
+        ResetReactionColoursButton:SetText("Reset Reaction Colours")
+        ResetReactionColoursButton:SetRelativeWidth(0.33)
+        ResetReactionColoursButton:SetCallback("OnClick", function()
+            UUF.db.profile.General.CustomColours.Reaction = UUF:CopyTable(DefaultColours.Reaction)
+            for unit in pairs(UnitToFrameName) do UUF:UpdateUnitFrame(unit) end
+        end)
+        CustomColoursContainer:AddChild(ResetReactionColoursButton)
+
+        local ResetClassificationColoursButton = AG:Create("Button")
+        ResetClassificationColoursButton:SetText("Reset Classification Colours")
+        ResetClassificationColoursButton:SetRelativeWidth(0.33)
+        ResetClassificationColoursButton:SetCallback("OnClick", function()
+            UUF.db.profile.General.CustomColours.Classification = UUF:CopyTable(DefaultColours.Classification)
+            for unit in pairs(UnitToFrameName) do UUF:UpdateUnitFrame(unit) end
+        end)
+        CustomColoursContainer:AddChild(ResetClassificationColoursButton)
+
         local PowerColours = CreateInlineGroup(CustomColoursContainer, "Power")
         local PowerOrder = {0, 1, 2, 3, 6, 8, 11, 13, 17, 18}
         for _, powerType in ipairs(PowerOrder) do
@@ -1009,20 +1076,34 @@ function UUF:CreateGUI()
             PowerColour:SetColor(R, G, B)
             PowerColour:SetCallback("OnValueChanged", function(widget, _, r, g, b) UUF.db.profile.General.CustomColours.Power[powerType] = {r, g, b} for unit in pairs(UnitToFrameName) do UUF:UpdateUnitFrame(unit) end end)
             PowerColour:SetHasAlpha(false)
-            PowerColour:SetRelativeWidth(0.25)
+            PowerColour:SetRelativeWidth(0.19)
             PowerColours:AddChild(PowerColour)
         end
 
         local ReactionColours = CreateInlineGroup(CustomColoursContainer, "Reaction")
-        for reactionType, reactionColour in pairs(UUF.db.profile.General.CustomColours.Reaction) do
+        local ReactionOrder = {1, 2, 3, 4, 5, 6, 7, 8}
+        for _, reactionType in ipairs(ReactionOrder) do
             local ReactionColour = AG:Create("ColorPicker")
             ReactionColour:SetLabel(ReactionNames[reactionType])
-            local R, G, B = unpack(reactionColour)
+            local R, G, B = unpack(UUF.db.profile.General.CustomColours.Reaction[reactionType])
             ReactionColour:SetColor(R, G, B)
             ReactionColour:SetCallback("OnValueChanged", function(widget, _, r, g, b) UUF.db.profile.General.CustomColours.Reaction[reactionType] = {r, g, b} for unit in pairs(UnitToFrameName) do UUF:UpdateUnitFrame(unit) end end)
             ReactionColour:SetHasAlpha(false)
             ReactionColour:SetRelativeWidth(0.25)
             ReactionColours:AddChild(ReactionColour)
+        end
+
+        local ClassificationColours = CreateInlineGroup(CustomColoursContainer, "Classification")
+        local ClassificationOrder = {"normal", "rare", "elite", "rareelite", "worldboss"}
+        for _, classification in ipairs(ClassificationOrder) do
+            local ClassificationColour = AG:Create("ColorPicker")
+            ClassificationColour:SetLabel(ClassificationNames[classification])
+            local R, G, B = unpack(UUF.db.profile.General.CustomColours.Classification[classification])
+            ClassificationColour:SetColor(R, G, B)
+            ClassificationColour:SetCallback("OnValueChanged", function(widget, _, r, g, b) UUF.db.profile.General.CustomColours.Classification[classification] = {r, g, b} for unit in pairs(UnitToFrameName) do UUF:UpdateUnitFrame(unit) end end)
+            ClassificationColour:SetHasAlpha(false)
+            ClassificationColour:SetRelativeWidth(0.19)
+            ClassificationColours:AddChild(ClassificationColour)
         end
         ScrollFrame:DoLayout()
     end

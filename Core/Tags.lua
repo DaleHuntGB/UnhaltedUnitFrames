@@ -6,6 +6,20 @@ end
 local hasBrackets = UUF.HealthTagLayout == "()"
 local hasSquareBrackets = UUF.HealthTagLayout == "[]"
 
+local Classification = {
+    worldboss  = "Boss",
+    rareelite  = "Rare Elite",
+    elite      = "Elite",
+    rare       = "Rare",
+}
+
+local ClassificationShort = {
+    worldboss  = "B",
+    rareelite  = "R+",
+    elite      = "+",
+    rare       = "R",
+}
+
 local function FetchUnitColour(unit)
     if UnitIsPlayer(unit) then
         local _, class = UnitClass(unit)
@@ -20,10 +34,25 @@ local function FetchUnitColour(unit)
     return 1, 1, 1
 end
 
+local function FetchUnitClassificationColour(classification)
+    local CustomColoursDB = UUF.db.profile.General.CustomColours
+    local classificationColour = CustomColoursDB.Classification[classification]
+    if classificationColour then return classificationColour[1], classificationColour[2], classificationColour[3] end
+    local normalColour = CustomColoursDB.Classification["normal"]
+    if normalColour then return normalColour[1], normalColour[2], normalColour[3] end
+    return 1, 1, 1
+end
+
+local function FetchUnitColouredLevel(unit)
+    local unitLevel = UnitEffectiveLevel(unit)
+    local unitDifficulty = GetCreatureDifficultyColor(unitLevel > 0 and unitLevel or 999)
+    return unitLevel, unitDifficulty.r, unitDifficulty.g, unitDifficulty.b
+end
+
 function UUF:EvaluateTagString(unit, text)
     if not unit or not text then return "" end
     local tag = text:match("^%[(.-)%]$")
-    if not tag then return "" end
+    if not tag and tag ~= "" then return "" end
     local func = UUFTags[tag]
     if not func then return "" end
     return tostring(func(unit) or "")
@@ -34,26 +63,8 @@ UUF:RegisterTag("curhp:abbr", function(unit) if UnitIsDeadOrGhost(unit) then ret
 UUF:RegisterTag("maxhp", function(unit) return UnitHealthMax(unit) end)
 UUF:RegisterTag("maxhp:abbr", function(unit) return AbbreviateLargeNumbers(UnitHealthMax(unit)) end)
 UUF:RegisterTag("perhp", function(unit) return string.format("%.0f%%", UnitHealthPercent(unit, false, true)) end)
-UUF:RegisterTag("curhpperhp", function(unit)
-    if UnitIsDeadOrGhost(unit) then return "Dead" end
-    if hasBrackets then
-        return string.format("%s (%.0f%%)", UnitHealth(unit), UnitHealthPercent(unit, false, true))
-    elseif hasSquareBrackets then
-        return string.format("%s [%.0f%%]", UnitHealth(unit), UnitHealthPercent(unit, false, true))
-    else
-        return string.format("%s %s %.0f%%", UnitHealth(unit), UUF.HealthTagLayout, UnitHealthPercent(unit, false, true))
-    end
-end)
-UUF:RegisterTag("curhpperhp:abbr", function(unit)
-    if UnitIsDeadOrGhost(unit) then return "Dead" end
-    if hasBrackets then
-        return string.format("%s (%.0f%%)", AbbreviateLargeNumbers(UnitHealth(unit)), UnitHealthPercent(unit, false, true))
-    elseif hasSquareBrackets then
-        return string.format("%s [%.0f%%]", AbbreviateLargeNumbers(UnitHealth(unit)), UnitHealthPercent(unit, false, true))
-    else
-        return string.format("%s %s %.0f%%", AbbreviateLargeNumbers(UnitHealth(unit)), UUF.HealthTagLayout, UnitHealthPercent(unit, false, true))
-    end
-end)
+UUF:RegisterTag("curhpperhp", function(unit) if UnitIsDeadOrGhost(unit) then return "Dead" end if hasBrackets then return string.format("%s (%.0f%%)", UnitHealth(unit), UnitHealthPercent(unit, false, true)) elseif hasSquareBrackets then return string.format("%s [%.0f%%]", UnitHealth(unit), UnitHealthPercent(unit, false, true)) else return string.format("%s %s %.0f%%", UnitHealth(unit), UUF.HealthTagLayout, UnitHealthPercent(unit, false, true)) end end)
+UUF:RegisterTag("curhpperhp:abbr", function(unit) if UnitIsDeadOrGhost(unit) then return "Dead" end if hasBrackets then return string.format("%s (%.0f%%)", AbbreviateLargeNumbers(UnitHealth(unit)), UnitHealthPercent(unit, false, true)) elseif hasSquareBrackets then return string.format("%s [%.0f%%]", AbbreviateLargeNumbers(UnitHealth(unit)), UnitHealthPercent(unit, false, true)) else return string.format("%s %s %.0f%%", AbbreviateLargeNumbers(UnitHealth(unit)), UUF.HealthTagLayout, UnitHealthPercent(unit, false, true)) end end)
 UUF:RegisterTag("absorbs", function(unit) local absorbs = AbbreviateLargeNumbers(UnitGetTotalAbsorbs(unit)) return absorbs end)
 
 UUF:RegisterTag("curpp", function(unit) return UnitPower(unit) end)
@@ -70,12 +81,19 @@ UUF:RegisterTag("name:namewithtargettarget", function(unit) local unitName = Uni
 UUF:RegisterTag("name:namewithtargettarget:colour", function(unit) local unitName = UnitName(unit) or "" local unitNameR, unitNameG, unitNameB = FetchUnitColour(unit) local unitColour = string.format("|cff%02x%02x%02x", unitNameR*255, unitNameG*255, unitNameB*255) local unitTarget = unit .. "target" if not UnitExists(unitTarget) then return unitColour .. unitName .. "|r" end local unitTargetName = UnitName(unitTarget) or "" local unitTargetR, unitTargetG, unitTargetB = FetchUnitColour(unitTarget) local unitTargetColour = string.format("|cff%02x%02x%02x", unitTargetR*255, unitTargetG*255, unitTargetB*255) return string.format("%s%s|r |cFFFFFFFF»|r %s%s|r", unitColour, unitName, unitTargetColour, unitTargetName ) end)
 UUF:RegisterTag("name:short", function(unit) local name = UnitName(unit) if not name then return "" end if #name > 10 then return string.sub(name, 1, 7) .. "..." else return name end end)
 
-UUF:RegisterTag("level", function(unit) return UnitLevel(unit) end)
-UUF:RegisterTag("level:colour", function(unit) if UnitCanAttack("player", unit) then local unitLevel = UnitEffectiveLevel(unit) local difficultyColour = GetCreatureDifficultyColor((unitLevel > 0) and unitLevel or 999) return string.format("|cff%02x%02x%02x%d|r", difficultyColour.r*255, difficultyColour.g*255, difficultyColour.b*255, unitLevel) end end)
-UUF:RegisterTag("classification", function(unit) local classif = UnitClassification(unit) if classif == "worldboss" then return "Boss" elseif classif == "rareelite" then return "Rare Elite" elseif classif == "elite" then return "Elite" elseif classif == "rare" then return "Rare" else return "" end end)
-UUF:RegisterTag("classification:short", function(unit) local classif = UnitClassification(unit) if classif == "worldboss" then return "B" elseif classif == "rareelite" then return "R+" elseif classif == "elite" then return "+" elseif classif == "rare" then return "R" else return "" end end)
+UUF:RegisterTag("level", function(unit) return tostring(UnitLevel(unit)) end)
+UUF:RegisterTag("level:colour", function(unit) local unitLevel = UnitEffectiveLevel(unit) local unitDifficulty = GetCreatureDifficultyColor(unitLevel > 0 and unitLevel or 999) return string.format("|cff%02x%02x%02x%s|r", unitDifficulty.r*255, unitDifficulty.g*255, unitDifficulty.b*255, unitLevel) end)
+UUF:RegisterTag("classification", function(unit) return Classification[UnitClassification(unit)] or "" end)
+UUF:RegisterTag("classification:colour", function(unit) local unitClassification = UnitClassification(unit) local unitClassificationText = Classification[unitClassification] if not unitClassificationText then return "" end local unitClassificationR, unitClassificationG, unitClassificationB = FetchUnitClassificationColour(unitClassification) return string.format("|cff%02x%02x%02x%s|r", unitClassificationR*255, unitClassificationG*255, unitClassificationB*255, unitClassificationText) end)
+UUF:RegisterTag("classification:short", function(unit) return ClassificationShort[UnitClassification(unit)] or "" end)
+UUF:RegisterTag("classification:short:colour", function(unit) local unitClassification = UnitClassification(unit) local unitClassificationText = ClassificationShort[unitClassification] if not unitClassificationText then return "" end local unitClassificationR, unitClassificationG, unitClassificationB = FetchUnitClassificationColour(unitClassification) return string.format("|cff%02x%02x%02x%s|r", unitClassificationR*255, unitClassificationG*255, unitClassificationB*255, unitClassificationText) end)
+UUF:RegisterTag("levelclassification", function(unit) local unitLevel = UnitLevel(unit) local unitClassificationText = Classification[UnitClassification(unit)] return unitClassificationText and (unitLevel .. " " .. unitClassificationText) or tostring(unitLevel) end)
+UUF:RegisterTag("levelclassification:short", function(unit) local unitLevel = UnitLevel(unit) local unitClassificationText = ClassificationShort[UnitClassification(unit)] return unitClassificationText and (unitLevel .. " " .. unitClassificationText) or tostring(unitLevel) end)
+UUF:RegisterTag("levelclassification:colour", function(unit) local unitLevel, unitLevelR, unitLevelG, unitLevelB = FetchUnitColouredLevel(unit) local unitClassification = UnitClassification(unit) local unitClassificationText = Classification[unitClassification] if unitClassificationText then local unitClassificationTextR, unitClassificationTextG, unitClassificationTextB = FetchUnitClassificationColour(unitClassification) return string.format( "|cff%02x%02x%02x%d|r |cff%02x%02x%02x%s|r", unitLevelR*255, unitLevelG*255, unitLevelB*255, unitLevel, unitClassificationTextR*255, unitClassificationTextG*255, unitClassificationTextB*255, unitClassificationText ) end return string.format("|cff%02x%02x%02x%d|r", unitLevelR*255, unitLevelG*255, unitLevelB*255, unitLevel) end)
+UUF:RegisterTag("levelclassification:colour:short", function(unit) local unitLevel, unitLevelR, unitLevelG, unitLevelB = FetchUnitColouredLevel(unit) local unitClassification = UnitClassification(unit) local unitClassificationText = ClassificationShort[unitClassification] if unitClassificationText then local unitClassificationTextR, unitClassificationTextG, unitClassificationTextB = FetchUnitClassificationColour(unitClassification) return string.format( "|cff%02x%02x%02x%d|r |cff%02x%02x%02x%s|r", unitLevelR*255, unitLevelG*255, unitLevelB*255, unitLevel, unitClassificationTextR*255, unitClassificationTextG*255, unitClassificationTextB*255, unitClassificationText ) end return string.format("|cff%02x%02x%02x%d|r", unitLevelR*255, unitLevelG*255, unitLevelB*255, unitLevel) end)
 UUF:RegisterTag("group", function(unit) if not unit or not UnitExists(unit) then return "" end if not UnitInRaid(unit) then return "" end local name, server = UnitName(unit) if(server and server ~= '') then name = string.format('%s-%s', name, server) end for i=1, GetNumGroupMembers() do local raidName, _, group = GetRaidRosterInfo(i) if(raidName == name) then return "G" .. group end end end)
 UUF:RegisterTag("creature", function(unit) if not unit or not UnitExists(unit) then return "" end return UnitCreatureFamily(unit) or UnitCreatureType(unit) end)
+
 local HealthTags = {
     {
         ["curhp"] = "Current Health",
@@ -152,15 +170,29 @@ local MiscTags = {
         ["level"] = "Unit Level",
         ["level:colour"] = "Unit Level (Coloured)",
         ["classification"] = "Unit Classification",
+        ["classification:colour"] = "Unit Classification (Coloured)",
         ["classification:short"] = "Unit Classification (Short)",
+        ["classification:short:colour"] = "Unit Classification (Coloured, Short)",
+        ["levelclassification"] = "Unit Level with Classification",
+        ["levelclassification:short"] = "Unit Level with Classification (Short)",
+        ["levelclassification:colour"] = "Unit Level with Classification (Coloured)",
+        ["levelclassification:colour:short"] = "Unit Level with Classification (Coloured, Short)",
         ["group"] = "Group Number",
+        ["creature"] = "Creature Type/Family",
     },
     {
         "level",
         "level:colour",
         "classification",
+        "classification:colour",
         "classification:short",
+        "classification:short:colour",
+        "levelclassification",
+        "levelclassification:short",
+        "levelclassification:colour",
+        "levelclassification:colour:short",
         "group",
+        "creature",
     }
 }
 
