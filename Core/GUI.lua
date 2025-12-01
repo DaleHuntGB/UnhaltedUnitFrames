@@ -437,7 +437,6 @@ local function CreatePowerBarSettings(containerParent, unit)
         ScrollFrame:DoLayout()
     end
 
-
     local EnableCheckBox = AG:Create("CheckBox")
     EnableCheckBox:SetLabel("Enable Power Bar")
     EnableCheckBox:SetValue(PowerBarDB.Enabled)
@@ -777,8 +776,115 @@ local function CreateIndicatorSettings(containerParent, unit)
     SizeRTMSlider:SetRelativeWidth(0.33)
     RaidTargetMarkerContainer:AddChild(SizeRTMSlider)
 
+    if unit == "player" then
+
+        local Status = IndicatorsDB.Status
+
+        local StatusContainer = CreateInlineGroup(ScrollFrame, "Status Indicator")
+
+        local function GUIRefresh()
+            local statusActive = (Status.Combat or Status.Resting)
+
+            for _, child in ipairs(StatusContainer.children) do
+                if child ~= UUFGUI.DisplayCombatIndicatorCheckBox
+                and child ~= UUFGUI.DisplayRestingIndicatorCheckBox then
+                    DeepDisable(child, not statusActive, nil)
+                end
+            end
+
+            -- These two dropdowns depend on the individual toggle state
+            DeepDisable(UUFGUI.CombatTextureIndicatorDropdown, not Status.Combat)
+            DeepDisable(UUFGUI.RestingTextureIndicatorDropdown, not Status.Resting)
+        end
+
+        local StatusDesc = AG:Create("Label")
+        StatusDesc:SetText(UUF.InfoButton .. "|cFF8080FFCombat|r / |cFF8080FFResting|r Indicators share the same position & size settings.")
+        StatusDesc:SetFont("Fonts\\FRIZQT__.TTF", 12, "OUTLINE")
+        StatusDesc:SetFullWidth(true)
+        StatusDesc:SetJustifyH("CENTER")
+        StatusContainer:AddChild(StatusDesc)
+
+        local DisplayCombatIndicatorCheckBox = AG:Create("CheckBox")
+        DisplayCombatIndicatorCheckBox:SetLabel("Display Combat Indicator")
+        DisplayCombatIndicatorCheckBox:SetValue(Status.Combat)
+        DisplayCombatIndicatorCheckBox:SetRelativeWidth(0.5)
+        DisplayCombatIndicatorCheckBox:SetCallback("OnValueChanged", function(_, _, value) Status.Combat = value UUF:UpdateUnitFrame(unit) GUIRefresh() end)
+        UUFGUI.DisplayCombatIndicatorCheckBox = DisplayCombatIndicatorCheckBox
+        StatusContainer:AddChild(DisplayCombatIndicatorCheckBox)
+
+        local DisplayRestingIndicatorCheckBox = AG:Create("CheckBox")
+        DisplayRestingIndicatorCheckBox:SetLabel("Display Resting Indicator")
+        DisplayRestingIndicatorCheckBox:SetValue(Status.Resting)
+        DisplayRestingIndicatorCheckBox:SetRelativeWidth(0.5)
+        DisplayRestingIndicatorCheckBox:SetCallback("OnValueChanged", function(_, _, value) Status.Resting = value UUF:UpdateUnitFrame(unit) GUIRefresh() end)
+        UUFGUI.DisplayRestingIndicatorCheckBox = DisplayRestingIndicatorCheckBox
+        StatusContainer:AddChild(DisplayRestingIndicatorCheckBox)
+
+        local CombatTextureIndicatorDropdown = AG:Create("Dropdown")
+        CombatTextureIndicatorDropdown:SetList(CombatTextures)
+        CombatTextureIndicatorDropdown:SetLabel("Combat Indicator Texture")
+        CombatTextureIndicatorDropdown:SetValue(Status.CombatTexture)
+        CombatTextureIndicatorDropdown:SetRelativeWidth(0.5)
+        CombatTextureIndicatorDropdown:SetCallback("OnValueChanged", function(_, _, value) Status.CombatTexture = value UUF:UpdateUnitFrame(unit) end)
+        UUFGUI.CombatTextureIndicatorDropdown = CombatTextureIndicatorDropdown
+        StatusContainer:AddChild(CombatTextureIndicatorDropdown)
+
+        local RestingTextureIndicatorDropdown = AG:Create("Dropdown")
+        RestingTextureIndicatorDropdown:SetList(RestingTextures)
+        RestingTextureIndicatorDropdown:SetLabel("Resting Indicator Texture")
+        RestingTextureIndicatorDropdown:SetValue(Status.RestingTexture)
+        RestingTextureIndicatorDropdown:SetRelativeWidth(0.5)
+        RestingTextureIndicatorDropdown:SetCallback("OnValueChanged", function(_, _, value) Status.RestingTexture = value UUF:UpdateUnitFrame(unit) end)
+        UUFGUI.RestingTextureIndicatorDropdown = RestingTextureIndicatorDropdown
+        StatusContainer:AddChild(RestingTextureIndicatorDropdown)
+
+        local StatusAnchorFromDropdown = AG:Create("Dropdown")
+        StatusAnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
+        StatusAnchorFromDropdown:SetLabel("Anchor From")
+        StatusAnchorFromDropdown:SetValue(Status.AnchorFrom)
+        StatusAnchorFromDropdown:SetRelativeWidth(0.5)
+        StatusAnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) Status.AnchorFrom = value UUF:UpdateUnitFrame(unit) end)
+        StatusContainer:AddChild(StatusAnchorFromDropdown)
+
+        local StatusAnchorToDropdown = AG:Create("Dropdown")
+        StatusAnchorToDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
+        StatusAnchorToDropdown:SetLabel("Anchor To")
+        StatusAnchorToDropdown:SetValue(Status.AnchorTo)
+        StatusAnchorToDropdown:SetRelativeWidth(0.5)
+        StatusAnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) Status.AnchorTo = value UUF:UpdateUnitFrame(unit) end)
+        StatusContainer:AddChild(StatusAnchorToDropdown)
+
+        local StatusOffsetXSlider = AG:Create("Slider")
+        StatusOffsetXSlider:SetLabel("Offset X")
+        StatusOffsetXSlider:SetValue(Status.OffsetX)
+        StatusOffsetXSlider:SetSliderValues(-1000, 1000, 1)
+        StatusOffsetXSlider:SetRelativeWidth(0.33)
+        StatusOffsetXSlider:SetCallback("OnValueChanged", function(_, _, value) Status.OffsetX = value UUF:UpdateUnitFrame(unit) end)
+        StatusContainer:AddChild(StatusOffsetXSlider)
+
+        local StatusOffsetYSlider = AG:Create("Slider")
+        StatusOffsetYSlider:SetLabel("Offset Y")
+        StatusOffsetYSlider:SetValue(Status.OffsetY)
+        StatusOffsetYSlider:SetSliderValues(-1000, 1000, 1)
+        StatusOffsetYSlider:SetRelativeWidth(0.33)
+        StatusOffsetYSlider:SetCallback("OnValueChanged", function(_, _, value) Status.OffsetY = value UUF:UpdateUnitFrame(unit) end)
+        StatusContainer:AddChild(StatusOffsetYSlider)
+
+        local StatusSizeSlider = AG:Create("Slider")
+        StatusSizeSlider:SetLabel("Size")
+        StatusSizeSlider:SetValue(Status.Size)
+        StatusSizeSlider:SetSliderValues(8, 128, 1)
+        StatusSizeSlider:SetRelativeWidth(0.33)
+        StatusSizeSlider:SetCallback("OnValueChanged", function(_, _, value) Status.Size = value UUF:UpdateUnitFrame(unit) end)
+        StatusContainer:AddChild(StatusSizeSlider)
+
+        GUIRefresh()
+    end
+
     DeepDisable(MouseoverHighlightContainer, not IndicatorsDB.MouseoverHighlight.Enabled, EnableCheckBox)
     DeepDisable(RaidTargetMarkerContainer, not IndicatorsDB.RaidTargetMarker.Enabled, EnableRTMCheckBox)
+
+    ScrollFrame:DoLayout()
 
     return ScrollFrame
 end
