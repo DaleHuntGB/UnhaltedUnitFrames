@@ -159,6 +159,7 @@ local function UpdateUnitPowerBar(self, event, unit)
         end
         self.PowerBarText:SetText(unitPower)
     end
+
     if self.AlternatePowerBar and unit == "player" then
         self.AlternatePowerBar:SetMinMaxValues(0, UnitPowerMax("player", Enum.PowerType.Mana))
         self.AlternatePowerBar:SetValue(alternatePower)
@@ -415,6 +416,7 @@ local function UpdateAbsorbBar(self, unit)
         self:RegisterEvent("UNIT_ABSORB_AMOUNT_CHANGED")
     else
         self:UnregisterEvent("UNIT_ABSORB_AMOUNT_CHANGED")
+        self.AbsorbBar:Hide()
     end
 end
 
