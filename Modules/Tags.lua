@@ -52,11 +52,23 @@ end
 function UUF:EvaluateTagString(unit, text)
     if not unit or not text then return "" end
     local tag = text:match("^%[(.-)%]$")
-    if not tag and tag ~= "" then return "" end
+    if not tag or tag == "" then return "" end
+
+    if UUF.TestMode and unit:match("^boss%d+$") then
+        local fakeTag = UUF:FetchTestTag(tag)
+        if fakeTag ~= nil then
+            if type(fakeTag) ~= "string" then
+                return tostring(fakeTag)
+            end
+            return fakeTag
+        end
+    end
+
     local func = UUFTags[tag]
-    if not func then return "" end
     return tostring(func(unit) or "")
 end
+
+
 
 UUF:RegisterTag("curhp", function(unit) if UnitIsDeadOrGhost(unit) then return "Dead" end return UnitHealth(unit) end)
 UUF:RegisterTag("curhp:abbr", function(unit) if UnitIsDeadOrGhost(unit) then return "Dead" end return AbbreviateLargeNumbers(UnitHealth(unit)) end)
@@ -93,6 +105,36 @@ UUF:RegisterTag("levelclassification:colour", function(unit) local unitLevel, un
 UUF:RegisterTag("levelclassification:colour:short", function(unit) local unitLevel, unitLevelR, unitLevelG, unitLevelB = FetchUnitColouredLevel(unit) local unitClassification = UnitClassification(unit) local unitClassificationText = ClassificationShort[unitClassification] if unitClassificationText then local unitClassificationTextR, unitClassificationTextG, unitClassificationTextB = FetchUnitClassificationColour(unitClassification) return string.format( "|cff%02x%02x%02x%d|r |cff%02x%02x%02x%s|r", unitLevelR*255, unitLevelG*255, unitLevelB*255, unitLevel, unitClassificationTextR*255, unitClassificationTextG*255, unitClassificationTextB*255, unitClassificationText ) end return string.format("|cff%02x%02x%02x%d|r", unitLevelR*255, unitLevelG*255, unitLevelB*255, unitLevel) end)
 UUF:RegisterTag("group", function(unit) if not unit or not UnitExists(unit) then return "" end if not UnitInRaid(unit) then return "" end local name, server = UnitName(unit) if(server and server ~= '') then name = string.format('%s-%s', name, server) end for i=1, GetNumGroupMembers() do local raidName, _, group = GetRaidRosterInfo(i) if(raidName == name) then return "G" .. group end end end)
 UUF:RegisterTag("creature", function(unit) if not unit or not UnitExists(unit) then return "" end return UnitCreatureFamily(unit) or UnitCreatureType(unit) end)
+
+function UUF:FetchTestTag(tag)
+    local testTags = {
+        -- Health
+        ["curhp"] = 7500,
+        ["curhp:abbr"] = string.format("%s", AbbreviateLargeNumbers(7500)),
+        ["curhpperhp"] = (function() if hasBrackets then return string.format("%s (%.0f%%)", 7500, 75) elseif hasSquareBrackets then return string.format("%s [%.0f%%]", 7500, 75) else return string.format("%s %s %.0f%%", 7500, UUF.HealthTagLayout, 75) end end)(),
+        ["curhpperhp:abbr"] = (function() local cur = AbbreviateLargeNumbers(7500) if hasBrackets then return string.format("%s (%.0f%%)", cur, 75) elseif hasSquareBrackets then return string.format("%s [%.0f%%]", cur, 75) else return string.format("%s %s %.0f%%", cur, UUF.HealthTagLayout, 75) end end)(),
+        ["maxhp"] = 10000,
+        ["maxhp:abbr"] = string.format("%s", AbbreviateLargeNumbers(10000)),
+        ["perhp"] = "75%",
+        ["absorbs"] = string.format("%s", AbbreviateLargeNumbers(2000)),
+
+        -- Name
+        ["name"] = (function() return UnitName("player") end)(),
+        ["name:colour"] = (function() local r, g, b = FetchUnitColour("player") local unitName = UnitName("player") or "" return string.format("|cff%02x%02x%02x%s|r", r*255, g*255, b*255, unitName) end)(),
+        ["name:targettarget"] = (function() return UnitName("player") end)(),
+        ["name:targettarget:colour"] = (function() local r, g, b = FetchUnitColour("player") local unitName = UnitName("player") or "" return string.format("|cff%02x%02x%02x%s|r", r*255, g*255, b*255, unitName) end)(),
+        ["name:namewithtargettarget"] = (function() return string.format("%s |cFFFFFFFF»|r %s", UnitName("player"), UnitName("player")) end)(),
+        ["name:namewithtargettarget:colour"] = (function() local r1, g1, b1 = FetchUnitColour("player") local r2, g2, b2 = FetchUnitColour("player") local unitName1 = UnitName("player") or "" local unitName2 = UnitName("player") or "" return string.format("|cff%02x%02x%02x%s|r |cFFFFFFFF»|r |cff%02x%02x%02x%s|r", r1*255, g1*255, b1*255, unitName1, r2*255, g2*255, b2*255, unitName2) end)(),
+
+        -- Power
+        ["curpp"] = 3000,
+        ["curpp:abbr"] = string.format("%s", AbbreviateLargeNumbers(3000)),
+        ["maxpp"] = 5000,
+        ["maxpp:abbr"] = string.format("%s", AbbreviateLargeNumbers(5000)),
+        ["perpp"] = "60%",
+    }
+    return testTags[tag]
+end
 
 local HealthTags = {
     {
