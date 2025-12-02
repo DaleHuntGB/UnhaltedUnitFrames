@@ -259,8 +259,12 @@ local function CreateHealthBar(self, unit)
         self.HealthBG:SetPoint("TOPLEFT", unitContainer, "TOPLEFT", 1, -1)
         self.HealthBG:SetSize(FrameDB.Width - 2, FrameDB.Height - 2)
         self.HealthBG:SetStatusBarTexture(UUF.Media.BackgroundTexture)
-        self.HealthBG:SetStatusBarColor(FrameDB.BGColour[1], FrameDB.BGColour[2], FrameDB.BGColour[3], FrameDB.BGColour[4])
-        self.HealthBG:SetReverseFill(true)
+        self.HealthBG:SetStatusBarColor(unpack(FrameDB.BGColour))
+        if FrameDB.InverseHealthBar then
+            self.HealthBG:SetReverseFill(false)
+        else
+            self.HealthBG:SetReverseFill(true)
+        end
     end
 
     if not self.HealthBar then
@@ -268,9 +272,13 @@ local function CreateHealthBar(self, unit)
         self.HealthBar:SetPoint("TOPLEFT", unitContainer, "TOPLEFT", 1, -1)
         self.HealthBar:SetSize(FrameDB.Width - 2, FrameDB.Height - 2)
         self.HealthBar:SetStatusBarTexture(UUF.Media.ForegroundTexture)
-        local r, g, b, a = FetchUnitColour(unit)
-        self.HealthBar:SetStatusBarColor(r, g, b, a)
+        self.HealthBar:SetStatusBarColor(FetchUnitColour(unit))
         self.HealthBar.unit = unit
+        if FrameDB.InverseHealthBar then
+            self.HealthBar:SetReverseFill(true)
+        else
+            self.HealthBar:SetReverseFill(false)
+        end
     end
 
     if not self.HighLevelContainer then
@@ -310,6 +318,11 @@ local function UpdateHealthBar(self, unit)
         self.HealthBG:SetStatusBarColor(FrameDB.BGColour[1], FrameDB.BGColour[2], FrameDB.BGColour[3], FrameDB.BGColour[4])
         self.HealthBG:SetStatusBarTexture(UUF.Media.BackgroundTexture)
         self.HealthBG:SetSize(FrameDB.Width - 2, FrameDB.Height - 2)
+        if FrameDB.InverseHealthBar then
+            self.HealthBG:SetReverseFill(false)
+        else
+            self.HealthBG:SetReverseFill(true)
+        end
     end
 
     if self.HealthBar then
@@ -319,6 +332,11 @@ local function UpdateHealthBar(self, unit)
         self.HealthBar:SetStatusBarColor(r, g, b, a)
         self.HealthBar:SetStatusBarTexture(UUF.Media.ForegroundTexture)
         self.HealthBar:SetSize(FrameDB.Width - 2, FrameDB.Height - 2)
+        if FrameDB.InverseHealthBar then
+            self.HealthBar:SetReverseFill(true)
+        else
+            self.HealthBar:SetReverseFill(false)
+        end
     end
 
     if self.HighLevelContainer then

@@ -65,6 +65,7 @@ UUF.Defaults = {
                 FGColour = {26/255, 26/255, 26/255, 1.0},
                 BGColour = {26/255, 26/255, 26/255, 1.0},
                 AnchorToEssentialCooldowns = false,
+                InverseHealthBar = false,
             },
             HealPrediction = {
                 Absorbs = {
@@ -230,6 +231,7 @@ UUF.Defaults = {
                 BGColour = {26/255, 26/255, 26/255, 1.0},
                 DarkenFactor = 0.75,
                 AnchorToEssentialCooldowns = false,
+                InverseHealthBar = false,
             },
             HealPrediction = {
                 Absorbs = {
@@ -371,6 +373,7 @@ UUF.Defaults = {
                 ReactionColour = true,
                 FGColour = {26/255, 26/255, 26/255, 1.0},
                 BGColour = {26/255, 26/255, 26/255, 1.0},
+                InverseHealthBar = false,
             },
             HealPrediction = {
                 Absorbs = {
@@ -463,6 +466,7 @@ UUF.Defaults = {
                 ReactionColour = true,
                 FGColour = {26/255, 26/255, 26/255, 1.0},
                 BGColour = {26/255, 26/255, 26/255, 1.0},
+                InverseHealthBar = false,
             },
             HealPrediction = {
                 Absorbs = {
@@ -534,6 +538,7 @@ UUF.Defaults = {
                 ReactionColour = true,
                 FGColour = {26/255, 26/255, 26/255, 1.0},
                 BGColour = {26/255, 26/255, 26/255, 1.0},
+                InverseHealthBar = false,
             },
             HealPrediction = {
                 Absorbs = {
@@ -606,6 +611,7 @@ UUF.Defaults = {
                 BGColour = {26/255, 26/255, 26/255, 1.0},
                 GrowthDirection = "DOWN",
                 Spacing = 1,
+                InverseHealthBar = false,
             },
             HealPrediction = {
                 Absorbs = {
