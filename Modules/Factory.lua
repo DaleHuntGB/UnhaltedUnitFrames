@@ -204,7 +204,7 @@ local function UpdateUnitFrameData(self, event, unit)
         end
     end
 
-    if (event == "PLAYER_REGEN_ENABLED" or event == "PLAYER_REGEN_DISABLED") then
+    if (event == "PLAYER_REGEN_ENABLED" or event == "PLAYER_REGEN_DISABLED" or event == "PLAYER_ENTERING_WORLD") then
         local inCombat  = UUF.db.profile[GetNormalizedUnit("player")].Indicators.Status.Combat  and UnitAffectingCombat("player")
         local isResting = UUF.db.profile[GetNormalizedUnit("player")].Indicators.Status.Resting and IsResting()
         if self.CombatIndicator then if inCombat then self.CombatIndicator:Show() else self.CombatIndicator:Hide() end end
@@ -743,11 +743,11 @@ local function CreateCombatIndicator(self, unit)
         self.CombatIndicator = self.HighLevelContainer:CreateTexture(ResolveFrameName(unit).."_".."CombatIndicator", "OVERLAY")
         self.CombatIndicator:SetSize(StatusDB.Size, StatusDB.Size)
         self.CombatIndicator:SetPoint(StatusDB.AnchorFrom, self.HighLevelContainer, StatusDB.AnchorTo, StatusDB.OffsetX, StatusDB.OffsetY)
-        if StatusDB.CombatIndicator == "DEFAULT" then
+        if StatusDB.CombatTexture == "DEFAULT" then
             self.CombatIndicator:SetTexture([[Interface\CharacterFrame\UI-StateIcon]])
             self.CombatIndicator:SetTexCoord(0.5, 1, 0, 0.49)
         else
-            self.CombatIndicator:SetTexture(UUF.StatusTextureMap[StatusDB.CombatIndicator])
+            self.CombatIndicator:SetTexture(UUF.StatusTextureMap[StatusDB.CombatTexture])
             self.CombatIndicator:SetTexCoord(0, 1, 0, 1)
         end
         self.CombatIndicator.unit = unit
@@ -768,11 +768,11 @@ local function CreateRestingIndicator(self, unit)
         self.RestingIndicator = self.HighLevelContainer:CreateTexture(ResolveFrameName(unit).."_".."RestingIndicator", "OVERLAY")
         self.RestingIndicator:SetSize(StatusDB.Size, StatusDB.Size)
         self.RestingIndicator:SetPoint(StatusDB.AnchorFrom, self.HighLevelContainer, StatusDB.AnchorTo, StatusDB.OffsetX, StatusDB.OffsetY)
-        if StatusDB.RestingIndicator == "DEFAULT" then
+        if StatusDB.RestingTexture == "DEFAULT" then
             self.RestingIndicator:SetTexture([[Interface\CharacterFrame\UI-StateIcon]])
             self.RestingIndicator:SetTexCoord(0, 0.5, 0, 0.421875)
         else
-            self.RestingIndicator:SetTexture(UUF.StatusTextureMap[StatusDB.RestingIndicator])
+            self.RestingIndicator:SetTexture(UUF.StatusTextureMap[StatusDB.RestingTexture])
             self.RestingIndicator:SetTexCoord(0, 1, 0, 1)
         end
         self.RestingIndicator.unit = unit
@@ -793,13 +793,18 @@ local function UpdateCombatIndicator(self, unit)
         self.CombatIndicator:ClearAllPoints()
         self.CombatIndicator:SetSize(StatusDB.Size, StatusDB.Size)
         self.CombatIndicator:SetPoint(StatusDB.AnchorFrom, self.HighLevelContainer, StatusDB.AnchorTo, StatusDB.OffsetX, StatusDB.OffsetY)
-        if StatusDB.CombatIndicator == "DEFAULT" then
+        if StatusDB.CombatTexture == "DEFAULT" then
             self.CombatIndicator:SetTexture([[Interface\CharacterFrame\UI-StateIcon]])
             self.CombatIndicator:SetTexCoord(0.5, 1, 0, 0.49)
         else
-            self.CombatIndicator:SetTexture(UUF.StatusTextureMap[StatusDB.CombatIndicator])
+            self.CombatIndicator:SetTexture(UUF.StatusTextureMap[StatusDB.CombatTexture])
             self.CombatIndicator:SetTexCoord(0, 1, 0, 1)
         end
+    end
+    if UnitAffectingCombat(unit) and StatusDB.Combat then
+        self.CombatIndicator:Show()
+    else
+        self.CombatIndicator:Hide()
     end
 end
 
@@ -812,13 +817,18 @@ local function UpdateRestingIndicator(self, unit)
         self.RestingIndicator:ClearAllPoints()
         self.RestingIndicator:SetSize(StatusDB.Size, StatusDB.Size)
         self.RestingIndicator:SetPoint(StatusDB.AnchorFrom, self.HighLevelContainer, StatusDB.AnchorTo, StatusDB.OffsetX, StatusDB.OffsetY)
-        if StatusDB.RestingIndicator == "DEFAULT" then
+        if StatusDB.RestingTexture == "DEFAULT" then
             self.RestingIndicator:SetTexture([[Interface\CharacterFrame\UI-StateIcon]])
             self.RestingIndicator:SetTexCoord(0, 0.5, 0, 0.421875)
         else
-            self.RestingIndicator:SetTexture(UUF.StatusTextureMap[StatusDB.RestingIndicator])
+            self.RestingIndicator:SetTexture(UUF.StatusTextureMap[StatusDB.RestingTexture])
             self.RestingIndicator:SetTexCoord(0, 1, 0, 1)
         end
+    end
+    if (IsResting() and unit == "player") and StatusDB.Resting then
+        self.RestingIndicator:Show()
+    else
+        self.RestingIndicator:Hide()
     end
 end
 

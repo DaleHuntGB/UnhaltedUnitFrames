@@ -959,6 +959,7 @@ local function CreateIndicatorSettings(containerParent, unit)
 
     DeepDisable(MouseoverHighlightContainer, not IndicatorsDB.MouseoverHighlight.Enabled, EnableCheckBox)
     DeepDisable(RaidTargetMarkerContainer, not IndicatorsDB.RaidTargetMarker.Enabled, EnableRTMCheckBox)
+    DeepDisable(TargetIndicatorContainer, not IndicatorsDB.TargetIndicator.Enabled, EnableTargetCheckBox)
 
     ScrollFrame:DoLayout()
 

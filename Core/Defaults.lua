@@ -158,8 +158,8 @@ UUF.Defaults = {
                     AnchorTo = "TOPLEFT",
                     OffsetX = 3,
                     OffsetY = -3,
-                    RestingTexture = "DEFAULT",
-                    CombatTexture = "RESTING5",
+                    RestingTexture = "RESTING0",
+                    CombatTexture = "DEFAULT",
                 },
                 Leader = {
                     Enabled = true,
