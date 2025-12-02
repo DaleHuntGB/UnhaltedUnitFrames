@@ -27,6 +27,7 @@ UUF.UnitToFrameName = {
     ["targettarget"] = "UUF_TargetTarget",
     ["pet"] = "UUF_Pet",
     ["focus"] = "UUF_Focus",
+    ["boss"] = "UUF_Boss",
 }
 
 UUF.UnitFrames = {

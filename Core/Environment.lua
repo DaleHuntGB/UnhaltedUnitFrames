@@ -42,6 +42,7 @@ for i = 1, 10 do
         reaction  = i % 2 == 0 and 2 or 5,
         health    = 8000000 - (i * 600000),
         maxHealth = 8000000,
+        missingHealth = i * 600000,
         absorb    = (i * 300000),
         percent  = (8000000 - (i * 600000)) / 8000000 * 100,
         power     = 100 - (i * 2),
@@ -69,34 +70,37 @@ function UUF:ShowBossFrames()
                 local useClassColour    = BossDB.Frame.ClassColour
                 local useReactionColour = BossDB.Frame.ReactionColour
                 local healthColourR, healthColourG, healthColourB
+                local healthColourA = BossDB.Frame.FGColour[4]
 
                 if useClassColour and useReactionColour then
                     if i <= 5 then
                         local fakeClass = FakeBossData[i].class
                         local classColour = RAID_CLASS_COLORS[fakeClass]
-                        if classColour then healthColourR, healthColourG, healthColourB = classColour.r, classColour.g, classColour.b else healthColourR, healthColourG, healthColourB = 0.5, 0.5, 0.5 end
+                        if classColour then healthColourR, healthColourG, healthColourB, healthColourA = classColour.r, classColour.g, classColour.b else healthColourR, healthColourG, healthColourB, healthColourA = 0.5, 0.5, 0.5, 1 end
                     else
                         local fakeReaction = FakeBossData[i].reaction
                         local reactionColour = FACTION_BAR_COLORS[fakeReaction]
-                        if reactionColour then healthColourR, healthColourG, healthColourB = reactionColour.r, reactionColour.g, reactionColour.b else healthColourR, healthColourG, healthColourB = 0.5, 0.5, 0.5 end
+                        if reactionColour then healthColourR, healthColourG, healthColourB, healthColourA = reactionColour.r, reactionColour.g, reactionColour.b else healthColourR, healthColourG, healthColourB, healthColourA = 0.5, 0.5, 0.5, 1 end
                     end
 
                 elseif useClassColour and not useReactionColour then
                     local fakeClass = FakeBossData[i].class
                     local classColour = RAID_CLASS_COLORS[fakeClass]
-                    if classColour then healthColourR, healthColourG, healthColourB = classColour.r, classColour.g, classColour.b else healthColourR, healthColourG, healthColourB = 0.5, 0.5, 0.5 end
+                    if classColour then healthColourR, healthColourG, healthColourB, healthColourA = classColour.r, classColour.g, classColour.b else healthColourR, healthColourG, healthColourB, healthColourA = 0.5, 0.5, 0.5, 1 end
 
                 elseif useReactionColour and not useClassColour then
                     local fakeReaction = FakeBossData[i].reaction
                     local reactionColour = FACTION_BAR_COLORS[fakeReaction]
-                    if reactionColour then healthColourR, healthColourG, healthColourB = reactionColour.r, reactionColour.g, reactionColour.b else healthColourR, healthColourG, healthColourB = 0.5, 0.5, 0.5 end
+                    if reactionColour then healthColourR, healthColourG, healthColourB, healthColourA = reactionColour.r, reactionColour.g, reactionColour.b else healthColourR, healthColourG, healthColourB, healthColourA = 0.5, 0.5, 0.5, 1 end
                 else
-                    healthColourR, healthColourG, healthColourB = BossDB.HealthBar.FGColour[1], BossDB.HealthBar.FGColour[2], BossDB.HealthBar.FGColour[3], BossDB.HealthBar.FGColour[4]
+                    healthColourR, healthColourG, healthColourB, healthColourA = BossDB.Frame.FGColour[1], BossDB.Frame.FGColour[2], BossDB.Frame.FGColour[3]
                 end
 
-                unitFrame.HealthBar:SetStatusBarColor(healthColourR, healthColourG, healthColourB)
+                unitFrame.HealthBar:SetStatusBarColor(healthColourR, healthColourG, healthColourB, healthColourA)
                 unitFrame.HealthBar:SetMinMaxValues(0, FakeBossData[i].maxHealth)
                 unitFrame.HealthBar:SetValue(FakeBossData[i].health)
+                unitFrame.HealthBG:SetMinMaxValues(0, FakeBossData[i].maxHealth)
+                unitFrame.HealthBG:SetValue(FakeBossData[i].missingHealth)
             end
 
             -- Handle Fake Absorbs
