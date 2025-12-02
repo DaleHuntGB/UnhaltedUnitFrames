@@ -940,6 +940,11 @@ local function CreatePortrait(self, unit)
             self.Portrait:SetBackdrop(UUF.BackdropTemplate)
             self.Portrait:SetBackdropColor(26/255, 26/255, 26/255, 1)
             self.Portrait:SetBackdropBorderColor(0, 0, 0, 1)
+            if PortraitDB.MatchFrameHeight then
+                PortraitDB.Size = UUFDB[normalizedUnit].Frame.Height
+            else
+                PortraitDB.Size = PortraitDB.Size
+            end
             self.Portrait:SetSize(PortraitDB.Size, PortraitDB.Size)
             self.Portrait:SetPoint(PortraitDB.AnchorFrom, unitContainer, PortraitDB.AnchorTo, PortraitDB.OffsetX, PortraitDB.OffsetY)
             self.Portrait.Texture = self.Portrait:CreateTexture(nil, "ARTWORK")
@@ -972,6 +977,11 @@ local function UpdatePortrait(self, unit)
     if PortraitDB then
         if self.Portrait then
             self.Portrait:ClearAllPoints()
+            if PortraitDB.MatchFrameHeight then
+                PortraitDB.Size = UUFDB[normalizedUnit].Frame.Height
+            else
+                PortraitDB.Size = PortraitDB.Size
+            end
             self.Portrait:SetSize(PortraitDB.Size, PortraitDB.Size)
             self.Portrait:SetPoint(PortraitDB.AnchorFrom, unitContainer, PortraitDB.AnchorTo, PortraitDB.OffsetX, PortraitDB.OffsetY)
             self.Portrait.Texture:ClearAllPoints()
@@ -1143,4 +1153,5 @@ function UUF:UpdateAllBossFrames()
         end
     end
     UUF:LayoutBossFrames()
+    UUF:ShowBossFrames()
 end

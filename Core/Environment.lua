@@ -1,6 +1,11 @@
 local _, UUF = ...
 local FakeBossData = {}
 
+local function GetNormalizedUnit(unit)
+    local normalizedUnit = unit:match("^boss%d+$") and "boss" or unit
+    return normalizedUnit
+end
+
 local Classes = {
     [1] = "WARRIOR",
     [2] = "PALADIN",
@@ -37,7 +42,7 @@ for i = 1, 10 do
         reaction  = i % 2 == 0 and 2 or 5,
         health    = 8000000 - (i * 600000),
         maxHealth = 8000000,
-        absorb    = (i * 50000),
+        absorb    = (i * 300000),
         percent  = (8000000 - (i * 600000)) / 8000000 * 100,
         power     = 100 - (i * 2),
         maxPower  = 100,
@@ -47,6 +52,7 @@ end
 
 function UUF:ShowBossFrames()
     UUF.TestMode = true
+    local BossDB = UUF.db.profile.boss
     for i = 1, UUF.MaxBossFrames do
         local unitFrame = _G["UUF_Boss"..i]
         if unitFrame then
@@ -57,6 +63,75 @@ function UUF:ShowBossFrames()
 
             unitFrame:Show()
             UUF:UpdateUnitFrame("boss"..i)
+
+            -- Handle Fake Health
+            if unitFrame.HealthBar then
+                local useClassColour    = BossDB.Frame.ClassColour
+                local useReactionColour = BossDB.Frame.ReactionColour
+                local healthColourR, healthColourG, healthColourB
+
+                if useClassColour and useReactionColour then
+                    if i <= 5 then
+                        local fakeClass = FakeBossData[i].class
+                        local classColour = RAID_CLASS_COLORS[fakeClass]
+                        if classColour then healthColourR, healthColourG, healthColourB = classColour.r, classColour.g, classColour.b else healthColourR, healthColourG, healthColourB = 0.5, 0.5, 0.5 end
+                    else
+                        local fakeReaction = FakeBossData[i].reaction
+                        local reactionColour = FACTION_BAR_COLORS[fakeReaction]
+                        if reactionColour then healthColourR, healthColourG, healthColourB = reactionColour.r, reactionColour.g, reactionColour.b else healthColourR, healthColourG, healthColourB = 0.5, 0.5, 0.5 end
+                    end
+
+                elseif useClassColour and not useReactionColour then
+                    local fakeClass = FakeBossData[i].class
+                    local classColour = RAID_CLASS_COLORS[fakeClass]
+                    if classColour then healthColourR, healthColourG, healthColourB = classColour.r, classColour.g, classColour.b else healthColourR, healthColourG, healthColourB = 0.5, 0.5, 0.5 end
+
+                elseif useReactionColour and not useClassColour then
+                    local fakeReaction = FakeBossData[i].reaction
+                    local reactionColour = FACTION_BAR_COLORS[fakeReaction]
+                    if reactionColour then healthColourR, healthColourG, healthColourB = reactionColour.r, reactionColour.g, reactionColour.b else healthColourR, healthColourG, healthColourB = 0.5, 0.5, 0.5 end
+                else
+                    healthColourR, healthColourG, healthColourB = BossDB.HealthBar.FGColour[1], BossDB.HealthBar.FGColour[2], BossDB.HealthBar.FGColour[3], BossDB.HealthBar.FGColour[4]
+                end
+
+                unitFrame.HealthBar:SetStatusBarColor(healthColourR, healthColourG, healthColourB)
+                unitFrame.HealthBar:SetMinMaxValues(0, FakeBossData[i].maxHealth)
+                unitFrame.HealthBar:SetValue(FakeBossData[i].health)
+            end
+
+            -- Handle Fake Absorbs
+            if unitFrame.AbsorbBar then
+                unitFrame.AbsorbBar:SetMinMaxValues(0, FakeBossData[i].maxHealth)
+                unitFrame.AbsorbBar:SetValue(FakeBossData[i].absorb)
+            end
+
+            -- Handle Target Indicator
+            if unitFrame.TargetIndicator then
+                if BossDB.Indicators.TargetIndicator.Enabled then
+                    unitFrame.TargetIndicator:Show()
+                else
+                    unitFrame.TargetIndicator:Hide()
+                end
+            end
+
+            -- Handle Fake Portraits
+            if unitFrame.Portrait then
+                if unitFrame.Portrait.Texture then
+                    local PortraitOptions = {
+                        [1] = "achievement_character_human_female",
+                        [2] = "achievement_character_human_male",
+                        [3] = "achievement_character_dwarf_male",
+                        [4] = "achievement_character_dwarf_female",
+                        [5] = "achievement_character_nightelf_female",
+                        [6] = "achievement_character_nightelf_male",
+                        [7] = "achievement_character_undead_male",
+                        [8] = "achievement_character_undead_female",
+                        [9] = "achievement_character_orc_male",
+                        [10]= "achievement_character_orc_female"
+                    }
+                    unitFrame.Portrait.Texture:SetTexture("Interface\\ICONS\\" .. PortraitOptions[i])
+                end
+            end
         end
     end
 

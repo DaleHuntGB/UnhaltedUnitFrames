@@ -1014,9 +1014,16 @@ local function CreatePortraitSettings(containerParent, unit)
     local EnableCheckBox = AG:Create("CheckBox")
     EnableCheckBox:SetLabel("Enable Portrait")
     EnableCheckBox:SetValue(PortraitDB.Enabled)
-    EnableCheckBox:SetRelativeWidth(1)
+    EnableCheckBox:SetRelativeWidth(0.5)
     EnableCheckBox:SetCallback("OnValueChanged", function(_, _, value) PortraitDB.Enabled = value if unit == "boss" then UUF:UpdateAllBossFrames() else UUF:UpdateUnitFrame(unit) end  DeepDisable(Wrapper, not value, EnableCheckBox) end)
     TogglesContainer:AddChild(EnableCheckBox)
+
+    local MatchFrameHeightCheckBox = AG:Create("CheckBox")
+    MatchFrameHeightCheckBox:SetLabel("Match Frame Height")
+    MatchFrameHeightCheckBox:SetValue(PortraitDB.MatchFrameHeight)
+    MatchFrameHeightCheckBox:SetRelativeWidth(0.5)
+    MatchFrameHeightCheckBox:SetCallback("OnValueChanged", function(_, _, value) PortraitDB.MatchFrameHeight = value if unit == "boss" then UUF:UpdateAllBossFrames() else UUF:UpdateUnitFrame(unit) end SizeSlider:SetDisabled(value) end)
+    TogglesContainer:AddChild(MatchFrameHeightCheckBox)
 
     local LayoutContainer = CreateInlineGroup(ScrollFrame, "Layout")
 
@@ -1052,7 +1059,7 @@ local function CreatePortraitSettings(containerParent, unit)
     YPositionSlider:SetRelativeWidth(0.5)
     LayoutContainer:AddChild(YPositionSlider)
 
-    local SizeSlider = AG:Create("Slider")
+    SizeSlider = AG:Create("Slider")
     SizeSlider:SetLabel("Size")
     SizeSlider:SetValue(PortraitDB.Size)
     SizeSlider:SetSliderValues(1, 500, 0.1)
@@ -1070,6 +1077,7 @@ local function CreatePortraitSettings(containerParent, unit)
     LayoutContainer:AddChild(ZoomSlider)
 
     DeepDisable(Wrapper, not PortraitDB.Enabled, EnableCheckBox)
+    SizeSlider:SetDisabled(PortraitDB.MatchFrameHeight)
 
     return ScrollFrame
 end
@@ -1132,7 +1140,7 @@ function UUF:CreateGUI()
     GUIFrame:SetWidth(900)
     GUIFrame:SetHeight(600)
     GUIFrame:EnableResize(true)
-    GUIFrame:SetCallback("OnClose", function(widget) AG:Release(widget) OpenedGUI = false end)
+    GUIFrame:SetCallback("OnClose", function(widget) AG:Release(widget) OpenedGUI = false UUF:HideBossFrames() end)
 
     local function DrawGeneralSettings(Container)
         local ScrollFrame = CreateScrollFrame(Container)

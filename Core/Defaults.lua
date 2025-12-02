@@ -183,6 +183,7 @@ UUF.Defaults = {
                 OffsetX = -1,
                 OffsetY = 0,
                 Zoom = 0.3,
+                MatchFrameHeight = true,
             },
             Tags = {
                 TagOne = {
@@ -324,6 +325,7 @@ UUF.Defaults = {
                 OffsetX = 1,
                 OffsetY = 0,
                 Zoom = 0.3,
+                MatchFrameHeight = true,
             },
             Tags = {
                 TagOne = {
@@ -691,6 +693,7 @@ UUF.Defaults = {
                 OffsetX = -1,
                 OffsetY = 0,
                 Zoom = 0.3,
+                MatchFrameHeight = true,
             },
             Tags = {
                 TagOne = {
