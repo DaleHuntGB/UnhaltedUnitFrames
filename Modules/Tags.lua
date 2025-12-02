@@ -57,9 +57,7 @@ function UUF:EvaluateTagString(unit, text)
     if UUF.TestMode and unit:match("^boss%d+$") then
         local fakeTag = UUF:FetchTestTag(tag)
         if fakeTag ~= nil then
-            if type(fakeTag) ~= "string" then
-                return tostring(fakeTag)
-            end
+            if type(fakeTag) ~= "string" then return tostring(fakeTag) end
             return fakeTag
         end
     end
@@ -67,8 +65,6 @@ function UUF:EvaluateTagString(unit, text)
     local func = UUFTags[tag]
     return tostring(func(unit) or "")
 end
-
-
 
 UUF:RegisterTag("curhp", function(unit) if UnitIsDeadOrGhost(unit) then return "Dead" end return UnitHealth(unit) end)
 UUF:RegisterTag("curhp:abbr", function(unit) if UnitIsDeadOrGhost(unit) then return "Dead" end return AbbreviateLargeNumbers(UnitHealth(unit)) end)
