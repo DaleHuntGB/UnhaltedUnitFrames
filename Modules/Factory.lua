@@ -449,6 +449,11 @@ local function CreatePowerBar(self, unit)
             self.PowerBar:SetStatusBarTexture(UUF.Media.ForegroundTexture)
             self.PowerBar:SetStatusBarColor(PowerBarDB.FGColour[1], PowerBarDB.FGColour[2], PowerBarDB.FGColour[3], PowerBarDB.FGColour[4])
             self.PowerBar:SetFrameLevel(unitContainer:GetFrameLevel() + 2)
+            if PowerBarDB.InverseGrowth then
+                self.PowerBar:SetReverseFill(true)
+            else
+                self.PowerBar:SetReverseFill(false)
+            end
             self.PowerBar.unit = unit
         end
 
@@ -548,7 +553,12 @@ local function UpdatePowerBar(self, unit)
             self.PowerBar:SetStatusBarTexture(UUF.Media.ForegroundTexture)
             self.PowerBar:SetStatusBarColor(PowerBarDB.FGColour[1], PowerBarDB.FGColour[2], PowerBarDB.FGColour[3], PowerBarDB.FGColour[4])
             self.PowerBar:SetFrameLevel(unitContainer:GetFrameLevel() + 2)
-
+            if PowerBarDB.InverseGrowth then
+                self.PowerBar:SetReverseFill(true)
+            else
+                self.PowerBar:SetReverseFill(false)
+            end
+            self.PowerBar.unit = unit
         end
 
         if self.PowerBarText then
