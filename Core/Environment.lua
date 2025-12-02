@@ -101,6 +101,13 @@ function UUF:ShowBossFrames()
                 unitFrame.HealthBar:SetValue(FakeBossData[i].health)
                 unitFrame.HealthBG:SetMinMaxValues(0, FakeBossData[i].maxHealth)
                 unitFrame.HealthBG:SetValue(FakeBossData[i].missingHealth)
+                if BossDB.Frame.InverseGrowth then
+                    unitFrame.HealthBar:SetReverseFill(true)
+                    unitFrame.HealthBG:SetReverseFill(false)
+                else
+                    unitFrame.HealthBar:SetReverseFill(false)
+                    unitFrame.HealthBG:SetReverseFill(true)
+                end
             end
 
             -- Handle Fake Absorbs
