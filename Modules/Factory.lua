@@ -634,7 +634,7 @@ local function CreateAlternatePowerBar(self, unit)
         self.AlternatePowerBarBG:SetBackdrop(UUF.BackdropTemplate)
         self.AlternatePowerBarBG:SetBackdropColor(AlternatePowerBarDB.BGColour[1], AlternatePowerBarDB.BGColour[2], AlternatePowerBarDB.BGColour[3], AlternatePowerBarDB.BGColour[4])
         self.AlternatePowerBarBG:SetBackdropBorderColor(0, 0, 0, 1)
-        self.AlternatePowerBarBG:SetFrameLevel(unitContainer:GetFrameLevel() + 2)
+        self.AlternatePowerBarBG:SetFrameLevel(unitContainer:GetFrameLevel() + 5)
     end
 
     if not self.AlternatePowerBar then
