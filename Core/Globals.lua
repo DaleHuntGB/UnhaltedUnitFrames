@@ -261,3 +261,19 @@ function UUF:CopyTable(defaultTable)
     end
     return newTable
 end
+
+function UUF:GetUnitFrameName(unit)
+    return UUF.UnitToFrameName[unit]
+end
+
+function UUF:FrameIsValid(frameToAnchor, frameName)
+    if not frameName or type(frameName) ~= "string" then return false end
+    if UUF:GetUnitFrameName(frameToAnchor) == frameName then UUF:Print("You cannot anchor a frame to itself.") return false end
+    local frame = _G[frameName]
+    if frame and type(frame) == "table" and frame.IsObjectType and frame:IsObjectType("Frame") then
+        return true
+    else
+        UUF:Print("|cFF8080FF" .. frameName .. "|r could not be found, please check the name and try again.")
+        return false
+    end
+end

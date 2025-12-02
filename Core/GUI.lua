@@ -170,7 +170,7 @@ local function CreateUnitFrameFrameSettings(containerParent, unit)
     ReactionColourCheckBox:SetCallback("OnValueChanged", function(_, _, value) FrameDB.ReactionColour = value UUF:UpdateUnitFrame(unit) end)
     TogglesContainer:AddChild(ReactionColourCheckBox)
 
-    if unit == "player" or unit == "target" then
+    if isPlayerorTarget then
         local AnchorToEssentialCooldownsCheckBox = AG:Create("CheckBox")
         AnchorToEssentialCooldownsCheckBox:SetLabel("Anchor To Essential Cooldowns")
         AnchorToEssentialCooldownsCheckBox:SetValue(FrameDB.AnchorToEssentialCooldowns)
@@ -212,8 +212,8 @@ local function CreateUnitFrameFrameSettings(containerParent, unit)
     if hasParent then
         local ParentFrameEditBox = AG:Create("EditBox")
         ParentFrameEditBox:SetLabel("Parent Frame")
-        ParentFrameEditBox:SetText(FrameDB.ParentFrame)
-        ParentFrameEditBox:SetCallback("OnEnterPressed", function(...) print(...) end)
+        ParentFrameEditBox:SetText(FrameDB.AnchorParent)
+        ParentFrameEditBox:SetCallback("OnEnterPressed", function(_, _, value) if UUF:FrameIsValid(unit, value) then FrameDB.AnchorParent = value UUF:UpdateUnitFrame(unit) else ParentFrameEditBox:SetText(FrameDB.AnchorParent) end end)
         ParentFrameEditBox:SetRelativeWidth(0.33)
         FrameContainer:AddChild(ParentFrameEditBox)
     end
@@ -1683,6 +1683,37 @@ function UUF:CreateGUI()
         GUIContainer:AddChild(UnitFrameTabGroup)
     end
 
+    local function DrawTargetTargetSettings(GUIContainer)
+        local function UnitFrameSelectedGroup(UnitFrameContainer, _, UnitFrameGroup)
+            UnitFrameContainer:ReleaseChildren()
+            if UnitFrameGroup == "Frame" then
+                CreateUnitFrameFrameSettings(UnitFrameContainer, "targettarget")
+            elseif UnitFrameGroup == "HealPrediction" then
+                CreateHealPredictionSettings(UnitFrameContainer, "targettarget")
+            elseif UnitFrameGroup == "PowerBar" then
+                CreatePowerBarSettings(UnitFrameContainer, "targettarget")
+            elseif UnitFrameGroup == "Indicators" then
+                CreateIndicatorSettings(UnitFrameContainer, "targettarget")
+            elseif UnitFrameGroup == "Tags" then
+                CreateTagsSettings(UnitFrameContainer, "targettarget")
+            end
+        end
+
+        local UnitFrameTabGroup = AG:Create("TabGroup")
+        UnitFrameTabGroup:SetLayout("Flow")
+        UnitFrameTabGroup:SetFullWidth(true)
+        UnitFrameTabGroup:SetTabs({
+            { text = "Frame", value = "Frame"},
+            { text = "Heal Prediction", value = "HealPrediction"},
+            { text = "Power Bar", value = "PowerBar"},
+            { text = "Indicators", value = "Indicators"},
+            { text = "Tags", value = "Tags"},
+        })
+        UnitFrameTabGroup:SetCallback("OnGroupSelected", UnitFrameSelectedGroup)
+        UnitFrameTabGroup:SelectTab("Frame")
+        GUIContainer:AddChild(UnitFrameTabGroup)
+    end
+
     local function SelectedGroup(GUIContainer, _, MainGroup)
         GUIContainer:ReleaseChildren()
 
@@ -1699,6 +1730,7 @@ function UUF:CreateGUI()
         elseif MainGroup == "target" then
             DrawTargetSettings(Wrapper)
         elseif MainGroup == "targettarget" then
+            DrawTargetTargetSettings(Wrapper)
         elseif MainGroup == "pet" then
         elseif MainGroup == "focus" then
         elseif MainGroup == "boss" then
