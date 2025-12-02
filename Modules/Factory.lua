@@ -858,6 +858,59 @@ local function UpdateLeaderIndicator(self, unit)
     end
 end
 
+local function CreateTargetIndicator(self, unit)
+    local UUFDB = UUF.db.profile
+    local normalizedUnit = GetNormalizedUnit(unit)
+    local IndicatorsDB = UUFDB[normalizedUnit].Indicators
+
+    if not self.TargetIndicator then
+        self.TargetIndicator = CreateFrame("Frame", ResolveFrameName(unit).."_TargetIndicator", self.Container, "BackdropTemplate")
+        self.TargetIndicator:SetFrameLevel(self.Container:GetFrameLevel() + 3)
+        if IndicatorsDB.TargetIndicator.Style == "GLOW" then
+            self.TargetIndicator:SetBackdrop({ edgeFile = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Glow.tga", edgeSize = 3, insets = {left = -6, right = -6, top = -6, bottom = -6} })
+            self.TargetIndicator:SetPoint("TOPLEFT", self.Container, "TOPLEFT", -3, 3)
+            self.TargetIndicator:SetPoint("BOTTOMRIGHT", self.Container, "BOTTOMRIGHT", 3, -3)
+        else
+            self.TargetIndicator:SetBackdrop({ edgeFile = "Interface\\Buttons\\WHITE8x8", edgeSize = 1, insets = {left = -1, right = -1, top = -1, bottom = -1} })
+            self.TargetIndicator:SetPoint("TOPLEFT", self.Container, "TOPLEFT", -1, 1)
+            self.TargetIndicator:SetPoint("BOTTOMRIGHT", self.Container, "BOTTOMRIGHT", 1, -1)
+        end
+        self.TargetIndicator:SetBackdropColor(0, 0, 0, 0)
+        self.TargetIndicator:SetBackdropBorderColor(IndicatorsDB.TargetIndicator.Colour[1], IndicatorsDB.TargetIndicator.Colour[2], IndicatorsDB.TargetIndicator.Colour[3], IndicatorsDB.TargetIndicator.Colour[4])
+        self.TargetIndicator:Hide()
+        if IndicatorsDB.TargetIndicator.Enabled then
+            UUF:RegisterTargetIndicatorFrame(self, unit)
+        else
+            self.TargetIndicator:Hide()
+        end
+    end
+end
+
+local function UpdateTargetIndicator(self, unit)
+    local UUFDB = UUF.db.profile
+    local normalizedUnit = GetNormalizedUnit(unit)
+    local IndicatorsDB = UUFDB[normalizedUnit].Indicators
+
+    if self.TargetIndicator then
+        self.TargetIndicator:ClearAllPoints()
+        if IndicatorsDB.TargetIndicator.Style == "GLOW" then
+            self.TargetIndicator:SetBackdrop({ edgeFile = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Glow.tga", edgeSize = 3, insets = {left = -6, right = -6, top = -6, bottom = -6} })
+            self.TargetIndicator:SetPoint("TOPLEFT", self.Container, "TOPLEFT", -3, 3)
+            self.TargetIndicator:SetPoint("BOTTOMRIGHT", self.Container, "BOTTOMRIGHT", 3, -3)
+        else
+            self.TargetIndicator:SetBackdrop({ edgeFile = "Interface\\Buttons\\WHITE8x8", edgeSize = 1, insets = {left = -1, right = -1, top = -1, bottom = -1} })
+            self.TargetIndicator:SetPoint("TOPLEFT", self.Container, "TOPLEFT", -1, 1)
+            self.TargetIndicator:SetPoint("BOTTOMRIGHT", self.Container, "BOTTOMRIGHT", 1, -1)
+        end
+        self.TargetIndicator:SetBackdropBorderColor(IndicatorsDB.TargetIndicator.Colour[1], IndicatorsDB.TargetIndicator.Colour[2], IndicatorsDB.TargetIndicator.Colour[3], IndicatorsDB.TargetIndicator.Colour[4])
+    end
+    if IndicatorsDB.TargetIndicator.Enabled then
+        UUF:RegisterTargetIndicatorFrame(self, unit)
+    else
+        self.TargetIndicator:Hide()
+    end
+end
+
 local function CreatePortrait(self, unit)
     local UUFDB = UUF.db.profile
     local normalizedUnit = GetNormalizedUnit(unit)
@@ -1003,6 +1056,7 @@ function UUF:CreateUnitFrame(unit)
     CreateRaidTargetMarker(unitFrame, unit)
     if unit == "player" then CreateCombatIndicator(unitFrame, unit) CreateRestingIndicator(unitFrame, unit) end
     if unit == "player" or unit == "target" then CreateLeaderIndicator(unitFrame, unit) end
+    CreateTargetIndicator(unitFrame, unit)
     CreatePortrait(unitFrame, unit)
     CreateTag(unitFrame, unit, "TagOne")
     CreateTag(unitFrame, unit, "TagTwo")
@@ -1039,6 +1093,7 @@ function UUF:UpdateUnitFrame(unit)
     UpdateRaidTargetMarker(unitFrame, unit)
     if unit == "player" then UpdateCombatIndicator(unitFrame, unit) UpdateRestingIndicator(unitFrame, unit) end
     if unit == "player" or unit == "target" then UpdateLeaderIndicator(unitFrame, unit) end
+    UpdateTargetIndicator(unitFrame, unit)
     UpdatePortrait(unitFrame, unit)
     UpdateTag(unitFrame, unit, "TagOne")
     UpdateTag(unitFrame, unit, "TagTwo")

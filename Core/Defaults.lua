@@ -169,6 +169,11 @@ UUF.Defaults = {
                     OffsetX = -3,
                     OffsetY = 0,
                 },
+                TargetIndicator = {
+                    Enabled = false,
+                    Colour = {1, 1, 1, 1},
+                    Style = "GLOW"
+                }
             },
             Portrait = {
                 Enabled = true,
@@ -305,6 +310,11 @@ UUF.Defaults = {
                     OffsetX = 3,
                     OffsetY = 0,
                 },
+                TargetIndicator = {
+                    Enabled = false,
+                    Colour = {1, 1, 1, 1},
+                    Style = "GLOW"
+                }
             },
             Portrait = {
                 Enabled = true,
@@ -401,6 +411,11 @@ UUF.Defaults = {
                     OffsetX = 0,
                     OffsetY = 0,
                 },
+                TargetIndicator = {
+                    Enabled = false,
+                    Colour = {1, 1, 1, 1},
+                    Style = "GLOW"
+                }
             },
             Tags = {
                 TagOne = {
@@ -467,6 +482,11 @@ UUF.Defaults = {
                     OffsetX = 0,
                     OffsetY = 0,
                 },
+                TargetIndicator = {
+                    Enabled = false,
+                    Colour = {1, 1, 1, 1},
+                    Style = "GLOW"
+                }
             },
             Tags = {
                 TagOne = {
@@ -533,6 +553,11 @@ UUF.Defaults = {
                     OffsetX = 0,
                     OffsetY = 0,
                 },
+                TargetIndicator = {
+                    Enabled = false,
+                    Colour = {1, 1, 1, 1},
+                    Style = "GLOW"
+                }
             },
             Tags = {
                 TagOne = {
@@ -652,6 +677,11 @@ UUF.Defaults = {
                     OffsetX = 0,
                     OffsetY = 0,
                 },
+                TargetIndicator = {
+                    Enabled = true,
+                    Colour = {1, 1, 1, 1},
+                    Style = "GLOW"
+                }
             },
             Portrait = {
                 Enabled = true,
