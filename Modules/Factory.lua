@@ -1153,5 +1153,5 @@ function UUF:UpdateAllBossFrames()
         end
     end
     UUF:LayoutBossFrames()
-    UUF:ShowBossFrames()
+    if UUF.TestMode then UUF:ShowBossFrames() end
 end
