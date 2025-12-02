@@ -74,13 +74,15 @@ local function FetchPowerBarBackgroundColour(unit)
 end
 
 local function ToggleUnitWatch(unitFrame)
-    if UUF.db.profile[GetNormalizedUnit(unitFrame.unit)].Enabled then
-        RegisterUnitWatch(unitFrame)
-        unitFrame:Show()
-    else
-        UnregisterUnitWatch(unitFrame)
-        unitFrame:Hide()
-        return
+    if not UUF.TestMode then
+        if UUF.db.profile[GetNormalizedUnit(unitFrame.unit)].Enabled then
+            RegisterUnitWatch(unitFrame)
+            unitFrame:Show()
+        else
+            UnregisterUnitWatch(unitFrame)
+            unitFrame:Hide()
+            return
+        end
     end
 end
 
@@ -142,8 +144,10 @@ local function UpdateUnitPowerBar(self, event, unit)
     local alternatePower = UnitPower("player", Enum.PowerType.Mana)
 
     -- Update Power Bar Values
-    self.PowerBar:SetMinMaxValues(0, unitMaxPower)
-    self.PowerBar:SetValue(unitPower)
+    if self.PowerBar then
+        self.PowerBar:SetMinMaxValues(0, unitMaxPower)
+        self.PowerBar:SetValue(unitPower)
+    end
 
     if self.PowerBarText then
         local PowerBarDB = UUF.db.profile[GetNormalizedUnit(self.unit)].PowerBar
@@ -181,16 +185,19 @@ local function UpdateUnitFrameData(self, event, unit)
         self.HealthBar:SetStatusBarColor(r, g, b, a)
     end
 
-    -- Update Absorbs
-    self.AbsorbBar:SetMinMaxValues(0, unitMaxHP)
-    self.AbsorbBar:SetValue(absorbAmount)
+    if self.AbsorbBar then
+        -- Update Absorbs
+        self.AbsorbBar:SetMinMaxValues(0, unitMaxHP)
+        self.AbsorbBar:SetValue(absorbAmount)
+    end
 
     -- Update Power Bar Colour
-    local r, g, b, a = FetchPowerBarColour(self.unit)
-    self.PowerBar:SetStatusBarColor(r, g, b, a)
-
-    local rBG, gBG, bBG, aBG = FetchPowerBarBackgroundColour(self.unit)
-    self.PowerBarBG:SetStatusBarColor(rBG, gBG, bBG, aBG)
+    if self.PowerBar then
+        local r, g, b, a = FetchPowerBarColour(self.unit)
+        self.PowerBar:SetStatusBarColor(r, g, b, a)
+        local rBG, gBG, bBG, aBG = FetchPowerBarBackgroundColour(self.unit)
+        self.PowerBarBG:SetStatusBarColor(rBG, gBG, bBG, aBG)
+    end
 
     if event == "RAID_TARGET_UPDATE" or event == "PLAYER_TARGET_CHANGED" then
         if self.RaidTargetMarker and UUF.db.profile[GetNormalizedUnit(self.unit)].Indicators.RaidTargetMarker.Enabled then
@@ -1126,4 +1133,14 @@ function UUF:LayoutBossFrames()
     if layoutConfig.isCenter then offsetY = offsetY - (frameHeight / 2) end
     local initialAnchor = AnchorUtil.CreateAnchor(layoutConfig.anchor, UIParent, Frame.AnchorTo, Frame.XPosition, Frame.YPosition + offsetY)
     AnchorUtil.VerticalLayout(bossFrames, initialAnchor, Frame.Spacing)
+end
+
+function UUF:UpdateAllBossFrames()
+    for i = 1, UUF.MaxBossFrames do
+        local unitFrame = _G["UUF_Boss"..i]
+        if unitFrame then
+            UUF:UpdateUnitFrame("boss"..i)
+        end
+    end
+    UUF:LayoutBossFrames()
 end
