@@ -76,10 +76,15 @@ UUF:RegisterTag("curhpperhp:abbr", function(unit) if UnitIsDeadOrGhost(unit) the
 UUF:RegisterTag("absorbs", function(unit) local absorbs = AbbreviateLargeNumbers(UnitGetTotalAbsorbs(unit)) return absorbs end)
 
 UUF:RegisterTag("curpp", function(unit) return UnitPower(unit) end)
+UUF:RegisterTag("curpp:colour", function(unit) local powerType = UnitPowerType(unit) local powerInfo = PowerBarColor[powerType] if powerInfo then local r, g, b = powerInfo.r, powerInfo.g, powerInfo.b return string.format("|cff%02x%02x%02x%d|r", r*255, g*255, b*255, UnitPower(unit)) end return tostring(UnitPower(unit)) end)
 UUF:RegisterTag("curpp:abbr", function(unit) return AbbreviateLargeNumbers(UnitPower(unit)) end)
+UUF:RegisterTag("curpp:colour:abbr", function(unit) local powerType = UnitPowerType(unit) local powerInfo = PowerBarColor[powerType] if powerInfo then local r, g, b = powerInfo.r, powerInfo.g, powerInfo.b return string.format("|cff%02x%02x%02x%s|r", r*255, g*255, b*255, AbbreviateLargeNumbers(UnitPower(unit))) end return AbbreviateLargeNumbers(UnitPower(unit)) end)
 UUF:RegisterTag("maxpp", function(unit) return UnitPowerMax(unit) end)
+UUF:RegisterTag("maxpp:colour", function(unit) local powerType = UnitPowerType(unit) local powerInfo = PowerBarColor[powerType] if powerInfo then local r, g, b = powerInfo.r, powerInfo.g, powerInfo.b return string.format("|cff%02x%02x%02x%d|r", r*255, g*255, b*255, UnitPowerMax(unit)) end return tostring(UnitPowerMax(unit)) end)
 UUF:RegisterTag("maxpp:abbr", function(unit) return AbbreviateLargeNumbers(UnitPowerMax(unit)) end)
+UUF:RegisterTag("maxpp:colour:abbr", function(unit) local powerType = UnitPowerType(unit) local powerInfo = PowerBarColor[powerType] if powerInfo then local r, g, b = powerInfo.r, powerInfo.g, powerInfo.b return string.format("|cff%02x%02x%02x%s|r", r*255, g*255, b*255, AbbreviateLargeNumbers(UnitPowerMax(unit))) end return AbbreviateLargeNumbers(UnitPowerMax(unit)) end)
 UUF:RegisterTag("perpp", function(unit) return string.format("%.0f%%", UnitPowerPercent(unit, UnitPowerType(unit), false, true)) end)
+UUF:RegisterTag("perpp:colour", function(unit) local powerType = UnitPowerType(unit) local powerInfo = PowerBarColor[powerType] if powerInfo then local r, g, b = powerInfo.r, powerInfo.g, powerInfo.b return string.format("|cff%02x%02x%02x%.0f%%|r", r*255, g*255, b*255, UnitPowerPercent(unit, powerType, false, true)) end return string.format("%.0f%%", UnitPowerPercent(unit, powerType, false, true)) end)
 
 UUF:RegisterTag("name", function(unit) return UnitName(unit) end)
 UUF:RegisterTag("name:colour", function(unit) local r, g, b = FetchUnitColour(unit) local unitName = UnitName(unit) or "" return string.format("|cff%02x%02x%02x%s|r", r*255, g*255, b*255, unitName) end)
@@ -124,10 +129,15 @@ function UUF:FetchTestTag(tag)
 
         -- Power
         ["curpp"] = 3000,
+        ["curpp:colour"] = (function() local powerType = UnitPowerType("player") local powerInfo = PowerBarColor[powerType] if powerInfo then local r, g, b = powerInfo.r, powerInfo.g, powerInfo.b return string.format("|cff%02x%02x%02x%d|r", r*255, g*255, b*255, 3000) end return tostring(3000) end)(),
         ["curpp:abbr"] = string.format("%s", AbbreviateLargeNumbers(3000)),
+        ["curpp:colour:abbr"] = (function() local powerType = UnitPowerType("player") local powerInfo = PowerBarColor[powerType] if powerInfo then local r, g, b = powerInfo.r, powerInfo.g, powerInfo.b return string.format("|cff%02x%02x%02x%s|r", r*255, g*255, b*255, AbbreviateLargeNumbers(3000)) end return AbbreviateLargeNumbers(3000) end)(),
         ["maxpp"] = 5000,
+        ["maxpp:colour"] = (function() local powerType = UnitPowerType("player") local powerInfo = PowerBarColor[powerType] if powerInfo then local r, g, b = powerInfo.r, powerInfo.g, powerInfo.b return string.format("|cff%02x%02x%02x%d|r", r*255, g*255, b*255, 5000) end return tostring(5000) end)(),
         ["maxpp:abbr"] = string.format("%s", AbbreviateLargeNumbers(5000)),
+        ["maxpp:colour:abbr"] = (function() local powerType = UnitPowerType("player") local powerInfo = PowerBarColor[powerType] if powerInfo then local r, g, b = powerInfo.r, powerInfo.g, powerInfo.b return string.format("|cff%02x%02x%02x%s|r", r*255, g*255, b*255, AbbreviateLargeNumbers(5000)) end return AbbreviateLargeNumbers(5000) end)(),
         ["perpp"] = "60%",
+        ["perpp:colour"] = (function() local powerType = UnitPowerType("player") local powerInfo = PowerBarColor[powerType] if powerInfo then local r, g, b = powerInfo.r, powerInfo.g, powerInfo.b return string.format("|cff%02x%02x%02x%s|r", r*255, g*255, b*255, "60%") end return "60%" end)(),
     }
     return testTags[tag]
 end
@@ -162,17 +172,27 @@ end
 local PowerTags = {
     {
         ["curpp"] = "Current Power",
+        ["curpp:colour"] = "Current Power (Coloured)",
         ["curpp:abbr"] = "Current Power (Abbreviated)",
+        ["curpp:colour:abbr"] = "Current Power (Coloured, Abbreviated)",
         ["maxpp"] = "Maximum Power",
+        ["maxpp:colour"] = "Maximum Power (Coloured)",
         ["maxpp:abbr"] = "Maximum Power (Abbreviated)",
+        ["maxpp:colour:abbr"] = "Maximum Power (Coloured, Abbreviated)",
         ["perpp"] = "Power Percentage",
+        ["perpp:colour"] = "Power Percentage (Coloured)",
     },
     {
         "curpp",
+        "curpp:colour",
         "curpp:abbr",
+        "curpp:colour:abbr",
         "maxpp",
+        "maxpp:colour",
         "maxpp:abbr",
+        "maxpp:colour:abbr",
         "perpp",
+        "perpp:colour",
     }
 }
 
