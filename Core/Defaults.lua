@@ -138,6 +138,7 @@ UUF.Defaults = {
                 ColourByType = true,
                 FGColour = {8/255, 8/255, 8/255, 0.8},
                 BGColour = {26/255, 26/255, 26/255, 1},
+                InverseGrowth = false,
             },
             Indicators = {
                 MouseoverHighlight = {

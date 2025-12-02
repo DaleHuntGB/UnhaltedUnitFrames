@@ -644,6 +644,11 @@ local function CreateAlternatePowerBar(self, unit)
         self.AlternatePowerBar:SetSize(AlternatePowerBarDB.Width, AlternatePowerBarDB.Height)
         self.AlternatePowerBar:SetStatusBarTexture(UUF.Media.ForegroundTexture)
         self.AlternatePowerBar:SetFrameLevel(self.AlternatePowerBarBG:GetFrameLevel() + 1)
+        if AlternatePowerBarDB.InverseGrowth then
+            self.AlternatePowerBar:SetReverseFill(true)
+        else
+            self.AlternatePowerBar:SetReverseFill(false)
+        end
         if AlternatePowerBarDB.ColourByType then
             local powerColour = UUFDB.General.CustomColours.Power[0]
             if powerColour then self.AlternatePowerBar:SetStatusBarColor(powerColour[1], powerColour[2], powerColour[3], powerColour[4]) end
@@ -683,6 +688,11 @@ local function UpdateAlternatePowerBar(self, unit)
         self.AlternatePowerBar:SetPoint("BOTTOMRIGHT", self.AlternatePowerBarBG, "BOTTOMRIGHT", -1, 1)
         self.AlternatePowerBar:SetSize(AlternatePowerBarDB.Width, AlternatePowerBarDB.Height)
         self.AlternatePowerBar:SetStatusBarTexture(UUF.Media.ForegroundTexture)
+        if AlternatePowerBarDB.InverseGrowth then
+            self.AlternatePowerBar:SetReverseFill(true)
+        else
+            self.AlternatePowerBar:SetReverseFill(false)
+        end
         if AlternatePowerBarDB.ColourByType then
             local powerColour = UUFDB.General.CustomColours.Power[0]
             if powerColour then self.AlternatePowerBar:SetStatusBarColor(powerColour[1], powerColour[2], powerColour[3], powerColour[4] or 1) end
