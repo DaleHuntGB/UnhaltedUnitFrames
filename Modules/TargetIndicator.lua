@@ -10,7 +10,7 @@ local unitIsTargetEvtFrame = CreateFrame("Frame")
 unitIsTargetEvtFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
 unitIsTargetEvtFrame:RegisterEvent("UNIT_TARGET")
 unitIsTargetEvtFrame:SetScript("OnEvent", function()
-    if not UUF.db.profile.boss.Indicators.TargetIndicator.Enabled then return end
+    if not UUF.db.profile[GetNormalizedUnit("target")].Indicators.TargetIndicator.Enabled then return end
     for _, frameData in ipairs(UUF.TargetHighlightEvtFrames) do
         local frame, unit = frameData.frame, frameData.unit
         UUF:UpdateTargetHighlight(frame, unit)
@@ -19,7 +19,8 @@ end)
 
 function UUF:UpdateTargetHighlight(frame, unit)
     if frame and frame.TargetIndicator then
-        if UnitIsUnit("target", unit) and UUF.db.profile.boss.Indicators.TargetIndicator.Enabled then
+        if issecretvalue and issecretvalue(UnitIsUnit("target", unit)) then return end
+        if UnitIsUnit("target", unit) and UUF.db.profile[GetNormalizedUnit(unit)].Indicators.TargetIndicator.Enabled then
             frame.TargetIndicator:Show()
         else
             frame.TargetIndicator:Hide()
