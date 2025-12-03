@@ -1130,6 +1130,9 @@ function UUF:CreateUnitFrame(unit)
     CreateTag(unitFrame, unit, "TagThree")
 
     _G[frameName] = unitFrame
+
+    UUF:CreateMover(unitFrame)
+
     return unitFrame
 end
 
