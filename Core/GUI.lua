@@ -155,6 +155,12 @@ local function CreateUnitFrameFrameSettings(containerParent, unit)
     local isPlayerorTarget = (unit == "player" or unit == "target")
     local isBoss = (unit == "boss")
 
+    local ToggleMoversButton = AG:Create("Button")
+    ToggleMoversButton:SetText("Toggle Movers")
+    ToggleMoversButton:SetRelativeWidth(1)
+    ToggleMoversButton:SetCallback("OnClick", function() UUF:ToggleMovers(not UUF.MoversAreShown) end)
+    containerParent:AddChild(ToggleMoversButton)
+
     local TogglesContainer = CreateInlineGroup(containerParent, "Toggles")
 
     local EnableUnitFrame = AG:Create("CheckBox")
@@ -1470,12 +1476,16 @@ function UUF:CreateGUI()
             wipe(profileKeys)
             local tmp = {}
             for _, name in ipairs(UUF.db:GetProfiles(tmp, true)) do profileKeys[name] = name end
+            local profilesToDelete = {}
+            for k, v in pairs(profileKeys) do profilesToDelete[k] = v end
+            profilesToDelete[UUF.db:GetCurrentProfile()] = nil
             SelectProfileDropdown:SetList(profileKeys)
             CopyFromProfileDropdown:SetList(profileKeys)
-            DeleteProfileDropdown:SetList(profileKeys)
+            DeleteProfileDropdown:SetList(profilesToDelete)
             SelectProfileDropdown:SetValue(UUF.db:GetCurrentProfile())
             CopyFromProfileDropdown:SetValue(nil)
             DeleteProfileDropdown:SetValue(nil)
+            ResetProfileButton:SetText("Reset |cFF8080FF" .. UUF.db:GetCurrentProfile() .. "|r Profile")
             local isUsingGlobal = UUF.db.global.UseGlobalProfile
             ActiveProfileHeading:SetText( "Active Profile: |cFFFFFFFF" .. UUF.db:GetCurrentProfile() .. (isUsingGlobal and " (|cFFFFCC00Global|r)" or "") .. "|r" )
         end
@@ -1500,7 +1510,7 @@ function UUF:CreateGUI()
         DeleteProfileDropdown:SetCallback("OnValueChanged", function(_, _, value) if value ~= UUF.db:GetCurrentProfile() then UUF:CreatePrompt("Delete Profile", "Are you sure you want to delete |cFF8080FF" .. value .. "|r?", function() UUF.db:DeleteProfile(value) RefreshProfiles() end) end end)
         ProfileContainer:AddChild(DeleteProfileDropdown)
 
-        local ResetProfileButton = AG:Create("Button")
+        ResetProfileButton = AG:Create("Button")
         ResetProfileButton:SetText("Reset |cFF8080FF" .. UUF.db:GetCurrentProfile() .. "|r Profile")
         ResetProfileButton:SetRelativeWidth(0.25)
         ResetProfileButton:SetCallback("OnClick", function() UUF.db:ResetProfile() UUF:ResolveMedia() for unit in pairs(UnitToFrameName) do if unit == "boss" then UUF:UpdateAllBossFrames() else UUF:UpdateUnitFrame(unit) end  end UIParent:SetScale(UUF.db.profile.General.UIScale or 1) RefreshProfiles() end)
@@ -1547,6 +1557,13 @@ function UUF:CreateGUI()
         ProfileContainer:AddChild(GlobalProfileDropdown)
 
         local SharingContainer = CreateInlineGroup(ScrollFrame, "Profile Sharing")
+
+        local UseMyProfileButton = AG:Create("Button")
+        UseMyProfileButton:SetText("Use My Profile")
+        UseMyProfileButton:SetRelativeWidth(1)
+        local UnhaltedUFString = "!UUFTV16YTjUx8NO0be373QBmjzMe7SbYK2DNL)r2wjMPeKhH86M8Hm7ZY(O9)jz1fmwGbBC9LKT1tAPeK05C0rNZVZfOr6rHrbpMGhat43DBg6mXVCnb)qCckAquq3rX0RWJqxcFgpLMXNMpb(4TxWVBsc8zeHF3Zr9ob4y9b9OGVZU1eiUDcooLgf85U9c7Ete7UhWdNMLpFGB(S1kMyN(HH9V6YU(H8jtHKhr0LPEtexoF1v57A544z5OPP7zzaC8IE4etlor8pX2XYYWfaS11DTTS14d5wrs4uDYcrOQ4g2)65Y6aCw((Y30bybS8STDbE6wUwCcBk4jJpo66wgE2oAaGMx(iv3i8FckFqeCk6b40eXitYFw4Y74UPWbjOr8ZTlshfpesXeHyDfEAgc)xiY5XpooH93stVdJ54e8u(jzpDXFaIRgIRM8RcwFdmEuOGBxbjFtEYRqK(p8qgI(fHk6tPdhJjH4I9v(OFvzuFc(PfJhe)cIXytoJKmPypuzVfqFMRto7Y(31sjxqYhfQc2)godlSJXPujt1bkc)jg1j9SLffS(nrRKgoX6NIwHm0Si8hPWNq)5ouqchtqRsuQ9SCxQnOceLNeYWfPmBugkebpJoMFu)1RXzX0yCkhbqaySqyK(O3CXzNZw5xwmXkcdZlnFo3fpIrv22JT)8pRKWPjeonHWPXfoFxDnBtxDGnqtdO7yZCwTm4cRK2xdjiUx7T36))KwRrbNJeEw9amXStj677a0SCS10mD1mCCDDLuJXZMgXOXrYvCbFobMLLZeMM6geCiF)x8e2uUgpdr6aR6)SKwwUMoWHF7rcEA6Ooph(8ee3L(uUFEQpJ0mVWEAFWXQQQZ30cW0sAUAadhphpaxmDeBTggXOXrm5SWvOKzGuPpHuGIl0UglRCnmDyAjMAY12r3wqnBPYT(rmACKcLRuJuOhcrFVkcBz)LfML5gBQMG5pQgiM5Mrx3)UQyKvfH26mDoIh3aXGofUdCrzqgMmiB9q(CLFHhGurinsonMGKKlFVKZR5H9ui7bJ9mRBcLaJRgk73XmvoJwgQk8sahIG2bxbPdhlqEYTS60mGw(bO842eSfXtwGgjHZhoLmEYee7YhHdgqur2xSWQazTYuydJYivklIX8XHcMSIqnYv0AzzJc0ucBVqtnzsUuTKUQIQQ0YBLeY95Hz0kGLDkhbQMWpRjYtrqhaptVwGCA0iYPrfzEr4gZdbI4CeWWyzOAfvuRm8lHb2OhwRoRcyjLNK0d2wbPg78DGnD7ZCrRCElZZosXWXYszoLZHQz7NnjPLLYoGPdHdJtFKtOcljgY2HpXLLG4pT)D9oM9Y24R(F4Sx(PTU1o)y1TsvAAYXY7pwE)MkiBuwx7dTrBdswT6(5nxBf5xP0UW9wT9xlBX57VA7py1zrv7e77Mc9guFHE61elBtk0tAm9lvDE8lZIPJvBM8bV4VYkVJv)DS6VMnNEhw93Cg0nlJf5igM8zmozeEwAwTvSuQR2Y3R1YbHvSSYFJx1fdEFvE4BAjH1u3g9N06bRjDIDV37X6blJGCWk05seCuZKVAcdTbCk)mYkAVugfprmukIi)Eaw4cXnyMsyulaNepIBTqqvgPts8lVajJE9EU29175oQcRk)eEa8(3gE5f96Y9fsWZU9IGHWeE7Ny6d5VGy(rC7xdpBnGfW1c4jbjeeHJ1g)YR3)BtHJiqk817dNNmXyidOvyDOQ5updxnQi7QmbGPzu8tY5kiNauk(bUYnpbxusmffvtMS1cbiSasXKNeAZLv8SrNHjjJYFjkcHJtUgWAmxnJimFpf5BdtVWuQpKWvCsPQT8D8y1vXcDOzQBBAByxDfkrqKRBB3nSvT1KWOfKWy1KWSmjw7PDpRvO8nBhjS3Es4S9KWDRjX8a2Qge6L89uoMN7mzLBub44BSPOkeSCx8CSbYpvhPqu7igfUx90DkoaD8YzbWoNhEEkBuzYa5cby(me0WTImARVq(11lJQKVb0voilgYfSymJAaeKeCHvRPQYk3nJkl7MoMvuK8lYkk4))3)d)5l(wSuc1uo65blSxafsLTS8gugLbZxeL4MUbHx07mbO8tdGuEGQAIbkhSyvN21)t3Ezy9moNfvJSwQ8AvHBhLdXQdT3uZawtbq73O7)O9YOTnYyBkQBTnXyV3OY20MI9UqikwGIiPqkQU6D6SM304YTOy5VpQQ9BATFDu7NIIkQas7nOei6HS)LhBT0Xwl9ET1sNS37T0BANK(L5RI8yFKwDu1n4DiT7)ybPf)3iOXCZ3rzLEWsX)9t2P7J0WwF6Oher49q6OT6L3xxcmR7T3xuS3UjmtzKJ6E191LO5BsaOdwMNYFI(3)"
+        UseMyProfileButton:SetCallback("OnClick", function() UUF:ImportSavedVariables(UnhaltedUFString, "Unhalted") end)
+        SharingContainer:AddChild(UseMyProfileButton)
 
         local ExportingHeading = AG:Create("Heading")
         ExportingHeading:SetText("Exporting")
