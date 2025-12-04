@@ -101,6 +101,76 @@ local function UnitIsReal(unit)
     return realUnits[unit] or false
 end
 
+local GLOBAL_EVENTS = {
+    "PLAYER_LOGIN",
+    "PLAYER_ENTERING_WORLD",
+    "PLAYER_TARGET_CHANGED",
+    "PLAYER_FOCUS_CHANGED",
+    "PLAYER_REGEN_ENABLED",
+    "PLAYER_REGEN_DISABLED",
+    "PLAYER_SPECIALIZATION_CHANGED",
+    "RAID_TARGET_UPDATE",
+    "GROUP_ROSTER_UPDATE",
+    "UNIT_PORTRAIT_UPDATE"
+}
+
+local UNIT_EVENTS = {
+    HEALTH = { "UNIT_HEALTH", "UNIT_MAXHEALTH", "UNIT_NAME_UPDATE" },
+    POWER  = { "UNIT_POWER_UPDATE", "UNIT_MAXPOWER" },
+    ABSORB = { "UNIT_ABSORB_AMOUNT_CHANGED" },
+    PORTRAIT = { "UNIT_PORTRAIT_UPDATE" },
+}
+
+local UPDATE_HEALTH_EVENTS = {
+    PLAYER_ENTERING_WORLD = true,
+    PLAYER_TARGET_CHANGED = true,
+    UNIT_HEALTH = true,
+    UNIT_MAXHEALTH = true,
+}
+
+local UPDATE_POWER_EVENTS = {
+    UNIT_POWER_UPDATE = true,
+    UNIT_MAXPOWER = true,
+}
+
+local UPDATE_FRAME_EVENTS = {
+    PLAYER_SPECIALIZATION_CHANGED = true,
+}
+
+local UPDATE_HEALTH_COLOUR_EVENTS = {
+    PLAYER_TARGET_CHANGED = true,
+    PLAYER_FOCUS_CHANGED = true,
+}
+
+local UPDATE_POWER_BAR_COLOUR_EVENTS = {
+    PLAYER_TARGET_CHANGED = true,
+    PLAYER_FOCUS_CHANGED = true,
+}
+
+local UPDATE_INDICATOR_EVENTS = {
+    PLAYER_REGEN_ENABLED = true,
+    PLAYER_REGEN_DISABLED = true,
+    PLAYER_ENTERING_WORLD = true,
+    GROUP_ROSTER_UPDATE = true,
+    PLAYER_TARGET_CHANGED = true,
+    RAID_TARGET_UPDATE = true,
+}
+
+local UPDATE_PORTRAIT_EVENTS = {
+    UNIT_PORTRAIT_UPDATE = true,
+    PLAYER_TARGET_CHANGED = true,
+}
+
+local UPDATE_TAGS_EVENTS = {
+    PLAYER_ENTERING_WORLD = true,
+    PLAYER_TARGET_CHANGED = true,
+    UNIT_NAME_UPDATE = true,
+    UNIT_HEALTH = true,
+    UNIT_MAXHEALTH = true,
+    UNIT_POWER_UPDATE = true,
+    UNIT_MAXPOWER = true,
+}
+
 --------------------------------------------------------------
 --- Event Functions
 --------------------------------------------------------------
@@ -120,7 +190,7 @@ local function UpdateTags(self, _, unit)
     end
 end
 
-local function UpdateUnitHealthBar(self, event, unit)
+local function UpdateUnitHealthBarValues(self, event, unit)
     if unit and unit ~= self.unit then return end
     if not UnitExists(self.unit) then return end
 
@@ -135,7 +205,16 @@ local function UpdateUnitHealthBar(self, event, unit)
     self.HealthBG:SetValue(unitHPMissing)
 end
 
-local function UpdateUnitPowerBar(self, event, unit)
+local function UpdateUnitHealthBarColour(self, event, unit)
+    if unit and unit ~= self.unit then return end
+    if not UnitExists(self.unit) then return end
+
+    -- Update Health Bar Colour
+    local r, g, b, a = FetchUnitColour(self.unit)
+    self.HealthBar:SetStatusBarColor(r, g, b, a)
+end
+
+local function UpdateUnitPowerBarValues(self, event, unit)
     if unit and unit ~= self.unit then return end
     if not UnitExists(self.unit) then return end
 
@@ -166,51 +245,21 @@ local function UpdateUnitPowerBar(self, event, unit)
     end
 end
 
-local function UpdateUnitFrameData(self, event, unit)
+local function UpdateUnitPowerBarColour(self, event, unit)
     if unit and unit ~= self.unit then return end
     if not UnitExists(self.unit) then return end
 
-    local unitMaxHP  = UnitHealthMax(self.unit)
-    local absorbAmount = UnitGetTotalAbsorbs(self.unit)
-
-    UpdateUnitHealthBar(self, event, self.unit)
-    UpdateUnitPowerBar(self, event, self.unit)
-
-    if event == "PLAYER_SPECIALIZATION_CHANGED" then
-        UUF:UpdateUnitFrame(self.unit)
-    end
-
-    if event == "PLAYER_TARGET_CHANGED" or event == "PLAYER_FOCUS_CHANGED" then
-        -- Update Health Bar Colour
-        local r, g, b, a = FetchUnitColour(self.unit)
-        self.HealthBar:SetStatusBarColor(r, g, b, a)
-    end
-
-    if self.AbsorbBar then
-        -- Update Absorbs
-        self.AbsorbBar:SetMinMaxValues(0, unitMaxHP)
-        self.AbsorbBar:SetValue(absorbAmount)
-    end
-
-    -- Update Power Bar Colour
     if self.PowerBar then
         local r, g, b, a = FetchPowerBarColour(self.unit)
         self.PowerBar:SetStatusBarColor(r, g, b, a)
         local rBG, gBG, bBG, aBG = FetchPowerBarBackgroundColour(self.unit)
         self.PowerBarBG:SetStatusBarColor(rBG, gBG, bBG, aBG)
     end
+end
 
-    if event == "RAID_TARGET_UPDATE" or event == "PLAYER_TARGET_CHANGED" then
-        if self.RaidTargetMarker and UUF.db.profile[GetNormalizedUnit(self.unit)].Indicators.RaidTargetMarker.Enabled then
-            local raidTargetIndex = GetRaidTargetIndex(self.unit)
-            if raidTargetIndex then
-                self.RaidTargetMarker:SetTexture(UUF:FetchRaidTargetMarkerTexture(raidTargetIndex))
-                self.RaidTargetMarker:Show()
-            else
-                self.RaidTargetMarker:Hide()
-            end
-        end
-    end
+local function UpdateUnitIndicators(self, event, unit)
+    if unit and unit ~= self.unit then return end
+    if not UnitExists(self.unit) then return end
 
     if (event == "PLAYER_REGEN_ENABLED" or event == "PLAYER_REGEN_DISABLED" or event == "PLAYER_ENTERING_WORLD") then
         local inCombat  = UUF.db.profile[GetNormalizedUnit("player")].Indicators.Status.Combat  and UnitAffectingCombat("player")
@@ -229,9 +278,39 @@ local function UpdateUnitFrameData(self, event, unit)
             end
         end
     end
+    if (event == "RAID_TARGET_UPDATE" or event == "PLAYER_TARGET_CHANGED") then
+        if self.RaidTargetMarker and UUF.db.profile[GetNormalizedUnit(self.unit)].Indicators.RaidTargetMarker.Enabled then
+            local raidTargetIndex = GetRaidTargetIndex(self.unit)
+            if raidTargetIndex then
+                self.RaidTargetMarker:SetTexture(UUF:FetchRaidTargetMarkerTexture(raidTargetIndex))
+                self.RaidTargetMarker:Show()
+            else
+                self.RaidTargetMarker:Hide()
+            end
+        end
+    end
+end
 
-    -- Update Tags
-    UpdateTags(self, nil, self.unit)
+local function UpdateUnitFrameData(self, event, unit)
+    if unit and unit ~= self.unit then return end
+    if not UnitExists(self.unit) then return end
+
+    local unitMaxHP  = UnitHealthMax(self.unit)
+    local absorbAmount = UnitGetTotalAbsorbs(self.unit)
+
+    if UPDATE_FRAME_EVENTS[event] then UUF:UpdateUnitFrame(self.unit) end
+
+    if UPDATE_HEALTH_COLOUR_EVENTS[event] then UpdateUnitHealthBarColour(self, event, self.unit) end
+    if UPDATE_POWER_BAR_COLOUR_EVENTS[event] then UpdateUnitPowerBarColour(self, event, self.unit) end
+
+    if UPDATE_HEALTH_EVENTS[event] then UpdateUnitHealthBarValues(self, event, self.unit) end
+    if UPDATE_POWER_EVENTS[event] then UpdateUnitPowerBarValues(self, event, self.unit) end
+    if UPDATE_INDICATOR_EVENTS[event] then UpdateUnitIndicators(self, event, self.unit) end
+    if UPDATE_PORTRAIT_EVENTS[event] then if self.Portrait then SetPortraitTexture(self.Portrait.Texture, self.unit, true) end end
+    if UPDATE_TAGS_EVENTS[event] then UpdateTags(self, event, self.unit) end
+
+    if self.AbsorbBar then self.AbsorbBar:SetMinMaxValues(0, unitMaxHP) self.AbsorbBar:SetValue(absorbAmount) end
+
 end
 
 --------------------------------------------------------------
@@ -288,23 +367,6 @@ local function CreateHealthBar(self, unit)
         self.HighLevelContainer:SetAllPoints(self)
         self.HighLevelContainer:SetFrameLevel(999)
     end
-
-    -- Global Events
-    self:RegisterEvent("PLAYER_LOGIN")
-    self:RegisterEvent("PLAYER_ENTERING_WORLD")
-    self:RegisterEvent("PLAYER_TARGET_CHANGED")
-    self:RegisterEvent("PLAYER_FOCUS_CHANGED")
-    self:RegisterEvent("PLAYER_REGEN_ENABLED")
-    self:RegisterEvent("PLAYER_REGEN_DISABLED")
-    self:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
-    self:RegisterEvent("RAID_TARGET_UPDATE")
-    self:RegisterEvent("GROUP_ROSTER_UPDATE")
-    -- Unit Events
-    self:RegisterUnitEvent("UNIT_HEALTH", UnitIsReal(unit) and unit)
-    self:RegisterUnitEvent("UNIT_MAXHEALTH", UnitIsReal(unit) and unit)
-    self:RegisterUnitEvent("UNIT_NAME_UPDATE", UnitIsReal(unit) and unit)
-    -- Update
-    self:SetScript("OnEvent", UpdateUnitFrameData)
 end
 
 local function UpdateHealthBar(self, unit)
@@ -345,24 +407,6 @@ local function UpdateHealthBar(self, unit)
         self.HighLevelContainer:SetAllPoints(self)
         self.HighLevelContainer:SetSize(self:GetWidth(), self:GetHeight())
     end
-
-    if UUFDB[normalizedUnit].Enabled then
-        -- Global Events
-        self:RegisterEvent("PLAYER_LOGIN")
-        self:RegisterEvent("PLAYER_ENTERING_WORLD")
-        self:RegisterEvent("PLAYER_TARGET_CHANGED")
-        -- Unit Events
-        self:RegisterUnitEvent("UNIT_HEALTH", UnitIsReal(unit) and unit)
-        self:RegisterUnitEvent("UNIT_MAXHEALTH", UnitIsReal(unit) and unit)
-    else
-        -- Global Events
-        self:UnregisterEvent("PLAYER_LOGIN")
-        self:UnregisterEvent("PLAYER_ENTERING_WORLD")
-        self:UnregisterEvent("PLAYER_TARGET_CHANGED")
-        -- Unit Events
-        self:UnregisterEvent("UNIT_HEALTH", UnitIsReal(unit) and unit)
-        self:UnregisterEvent("UNIT_MAXHEALTH", UnitIsReal(unit) and unit)
-    end
 end
 
 local function CreateAbsorbBar(self, unit)
@@ -387,9 +431,6 @@ local function CreateAbsorbBar(self, unit)
         self.AbsorbBar:SetStatusBarColor(HealPredictionDB.Absorbs.Colour[1], HealPredictionDB.Absorbs.Colour[2], HealPredictionDB.Absorbs.Colour[3], HealPredictionDB.Absorbs.Colour[4])
         self.AbsorbBar.unit = unit
     end
-    if HealPredictionDB.Absorbs.Enabled then
-        self:RegisterEvent("UNIT_ABSORB_AMOUNT_CHANGED")
-    end
 end
 
 local function UpdateAbsorbBar(self, unit)
@@ -412,10 +453,7 @@ local function UpdateAbsorbBar(self, unit)
         self.AbsorbBar:SetStatusBarTexture(UUF.Media.ForegroundTexture)
         self.AbsorbBar:SetStatusBarColor(HealPredictionDB.Absorbs.Colour[1], HealPredictionDB.Absorbs.Colour[2], HealPredictionDB.Absorbs.Colour[3], HealPredictionDB.Absorbs.Colour[4])
     end
-    if HealPredictionDB.Absorbs.Enabled then
-        self:RegisterEvent("UNIT_ABSORB_AMOUNT_CHANGED")
-    else
-        self:UnregisterEvent("UNIT_ABSORB_AMOUNT_CHANGED")
+    if not HealPredictionDB.Absorbs.Enabled then
         self.AbsorbBar:Hide()
     end
 end
@@ -483,8 +521,6 @@ local function CreatePowerBar(self, unit)
         end
 
         if PowerBarDB.Enabled then
-            self:RegisterUnitEvent("UNIT_POWER_UPDATE", UnitIsReal(unit) and unit)
-            self:RegisterUnitEvent("UNIT_MAXPOWER", UnitIsReal(unit) and unit)
             if PowerBarDB.Alignment == "TOP" then
                 self.HealthBar:ClearAllPoints()
                 self.HealthBG:ClearAllPoints()
@@ -578,8 +614,6 @@ local function UpdatePowerBar(self, unit)
         end
 
         if PowerBarDB.Enabled then
-            self:RegisterUnitEvent("UNIT_POWER_UPDATE", UnitIsReal(unit) and unit)
-            self:RegisterUnitEvent("UNIT_MAXPOWER", UnitIsReal(unit) and unit)
             if PowerBarDB.Alignment == "TOP" then
                 self.HealthBar:ClearAllPoints()
                 self.HealthBG:ClearAllPoints()
@@ -604,6 +638,7 @@ local function UpdatePowerBar(self, unit)
             self.PowerBar:Show()
             self.PowerBarBG:Show()
             self.PowerBarBorder:Show()
+            UpdateUnitPowerBarColour(self, unit)
         else
             self.HealthBar:ClearAllPoints()
             self.HealthBG:ClearAllPoints()
@@ -661,8 +696,6 @@ local function CreateAlternatePowerBar(self, unit)
     end
 
     if AlternatePowerBarDB.Enabled and UUF:RequiresAlternatePowerBar() then
-        self:RegisterUnitEvent("UNIT_POWER_UPDATE", UnitIsReal(unit) and unit)
-        self:RegisterUnitEvent("UNIT_MAXPOWER", UnitIsReal(unit) and unit)
         self.AlternatePowerBarBG:Show()
         self.AlternatePowerBar:Show()
     else
@@ -994,15 +1027,9 @@ local function CreatePortrait(self, unit)
             self.Portrait.unit = unit
 
             if PortraitDB.Enabled then
-                self.Portrait:RegisterUnitEvent("UNIT_PORTRAIT_UPDATE", unit)
-                self.Portrait:RegisterEvent("PLAYER_TARGET_CHANGED")
-                self.Portrait:SetScript("OnEvent", function(self) SetPortraitTexture(self.Texture, self.unit, true) end)
-                SetPortraitTexture(self.Portrait.Texture, unit, true)
                 if self.Portrait then self.Portrait:Show() end
             else
                 if self.Portrait then self.Portrait:Hide() end
-                self.Portrait:UnregisterAllEvents()
-                self.Portrait:SetScript("OnEvent", nil)
             end
         end
     end
@@ -1028,16 +1055,11 @@ local function UpdatePortrait(self, unit)
             self.Portrait.Texture:SetPoint("TOPLEFT", self.Portrait, "TOPLEFT", 1, -1)
             self.Portrait.Texture:SetPoint("BOTTOMRIGHT", self.Portrait, "BOTTOMRIGHT", -1, 1)
             self.Portrait.Texture:SetTexCoord((PortraitDB.Zoom or 0)*0.5, 1-(PortraitDB.Zoom or 0)*0.5, (PortraitDB.Zoom or 0)*0.5, 1-(PortraitDB.Zoom or 0)*0.5)
-            SetPortraitTexture(self.Portrait.Texture, unit, true)
         end
         if PortraitDB.Enabled then
-            self.Portrait:RegisterUnitEvent("UNIT_PORTRAIT_UPDATE", unit)
-            self.Portrait:RegisterEvent("PLAYER_TARGET_CHANGED")
             if self.Portrait then self.Portrait:Show() end
         else
             if self.Portrait then self.Portrait:Hide() end
-            self.Portrait:UnregisterAllEvents()
-            self.Portrait:SetScript("OnEvent", nil)
         end
     end
 end
@@ -1129,6 +1151,8 @@ function UUF:CreateUnitFrame(unit)
     CreateTag(unitFrame, unit, "TagTwo")
     CreateTag(unitFrame, unit, "TagThree")
 
+    UUF:RegisterUnitEvents(unitFrame, unit)
+
     _G[frameName] = unitFrame
 
     UUF:CreateMover(unitFrame)
@@ -1169,6 +1193,14 @@ function UUF:UpdateUnitFrame(unit)
     UpdateTag(unitFrame, unit, "TagTwo")
     UpdateTag(unitFrame, unit, "TagThree")
     UpdateUnitFrameData(unitFrame, nil, unit)
+
+    if unitDB.Enabled then
+        UUF:RegisterUnitEvents(unitFrame, unit)
+        unitFrame:Show()
+    else
+        UUF:UnregisterUnitEvents(unitFrame, unit)
+        unitFrame:Hide()
+    end
 end
 
 function UUF:LayoutBossFrames()
@@ -1197,4 +1229,36 @@ function UUF:UpdateAllBossFrames()
     end
     UUF:LayoutBossFrames()
     if UUF.TestMode then UUF:ShowBossFrames() end
+end
+
+function UUF:RegisterUnitEvents(unitFrame, unit)
+    if not unitFrame or not unit then return end
+    local normalizedUnit = GetNormalizedUnit(unit)
+    local unitDB = UUF.db.profile[normalizedUnit]
+
+    for _, event in ipairs(GLOBAL_EVENTS) do unitFrame:RegisterEvent(event) end
+
+    for _, event in ipairs(UNIT_EVENTS["HEALTH"]) do unitFrame:RegisterUnitEvent(event, unit) end
+
+    for _, event in ipairs(UNIT_EVENTS["POWER"]) do unitFrame:RegisterUnitEvent(event, unit) end
+
+    for _, event in ipairs(UNIT_EVENTS["ABSORB"]) do unitFrame:RegisterUnitEvent(event, unit) end
+
+    unitFrame:SetScript("OnEvent", UpdateUnitFrameData)
+end
+
+function UUF:UnregisterUnitEvents(unitFrame, unit)
+    if not unitFrame or not unit then return end
+
+    for _, event in ipairs(GLOBAL_EVENTS) do unitFrame:UnregisterEvent(event) end
+
+    for _, event in ipairs(UNIT_EVENTS["HEALTH"]) do unitFrame:UnregisterEvent(event) end
+
+    for _, event in ipairs(UNIT_EVENTS["POWER"]) do unitFrame:UnregisterEvent(event) end
+
+    for _, event in ipairs(UNIT_EVENTS["ABSORB"]) do unitFrame:UnregisterEvent(event) end
+
+    for _, event in ipairs(UNIT_EVENTS["PORTRAIT"]) do if unitFrame.Portrait then unitFrame:UnregisterEvent(event) end end
+
+    unitFrame:SetScript("OnEvent", nil)
 end
