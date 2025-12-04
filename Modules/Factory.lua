@@ -126,6 +126,7 @@ local UPDATE_HEALTH_EVENTS = {
     PLAYER_TARGET_CHANGED = true,
     UNIT_HEALTH = true,
     UNIT_MAXHEALTH = true,
+    UNIT_PET = true,
 }
 
 local UPDATE_POWER_EVENTS = {
