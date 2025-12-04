@@ -169,6 +169,7 @@ local UPDATE_TAGS_EVENTS = {
     UNIT_MAXHEALTH = true,
     UNIT_POWER_UPDATE = true,
     UNIT_MAXPOWER = true,
+    UNIT_ABSORB_AMOUNT_CHANGED = true,
 }
 
 --------------------------------------------------------------
@@ -187,6 +188,9 @@ local function UpdateTags(self, _, unit)
     end
     if self.TagThree then
         self.TagThree:SetText(UUF:EvaluateTagString(self.unit, UUF.db.profile[GetNormalizedUnit(self.unit)].Tags.TagThree.Tag or ""))
+    end
+    if self.TagFour then
+        self.TagFour:SetText(UUF:EvaluateTagString(self.unit, UUF.db.profile[GetNormalizedUnit(self.unit)].Tags.TagFour.Tag or ""))
     end
 end
 
@@ -1150,6 +1154,7 @@ function UUF:CreateUnitFrame(unit)
     CreateTag(unitFrame, unit, "TagOne")
     CreateTag(unitFrame, unit, "TagTwo")
     CreateTag(unitFrame, unit, "TagThree")
+    CreateTag(unitFrame, unit, "TagFour")
 
     UUF:RegisterUnitEvents(unitFrame, unit)
 
@@ -1192,6 +1197,7 @@ function UUF:UpdateUnitFrame(unit)
     UpdateTag(unitFrame, unit, "TagOne")
     UpdateTag(unitFrame, unit, "TagTwo")
     UpdateTag(unitFrame, unit, "TagThree")
+    UpdateTag(unitFrame, unit, "TagFour")
     UpdateUnitFrameData(unitFrame, nil, unit)
 
     if unitDB.Enabled then

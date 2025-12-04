@@ -1161,6 +1161,7 @@ local function CreateTagsSettings(containerParent, unit)
         { text = "Tag One", value = "TagOne", },
         { text = "Tag Two", value = "TagTwo", },
         { text = "Tag Three", value = "TagThree", },
+        { text = "Tag Four", value = "TagFour", },
     })
     TagsTabGroup:SetCallback("OnGroupSelected", SelectTagTab)
     TagsTabGroup:SelectTab("TagOne")
