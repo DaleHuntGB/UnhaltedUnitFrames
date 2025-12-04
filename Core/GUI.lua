@@ -1143,6 +1143,13 @@ local function CreateTagsSettings(containerParent, unit)
             TagThreeContainer:SetFullHeight(true)
             TagContainer:AddChild(TagThreeContainer)
             CreateTagSettings(TagThreeContainer, unit, "TagThree")
+        elseif TagName == "TagFour" then
+            local TagFourContainer = AG:Create("SimpleGroup")
+            TagFourContainer:SetLayout("Flow")
+            TagFourContainer:SetFullWidth(true)
+            TagFourContainer:SetFullHeight(true)
+            TagContainer:AddChild(TagFourContainer)
+            CreateTagSettings(TagFourContainer, unit, "TagFour")
         end
     end
 
@@ -1831,6 +1838,8 @@ function UUF:CreateGUI()
                 CreateUnitFrameFrameSettings(UnitFrameContainer, "focus")
             elseif UnitFrameGroup == "HealPrediction" then
                 CreateHealPredictionSettings(UnitFrameContainer, "focus")
+            elseif UnitFrameGroup == "PowerBar" then
+                CreatePowerBarSettings(UnitFrameContainer, "focus")
             elseif UnitFrameGroup == "Indicators" then
                 CreateIndicatorSettings(UnitFrameContainer, "focus")
             elseif UnitFrameGroup == "Tags" then
@@ -1844,6 +1853,7 @@ function UUF:CreateGUI()
         UnitFrameTabGroup:SetTabs({
             { text = "Frame", value = "Frame"},
             { text = "Heal Prediction", value = "HealPrediction"},
+            { text = "Power Bar", value = "PowerBar"},
             { text = "Indicators", value = "Indicators"},
             { text = "Tags", value = "Tags"},
         })
