@@ -187,6 +187,11 @@ local UPDATE_RANGE_EVENTS = {
     PLAYER_TARGET_CHANGED = true,
 }
 
+local UPDATE_ABSORB_EVENTS = {
+    UNIT_ABSORB_AMOUNT_CHANGED = true,
+    PLAYER_ENTERING_WORLD = true,
+}
+
 --------------------------------------------------------------
 --- Event Functions
 --------------------------------------------------------------
@@ -327,27 +332,33 @@ local function UpdateUnitCastBar(self, event, unit)
     }
 end
 
+local function UpdateUnitAbsorbs(self, event, unit)
+    if unit and unit ~= self.unit then return end
+    if not UnitExists(self.unit) then return end
+
+    local unitMaxHP  = UnitHealthMax(self.unit)
+    local absorbAmount = UnitGetTotalAbsorbs(self.unit)
+
+    if self.AbsorbBar then
+        self.AbsorbBar:SetMinMaxValues(0, unitMaxHP)
+        self.AbsorbBar:SetValue(absorbAmount)
+    end
+end
+
 local function UpdateUnitFrameData(self, event, unit)
     if unit and unit ~= self.unit then return end
     if not UnitExists(self.unit) then return end
     if UUF.db.profile[GetNormalizedUnit(self.unit)].Enabled == false then return end
 
-    local unitMaxHP  = UnitHealthMax(self.unit)
-    local absorbAmount = UnitGetTotalAbsorbs(self.unit)
-
     if UPDATE_FRAME_EVENTS[event] then UUF:UpdateUnitFrame(self.unit) end
-
     if UPDATE_HEALTH_COLOUR_EVENTS[event] then UpdateUnitHealthBarColour(self, event, self.unit) end
     if UPDATE_POWER_BAR_COLOUR_EVENTS[event] then UpdateUnitPowerBarColour(self, event, self.unit) end
-
     if UPDATE_HEALTH_EVENTS[event] then UpdateUnitHealthBarValues(self, event, self.unit) end
     if UPDATE_POWER_EVENTS[event] then UpdateUnitPowerBarValues(self, event, self.unit) end
     if UPDATE_INDICATOR_EVENTS[event] then UpdateUnitIndicators(self, event, self.unit) end
     if UPDATE_PORTRAIT_EVENTS[event] then if self.Portrait then SetPortraitTexture(self.Portrait.Texture, self.unit, true) end end
     if UPDATE_TAGS_EVENTS[event] then UpdateTags(self, event, self.unit) end
-
-    if self.AbsorbBar then self.AbsorbBar:SetMinMaxValues(0, unitMaxHP) self.AbsorbBar:SetValue(absorbAmount) end
-
+    if UPDATE_ABSORB_EVENTS[event] then UpdateUnitAbsorbs(self, event, self.unit) end
 end
 
 --------------------------------------------------------------
