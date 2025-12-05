@@ -355,7 +355,6 @@ local function ForceTargetTargetUpdate()
     UpdateUnitAbsorbs(targetTargetFrame, nil, "targettarget")
 end
 
-
 local function UpdateUnitFrameData(self, event, unit)
     if unit and unit ~= self.unit then return end
     if not UnitExists(self.unit) then return end
