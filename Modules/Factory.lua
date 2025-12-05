@@ -190,6 +190,7 @@ local UPDATE_RANGE_EVENTS = {
 local UPDATE_ABSORB_EVENTS = {
     UNIT_ABSORB_AMOUNT_CHANGED = true,
     PLAYER_ENTERING_WORLD = true,
+    PLAYER_TARGET_CHANGED = true,
 }
 
 --------------------------------------------------------------
