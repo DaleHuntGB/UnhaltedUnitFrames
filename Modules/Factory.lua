@@ -119,6 +119,7 @@ local UNIT_EVENTS = {
     POWER  = { "UNIT_POWER_UPDATE", "UNIT_MAXPOWER" },
     ABSORB = { "UNIT_ABSORB_AMOUNT_CHANGED" },
     PORTRAIT = { "UNIT_PORTRAIT_UPDATE" },
+    CASTBAR = {"UNIT_SPELLCAST_START", "UNIT_SPELLCAST_STOP", "UNIT_SPELLCAST_CHANNEL_START", "UNIT_SPELLCAST_CHANNEL_STOP", "UNIT_SPELLCAST_INTERRUPTIBLE", "UNIT_SPELLCAST_NOT_INTERRUPTIBLE" },
 }
 
 local UPDATE_HEALTH_EVENTS = {
@@ -171,6 +172,15 @@ local UPDATE_TAGS_EVENTS = {
     UNIT_POWER_UPDATE = true,
     UNIT_MAXPOWER = true,
     UNIT_ABSORB_AMOUNT_CHANGED = true,
+}
+
+local UPDATE_CASTBAR_EVENTS = {
+    UNIT_SPELLCAST_START = true,
+    UNIT_SPELLCAST_STOP = true,
+    UNIT_SPELLCAST_CHANNEL_START = true,
+    UNIT_SPELLCAST_CHANNEL_STOP = true,
+    UNIT_SPELLCAST_INTERRUPTIBLE = true,
+    UNIT_SPELLCAST_NOT_INTERRUPTIBLE = true,
 }
 
 --------------------------------------------------------------
@@ -294,6 +304,23 @@ local function UpdateUnitIndicators(self, event, unit)
             end
         end
     end
+end
+
+local function UpdateUnitCastBar(self, event, unit)
+    if unit and unit ~= self.unit then return end
+    if not UnitExists(self.unit) then return end
+
+    local CAST_START = {
+        UNIT_SPELLCAST_START = true,
+        UNIT_SPELLCAST_CHANNEL_START = true,
+        UNIT_SPELLCAST_INTERRUPTIBLE = true,
+        UNIT_SPELLCAST_NOT_INTERRUPTIBLE = true,
+    }
+
+    local CAST_STOP = {
+        UNIT_SPELLCAST_STOP = true,
+        UNIT_SPELLCAST_CHANNEL_STOP = true,
+    }
 end
 
 local function UpdateUnitFrameData(self, event, unit)
@@ -1108,6 +1135,35 @@ local function UpdateTag(self, unit, tag)
     end
 end
 
+local function CreateCastBar(self, unit)
+    local UUFDB = UUF.db.profile
+    local normalizedUnit = GetNormalizedUnit(unit)
+    local CastBarDB = UUFDB[normalizedUnit].CastBar
+    local unitContainer = self.Container
+
+    if CastBarDB then
+        if not self.CastBarContainer then
+            self.CastBarContainer = CreateFrame("Frame", ResolveFrameName(unit).."_CastBarContainer", unitContainer, "BackdropTemplate")
+            self.CastBarContainer:SetPoint(CastBarDB.AnchorFrom, unitContainer, CastBarDB.AnchorTo, CastBarDB.XPosition, CastBarDB.YPosition)
+            self.CastBarContainer:SetSize(CastBarDB.Width, CastBarDB.Height)
+            self.CastBarContainer:SetBackdrop(UUF.BackdropTemplate)
+            self.CastBarContainer:SetBackdropColor(CastBarDB.BGColour[1], CastBarDB.BGColour[2], CastBarDB.BGColour[3], CastBarDB.BGColour[4])
+            self.CastBarContainer:SetBackdropBorderColor(0, 0, 0, 1)
+            self.CastBarContainer:SetFrameLevel(unitContainer:GetFrameLevel() + 5)
+        end
+
+        if not self.CastBar then
+            self.CastBar = CreateFrame("StatusBar", ResolveFrameName(unit).."_CastBar", unitContainer)
+            self.CastBar:SetPoint("TOPLEFT", self.CastBarContainer, "TOPLEFT", 1, -1)
+            self.CastBar:SetPoint("BOTTOMRIGHT", self.CastBarContainer, "BOTTOMRIGHT", -1, 1)
+            self.CastBar:SetSize(CastBarDB.Width, CastBarDB.Height)
+            self.CastBar:SetStatusBarTexture(UUF.Media.ForegroundTexture)
+            self.CastBar:SetStatusBarColor(CastBarDB.FGColour[1], CastBarDB.FGColour[2], CastBarDB.FGColour[3], CastBarDB.FGColour[4])
+            self.CastBar.unit = unit
+        end
+    end
+end
+
 --------------------------------------------------------------
 --- Factory Functions
 --------------------------------------------------------------
@@ -1250,6 +1306,10 @@ function UUF:RegisterUnitEvents(unitFrame, unit)
     for _, event in ipairs(UNIT_EVENTS["POWER"]) do unitFrame:RegisterUnitEvent(event, unit) end
 
     for _, event in ipairs(UNIT_EVENTS["ABSORB"]) do unitFrame:RegisterUnitEvent(event, unit) end
+
+    for _, event in ipairs(UNIT_EVENTS["PORTRAIT"]) do if unitFrame.Portrait then unitFrame:RegisterEvent(event) end end
+
+    for _, event in ipairs(UNIT_EVENTS["CASTBAR"]) do if unitFrame.CastBar then unitFrame:RegisterUnitEvent(event, unit) end end
 
     unitFrame:SetScript("OnEvent", UpdateUnitFrameData)
 end
