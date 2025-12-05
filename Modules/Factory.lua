@@ -346,6 +346,15 @@ local function UpdateUnitAbsorbs(self, event, unit)
     end
 end
 
+local function ForceTargetTargetUpdate()
+    local frame = _G["UUF_TargetTarget"]
+    if not frame or not UnitExists("targettarget") then return end
+    UpdateUnitHealthBarValues(frame, nil, "targettarget")
+    UpdateUnitPowerBarValues(frame, nil, "targettarget")
+    UpdateUnitAbsorbs(frame, nil, "targettarget")
+end
+
+
 local function UpdateUnitFrameData(self, event, unit)
     if unit and unit ~= self.unit then return end
     if not UnitExists(self.unit) then return end
@@ -360,6 +369,8 @@ local function UpdateUnitFrameData(self, event, unit)
     if UPDATE_PORTRAIT_EVENTS[event] then if self.Portrait then SetPortraitTexture(self.Portrait.Texture, self.unit, true) end end
     if UPDATE_TAGS_EVENTS[event] then UpdateTags(self, event, self.unit) end
     if UPDATE_ABSORB_EVENTS[event] then UpdateUnitAbsorbs(self, event, self.unit) end
+
+    ForceTargetTargetUpdate()
 end
 
 --------------------------------------------------------------
