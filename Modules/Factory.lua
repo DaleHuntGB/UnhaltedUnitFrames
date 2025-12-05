@@ -183,6 +183,10 @@ local UPDATE_CASTBAR_EVENTS = {
     UNIT_SPELLCAST_NOT_INTERRUPTIBLE = true,
 }
 
+local UPDATE_RANGE_EVENTS = {
+    PLAYER_TARGET_CHANGED = true,
+}
+
 --------------------------------------------------------------
 --- Event Functions
 --------------------------------------------------------------
@@ -326,6 +330,7 @@ end
 local function UpdateUnitFrameData(self, event, unit)
     if unit and unit ~= self.unit then return end
     if not UnitExists(self.unit) then return end
+    if UUF.db.profile[GetNormalizedUnit(self.unit)].Enabled == false then return end
 
     local unitMaxHP  = UnitHealthMax(self.unit)
     local absorbAmount = UnitGetTotalAbsorbs(self.unit)
