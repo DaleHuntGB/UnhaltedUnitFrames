@@ -347,11 +347,12 @@ local function UpdateUnitAbsorbs(self, event, unit)
 end
 
 local function ForceTargetTargetUpdate()
-    local frame = _G["UUF_TargetTarget"]
-    if not frame or not UnitExists("targettarget") then return end
-    UpdateUnitHealthBarValues(frame, nil, "targettarget")
-    UpdateUnitPowerBarValues(frame, nil, "targettarget")
-    UpdateUnitAbsorbs(frame, nil, "targettarget")
+    local targetTargetFrame = _G["UUF_TargetTarget"]
+    if not targetTargetFrame or not UnitExists("targettarget") then return end
+    if UUF.db.profile.targettarget.Enabled == false then return end
+    UpdateUnitHealthBarValues(targetTargetFrame, nil, "targettarget")
+    UpdateUnitPowerBarValues(targetTargetFrame, nil, "targettarget")
+    UpdateUnitAbsorbs(targetTargetFrame, nil, "targettarget")
 end
 
 
