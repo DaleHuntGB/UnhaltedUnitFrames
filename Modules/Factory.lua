@@ -164,6 +164,8 @@ local UPDATE_INDICATOR_EVENTS = {
 local UPDATE_PORTRAIT_EVENTS = {
     UNIT_PORTRAIT_UPDATE = true,
     PLAYER_TARGET_CHANGED = true,
+    PLAYER_REGEN_ENABLED = true,
+    PLAYER_REGEN_DISABLED = true,
 }
 
 local UPDATE_TAGS_EVENTS = {
@@ -194,6 +196,14 @@ local UPDATE_ABSORB_EVENTS = {
     UNIT_ABSORB_AMOUNT_CHANGED = true,
     PLAYER_ENTERING_WORLD = true,
     PLAYER_TARGET_CHANGED = true,
+}
+
+local MASS_FRAME_EVENT = {
+    PLAYER_ENTERING_WORLD = true,
+    ENCOUNTER_START = true,
+    ENCOUNTER_END = true,
+    PLAYER_REGEN_ENABLED = true,
+    PLAYER_REGEN_DISABLED = true,
 }
 
 --------------------------------------------------------------
@@ -372,6 +382,15 @@ local function UpdateUnitFrameData(self, event, unit)
     if UPDATE_PORTRAIT_EVENTS[event] then if self.Portrait then SetPortraitTexture(self.Portrait.Texture, self.unit, true) end end
     if UPDATE_TAGS_EVENTS[event] then UpdateTags(self, event, self.unit) end
     if UPDATE_ABSORB_EVENTS[event] then UpdateUnitAbsorbs(self, event, self.unit) end
+    if MASS_FRAME_EVENT[event] then
+        UpdateUnitHealthBarColour(self, event, self.unit)
+        UpdateUnitPowerBarColour(self, event, self.unit)
+        UpdateUnitHealthBarValues(self, event, self.unit)
+        UpdateUnitPowerBarValues(self, event, self.unit)
+        UpdateUnitIndicators(self, event, self.unit)
+        UpdateUnitAbsorbs(self, event, self.unit)
+        UpdateTags(self, event, self.unit)
+    end
 
     ForceTargetTargetUpdate()
 end
