@@ -16,7 +16,7 @@ UUF.Defaults = {
                 OffsetX = 0,
                 OffsetY = 0
             },
-            ForegroundTexture = "Blizzard Raid Bar",
+            ForegroundTexture = "BetterBlizzard",
             BackgroundTexture = "Solid",
             CustomColours = {
                 Reaction = {
