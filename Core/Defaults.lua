@@ -16,7 +16,7 @@ UUF.Defaults = {
                 OffsetX = 0,
                 OffsetY = 0
             },
-            ForegroundTexture = "BetterBlizzard",
+            ForegroundTexture = "Better Blizzard",
             BackgroundTexture = "Solid",
             CustomColours = {
                 Reaction = {
