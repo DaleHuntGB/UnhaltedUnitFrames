@@ -338,7 +338,7 @@ end
 local function UpdateUnitCastBar(self, event, unit)
     if unit and unit ~= self.unit then return end
     if not UnitExists(self.unit) then return end
-    if UUF.db.profile[GetNormalizedUnit(self.unit)].CastBar.Enabled == false then return end
+    if UUF.db.profile[GetNormalizedUnit(unit)].CastBar and UUF.db.profile[GetNormalizedUnit(unit)].CastBar.Enabled == false then return end
 
     local CAST_START = {
         UNIT_SPELLCAST_START = true,
