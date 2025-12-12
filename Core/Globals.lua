@@ -279,3 +279,23 @@ function UUF:FrameIsValid(frameToAnchor, frameName)
         return false
     end
 end
+
+function UUF:FixDatabaseIssues()
+    local function FixTable(defaultTable, userTable)
+        for k, v in pairs(defaultTable) do
+            if type(v) == "table" then
+                if type(userTable[k]) ~= "table" then
+                    userTable[k] = UUF:CopyTable(v)
+                else
+                    FixTable(v, userTable[k])
+                end
+            else
+                if userTable[k] == nil then
+                    userTable[k] = v
+                end
+            end
+        end
+    end
+    FixTable(UUF.Defaults, UnhaltedUFDB)
+    UUF:Print("Database issues have been fixed. Please review your settings to ensure everything is correct.")
+end

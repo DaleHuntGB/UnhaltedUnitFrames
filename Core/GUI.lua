@@ -1945,6 +1945,14 @@ function UUF:CreateGUI()
         GlobalProfileDropdown:SetDisabled(not UUF.db.global.UseGlobalProfile)
         if UUF.db.global.UseGlobalProfile then for _, child in ipairs(ProfileContainer.children) do if child ~= UseGlobalProfileToggle and child ~= GlobalProfileDropdown then DeepDisable(child, true) end end end
 
+        local DeveloperContainer = CreateInlineGroup(ScrollFrame, "Developer Settings")
+
+        local FixDBButton = AG:Create("Button")
+        FixDBButton:SetText("Fix Database Issues")
+        FixDBButton:SetFullWidth(true)
+        FixDBButton:SetCallback("OnClick", function() UUF:FixDatabaseIssues() if unit == "boss" then UUF:UpdateAllBossFrames() else UUF:UpdateUnitFrame(unit) end end)
+        DeveloperContainer:AddChild(FixDBButton)
+
         ScrollFrame:DoLayout()
     end
 
