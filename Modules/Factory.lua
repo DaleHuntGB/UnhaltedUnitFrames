@@ -360,6 +360,11 @@ local function UpdateUnitCastBar(self, event, unit)
             self.CastBar:SetTimerDuration(castDuration, 0)
             self.CastBar.Icon:SetTexture(select(3, UnitCastingInfo(self.unit)) or nil)
             self.CastBar.SpellName:SetText(UnitCastingInfo(self.unit) or "")
+            self.CastBar:SetScript("OnUpdate", function()
+                local remainingDuration = castDuration:GetRemainingDuration()
+                self.CastBar.Time:SetText(string.format("%.1f", remainingDuration))
+            end)
+            self.CastBar.Time:SetText(castDuration:GetEndTime())
             self.CastBarContainer:Show()
             self.CastBar:Show()
         elseif CHANNEL_START[event] then
@@ -367,11 +372,16 @@ local function UpdateUnitCastBar(self, event, unit)
             self.CastBar:SetTimerDuration(channelDuration, 0)
             self.CastBar.SpellName:SetText(UnitChannelInfo(self.unit) or "")
             self.CastBar.Icon:SetTexture(select(3, UnitChannelInfo(self.unit)) or nil)
+            self.CastBar:SetScript("OnUpdate", function()
+                local remainingDuration = channelDuration:GetRemainingDuration()
+                self.CastBar.Time:SetText(string.format("%.1f", remainingDuration))
+            end)
             self.CastBarContainer:Show()
             self.CastBar:Show()
         elseif CAST_STOP[event] then
             self.CastBarContainer:Hide()
             self.CastBar:Hide()
+            self.CastBar:SetScript("OnUpdate", nil)
         end
     end
 end
