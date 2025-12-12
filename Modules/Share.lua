@@ -4,10 +4,7 @@ local Compress = LibStub:GetLibrary("LibDeflate")
 local UnitToFrameName = UUF.UnitToFrameName
 
 function UUF:ExportSavedVariables()
-    local profileData = {
-        global = UUF.db.global,
-        profile = UUF.db.profile,
-    }
+    local profileData = { profile = UUF.db.profile, }
     local SerializedInfo = Serialize:Serialize(profileData)
     local CompressedInfo = Compress:CompressDeflate(SerializedInfo)
     local EncodedInfo = Compress:EncodeForPrint(CompressedInfo)
@@ -31,12 +28,6 @@ function UUF:ImportSavedVariables(EncodedInfo, profileName)
         if type(data.profile) == "table" then
             for key, value in pairs(data.profile) do
                 UUF.db.profile[key] = value
-            end
-        end
-
-        if type(data.global) == "table" then
-            for key, value in pairs(data.global) do
-                UUF.db.global[key] = value
             end
         end
 
@@ -70,12 +61,6 @@ function UUF:ImportSavedVariables(EncodedInfo, profileName)
                     end
                 end
 
-                if type(data.global) == "table" then
-                    for key, value in pairs(data.global) do
-                        UUF.db.global[key] = value
-                    end
-                end
-
                 UUFG.RefreshProfiles()
 
                 UIParent:SetScale(UUF.db.profile.General.UIScale or 1)
@@ -94,10 +79,7 @@ function UUFG:ExportUUF(profileKey)
     local profile = UUF.db.profiles[profileKey]
     if not profile then return nil end
 
-    local profileData = {
-        profile = profile,
-        global = UUF.db.global,
-    }
+    local profileData = { profile = profile, }
 
     local SerializedInfo = Serialize:Serialize(profileData)
     local CompressedInfo = Compress:CompressDeflate(SerializedInfo)
@@ -119,11 +101,5 @@ function UUFG:ImportUUF(importString, profileKey)
     if type(profileData.profile) == "table" then
         UUF.db.profiles[profileKey] = profileData.profile
         UUF.db:SetProfile(profileKey)
-    end
-
-    if type(profileData.global) == "table" then
-        for key, value in pairs(profileData.global) do
-            UUF.db.global[key] = value
-        end
     end
 end
