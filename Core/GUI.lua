@@ -2174,6 +2174,8 @@ function UUF:CreateGUI()
                 CreateHealPredictionSettings(UnitFrameContainer, "focus")
             elseif UnitFrameGroup == "PowerBar" then
                 CreatePowerBarSettings(UnitFrameContainer, "focus")
+            elseif UnitFrameGroup == "CastBar" then
+                CreateCastBarSettings(UnitFrameContainer, "focus")
             elseif UnitFrameGroup == "Indicators" then
                 CreateIndicatorSettings(UnitFrameContainer, "focus")
             elseif UnitFrameGroup == "Tags" then
@@ -2188,6 +2190,7 @@ function UUF:CreateGUI()
             { text = "Frame", value = "Frame"},
             { text = "Heal Prediction", value = "HealPrediction"},
             { text = "Power Bar", value = "PowerBar"},
+            { text = "Cast Bar", value = "CastBar"},
             { text = "Indicators", value = "Indicators"},
             { text = "Tags", value = "Tags"},
         })

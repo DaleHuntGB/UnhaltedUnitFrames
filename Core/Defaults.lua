@@ -599,6 +599,42 @@ UUF.Defaults = {
                     GrowthDirection = "RIGHT",
                 }
             },
+            CastBar = {
+                Enabled = true,
+                Height = 24,
+                Width = 122,
+                XPosition = 0,
+                YPosition = 1,
+                AnchorFrom = "BOTTOM",
+                AnchorTo = "TOP",
+                FGColour = {128/255, 128/255, 255/255, 1},
+                BGColour = {26/255, 26/255, 26/255, 1},
+                NotInterruptibleColour = {255/255, 64/255, 64/255, 1},
+                Text = {
+                    SpellName = {
+                        Enabled = true,
+                        AnchorFrom = "LEFT",
+                        AnchorTo = "LEFT",
+                        OffsetX = 3,
+                        OffsetY = 0,
+                        FontSize = 12,
+                        Colour = {1, 1, 1, 1},
+                    },
+                    Time = {
+                        Enabled = true,
+                        AnchorFrom = "RIGHT",
+                        AnchorTo = "RIGHT",
+                        OffsetX = -3,
+                        OffsetY = 0,
+                        FontSize = 12,
+                        Colour = {1, 1, 1, 1},
+                    },
+                },
+                Icon = {
+                    Enabled = true,
+                    Position = "RIGHT",
+                },
+            },
             PowerBar = {
                 Enabled = false,
                 Height = 3,
