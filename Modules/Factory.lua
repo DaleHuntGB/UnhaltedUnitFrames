@@ -121,7 +121,7 @@ local UNIT_EVENTS = {
     POWER  = { "UNIT_POWER_UPDATE", "UNIT_MAXPOWER" },
     ABSORB = { "UNIT_ABSORB_AMOUNT_CHANGED" },
     PORTRAIT = { "UNIT_PORTRAIT_UPDATE" },
-    CASTBAR = {"UNIT_SPELLCAST_START", "UNIT_SPELLCAST_STOP", "UNIT_SPELLCAST_CHANNEL_START", "UNIT_SPELLCAST_CHANNEL_STOP", "UNIT_SPELLCAST_INTERRUPTIBLE", "UNIT_SPELLCAST_NOT_INTERRUPTIBLE" },
+    CASTBAR = {"UNIT_SPELLCAST_START", "UNIT_SPELLCAST_SENT", "UNIT_SPELLCAST_STOP", "UNIT_SPELLCAST_CHANNEL_START", "UNIT_SPELLCAST_CHANNEL_STOP", "UNIT_SPELLCAST_INTERRUPTIBLE", "UNIT_SPELLCAST_NOT_INTERRUPTIBLE" },
 }
 
 local UPDATE_HEALTH_EVENTS = {
@@ -189,6 +189,8 @@ local UPDATE_CASTBAR_EVENTS = {
     UNIT_SPELLCAST_CHANNEL_STOP = true,
     UNIT_SPELLCAST_INTERRUPTIBLE = true,
     UNIT_SPELLCAST_NOT_INTERRUPTIBLE = true,
+    UNIT_SPELLCAST_SENT = true,
+    PLAYER_TARGET_CHANGED = true,
 }
 
 local UPDATE_RANGE_EVENTS = {
@@ -343,11 +345,13 @@ local function UpdateUnitCastBar(self, event, unit)
         UNIT_SPELLCAST_CHANNEL_START = true,
         UNIT_SPELLCAST_INTERRUPTIBLE = true,
         UNIT_SPELLCAST_NOT_INTERRUPTIBLE = true,
+        UNIT_SPELLCAST_SENT = true,
     }
 
     local CAST_STOP = {
         UNIT_SPELLCAST_STOP = true,
         UNIT_SPELLCAST_CHANNEL_STOP = true,
+        PLAYER_TARGET_CHANGED = true,
     }
 
     local CHANNEL_START = {
@@ -357,6 +361,7 @@ local function UpdateUnitCastBar(self, event, unit)
     if self.CastBar then
         if CAST_START[event] then
             local castDuration = UnitCastingDuration(self.unit)
+            if not castDuration then return end
             self.CastBar:SetTimerDuration(castDuration, 0)
             self.CastBar.Icon:SetTexture(select(3, UnitCastingInfo(self.unit)) or nil)
             self.CastBar.SpellName:SetText(UnitCastingInfo(self.unit) or "")
@@ -366,6 +371,7 @@ local function UpdateUnitCastBar(self, event, unit)
             self.CastBar:Show()
         elseif CHANNEL_START[event] then
             local channelDuration = UnitChannelDuration(self.unit)
+            if not channelDuration then return end
             self.CastBar:SetTimerDuration(channelDuration, 0)
             self.CastBar.SpellName:SetText(UnitChannelInfo(self.unit) or "")
             self.CastBar.Icon:SetTexture(select(3, UnitChannelInfo(self.unit)) or nil)
