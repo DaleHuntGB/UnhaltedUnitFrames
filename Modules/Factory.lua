@@ -1238,6 +1238,8 @@ local function CreateCastBar(self, unit)
         if not self.CastBarContainer then
             self.CastBarContainer = CreateFrame("Frame", ResolveFrameName(unit).."_CastBarContainer", unitContainer, "BackdropTemplate")
             self.CastBarContainer:SetPoint(CastBarDB.AnchorFrom, unitContainer, CastBarDB.AnchorTo, CastBarDB.XPosition, CastBarDB.YPosition)
+            local isMatchingFrameWidth = CastBarDB.MatchFrameWidth
+            if isMatchingFrameWidth then CastBarDB.Width = UUFDB[normalizedUnit].Frame.Width else CastBarDB.Width = CastBarDB.Width end
             self.CastBarContainer:SetSize(CastBarDB.Width, CastBarDB.Height)
             self.CastBarContainer:SetBackdrop(UUF.BackdropTemplate)
             self.CastBarContainer:SetBackdropColor(CastBarDB.BGColour[1], CastBarDB.BGColour[2], CastBarDB.BGColour[3], CastBarDB.BGColour[4])
@@ -1250,6 +1252,8 @@ local function CreateCastBar(self, unit)
             self.CastBar = CreateFrame("StatusBar", ResolveFrameName(unit).."_CastBar", unitContainer)
             self.CastBar:SetPoint("TOPLEFT", self.CastBarContainer, "TOPLEFT", 1, -1)
             self.CastBar:SetPoint("BOTTOMRIGHT", self.CastBarContainer, "BOTTOMRIGHT", -1, 1)
+            local isMatchingFrameWidth = CastBarDB.MatchFrameWidth
+            if isMatchingFrameWidth then CastBarDB.Width = UUFDB[normalizedUnit].Frame.Width else CastBarDB.Width = CastBarDB.Width end
             self.CastBar:SetSize(CastBarDB.Width, CastBarDB.Height)
             self.CastBar:SetStatusBarTexture(UUF.Media.ForegroundTexture)
             self.CastBar:SetStatusBarColor(CastBarDB.FGColour[1], CastBarDB.FGColour[2], CastBarDB.FGColour[3], CastBarDB.FGColour[4])
@@ -1311,6 +1315,8 @@ local function UpdateCastBar(self, unit)
         if self.CastBarContainer then
             self.CastBarContainer:ClearAllPoints()
             self.CastBarContainer:SetPoint(CastBarDB.AnchorFrom, unitContainer, CastBarDB.AnchorTo, CastBarDB.XPosition, CastBarDB.YPosition)
+            local isMatchingFrameWidth = CastBarDB.MatchFrameWidth
+            if isMatchingFrameWidth then CastBarDB.Width = UUFDB[normalizedUnit].Frame.Width else CastBarDB.Width = CastBarDB.Width end
             self.CastBarContainer:SetSize(CastBarDB.Width, CastBarDB.Height)
             self.CastBarContainer:SetBackdropColor(CastBarDB.BGColour[1], CastBarDB.BGColour[2], CastBarDB.BGColour[3], CastBarDB.BGColour[4])
             self.CastBarContainer:Hide()
@@ -1320,6 +1326,8 @@ local function UpdateCastBar(self, unit)
             self.CastBar:ClearAllPoints()
             self.CastBar:SetPoint("TOPLEFT", self.CastBarContainer, "TOPLEFT", 1, -1)
             self.CastBar:SetPoint("BOTTOMRIGHT", self.CastBarContainer, "BOTTOMRIGHT", -1, 1)
+            local isMatchingFrameWidth = CastBarDB.MatchFrameWidth
+            if isMatchingFrameWidth then CastBarDB.Width = UUFDB[normalizedUnit].Frame.Width else CastBarDB.Width = CastBarDB.Width end
             self.CastBar:SetSize(CastBarDB.Width, CastBarDB.Height)
             self.CastBar:SetStatusBarTexture(UUF.Media.ForegroundTexture)
             self.CastBar:SetStatusBarColor(CastBarDB.FGColour[1], CastBarDB.FGColour[2], CastBarDB.FGColour[3], CastBarDB.FGColour[4])
