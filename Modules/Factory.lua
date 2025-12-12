@@ -358,14 +358,15 @@ local function UpdateUnitCastBar(self, event, unit)
         if CAST_START[event] then
             local castDuration = UnitCastingDuration(self.unit)
             self.CastBar:SetTimerDuration(castDuration, 0)
-            self.CastBar.SpellName:SetText(UnitCastingInfo(self.unit) or "")
             self.CastBar.Icon:SetTexture(select(3, UnitCastingInfo(self.unit)) or nil)
+            self.CastBar.SpellName:SetText(UnitCastingInfo(self.unit) or "")
             self.CastBarContainer:Show()
             self.CastBar:Show()
         elseif CHANNEL_START[event] then
             local channelDuration = UnitChannelDuration(self.unit)
             self.CastBar:SetTimerDuration(channelDuration, 0)
             self.CastBar.SpellName:SetText(UnitChannelInfo(self.unit) or "")
+            self.CastBar.Icon:SetTexture(select(3, UnitChannelInfo(self.unit)) or nil)
             self.CastBarContainer:Show()
             self.CastBar:Show()
         elseif CAST_STOP[event] then
