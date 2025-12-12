@@ -339,9 +339,12 @@ local function UpdateUnitIndicators(self, event, unit)
 end
 
 local function UpdateUnitCastBar(self, event, unit)
+    if not self.CastBar or not self.CastBarContainer then return end
     if unit and unit ~= self.unit then return end
     if not UnitExists(self.unit) then return end
-    if UUF.db.profile[GetNormalizedUnit(unit)].CastBar and UUF.db.profile[GetNormalizedUnit(unit)].CastBar.Enabled == false then return end
+
+    local unitDB = UUF.db.profile[GetNormalizedUnit(self.unit)]
+    if unitDB.CastBar and unitDB.CastBar.Enabled == false then return end
 
     local CAST_START = {
         UNIT_SPELLCAST_START = true,
@@ -1549,7 +1552,7 @@ function UUF:RegisterUnitEvents(unitFrame, unit)
 
     for _, event in ipairs(UNIT_EVENTS["CASTBAR"]) do
         if unitFrame.CastBar then
-            if CastBarDB.Enabled then
+            if CastBarDB and CastBarDB.Enabled then
                 unitFrame:RegisterUnitEvent(event, unit)
             else
                 unitFrame:UnregisterEvent(event)
