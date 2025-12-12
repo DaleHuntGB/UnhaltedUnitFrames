@@ -281,21 +281,78 @@ function UUF:FrameIsValid(frameToAnchor, frameName)
 end
 
 function UUF:FixDatabaseIssues()
-    local function FixTable(defaultTable, userTable)
-        for k, v in pairs(defaultTable) do
+    local variablesAdded = {}
+    local variablesRemoved = {}
+
+    local function Record(list, path)
+        list[#list + 1] = path
+    end
+
+    local function IsIgnoredPath(path)
+        return path:match("^profileKeys") or path:match("^global")
+    end
+
+    local function Reconcile(defaults, user, path)
+        path = path or ""
+
+        for k in pairs(user) do
+            if defaults[k] == nil then
+                local fullPath = path .. k
+                if not IsIgnoredPath(fullPath) then
+                    Record(variablesRemoved, fullPath)
+                end
+                user[k] = nil
+            end
+        end
+
+        for k, v in pairs(defaults) do
+            local currentPath = path .. k
+
             if type(v) == "table" then
-                if type(userTable[k]) ~= "table" then
-                    userTable[k] = UUF:CopyTable(v)
+                if type(user[k]) ~= "table" then
+                    user[k] = UUF:CopyTable(v)
+                    if not IsIgnoredPath(currentPath) then
+                        Record(variablesAdded, currentPath)
+                    end
                 else
-                    FixTable(v, userTable[k])
+                    Reconcile(v, user[k], currentPath .. ".")
                 end
             else
-                if userTable[k] == nil then
-                    userTable[k] = v
+                if user[k] == nil then
+                    user[k] = v
+                    if not IsIgnoredPath(currentPath) then
+                        Record(variablesAdded, currentPath)
+                    end
                 end
             end
         end
     end
-    FixTable(UUF.Defaults, UnhaltedUFDB)
-    UUF:Print("Database issues have been fixed. Please review your settings to ensure everything is correct.")
+
+    local profileName = UUF.db:GetCurrentProfile()
+    local profileDB = UnhaltedUFDB.profiles[profileName]
+    if not profileDB then
+        UUF:Print("Database Reconcile Aborted, Profile '" .. profileName .. "' not found.")
+        return
+    end
+    Reconcile(UUF.Defaults.profile, profileDB)
+    UUF:Print("Database Reconcile Completed For: " .. profileName)
+    if #variablesRemoved > 1 then
+        UUF:Print("Removed - " .. #variablesRemoved .. ":")
+        for _, k in ipairs(variablesRemoved) do
+            if k ~= "profile" and k ~= "global" then
+                UUF:Print(" • " .. k)
+            end
+        end
+    else
+        UUF:Print("Nothing To Remove!")
+    end
+
+    if #variablesAdded > 0 then
+        UUF:Print("Added - " .. #variablesAdded .. ":")
+        for _, k in ipairs(variablesAdded) do
+            UUF:Print(" • " .. k)
+        end
+    else
+        UUF:Print("Nothing To Add!")
+    end
 end
