@@ -729,7 +729,7 @@ UUF.Defaults = {
                 FGColour = {26/255, 26/255, 26/255, 1.0},
                 BGColour = {26/255, 26/255, 26/255, 1.0},
                 GrowthDirection = "DOWN",
-                Spacing = 1,
+                Spacing = 26,
                 InverseGrowth = false,
             },
             HealPrediction = {
