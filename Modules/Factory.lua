@@ -337,7 +337,6 @@ local function UpdateUnitCastBar(self, event, unit)
 
     local CAST_START = {
         UNIT_SPELLCAST_START = true,
-        UNIT_SPELLCAST_CHANNEL_START = true,
         UNIT_SPELLCAST_INTERRUPTIBLE = true,
         UNIT_SPELLCAST_NOT_INTERRUPTIBLE = true,
         UNIT_SPELLCAST_SENT = true,
@@ -368,9 +367,10 @@ local function UpdateUnitCastBar(self, event, unit)
             local channelDuration = UnitChannelDuration(self.unit)
             if not channelDuration then return end
             self.CastBar:SetTimerDuration(channelDuration, 0)
+            self.CastBar:SetMinMaxValues(0, channelDuration:GetTotalDuration())
             self.CastBar.SpellName:SetText(UnitChannelInfo(self.unit) or "")
             self.CastBar.Icon:SetTexture(select(3, UnitChannelInfo(self.unit)) or nil)
-            self.CastBar:SetScript("OnUpdate", function() local remainingDuration = channelDuration:GetRemainingDuration() self.CastBar.Time:SetText(string.format("%.1f", remainingDuration)) end)
+            self.CastBar:SetScript("OnUpdate", function() local remainingDuration = channelDuration:GetRemainingDuration() self.CastBar:SetValue(remainingDuration) self.CastBar.Time:SetText(string.format("%.1f", remainingDuration)) end)
             self.CastBarContainer:Show()
             self.CastBar:Show()
         elseif CAST_STOP[event] then
