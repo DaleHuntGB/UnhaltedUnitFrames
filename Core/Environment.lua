@@ -6,6 +6,35 @@ local function GetNormalizedUnit(unit)
     return normalizedUnit
 end
 
+local function FetchPowerBarColour(unit, powerType)
+    local UUFDB = UUF.db.profile
+    local GeneralDB = UUFDB.General
+    local normalizedUnit = GetNormalizedUnit(unit)
+    local PowerBarDB = UUFDB[normalizedUnit].PowerBar
+    if PowerBarDB then
+        if PowerBarDB.ColourByType then
+            local powerColour = GeneralDB.CustomColours.Power[powerType]
+            if powerColour then return GeneralDB.CustomColours.Power[powerType][1], GeneralDB.CustomColours.Power[powerType][2], GeneralDB.CustomColours.Power[powerType][3], GeneralDB.CustomColours.Power[powerType][4] or 1 end
+        end
+        return PowerBarDB.FGColour[1], PowerBarDB.FGColour[2], PowerBarDB.FGColour[3], PowerBarDB.FGColour[4]
+    end
+end
+
+local function FetchPowerBarBackgroundColour(unit, powerType)
+    local UUFDB = UUF.db.profile
+    local GeneralDB = UUFDB.General
+    local normalizedUnit = GetNormalizedUnit(unit)
+    local PowerBarDB = UUFDB[normalizedUnit].PowerBar
+    if PowerBarDB then
+        if PowerBarDB.ColourBackgroundByType then
+            local DarkenFactor = PowerBarDB.DarkenFactor
+            local powerColour = GeneralDB.CustomColours.Power[powerType]
+            if powerColour then return (GeneralDB.CustomColours.Power[powerType][1] * (1 - DarkenFactor)), (GeneralDB.CustomColours.Power[powerType][2] * (1 - DarkenFactor)), (GeneralDB.CustomColours.Power[powerType][3] * (1 - DarkenFactor)), GeneralDB.CustomColours.Power[powerType][4] end
+        end
+        return PowerBarDB.BGColour[1], PowerBarDB.BGColour[2], PowerBarDB.BGColour[3], PowerBarDB.BGColour[4]
+    end
+end
+
 local Classes = {
     [1] = "WARRIOR",
     [2] = "PALADIN",
@@ -45,7 +74,6 @@ for i = 1, 10 do
         missingHealth = i * 600000,
         absorb    = (i * 300000),
         percent  = (8000000 - (i * 600000)) / 8000000 * 100,
-        power     = 100 - (i * 2),
         maxPower  = 100,
         powerType = PowerTypes[i],
     }
@@ -110,6 +138,13 @@ function UUF:ShowBossFrames()
                 end
             end
 
+            if unitFrame.PowerBar then
+                unitFrame.PowerBar:SetMinMaxValues(0, 100)
+                unitFrame.PowerBar:SetValue(math.random(0, 100))
+                unitFrame.PowerBar:SetStatusBarColor(FetchPowerBarColour(unitFrame.unit, FakeBossData[i].powerType))
+                unitFrame.PowerBarBG:SetStatusBarColor(FetchPowerBarBackgroundColour(unitFrame.unit, FakeBossData[i].powerType))
+            end
+
             -- Handle Fake Absorbs
             if unitFrame.AbsorbBar then
                 unitFrame.AbsorbBar:SetMinMaxValues(0, FakeBossData[i].maxHealth)
@@ -143,6 +178,32 @@ function UUF:ShowBossFrames()
                     unitFrame.Portrait.Texture:SetTexture("Interface\\ICONS\\" .. PortraitOptions[i])
                 end
             end
+
+            -- Handle Fake Cast Bars
+            if unitFrame.CastBar then
+                unitFrame.CastBar:SetMinMaxValues(0, 1000)
+                unitFrame.CastBar:SetValue(0)
+                unitFrame.CastBar.SpellName:SetText("Boss " .. i .. " Cast")
+                unitFrame.CastBar.Time:SetText("")
+                unitFrame.CastBar.Icon:SetTexture("Interface\\Icons\\Spell_Holy_Heal")
+                if UUF.db.profile[GetNormalizedUnit(unitFrame.unit)].CastBar.Enabled then
+                    unitFrame.CastBar:Show()
+                    unitFrame.CastBarContainer:Show()
+                    unitFrame.CastBar:SetScript("OnUpdate", function()
+                        local currentValue = unitFrame.CastBar:GetValue()
+                        currentValue = currentValue + 1
+                        if currentValue >= 1000 then
+                            currentValue = 0
+                        end
+                        unitFrame.CastBar:SetValue(currentValue)
+                        unitFrame.CastBar.Time:SetText(string.format("%.1f", (currentValue / 1000) * 5))
+                    end)
+                else
+                    unitFrame.CastBar:Hide()
+                    unitFrame.CastBarContainer:Hide()
+                    unitFrame.CastBar:SetScript("OnUpdate", nil)
+                end
+            end
         end
     end
 
@@ -161,6 +222,7 @@ function UUF:HideBossFrames()
             unitFrame:Hide()
             RegisterUnitWatch(unitFrame)
             UUF:UpdateUnitFrame("boss"..i)
+            unitFrame.CastBar:SetScript("OnUpdate", nil)
         end
     end
 

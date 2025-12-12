@@ -1306,7 +1306,7 @@ local function UpdateCastBar(self, unit)
     local CastBarDB = UUFDB[normalizedUnit].CastBar
     local unitContainer = self.Container
 
-    if CastBarDB and CastBarDB.Enabled then
+    if CastBarDB then
         local CastBarTextDB = CastBarDB.Text
         if self.CastBarContainer then
             self.CastBarContainer:ClearAllPoints()
