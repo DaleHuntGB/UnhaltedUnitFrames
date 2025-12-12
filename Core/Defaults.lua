@@ -103,7 +103,11 @@ UUF.Defaults = {
                         FontSize = 12,
                         Colour = {1, 1, 1, 1},
                     },
-                }
+                },
+                Icon = {
+                    Enabled = true,
+                    Position = "LEFT",
+                },
             },
             PowerBar = {
                 Enabled = false,
@@ -280,7 +284,11 @@ UUF.Defaults = {
                         FontSize = 12,
                         Colour = {1, 1, 1, 1},
                     },
-                }
+                },
+                Icon = {
+                    Enabled = true,
+                    Position = "RIGHT",
+                },
             },
             PowerBar = {
                 Enabled = true,
@@ -720,7 +728,11 @@ UUF.Defaults = {
                         FontSize = 12,
                         Colour = {1, 1, 1, 1},
                     },
-                }
+                },
+                Icon = {
+                    Enabled = true,
+                    Position = "RIGHT",
+                },
             },
             PowerBar = {
                 Enabled = true,

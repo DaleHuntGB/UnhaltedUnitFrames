@@ -1115,6 +1115,213 @@ local function CreatePortraitSettings(containerParent, unit)
     return ScrollFrame
 end
 
+local function CreateCastBarSettings(containerParent, unit)
+    local UUFDB = UUF.db.profile
+    local normalizedUnit = GetNormalizedUnit(unit)
+    local CastBarDB = UUFDB[normalizedUnit].CastBar
+
+    local Wrapper = AG:Create("SimpleGroup")
+    Wrapper:SetFullWidth(true)
+    Wrapper:SetFullHeight(true)
+    Wrapper:SetLayout("Fill")
+    containerParent:AddChild(Wrapper)
+
+    local ScrollFrame = CreateScrollFrame(Wrapper)
+
+    local TogglesContainer = CreateInlineGroup(ScrollFrame, "Toggles")
+    local EnableCheckBox = AG:Create("CheckBox")
+    EnableCheckBox:SetLabel("Enable Cast Bar")
+    EnableCheckBox:SetValue(CastBarDB.Enabled)
+    EnableCheckBox:SetRelativeWidth(0.5)
+    EnableCheckBox:SetCallback("OnValueChanged", function(_, _, value) CastBarDB.Enabled = value if unit == "boss" then UUF:UpdateAllBossFrames() else UUF:UpdateUnitFrame(unit) end  DeepDisable(Wrapper, not value, EnableCheckBox) end)
+    TogglesContainer:AddChild(EnableCheckBox)
+
+    local ColoursContainer = CreateInlineGroup(ScrollFrame, "Colours")
+    local FGColourPicker = AG:Create("ColorPicker")
+    FGColourPicker:SetLabel("Foreground Colour")
+    FGColourPicker:SetColor(unpack(CastBarDB.FGColour))
+    FGColourPicker:SetHasAlpha(true)
+    FGColourPicker:SetRelativeWidth(0.5)
+    FGColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) CastBarDB.FGColour = {r, g, b, a} if unit == "boss" then UUF:UpdateAllBossFrames() else UUF:UpdateUnitFrame(unit) end  end)
+    ColoursContainer:AddChild(FGColourPicker)
+
+    local BGColourPicker = AG:Create("ColorPicker")
+    BGColourPicker:SetLabel("Background Colour")
+    BGColourPicker:SetColor(unpack(CastBarDB.BGColour))
+    BGColourPicker:SetHasAlpha(true)
+    BGColourPicker:SetRelativeWidth(0.5)
+    BGColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) CastBarDB.BGColour = {r, g, b, a} if unit == "boss" then UUF:UpdateAllBossFrames() else UUF:UpdateUnitFrame(unit) end  end)
+    ColoursContainer:AddChild(BGColourPicker)
+
+    local LayoutContainer = CreateInlineGroup(ScrollFrame, "Layout")
+    local AnchorFromDropdown = AG:Create("Dropdown")
+    AnchorFromDropdown:SetLabel("Anchor From")
+    AnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
+    AnchorFromDropdown:SetValue(CastBarDB.AnchorFrom)
+    AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) CastBarDB.AnchorFrom = value if unit == "boss" then UUF:UpdateAllBossFrames() else UUF:UpdateUnitFrame(unit) end  end)
+    AnchorFromDropdown:SetRelativeWidth(0.5)
+    LayoutContainer:AddChild(AnchorFromDropdown)
+
+    local AnchorToDropdown = AG:Create("Dropdown")
+    AnchorToDropdown:SetLabel("Anchor To")
+    AnchorToDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
+    AnchorToDropdown:SetValue(CastBarDB.AnchorTo)
+    AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) CastBarDB.AnchorTo = value if unit == "boss" then UUF:UpdateAllBossFrames() else UUF:UpdateUnitFrame(unit) end  end)
+    AnchorToDropdown:SetRelativeWidth(0.5)
+    LayoutContainer:AddChild(AnchorToDropdown)
+
+    local XPositionSlider = AG:Create("Slider")
+    XPositionSlider:SetLabel("X Position")
+    XPositionSlider:SetValue(CastBarDB.XPosition)
+    XPositionSlider:SetSliderValues(-3000, 3000, 0.1)
+    XPositionSlider:SetCallback("OnValueChanged", function(_, _, value) CastBarDB.XPosition = value if unit == "boss" then UUF:UpdateAllBossFrames() else UUF:UpdateUnitFrame(unit) end  end)
+    XPositionSlider:SetRelativeWidth(0.5)
+    LayoutContainer:AddChild(XPositionSlider)
+
+    local YPositionSlider = AG:Create("Slider")
+    YPositionSlider:SetLabel("Y Position")
+    YPositionSlider:SetValue(CastBarDB.YPosition)
+    YPositionSlider:SetSliderValues(-3000, 3000, 0.1)
+    YPositionSlider:SetCallback("OnValueChanged", function(_, _, value) CastBarDB.YPosition = value if unit == "boss" then UUF:UpdateAllBossFrames() else UUF:UpdateUnitFrame(unit) end  end)
+    YPositionSlider:SetRelativeWidth(0.5)
+    LayoutContainer:AddChild(YPositionSlider)
+
+    local SpellNameContainer = CreateInlineGroup(ScrollFrame, "Spell Name")
+    local ShowSpellNameCheckBox = AG:Create("CheckBox")
+    ShowSpellNameCheckBox:SetLabel("Show Spell Name")
+    ShowSpellNameCheckBox:SetValue(CastBarDB.Text.SpellName.Enabled)
+    ShowSpellNameCheckBox:SetRelativeWidth(1)
+    ShowSpellNameCheckBox:SetCallback("OnValueChanged", function(_, _, value) CastBarDB.Text.SpellName.Enabled = value if unit == "boss" then UUF:UpdateAllBossFrames() else UUF:UpdateUnitFrame(unit) end  end)
+    SpellNameContainer:AddChild(ShowSpellNameCheckBox)
+
+    local SpellNameAnchorFromDropdown = AG:Create("Dropdown")
+    SpellNameAnchorFromDropdown:SetLabel("Anchor From")
+    SpellNameAnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
+    SpellNameAnchorFromDropdown:SetValue(CastBarDB.Text.SpellName.AnchorFrom)
+    SpellNameAnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) CastBarDB.Text.SpellName.AnchorFrom = value if unit == "boss" then UUF:UpdateAllBossFrames() else UUF:UpdateUnitFrame(unit) end  end)
+    SpellNameAnchorFromDropdown:SetRelativeWidth(0.33)
+    SpellNameContainer:AddChild(SpellNameAnchorFromDropdown)
+
+    local SpellNameAnchorToDropdown = AG:Create("Dropdown")
+    SpellNameAnchorToDropdown:SetLabel("Anchor To")
+    SpellNameAnchorToDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
+    SpellNameAnchorToDropdown:SetValue(CastBarDB.Text.SpellName.AnchorTo)
+    SpellNameAnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) CastBarDB.Text.SpellName.AnchorTo = value if unit == "boss" then UUF:UpdateAllBossFrames() else UUF:UpdateUnitFrame(unit) end  end)
+    SpellNameAnchorToDropdown:SetRelativeWidth(0.33)
+    SpellNameContainer:AddChild(SpellNameAnchorToDropdown)
+
+    local SpellNameColourPicker = AG:Create("ColorPicker")
+    SpellNameColourPicker:SetLabel("Font Colour")
+    SpellNameColourPicker:SetColor(unpack(CastBarDB.Text.SpellName.Colour))
+    SpellNameColourPicker:SetHasAlpha(true)
+    SpellNameColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) CastBarDB.Text.SpellName.Colour = {r, g, b, a} if unit == "boss" then UUF:UpdateAllBossFrames() else UUF:UpdateUnitFrame(unit) end  end)
+    SpellNameColourPicker:SetRelativeWidth(0.33)
+    SpellNameContainer:AddChild(SpellNameColourPicker)
+
+    local SpellNameOffsetXSlider = AG:Create("Slider")
+    SpellNameOffsetXSlider:SetLabel("Offset X")
+    SpellNameOffsetXSlider:SetValue(CastBarDB.Text.SpellName.OffsetX)
+    SpellNameOffsetXSlider:SetSliderValues(-3000, 3000, 0.1)
+    SpellNameOffsetXSlider:SetCallback("OnValueChanged", function(_, _, value) CastBarDB.Text.SpellName.OffsetX = value if unit == "boss" then UUF:UpdateAllBossFrames() else UUF:UpdateUnitFrame(unit) end  end)
+    SpellNameOffsetXSlider:SetRelativeWidth(0.33)
+    SpellNameContainer:AddChild(SpellNameOffsetXSlider)
+
+    local SpellNameOffsetYSlider = AG:Create("Slider")
+    SpellNameOffsetYSlider:SetLabel("Offset Y")
+    SpellNameOffsetYSlider:SetValue(CastBarDB.Text.SpellName.OffsetY)
+    SpellNameOffsetYSlider:SetSliderValues(-3000, 3000, 0.1)
+    SpellNameOffsetYSlider:SetCallback("OnValueChanged", function(_, _, value) CastBarDB.Text.SpellName.OffsetY = value if unit == "boss" then UUF:UpdateAllBossFrames() else UUF:UpdateUnitFrame(unit) end  end)
+    SpellNameOffsetYSlider:SetRelativeWidth(0.33)
+    SpellNameContainer:AddChild(SpellNameOffsetYSlider)
+
+    local SpellNameFontSizeSlider = AG:Create("Slider")
+    SpellNameFontSizeSlider:SetLabel("Font Size")
+    SpellNameFontSizeSlider:SetValue(CastBarDB.Text.SpellName.FontSize)
+    SpellNameFontSizeSlider:SetSliderValues(6, 72, 1)
+    SpellNameFontSizeSlider:SetCallback("OnValueChanged", function(_, _, value) CastBarDB.Text.SpellName.FontSize = value if unit == "boss" then UUF:UpdateAllBossFrames() else UUF:UpdateUnitFrame(unit) end  end)
+    SpellNameFontSizeSlider:SetRelativeWidth(0.33)
+    SpellNameContainer:AddChild(SpellNameFontSizeSlider)
+
+    local TimeContainer = CreateInlineGroup(ScrollFrame, "Time")
+    local ShowTimeCheckBox = AG:Create("CheckBox")
+    ShowTimeCheckBox:SetLabel("Show Time")
+    ShowTimeCheckBox:SetValue(CastBarDB.Text.Time.Enabled)
+    ShowTimeCheckBox:SetRelativeWidth(1)
+    ShowTimeCheckBox:SetCallback("OnValueChanged", function(_, _, value) CastBarDB.Text.Time.Enabled = value if unit == "boss" then UUF:UpdateAllBossFrames() else UUF:UpdateUnitFrame(unit) end  end)
+    TimeContainer:AddChild(ShowTimeCheckBox)
+
+    local TimeAnchorFromDropdown = AG:Create("Dropdown")
+    TimeAnchorFromDropdown:SetLabel("Anchor From")
+    TimeAnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
+    TimeAnchorFromDropdown:SetValue(CastBarDB.Text.Time.AnchorFrom)
+    TimeAnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) CastBarDB.Text.Time.AnchorFrom = value if unit == "boss" then UUF:UpdateAllBossFrames() else UUF:UpdateUnitFrame(unit) end  end)
+    TimeAnchorFromDropdown:SetRelativeWidth(0.33)
+    TimeContainer:AddChild(TimeAnchorFromDropdown)
+
+    local TimeAnchorToDropdown = AG:Create("Dropdown")
+    TimeAnchorToDropdown:SetLabel("Anchor To")
+    TimeAnchorToDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
+    TimeAnchorToDropdown:SetValue(CastBarDB.Text.Time.AnchorTo)
+    TimeAnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) CastBarDB.Text.Time.AnchorTo = value if unit == "boss" then UUF:UpdateAllBossFrames() else UUF:UpdateUnitFrame(unit) end  end)
+    TimeAnchorToDropdown:SetRelativeWidth(0.33)
+    TimeContainer:AddChild(TimeAnchorToDropdown)
+
+    local TimeColourPicker = AG:Create("ColorPicker")
+    TimeColourPicker:SetLabel("Font Colour")
+    TimeColourPicker:SetColor(unpack(CastBarDB.Text.Time.Colour))
+    TimeColourPicker:SetHasAlpha(true)
+    TimeColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) CastBarDB.Text.Time.Colour = {r, g, b, a} if unit == "boss" then UUF:UpdateAllBossFrames() else UUF:UpdateUnitFrame(unit) end  end)
+    TimeColourPicker:SetRelativeWidth(0.33)
+    TimeContainer:AddChild(TimeColourPicker)
+
+    local TimeOffsetXSlider = AG:Create("Slider")
+    TimeOffsetXSlider:SetLabel("Offset X")
+    TimeOffsetXSlider:SetValue(CastBarDB.Text.Time.OffsetX)
+    TimeOffsetXSlider:SetSliderValues(-3000, 3000, 0.1)
+    TimeOffsetXSlider:SetCallback("OnValueChanged", function(_, _, value) CastBarDB.Text.Time.OffsetX = value if unit == "boss" then UUF:UpdateAllBossFrames() else UUF:UpdateUnitFrame(unit) end  end)
+    TimeOffsetXSlider:SetRelativeWidth(0.33)
+    TimeContainer:AddChild(TimeOffsetXSlider)
+
+    local TimeOffsetYSlider = AG:Create("Slider")
+    TimeOffsetYSlider:SetLabel("Offset Y")
+    TimeOffsetYSlider:SetValue(CastBarDB.Text.Time.OffsetY)
+    TimeOffsetYSlider:SetSliderValues(-3000, 3000, 0.1)
+    TimeOffsetYSlider:SetCallback("OnValueChanged", function(_, _, value) CastBarDB.Text.Time.OffsetY = value if unit == "boss" then UUF:UpdateAllBossFrames() else UUF:UpdateUnitFrame(unit) end  end)
+    TimeOffsetYSlider:SetRelativeWidth(0.33)
+    TimeContainer:AddChild(TimeOffsetYSlider)
+
+    local TimeFontSizeSlider = AG:Create("Slider")
+    TimeFontSizeSlider:SetLabel("Font Size")
+    TimeFontSizeSlider:SetValue(CastBarDB.Text.Time.FontSize)
+    TimeFontSizeSlider:SetSliderValues(6, 72, 1)
+    TimeFontSizeSlider:SetCallback("OnValueChanged", function(_, _, value) CastBarDB.Text.Time.FontSize = value if unit == "boss" then UUF:UpdateAllBossFrames() else UUF:UpdateUnitFrame(unit) end  end)
+    TimeFontSizeSlider:SetRelativeWidth(0.33)
+    TimeContainer:AddChild(TimeFontSizeSlider)
+
+    local IconContainer = CreateInlineGroup(ScrollFrame, "Icon")
+    local ShowIconCheckBox = AG:Create("CheckBox")
+    ShowIconCheckBox:SetLabel("Show Icon")
+    ShowIconCheckBox:SetValue(CastBarDB.Icon.Enabled)
+    ShowIconCheckBox:SetRelativeWidth(0.5)
+    ShowIconCheckBox:SetCallback("OnValueChanged", function(_, _, value) CastBarDB.Icon.Enabled = value if unit == "boss" then UUF:UpdateAllBossFrames() else UUF:UpdateUnitFrame(unit) end IconPositionDropdown:SetDisabled(not value) end)
+    IconContainer:AddChild(ShowIconCheckBox)
+
+    IconPositionDropdown = AG:Create("Dropdown")
+    IconPositionDropdown:SetLabel("Position")
+    IconPositionDropdown:SetList({["LEFT"] = "Left", ["RIGHT"] = "Right"}, {"LEFT", "RIGHT"})
+    IconPositionDropdown:SetValue(CastBarDB.Icon.Position)
+    IconPositionDropdown:SetCallback("OnValueChanged", function(_, _, value) CastBarDB.Icon.Position = value if unit == "boss" then UUF:UpdateAllBossFrames() else UUF:UpdateUnitFrame(unit) end  end)
+    IconPositionDropdown:SetRelativeWidth(0.5)
+    IconPositionDropdown:SetDisabled(not CastBarDB.Icon.Enabled)
+    IconContainer:AddChild(IconPositionDropdown)
+
+    DeepDisable(Wrapper, not CastBarDB.Enabled, EnableCheckBox)
+
+    ScrollFrame:DoLayout()
+
+    return ScrollFrame
+end
+
 local function CreateTagsSettings(containerParent, unit)
     local UUFDB = UUF.db.profile
     local normalizedUnit = GetNormalizedUnit(unit)
@@ -1719,6 +1926,8 @@ function UUF:CreateGUI()
                 CreatePowerBarSettings(UnitFrameContainer, "player")
             elseif UnitFrameGroup == "AlternatePowerBar" then
                 CreateAlternatePowerBarSettings(UnitFrameContainer, "player")
+            elseif UnitFrameGroup == "CastBar" then
+                CreateCastBarSettings(UnitFrameContainer, "player")
             elseif UnitFrameGroup == "Indicators" then
                 CreateIndicatorSettings(UnitFrameContainer, "player")
             elseif UnitFrameGroup == "Portrait" then
@@ -1737,6 +1946,7 @@ function UUF:CreateGUI()
                 { text = "Heal Prediction", value = "HealPrediction"},
                 { text = "Power Bar", value = "PowerBar"},
                 { text = "Alternate Power Bar", value = "AlternatePowerBar"},
+                { text = "Cast Bar", value = "CastBar"},
                 { text = "Indicators", value = "Indicators"},
                 { text = "Portrait", value = "Portrait"},
                 { text = "Tags", value = "Tags"},
@@ -1746,6 +1956,7 @@ function UUF:CreateGUI()
                 { text = "Frame", value = "Frame"},
                 { text = "Heal Prediction", value = "HealPrediction"},
                 { text = "Power Bar", value = "PowerBar"},
+                { text = "Cast Bar", value = "CastBar"},
                 { text = "Indicators", value = "Indicators"},
                 { text = "Portrait", value = "Portrait"},
                 { text = "Tags", value = "Tags"},
@@ -1765,6 +1976,8 @@ function UUF:CreateGUI()
                 CreateHealPredictionSettings(UnitFrameContainer, "target")
             elseif UnitFrameGroup == "PowerBar" then
                 CreatePowerBarSettings(UnitFrameContainer, "target")
+            elseif UnitFrameGroup == "CastBar" then
+                CreateCastBarSettings(UnitFrameContainer, "target")
             elseif UnitFrameGroup == "Indicators" then
                 CreateIndicatorSettings(UnitFrameContainer, "target")
             elseif UnitFrameGroup == "Portrait" then
@@ -1780,6 +1993,7 @@ function UUF:CreateGUI()
         UnitFrameTabGroup:SetTabs({
             { text = "Frame", value = "Frame"},
             { text = "Heal Prediction", value = "HealPrediction"},
+            { text = "Cast Bar", value = "CastBar"},
             { text = "Power Bar", value = "PowerBar"},
             { text = "Indicators", value = "Indicators"},
             { text = "Portrait", value = "Portrait"},
@@ -1889,6 +2103,8 @@ function UUF:CreateGUI()
                 CreateHealPredictionSettings(UnitFrameContainer, "boss")
             elseif UnitFrameGroup == "PowerBar" then
                 CreatePowerBarSettings(UnitFrameContainer, "boss")
+            elseif UnitFrameGroup == "CastBar" then
+                CreateCastBarSettings(UnitFrameContainer, "boss")
             elseif UnitFrameGroup == "Indicators" then
                 CreateIndicatorSettings(UnitFrameContainer, "boss")
             elseif UnitFrameGroup == "Portrait" then
@@ -1905,6 +2121,7 @@ function UUF:CreateGUI()
             { text = "Frame", value = "Frame"},
             { text = "Heal Prediction", value = "HealPrediction"},
             { text = "Power Bar", value = "PowerBar"},
+            { text = "Cast Bar", value = "CastBar"},
             { text = "Indicators", value = "Indicators"},
             { text = "Portrait", value = "Portrait"},
             { text = "Tags", value = "Tags"},

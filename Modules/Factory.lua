@@ -159,6 +159,9 @@ local UPDATE_INDICATOR_EVENTS = {
     GROUP_ROSTER_UPDATE = true,
     PLAYER_TARGET_CHANGED = true,
     RAID_TARGET_UPDATE = true,
+    ZONE_CHANGED = true,
+    ZONE_CHANGED_INDOORS = true,
+    ZONE_CHANGED_NEW_AREA = true,
 }
 
 local UPDATE_PORTRAIT_EVENTS = {
@@ -299,7 +302,7 @@ local function UpdateUnitIndicators(self, event, unit)
     if unit and unit ~= self.unit then return end
     if not UnitExists(self.unit) then return end
 
-    if (event == "PLAYER_REGEN_ENABLED" or event == "PLAYER_REGEN_DISABLED" or event == "PLAYER_ENTERING_WORLD") then
+    if (event == "PLAYER_REGEN_ENABLED" or event == "PLAYER_REGEN_DISABLED" or event == "PLAYER_ENTERING_WORLD" or event == "ZONE_CHANGED" or event == "ZONE_CHANGED_INDOORS" or event == "ZONE_CHANGED_NEW_AREA") then
         local inCombat  = UUF.db.profile[GetNormalizedUnit("player")].Indicators.Status.Combat  and UnitAffectingCombat("player")
         local isResting = UUF.db.profile[GetNormalizedUnit("player")].Indicators.Status.Resting and IsResting()
         if self.CombatIndicator then if inCombat then self.CombatIndicator:Show() else self.CombatIndicator:Hide() end end
@@ -316,6 +319,7 @@ local function UpdateUnitIndicators(self, event, unit)
             end
         end
     end
+
     if (event == "RAID_TARGET_UPDATE" or event == "PLAYER_TARGET_CHANGED") then
         if self.RaidTargetMarker and UUF.db.profile[GetNormalizedUnit(self.unit)].Indicators.RaidTargetMarker.Enabled then
             local raidTargetIndex = GetRaidTargetIndex(self.unit)
@@ -332,6 +336,7 @@ end
 local function UpdateUnitCastBar(self, event, unit)
     if unit and unit ~= self.unit then return end
     if not UnitExists(self.unit) then return end
+    if UUF.db.profile[GetNormalizedUnit(self.unit)].CastBar.Enabled == false then return end
 
     local CAST_START = {
         UNIT_SPELLCAST_START = true,
@@ -344,6 +349,30 @@ local function UpdateUnitCastBar(self, event, unit)
         UNIT_SPELLCAST_STOP = true,
         UNIT_SPELLCAST_CHANNEL_STOP = true,
     }
+
+    local CHANNEL_START = {
+        UNIT_SPELLCAST_CHANNEL_START = true,
+    }
+
+    if self.CastBar then
+        if CAST_START[event] then
+            local castDuration = UnitCastingDuration(self.unit)
+            self.CastBar:SetTimerDuration(castDuration, 0)
+            self.CastBar.SpellName:SetText(UnitCastingInfo(self.unit) or "")
+            self.CastBar.Icon:SetTexture(select(3, UnitCastingInfo(self.unit)) or nil)
+            self.CastBarContainer:Show()
+            self.CastBar:Show()
+        elseif CHANNEL_START[event] then
+            local channelDuration = UnitChannelDuration(self.unit)
+            self.CastBar:SetTimerDuration(channelDuration, 0)
+            self.CastBar.SpellName:SetText(UnitChannelInfo(self.unit) or "")
+            self.CastBarContainer:Show()
+            self.CastBar:Show()
+        elseif CAST_STOP[event] then
+            self.CastBarContainer:Hide()
+            self.CastBar:Hide()
+        end
+    end
 end
 
 local function UpdateUnitAbsorbs(self, event, unit)
@@ -382,6 +411,7 @@ local function UpdateUnitFrameData(self, event, unit)
     if UPDATE_PORTRAIT_EVENTS[event] then if self.Portrait then SetPortraitTexture(self.Portrait.Texture, self.unit, true) end end
     if UPDATE_TAGS_EVENTS[event] then UpdateTags(self, event, self.unit) end
     if UPDATE_ABSORB_EVENTS[event] then UpdateUnitAbsorbs(self, event, self.unit) end
+    if UPDATE_CASTBAR_EVENTS[event] then UpdateUnitCastBar(self, event, self.unit) end
     if MASS_FRAME_EVENT[event] then
         UpdateUnitHealthBarColour(self, event, self.unit)
         UpdateUnitPowerBarColour(self, event, self.unit)
@@ -389,6 +419,7 @@ local function UpdateUnitFrameData(self, event, unit)
         UpdateUnitPowerBarValues(self, event, self.unit)
         UpdateUnitIndicators(self, event, self.unit)
         UpdateUnitAbsorbs(self, event, self.unit)
+        UpdateUnitCastBar(self, event, self.unit)
         UpdateTags(self, event, self.unit)
     end
 
@@ -1192,6 +1223,7 @@ local function CreateCastBar(self, unit)
     local unitContainer = self.Container
 
     if CastBarDB then
+        local CastBarTextDB = CastBarDB.Text
         if not self.CastBarContainer then
             self.CastBarContainer = CreateFrame("Frame", ResolveFrameName(unit).."_CastBarContainer", unitContainer, "BackdropTemplate")
             self.CastBarContainer:SetPoint(CastBarDB.AnchorFrom, unitContainer, CastBarDB.AnchorTo, CastBarDB.XPosition, CastBarDB.YPosition)
@@ -1200,6 +1232,7 @@ local function CreateCastBar(self, unit)
             self.CastBarContainer:SetBackdropColor(CastBarDB.BGColour[1], CastBarDB.BGColour[2], CastBarDB.BGColour[3], CastBarDB.BGColour[4])
             self.CastBarContainer:SetBackdropBorderColor(0, 0, 0, 1)
             self.CastBarContainer:SetFrameLevel(unitContainer:GetFrameLevel() + 5)
+            self.CastBarContainer:Hide()
         end
 
         if not self.CastBar then
@@ -1209,11 +1242,128 @@ local function CreateCastBar(self, unit)
             self.CastBar:SetSize(CastBarDB.Width, CastBarDB.Height)
             self.CastBar:SetStatusBarTexture(UUF.Media.ForegroundTexture)
             self.CastBar:SetStatusBarColor(CastBarDB.FGColour[1], CastBarDB.FGColour[2], CastBarDB.FGColour[3], CastBarDB.FGColour[4])
+            self.CastBar:SetFrameLevel(self.CastBarContainer:GetFrameLevel() + 1)
             self.CastBar.unit = unit
+            self.CastBar:Hide()
+
+            if not self.CastBar.SpellName then
+                self.CastBar.SpellName = self.CastBar:CreateFontString(ResolveFrameName(unit).."_".."CastBar_SpellName", "OVERLAY")
+                self.CastBar.SpellName:SetFont(UUF.Media.Font, CastBarTextDB.SpellName.FontSize, UUFDB.General.FontFlag)
+                self.CastBar.SpellName:SetPoint(CastBarTextDB.SpellName.AnchorFrom, self.CastBar, CastBarTextDB.SpellName.AnchorTo, CastBarTextDB.SpellName.OffsetX, CastBarTextDB.SpellName.OffsetY)
+                self.CastBar.SpellName:SetTextColor(CastBarTextDB.SpellName.Colour[1], CastBarTextDB.SpellName.Colour[2], CastBarTextDB.SpellName.Colour[3], CastBarTextDB.SpellName.Colour[4])
+                self.CastBar.SpellName:SetJustifyH(UUF:SetJustification(CastBarTextDB.SpellName.AnchorFrom))
+                self.CastBar.SpellName:SetShadowColor(UUFDB.General.FontShadows.Colour[1], UUFDB.General.FontShadows.Colour[2], UUFDB.General.FontShadows.Colour[3], UUFDB.General.FontShadows.Colour[4])
+                self.CastBar.SpellName:SetShadowOffset(UUFDB.General.FontShadows.OffsetX, UUFDB.General.FontShadows.OffsetY)
+            end
+
+            if not self.CastBar.Time then
+                self.CastBar.Time = self.CastBar:CreateFontString(ResolveFrameName(unit).."_".."CastBar_Time", "OVERLAY")
+                self.CastBar.Time:SetFont(UUF.Media.Font, CastBarTextDB.Time.FontSize, UUFDB.General.FontFlag)
+                self.CastBar.Time:SetPoint(CastBarTextDB.Time.AnchorFrom, self.CastBar, CastBarTextDB.Time.AnchorTo, CastBarTextDB.Time.OffsetX, CastBarTextDB.Time.OffsetY)
+                self.CastBar.Time:SetTextColor(CastBarTextDB.Time.Colour[1], CastBarTextDB.Time.Colour[2], CastBarTextDB.Time.Colour[3], CastBarTextDB.Time.Colour[4])
+                self.CastBar.Time:SetJustifyH(UUF:SetJustification(CastBarTextDB.Time.AnchorFrom))
+                self.CastBar.Time:SetShadowColor(UUFDB.General.FontShadows.Colour[1], UUFDB.General.FontShadows.Colour[2], UUFDB.General.FontShadows.Colour[3], UUFDB.General.FontShadows.Colour[4])
+            end
+        end
+
+        if not self.CastBar.Icon then
+            self.CastBar.Icon = self.CastBar:CreateTexture(ResolveFrameName(unit).."_".."CastBar_Icon", "OVERLAY")
+            self.CastBar.Icon:SetSize(CastBarDB.Height - 2, CastBarDB.Height - 2)
+            self.CastBar.Icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
+            if CastBarDB.Icon.Enabled then
+                if CastBarDB.Icon.Position == "LEFT" then
+                    self.CastBar.Icon:SetPoint("LEFT", self.CastBarContainer, "LEFT", 0, 0)
+                    self.CastBar:SetPoint("TOPLEFT", self.CastBar.Icon, "TOPRIGHT", 1, -1)
+                    self.CastBar:SetPoint("BOTTOMRIGHT", self.CastBarContainer, "BOTTOMRIGHT", -1, 1)
+                else
+                    self.CastBar.Icon:SetPoint("RIGHT", self.CastBarContainer, "RIGHT", -1, 0)
+                    self.CastBar:SetPoint("TOPLEFT", self.CastBarContainer, "TOPLEFT", 1, -1)
+                    self.CastBar:SetPoint("BOTTOMRIGHT", self.CastBar.Icon, "BOTTOMLEFT", -1, 0)
+                end
+            else
+                self.CastBar.Icon:Hide()
+                self.CastBar:SetPoint("TOPLEFT", self.CastBarContainer, "TOPLEFT", 1, -1)
+                self.CastBar:SetPoint("BOTTOMRIGHT", self.CastBarContainer, "BOTTOMRIGHT", -1, 1)
+            end
         end
     end
 end
 
+local function UpdateCastBar(self, unit)
+    local UUFDB = UUF.db.profile
+    local normalizedUnit = GetNormalizedUnit(unit)
+    local CastBarDB = UUFDB[normalizedUnit].CastBar
+    local unitContainer = self.Container
+
+    if CastBarDB and CastBarDB.Enabled then
+        local CastBarTextDB = CastBarDB.Text
+        if self.CastBarContainer then
+            self.CastBarContainer:ClearAllPoints()
+            self.CastBarContainer:SetPoint(CastBarDB.AnchorFrom, unitContainer, CastBarDB.AnchorTo, CastBarDB.XPosition, CastBarDB.YPosition)
+            self.CastBarContainer:SetSize(CastBarDB.Width, CastBarDB.Height)
+            self.CastBarContainer:SetBackdropColor(CastBarDB.BGColour[1], CastBarDB.BGColour[2], CastBarDB.BGColour[3], CastBarDB.BGColour[4])
+            self.CastBarContainer:Hide()
+        end
+
+        if self.CastBar then
+            self.CastBar:ClearAllPoints()
+            self.CastBar:SetPoint("TOPLEFT", self.CastBarContainer, "TOPLEFT", 1, -1)
+            self.CastBar:SetPoint("BOTTOMRIGHT", self.CastBarContainer, "BOTTOMRIGHT", -1, 1)
+            self.CastBar:SetSize(CastBarDB.Width, CastBarDB.Height)
+            self.CastBar:SetStatusBarTexture(UUF.Media.ForegroundTexture)
+            self.CastBar:SetStatusBarColor(CastBarDB.FGColour[1], CastBarDB.FGColour[2], CastBarDB.FGColour[3], CastBarDB.FGColour[4])
+            self.CastBar:Hide()
+        end
+
+        if self.CastBar and self.CastBar.SpellName and CastBarTextDB.SpellName.Enabled then
+            self.CastBar.SpellName:ClearAllPoints()
+            self.CastBar.SpellName:SetFont(UUF.Media.Font, CastBarTextDB.SpellName.FontSize, UUFDB.General.FontFlag)
+            self.CastBar.SpellName:SetPoint(CastBarTextDB.SpellName.AnchorFrom, self.CastBar, CastBarTextDB.SpellName.AnchorTo, CastBarTextDB.SpellName.OffsetX, CastBarTextDB.SpellName.OffsetY)
+            self.CastBar.SpellName:SetTextColor(CastBarTextDB.SpellName.Colour[1], CastBarTextDB.SpellName.Colour[2], CastBarTextDB.SpellName.Colour[3], CastBarTextDB.SpellName.Colour[4])
+            self.CastBar.SpellName:SetJustifyH(UUF:SetJustification(CastBarTextDB.SpellName.AnchorFrom))
+            self.CastBar.SpellName:Show()
+        else
+            if self.CastBar and self.CastBar.SpellName then self.CastBar.SpellName:Hide() end
+        end
+
+        if self.CastBar and self.CastBar.Time and CastBarTextDB.Time.Enabled then
+            self.CastBar.Time:ClearAllPoints()
+            self.CastBar.Time:SetFont(UUF.Media.Font, CastBarTextDB.Time.FontSize, UUFDB.General.FontFlag)
+            self.CastBar.Time:SetPoint(CastBarTextDB.Time.AnchorFrom, self.CastBar, CastBarTextDB.Time.AnchorTo, CastBarTextDB.Time.OffsetX, CastBarTextDB.Time.OffsetY)
+            self.CastBar.Time:SetTextColor(CastBarTextDB.Time.Colour[1], CastBarTextDB.Time.Colour[2], CastBarTextDB.Time.Colour[3], CastBarTextDB.Time.Colour[4])
+            self.CastBar.Time:SetJustifyH(UUF:SetJustification(CastBarTextDB.Time.AnchorFrom))
+            self.CastBar.Time:Show()
+        else
+            if self.CastBar and self.CastBar.Time then self.CastBar.Time:Hide() end
+        end
+
+        if self.CastBar.Icon then
+            self.CastBar.Icon:SetSize(CastBarDB.Height - 2, CastBarDB.Height - 2)
+            self.CastBar.Icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
+            if CastBarDB.Icon.Enabled then
+                if CastBarDB.Icon.Position == "LEFT" then
+                    self.CastBar.Icon:ClearAllPoints()
+                    self.CastBar.Icon:SetPoint("LEFT", self.CastBarContainer, "LEFT", 0, 0)
+                    self.CastBar:ClearAllPoints()
+                    self.CastBar:SetPoint("TOPLEFT", self.CastBar.Icon, "TOPRIGHT", 1, -1)
+                    self.CastBar:SetPoint("BOTTOMRIGHT", self.CastBarContainer, "BOTTOMRIGHT", -1, 1)
+                else
+                    self.CastBar.Icon:ClearAllPoints()
+                    self.CastBar.Icon:SetPoint("RIGHT", self.CastBarContainer, "RIGHT", -1, 0)
+                    self.CastBar:ClearAllPoints()
+                    self.CastBar:SetPoint("TOPLEFT", self.CastBarContainer, "TOPLEFT", 1, -1)
+                    self.CastBar:SetPoint("BOTTOMRIGHT", self.CastBar.Icon, "BOTTOMLEFT", -1, 0)
+                end
+                self.CastBar.Icon:Show()
+            else
+                self.CastBar.Icon:Hide()
+                self.CastBar:ClearAllPoints()
+                self.CastBar:SetPoint("TOPLEFT", self.CastBarContainer, "TOPLEFT", 1, -1)
+                self.CastBar:SetPoint("BOTTOMRIGHT", self.CastBarContainer, "BOTTOMRIGHT", -1, 1)
+            end
+        end
+    end
+end
 --------------------------------------------------------------
 --- Factory Functions
 --------------------------------------------------------------
@@ -1258,6 +1408,7 @@ function UUF:CreateUnitFrame(unit)
     if unit == "player" or unit == "target" then CreateLeaderIndicator(unitFrame, unit) end
     CreateTargetIndicator(unitFrame, unit)
     CreatePortrait(unitFrame, unit)
+    CreateCastBar(unitFrame, unit)
     CreateTag(unitFrame, unit, "TagOne")
     CreateTag(unitFrame, unit, "TagTwo")
     CreateTag(unitFrame, unit, "TagThree")
@@ -1301,6 +1452,7 @@ function UUF:UpdateUnitFrame(unit)
     if unit == "player" or unit == "target" then UpdateLeaderIndicator(unitFrame, unit) end
     UpdateTargetIndicator(unitFrame, unit)
     UpdatePortrait(unitFrame, unit)
+    UpdateCastBar(unitFrame, unit)
     UpdateTag(unitFrame, unit, "TagOne")
     UpdateTag(unitFrame, unit, "TagTwo")
     UpdateTag(unitFrame, unit, "TagThree")
@@ -1347,6 +1499,8 @@ end
 function UUF:RegisterUnitEvents(unitFrame, unit)
     if not unitFrame or not unit then return end
     local normalizedUnit = GetNormalizedUnit(unit)
+    local UUFDB = UUF.db.profile
+    local CastBarDB = UUFDB[normalizedUnit].CastBar
     local unitDB = UUF.db.profile[normalizedUnit]
 
     for _, event in ipairs(GLOBAL_EVENTS) do unitFrame:RegisterEvent(event) end
@@ -1359,7 +1513,15 @@ function UUF:RegisterUnitEvents(unitFrame, unit)
 
     for _, event in ipairs(UNIT_EVENTS["PORTRAIT"]) do if unitFrame.Portrait then unitFrame:RegisterEvent(event) end end
 
-    for _, event in ipairs(UNIT_EVENTS["CASTBAR"]) do if unitFrame.CastBar then unitFrame:RegisterUnitEvent(event, unit) end end
+    for _, event in ipairs(UNIT_EVENTS["CASTBAR"]) do
+        if unitFrame.CastBar then
+            if CastBarDB.Enabled then
+                unitFrame:RegisterUnitEvent(event, unit)
+            else
+                unitFrame:UnregisterEvent(event)
+            end
+        end
+    end
 
     unitFrame:SetScript("OnEvent", UpdateUnitFrameData)
 end
@@ -1376,6 +1538,8 @@ function UUF:UnregisterUnitEvents(unitFrame, unit)
     for _, event in ipairs(UNIT_EVENTS["ABSORB"]) do unitFrame:UnregisterEvent(event) end
 
     for _, event in ipairs(UNIT_EVENTS["PORTRAIT"]) do if unitFrame.Portrait then unitFrame:UnregisterEvent(event) end end
+
+    for _, event in ipairs(UNIT_EVENTS["CASTBAR"]) do if unitFrame.CastBar then unitFrame:UnregisterEvent(event) end end
 
     unitFrame:SetScript("OnEvent", nil)
 end
