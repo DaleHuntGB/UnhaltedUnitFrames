@@ -219,16 +219,19 @@ local function UpdateTags(self, _, unit)
     if unit and unit ~= self.unit then return end
     if not UnitExists(self.unit) then return end
 
-    if self.TagOne then
+    if self.TagOne and self.TagOne:GetText() ~= nil then
         self.TagOne:SetText(UUF:EvaluateTagString(self.unit, UUF.db.profile[GetNormalizedUnit(self.unit)].Tags.TagOne.Tag or ""))
     end
-    if self.TagTwo then
+
+    if self.TagTwo and self.TagTwo:GetText() ~= nil then
         self.TagTwo:SetText(UUF:EvaluateTagString(self.unit, UUF.db.profile[GetNormalizedUnit(self.unit)].Tags.TagTwo.Tag or ""))
     end
-    if self.TagThree then
+
+    if self.TagThree and self.TagThree:GetText() ~= nil then
         self.TagThree:SetText(UUF:EvaluateTagString(self.unit, UUF.db.profile[GetNormalizedUnit(self.unit)].Tags.TagThree.Tag or ""))
     end
-    if self.TagFour then
+
+    if self.TagFour and self.TagFour:GetText() ~= nil then
         self.TagFour:SetText(UUF:EvaluateTagString(self.unit, UUF.db.profile[GetNormalizedUnit(self.unit)].Tags.TagFour.Tag or ""))
     end
 end
@@ -406,6 +409,17 @@ local function ForceTargetTargetUpdate()
     UpdateUnitHealthBarValues(targetTargetFrame, nil, "targettarget")
     UpdateUnitPowerBarValues(targetTargetFrame, nil, "targettarget")
     UpdateUnitAbsorbs(targetTargetFrame, nil, "targettarget")
+    UpdateTags(targetTargetFrame, nil, "targettarget")
+end
+
+local function ForceFocusUpdate()
+    local focusFrame = _G["UUF_Focus"]
+    if not focusFrame or not UnitExists("focus") then return end
+    if UUF.db.profile.focus.Enabled == false then return end
+    UpdateUnitHealthBarValues(focusFrame, nil, "focus")
+    UpdateUnitPowerBarValues(focusFrame, nil, "focus")
+    UpdateUnitAbsorbs(focusFrame, nil, "focus")
+    UpdateTags(focusFrame, nil, "focus")
 end
 
 local function UpdateUnitFrameData(self, event, unit)
@@ -435,6 +449,7 @@ local function UpdateUnitFrameData(self, event, unit)
     end
 
     ForceTargetTargetUpdate()
+    ForceFocusUpdate()
 end
 
 --------------------------------------------------------------
