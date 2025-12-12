@@ -274,17 +274,6 @@ local function UpdateUnitPowerBarValues(self, event, unit)
         self.PowerBar:SetValue(unitPower)
     end
 
-    if self.PowerBarText then
-        local PowerBarDB = UUF.db.profile[GetNormalizedUnit(self.unit)].PowerBar
-        if PowerBarDB.Text.ColourByType then
-            local r, g, b, a = FetchPowerBarColour(self.unit)
-            self.PowerBarText:SetTextColor(r, g, b, a)
-        else
-            self.PowerBarText:SetTextColor(PowerBarDB.Text.Colour[1], PowerBarDB.Text.Colour[2], PowerBarDB.Text.Colour[3], PowerBarDB.Text.Colour[4])
-        end
-        self.PowerBarText:SetText(unitPower)
-    end
-
     if self.AlternatePowerBar and unit == "player" then
         self.AlternatePowerBar:SetMinMaxValues(0, UnitPowerMax("player", Enum.PowerType.Mana))
         self.AlternatePowerBar:SetValue(alternatePower)
@@ -646,22 +635,6 @@ local function CreatePowerBar(self, unit)
             self.PowerBarBorder:SetVertexColor(0,0,0,1)
         end
 
-        if not self.PowerBarText then
-            self.PowerBarText = self.PowerBar:CreateFontString(ResolveFrameName(unit).."_".."PowerBarText", "OVERLAY")
-            self.PowerBarText:SetFont(UUF.Media.Font, PowerBarDB.Text.FontSize, UUFDB.General.FontFlag)
-            local anchorParent = PowerBarDB.Text.AnchorParent == "POWER" and self.PowerBar or self.Container
-            self.PowerBarText:SetPoint(PowerBarDB.Text.AnchorFrom, anchorParent, PowerBarDB.Text.AnchorTo, PowerBarDB.Text.OffsetX, PowerBarDB.Text.OffsetY)
-            if PowerBarDB.Text.ColourByType then
-                local r, g, b, a = FetchPowerBarColour(unit)
-                self.PowerBarText:SetTextColor(r, g, b, a)
-            else
-                self.PowerBarText:SetTextColor(PowerBarDB.Text.Colour[1], PowerBarDB.Text.Colour[2], PowerBarDB.Text.Colour[3], PowerBarDB.Text.Colour[4])
-            end
-            self.PowerBarText:SetJustifyH(UUF:SetJustification(PowerBarDB.Text.AnchorFrom))
-            self.PowerBarText:SetShadowOffset(UUFDB.General.FontShadows.OffsetX, UUFDB.General.FontShadows.OffsetY)
-            self.PowerBarText:SetShadowColor(UUFDB.General.FontShadows.Colour[1], UUFDB.General.FontShadows.Colour[2], UUFDB.General.FontShadows.Colour[3], UUFDB.General.FontShadows.Colour[4])
-        end
-
         if PowerBarDB.Enabled then
             if PowerBarDB.Alignment == "TOP" then
                 self.HealthBar:ClearAllPoints()
@@ -687,17 +660,10 @@ local function CreatePowerBar(self, unit)
             self.PowerBar:Show()
             self.PowerBarBG:Show()
             self.PowerBarBorder:Show()
-            self.PowerBarText:Show()
         else
             self.PowerBar:Hide()
             self.PowerBarBG:Hide()
             self.PowerBarBorder:Hide()
-            self.PowerBarText:Hide()
-        end
-        if PowerBarDB.Text.Enabled then
-            self.PowerBarText:Show()
-        else
-            self.PowerBarText:Hide()
         end
     end
 end
@@ -741,20 +707,6 @@ local function UpdatePowerBar(self, unit)
             self.PowerBar.unit = unit
         end
 
-        if self.PowerBarText then
-            local anchorParent = PowerBarDB.Text.AnchorParent == "POWER" and self.PowerBar or self.Container
-            self.PowerBarText:ClearAllPoints()
-            self.PowerBarText:SetFont(UUF.Media.Font, PowerBarDB.Text.FontSize, UUFDB.General.FontFlag)
-            self.PowerBarText:SetPoint(PowerBarDB.Text.AnchorFrom, anchorParent, PowerBarDB.Text.AnchorTo, PowerBarDB.Text.OffsetX, PowerBarDB.Text.OffsetY)
-            if PowerBarDB.Text.ColourByType then
-                local r, g, b, a = FetchPowerBarColour(unit)
-                self.PowerBarText:SetTextColor(r, g, b, a)
-            else
-                self.PowerBarText:SetTextColor(PowerBarDB.Text.Colour[1], PowerBarDB.Text.Colour[2], PowerBarDB.Text.Colour[3], PowerBarDB.Text.Colour[4])
-            end
-            self.PowerBarText:SetJustifyH(UUF:SetJustification(PowerBarDB.Text.AnchorFrom))
-        end
-
         if PowerBarDB.Enabled then
             if PowerBarDB.Alignment == "TOP" then
                 self.HealthBar:ClearAllPoints()
@@ -791,11 +743,6 @@ local function UpdatePowerBar(self, unit)
             self.PowerBar:Hide()
             self.PowerBarBG:Hide()
             self.PowerBarBorder:Hide()
-        end
-        if PowerBarDB.Text.Enabled then
-            self.PowerBarText:Show()
-        else
-            self.PowerBarText:Hide()
         end
     end
 end

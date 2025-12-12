@@ -456,52 +456,25 @@ local function CreatePowerBarSettings(containerParent, unit)
 
     local TogglesContainer = CreateInlineGroup(BarContainer, "Toggles")
 
-    local function GUIRefresh()
-        if not PowerBarDB.Enabled then
-            DeepDisable(BarContainer, true, UUFGUI.EnableCheckBox)
-            DeepDisable(UUFGUI.TextContainer, true, UUFGUI.EnableTextCheckBox)
-            ScrollFrame:DoLayout()
-            return
-        end
-        DeepDisable(BarContainer, false, nil)
-
-        if not PowerBarDB.Text.Enabled then
-            DeepDisable(UUFGUI.TextContainer, true, UUFGUI.EnableTextCheckBox)
-            ScrollFrame:DoLayout()
-            return
-        end
-
-        DeepDisable(UUFGUI.TextContainer, false, nil)
-
-        if PowerBarDB.ColourByType then
-            TextColourPicker:SetDisabled(true)
-        else
-            TextColourPicker:SetDisabled(false)
-        end
-
-        ScrollFrame:DoLayout()
-    end
-
     local EnableCheckBox = AG:Create("CheckBox")
     EnableCheckBox:SetLabel("Enable Power Bar")
     EnableCheckBox:SetValue(PowerBarDB.Enabled)
     EnableCheckBox:SetRelativeWidth(0.5)
-    EnableCheckBox:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.Enabled = value if unit == "boss" then UUF:UpdateAllBossFrames() else UUF:UpdateUnitFrame(unit) end  GUIRefresh() UUFGUI.EnableTextCheckBox:SetDisabled(not value) end)
-    UUFGUI.EnableCheckBox = EnableCheckBox
+    EnableCheckBox:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.Enabled = value if unit == "boss" then UUF:UpdateAllBossFrames() else UUF:UpdateUnitFrame(unit) end  DeepDisable(Wrapper, not value, EnableCheckBox) end)
     TogglesContainer:AddChild(EnableCheckBox)
 
     local ColourByType = AG:Create("CheckBox")
     ColourByType:SetLabel("Colour By Power Type")
     ColourByType:SetValue(PowerBarDB.ColourByType)
     ColourByType:SetRelativeWidth(0.5)
-    ColourByType:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.ColourByType = value if unit == "boss" then UUF:UpdateAllBossFrames() else UUF:UpdateUnitFrame(unit) end  UUFGUI.FGColourPicker:SetDisabled(value) end)
+    ColourByType:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.ColourByType = value if unit == "boss" then UUF:UpdateAllBossFrames() else UUF:UpdateUnitFrame(unit) end FGColourPicker:SetDisabled(value) end)
     TogglesContainer:AddChild(ColourByType)
 
     local ColourBackgroundByType = AG:Create("CheckBox")
     ColourBackgroundByType:SetLabel("Colour Background By Power Type")
     ColourBackgroundByType:SetValue(PowerBarDB.ColourBackgroundByType)
     ColourBackgroundByType:SetRelativeWidth(0.5)
-    ColourBackgroundByType:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.ColourBackgroundByType = value if unit == "boss" then UUF:UpdateAllBossFrames() else UUF:UpdateUnitFrame(unit) end  UUFGUI.BGColourPicker:SetDisabled(value) UUFGUI.DarkenFactorSlider:SetDisabled(not value) end)
+    ColourBackgroundByType:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.ColourBackgroundByType = value if unit == "boss" then UUF:UpdateAllBossFrames() else UUF:UpdateUnitFrame(unit) end BGColourPicker:SetDisabled(value) DarkenFactorSlider:SetDisabled(not value) end)
     TogglesContainer:AddChild(ColourBackgroundByType)
 
     local InverseGrowthCheckBox = AG:Create("CheckBox")
@@ -509,43 +482,37 @@ local function CreatePowerBarSettings(containerParent, unit)
     InverseGrowthCheckBox:SetValue(PowerBarDB.InverseGrowth)
     InverseGrowthCheckBox:SetRelativeWidth(0.5)
     InverseGrowthCheckBox:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.InverseGrowth = value if unit == "boss" then UUF:UpdateAllBossFrames() else UUF:UpdateUnitFrame(unit) end  end)
-    InverseGrowthCheckBox:SetCallback("OnEnter", function() GameTooltip:SetOwner(InverseGrowthCheckBox.frame, "ANCHOR_CURSOR") GameTooltip:AddLine("|cFF8080FFInverse Health Bar|r will adjust the growth direction from |cFFFFCC00Right to Left|r to |cFFFFCC00Left to Right|r", 1, 1, 1) GameTooltip:Show() end)
+    InverseGrowthCheckBox:SetCallback("OnEnter", function() GameTooltip:SetOwner(InverseGrowthCheckBox.frame, "ANCHOR_CURSOR") GameTooltip:AddLine("|cFF8080FFInverse Power Bar|r will adjust the growth direction from |cFFFFCC00Right to Left|r to |cFFFFCC00Left to Right|r", 1, 1, 1) GameTooltip:Show() end)
     InverseGrowthCheckBox:SetCallback("OnLeave", function() GameTooltip:Hide() end)
     TogglesContainer:AddChild(InverseGrowthCheckBox)
 
-    local ColourContainer = CreateInlineGroup(BarContainer, "Colours")
-    UUFGUI.ColourContainer = ColourContainer
-
-    local FGColourPicker = AG:Create("ColorPicker")
+    local ColoursContainer = CreateInlineGroup(ScrollFrame, "Colours")
+    FGColourPicker = AG:Create("ColorPicker")
     FGColourPicker:SetLabel("Foreground Colour")
     FGColourPicker:SetColor(unpack(PowerBarDB.FGColour))
     FGColourPicker:SetHasAlpha(true)
-    FGColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) PowerBarDB.FGColour = {r, g, b, a} if unit == "boss" then UUF:UpdateAllBossFrames() else UUF:UpdateUnitFrame(unit) end  end)
     FGColourPicker:SetRelativeWidth(0.33)
-    ColourContainer:AddChild(FGColourPicker)
-    UUFGUI.FGColourPicker = FGColourPicker
+    FGColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) PowerBarDB.FGColour = {r, g, b, a} if unit == "boss" then UUF:UpdateAllBossFrames() else UUF:UpdateUnitFrame(unit) end  end)
+    ColoursContainer:AddChild(FGColourPicker)
 
-    local BGColourPicker = AG:Create("ColorPicker")
+    BGColourPicker = AG:Create("ColorPicker")
     BGColourPicker:SetLabel("Background Colour")
     BGColourPicker:SetColor(unpack(PowerBarDB.BGColour))
     BGColourPicker:SetHasAlpha(true)
-    BGColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) PowerBarDB.BGColour = {r, g, b, a} if unit == "boss" then UUF:UpdateAllBossFrames() else UUF:UpdateUnitFrame(unit) end  end)
     BGColourPicker:SetRelativeWidth(0.33)
-    ColourContainer:AddChild(BGColourPicker)
-    UUFGUI.BGColourPicker = BGColourPicker
+    BGColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) PowerBarDB.BGColour = {r, g, b, a} if unit == "boss" then UUF:UpdateAllBossFrames() else UUF:UpdateUnitFrame(unit) end  end)
+    ColoursContainer:AddChild(BGColourPicker)
 
-    local DarkenFactorSlider = AG:Create("Slider")
+    DarkenFactorSlider = AG:Create("Slider")
     DarkenFactorSlider:SetLabel("Background Darken Factor")
     DarkenFactorSlider:SetValue(PowerBarDB.DarkenFactor)
-    DarkenFactorSlider:SetSliderValues(0.1, 1.0, 0.01)
+    DarkenFactorSlider:SetSliderValues(0, 1, 0.01)
+    DarkenFactorSlider:SetIsPercent(true)
     DarkenFactorSlider:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.DarkenFactor = value if unit == "boss" then UUF:UpdateAllBossFrames() else UUF:UpdateUnitFrame(unit) end  end)
     DarkenFactorSlider:SetRelativeWidth(0.33)
-    ColourContainer:AddChild(DarkenFactorSlider)
-    UUFGUI.DarkenFactorSlider = DarkenFactorSlider
+    ColoursContainer:AddChild(DarkenFactorSlider)
 
-    local LayoutContainer = CreateInlineGroup(BarContainer, "Layout")
-    UUFGUI.LayoutContainer = LayoutContainer
-
+    local LayoutContainer = CreateInlineGroup(ScrollFrame, "Layout")
     local HeightSlider = AG:Create("Slider")
     HeightSlider:SetLabel("Height")
     HeightSlider:SetValue(PowerBarDB.Height)
@@ -562,94 +529,10 @@ local function CreatePowerBarSettings(containerParent, unit)
     AlignmentDropdown:SetRelativeWidth(0.5)
     LayoutContainer:AddChild(AlignmentDropdown)
 
-    local TextContainer = CreateInlineGroup(ScrollFrame, "Text")
-    UUFGUI.TextContainer = TextContainer
+    DeepDisable(Wrapper, not PowerBarDB.Enabled, EnableCheckBox)
 
-    local TextToggleContainer = CreateInlineGroup(TextContainer, "Toggles")
-
-    local EnableTextCheckBox = AG:Create("CheckBox")
-    EnableTextCheckBox:SetLabel("Enable Power Text")
-    EnableTextCheckBox:SetValue(PowerBarDB.Text.Enabled)
-    EnableTextCheckBox:SetRelativeWidth(0.5)
-    EnableTextCheckBox:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.Text.Enabled = value if unit == "boss" then UUF:UpdateAllBossFrames() else UUF:UpdateUnitFrame(unit) end  DeepDisable(TextContainer, not value, EnableTextCheckBox) GUIRefresh() end)
-    UUFGUI.EnableTextCheckBox = EnableTextCheckBox
-    TextToggleContainer:AddChild(EnableTextCheckBox)
-
-    local ColourTextByPowerType = AG:Create("CheckBox")
-    ColourTextByPowerType:SetLabel("Colour Text By Power Type")
-    ColourTextByPowerType:SetValue(PowerBarDB.Text.ColourByType)
-    ColourTextByPowerType:SetRelativeWidth(0.5)
-    ColourTextByPowerType:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.Text.ColourByType = value if unit == "boss" then UUF:UpdateAllBossFrames() else UUF:UpdateUnitFrame(unit) end  TextColourPicker:SetDisabled(value) end)
-    TextToggleContainer:AddChild(ColourTextByPowerType)
-
-    local TextColourContainer = CreateInlineGroup(TextContainer, "Colours")
-
-    TextColourPicker = AG:Create("ColorPicker")
-    TextColourPicker:SetLabel("Text Colour")
-    TextColourPicker:SetColor(unpack(PowerBarDB.Text.Colour))
-    TextColourPicker:SetHasAlpha(true)
-    TextColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) PowerBarDB.Text.Colour = {r, g, b, a} if unit == "boss" then UUF:UpdateAllBossFrames() else UUF:UpdateUnitFrame(unit) end  end)
-    TextColourPicker:SetRelativeWidth(0.5)
-    TextColourContainer:AddChild(TextColourPicker)
-
-    local TextLayoutContainer = CreateInlineGroup(TextContainer, "Layout")
-
-    local AnchorFromDropdown = AG:Create("Dropdown")
-    AnchorFromDropdown:SetLabel("Anchor From")
-    AnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
-    AnchorFromDropdown:SetValue(PowerBarDB.Text.AnchorFrom)
-    AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.Text.AnchorFrom = value if unit == "boss" then UUF:UpdateAllBossFrames() else UUF:UpdateUnitFrame(unit) end  end)
-    AnchorFromDropdown:SetRelativeWidth(0.3)
-    TextLayoutContainer:AddChild(AnchorFromDropdown)
-
-    local AnchorParentDropdown = AG:Create("Dropdown")
-    AnchorParentDropdown:SetLabel("Anchor Parent")
-    AnchorParentDropdown:SetList({ ["POWER"] = "Power Bar", ["FRAME"] = "Unit Frame", })
-    AnchorParentDropdown:SetValue(PowerBarDB.Text.AnchorParent)
-    AnchorParentDropdown:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.Text.AnchorParent = value if unit == "boss" then UUF:UpdateAllBossFrames() else UUF:UpdateUnitFrame(unit) end  end)
-    AnchorParentDropdown:SetRelativeWidth(0.33)
-    TextLayoutContainer:AddChild(AnchorParentDropdown)
-
-    local AnchorToDropdown = AG:Create("Dropdown")
-    AnchorToDropdown:SetLabel("Anchor To")
-    AnchorToDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
-    AnchorToDropdown:SetValue(PowerBarDB.Text.AnchorTo)
-    AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.Text.AnchorTo = value if unit == "boss" then UUF:UpdateAllBossFrames() else UUF:UpdateUnitFrame(unit) end  end)
-    AnchorToDropdown:SetRelativeWidth(0.33)
-    TextLayoutContainer:AddChild(AnchorToDropdown)
-
-    local XPositionSlider = AG:Create("Slider")
-    XPositionSlider:SetLabel("X Offset")
-    XPositionSlider:SetValue(PowerBarDB.Text.OffsetX)
-    XPositionSlider:SetSliderValues(-500, 500, 0.1)
-    XPositionSlider:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.Text.OffsetX = value if unit == "boss" then UUF:UpdateAllBossFrames() else UUF:UpdateUnitFrame(unit) end  end)
-    XPositionSlider:SetRelativeWidth(0.33)
-    TextLayoutContainer:AddChild(XPositionSlider)
-
-    local YPositionSlider = AG:Create("Slider")
-    YPositionSlider:SetLabel("Y Offset")
-    YPositionSlider:SetValue(PowerBarDB.Text.OffsetY)
-    YPositionSlider:SetSliderValues(-500, 500, 0.1)
-    YPositionSlider:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.Text.OffsetY = value if unit == "boss" then UUF:UpdateAllBossFrames() else UUF:UpdateUnitFrame(unit) end  end)
-    YPositionSlider:SetRelativeWidth(0.33)
-    TextLayoutContainer:AddChild(YPositionSlider)
-
-    local FontSizeSlider = AG:Create("Slider")
-    FontSizeSlider:SetLabel("Font Size")
-    FontSizeSlider:SetValue(PowerBarDB.Text.FontSize)
-    FontSizeSlider:SetSliderValues(6, 72, 1)
-    FontSizeSlider:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.Text.FontSize = value if unit == "boss" then UUF:UpdateAllBossFrames() else UUF:UpdateUnitFrame(unit) end  end)
-    FontSizeSlider:SetRelativeWidth(0.33)
-    TextLayoutContainer:AddChild(FontSizeSlider)
-
-    GUIRefresh()
-
-    FGColourPicker:SetDisabled(PowerBarDB.ColourByType)
-    BGColourPicker:SetDisabled(PowerBarDB.ColourBackgroundByType)
-    DarkenFactorSlider:SetDisabled(not PowerBarDB.ColourBackgroundByType)
-    EnableTextCheckBox:SetDisabled(not PowerBarDB.Enabled)
-
-    ScrollFrame:DoLayout()
+    if PowerBarDB.ColourByType then FGColourPicker:SetDisabled(true) end
+    if PowerBarDB.ColourBackgroundByType then BGColourPicker:SetDisabled(true) DarkenFactorSlider:SetDisabled(false) end
 
     return ScrollFrame
 end

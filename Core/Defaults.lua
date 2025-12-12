@@ -121,17 +121,6 @@ UUF.Defaults = {
                 BGColour = {26/255, 26/255, 26/255, 1},
                 DarkenFactor = 0.75,
                 InverseGrowth = false,
-                Text = {
-                    Enabled = false,
-                    AnchorFrom = "RIGHT",
-                    AnchorParent = "POWER",
-                    AnchorTo = "RIGHT",
-                    OffsetX = -3,
-                    OffsetY = 0,
-                    FontSize = 12,
-                    Colour = {1, 1, 1, 1},
-                    ColourByType = true,
-                },
             },
             AlternatePowerBar = {
                 Enabled = true,
@@ -304,17 +293,6 @@ UUF.Defaults = {
                 BGColour = {26/255, 26/255, 26/255, 1},
                 DarkenFactor = 0.75,
                 InverseGrowth = false,
-                Text = {
-                    Enabled = false,
-                    AnchorFrom = "RIGHT",
-                    AnchorParent = "POWER",
-                    AnchorTo = "RIGHT",
-                    OffsetX = -3,
-                    OffsetY = 0,
-                    FontSize = 12,
-                    Colour = {1, 1, 1, 1},
-                    ColourByType = true,
-                }
             },
             Indicators = {
                 MouseoverHighlight = {
@@ -425,17 +403,6 @@ UUF.Defaults = {
                 BGColour = {26/255, 26/255, 26/255, 1},
                 DarkenFactor = 0.75,
                 InverseGrowth = false,
-                Text = {
-                    Enabled = false,
-                    AnchorFrom = "RIGHT",
-                    AnchorParent = "POWER",
-                    AnchorTo = "RIGHT",
-                    OffsetX = -3,
-                    OffsetY = 0,
-                    FontSize = 12,
-                    Colour = {1, 1, 1, 1},
-                    ColourByType = true,
-                }
             },
             Indicators = {
                 MouseoverHighlight = {
@@ -645,17 +612,6 @@ UUF.Defaults = {
                 BGColour = {26/255, 26/255, 26/255, 1},
                 DarkenFactor = 0.75,
                 InverseGrowth = false,
-                Text = {
-                    Enabled = false,
-                    AnchorFrom = "RIGHT",
-                    AnchorParent = "POWER",
-                    AnchorTo = "RIGHT",
-                    OffsetX = -3,
-                    OffsetY = 0,
-                    FontSize = 12,
-                    Colour = {1, 1, 1, 1},
-                    ColourByType = true,
-                }
             },
             Indicators = {
                 MouseoverHighlight = {
@@ -786,17 +742,6 @@ UUF.Defaults = {
                 BGColour = {26/255, 26/255, 26/255, 1},
                 DarkenFactor = 0.75,
                 InverseGrowth = false,
-                Text = {
-                    Enabled = false,
-                    AnchorFrom = "RIGHT",
-                    AnchorParent = "POWER",
-                    AnchorTo = "RIGHT",
-                    OffsetX = -3,
-                    OffsetY = 0,
-                    FontSize = 12,
-                    Colour = {1, 1, 1, 1},
-                    ColourByType = true,
-                }
             },
             Indicators = {
                 MouseoverHighlight = {
