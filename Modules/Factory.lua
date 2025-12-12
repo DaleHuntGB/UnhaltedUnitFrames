@@ -219,19 +219,19 @@ local function UpdateTags(self, _, unit)
     if unit and unit ~= self.unit then return end
     if not UnitExists(self.unit) then return end
 
-    if self.TagOne and self.TagOne:GetText() ~= nil then
+    if self.TagOne then
         self.TagOne:SetText(UUF:EvaluateTagString(self.unit, UUF.db.profile[GetNormalizedUnit(self.unit)].Tags.TagOne.Tag or ""))
     end
 
-    if self.TagTwo and self.TagTwo:GetText() ~= nil then
+    if self.TagTwo then
         self.TagTwo:SetText(UUF:EvaluateTagString(self.unit, UUF.db.profile[GetNormalizedUnit(self.unit)].Tags.TagTwo.Tag or ""))
     end
 
-    if self.TagThree and self.TagThree:GetText() ~= nil then
+    if self.TagThree then
         self.TagThree:SetText(UUF:EvaluateTagString(self.unit, UUF.db.profile[GetNormalizedUnit(self.unit)].Tags.TagThree.Tag or ""))
     end
 
-    if self.TagFour and self.TagFour:GetText() ~= nil then
+    if self.TagFour then
         self.TagFour:SetText(UUF:EvaluateTagString(self.unit, UUF.db.profile[GetNormalizedUnit(self.unit)].Tags.TagFour.Tag or ""))
     end
 end
