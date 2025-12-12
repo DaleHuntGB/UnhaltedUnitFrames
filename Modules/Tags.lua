@@ -66,13 +66,16 @@ function UUF:EvaluateTagString(unit, text)
     return tostring(func(unit) or "")
 end
 
+-- Fix Health Percent with CurveConstants.ScaleTo100
+-- Thanks Plusmouse - https://discordapp.com/channels/327414731654692866/1014994401644269670/1448865338803622102
+
 UUF:RegisterTag("curhp", function(unit) if UnitIsDeadOrGhost(unit) then return "Dead" end return UnitHealth(unit) end)
 UUF:RegisterTag("curhp:abbr", function(unit) if UnitIsDeadOrGhost(unit) then return "Dead" end return AbbreviateLargeNumbers(UnitHealth(unit)) end)
 UUF:RegisterTag("maxhp", function(unit) return UnitHealthMax(unit) end)
 UUF:RegisterTag("maxhp:abbr", function(unit) return AbbreviateLargeNumbers(UnitHealthMax(unit)) end)
-UUF:RegisterTag("perhp", function(unit) return string.format("%.0f%%", UnitHealthPercent(unit, false)) end)
-UUF:RegisterTag("curhpperhp", function(unit) if UnitIsDeadOrGhost(unit) then return "Dead" end if hasBrackets then return string.format("%s (%.0f%%)", UnitHealth(unit), UnitHealthPercent(unit, false)) elseif hasSquareBrackets then return string.format("%s [%.0f%%]", UnitHealth(unit), UnitHealthPercent(unit, false)) else return string.format("%s %s %.0f%%", UnitHealth(unit), UUF.HealthTagLayout, UnitHealthPercent(unit, false)) end end)
-UUF:RegisterTag("curhpperhp:abbr", function(unit) if UnitIsDeadOrGhost(unit) then return "Dead" end if hasBrackets then return string.format("%s (%.0f%%)", AbbreviateLargeNumbers(UnitHealth(unit)), UnitHealthPercent(unit, false)) elseif hasSquareBrackets then return string.format("%s [%.0f%%]", AbbreviateLargeNumbers(UnitHealth(unit)), UnitHealthPercent(unit, false)) else return string.format("%s %s %.0f%%", AbbreviateLargeNumbers(UnitHealth(unit)), UUF.HealthTagLayout, UnitHealthPercent(unit, false)) end end)
+UUF:RegisterTag("perhp", function(unit) return string.format("%d%%", UnitHealthPercent(unit, false, CurveConstants.ScaleTo100)) end)
+UUF:RegisterTag("curhpperhp", function(unit) if UnitIsDeadOrGhost(unit) then return "Dead" end if hasBrackets then return string.format("%s (%.0f%%)", UnitHealth(unit), UnitHealthPercent(unit, false, CurveConstants.ScaleTo100)) elseif hasSquareBrackets then return string.format("%s [%.0f%%]", UnitHealth(unit), UnitHealthPercent(unit, false, CurveConstants.ScaleTo100)) else return string.format("%s %s %.0f%%", UnitHealth(unit), UUF.HealthTagLayout, UnitHealthPercent(unit, false, CurveConstants.ScaleTo100)) end end)
+UUF:RegisterTag("curhpperhp:abbr", function(unit) if UnitIsDeadOrGhost(unit) then return "Dead" end if hasBrackets then return string.format("%s (%.0f%%)", AbbreviateLargeNumbers(UnitHealth(unit)), UnitHealthPercent(unit, false, CurveConstants.ScaleTo100)) elseif hasSquareBrackets then return string.format("%s [%.0f%%]", AbbreviateLargeNumbers(UnitHealth(unit)), UnitHealthPercent(unit, false, CurveConstants.ScaleTo100)) else return string.format("%s %s %.0f%%", AbbreviateLargeNumbers(UnitHealth(unit)), UUF.HealthTagLayout, UnitHealthPercent(unit, false, CurveConstants.ScaleTo100)) end end)
 UUF:RegisterTag("absorbs", function(unit) local absorbs = UnitGetTotalAbsorbs(unit) return C_StringUtil.TruncateWhenZero(absorbs) end)
 
 UUF:RegisterTag("curpp", function(unit) return UnitPower(unit) end)
@@ -83,8 +86,8 @@ UUF:RegisterTag("maxpp", function(unit) return UnitPowerMax(unit) end)
 UUF:RegisterTag("maxpp:colour", function(unit) local powerType = UnitPowerType(unit) local powerInfo = UUF.db.profile.General.CustomColours.Power[powerType] if powerInfo then local r, g, b = powerInfo[1], powerInfo[2], powerInfo[3] return string.format("|cff%02x%02x%02x%d|r", r*255, g*255, b*255, UnitPowerMax(unit)) end return tostring(UnitPowerMax(unit)) end)
 UUF:RegisterTag("maxpp:abbr", function(unit) return AbbreviateLargeNumbers(UnitPowerMax(unit)) end)
 UUF:RegisterTag("maxpp:colour:abbr", function(unit) local powerType = UnitPowerType(unit) local powerInfo = UUF.db.profile.General.CustomColours.Power[powerType] if powerInfo then local r, g, b = powerInfo[1], powerInfo[2], powerInfo[3] return string.format("|cff%02x%02x%02x%s|r", r*255, g*255, b*255, AbbreviateLargeNumbers(UnitPowerMax(unit))) end return AbbreviateLargeNumbers(UnitPowerMax(unit)) end)
-UUF:RegisterTag("perpp", function(unit) return string.format("%.0f%%", UnitPowerPercent(unit, UnitPowerType(unit), false, true)) end)
-UUF:RegisterTag("perpp:colour", function(unit) local powerType = UnitPowerType(unit) local powerInfo = UUF.db.profile.General.CustomColours.Power[powerType] if powerInfo then local r, g, b = powerInfo[1], powerInfo[2], powerInfo[3] return string.format("|cff%02x%02x%02x%.0f%%|r", r*255, g*255, b*255, UnitPowerPercent(unit, powerType, false, true)) end return string.format("%.0f%%", UnitPowerPercent(unit, powerType, false, true)) end)
+UUF:RegisterTag("perpp", function(unit) return string.format("%.0f%%", UnitPowerPercent(unit, UnitPowerType(unit), false, CurveConstants.ScaleTo100)) end)
+UUF:RegisterTag("perpp:colour", function(unit) local powerType = UnitPowerType(unit) local powerInfo = UUF.db.profile.General.CustomColours.Power[powerType] if powerInfo then local r, g, b = powerInfo[1], powerInfo[2], powerInfo[3] return string.format("|cff%02x%02x%02x%.0f%%|r", r*255, g*255, b*255, UnitPowerPercent(unit, powerType, false, CurveConstants.ScaleTo100)) end return string.format("%.0f%%", UnitPowerPercent(unit, powerType, false, CurveConstants.ScaleTo100)) end)
 UUF:RegisterTag("name", function(unit) return UnitName(unit) end)
 UUF:RegisterTag("name:colour", function(unit) local r, g, b = FetchUnitColour(unit) local unitName = UnitName(unit) or "" return string.format("|cff%02x%02x%02x%s|r", r*255, g*255, b*255, unitName) end)
 UUF:RegisterTag("name:targettarget", function(unit) local targetOfTarget = unit.."target" return UnitName(targetOfTarget) or "" end)
