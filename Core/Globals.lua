@@ -124,6 +124,7 @@ local function KillFrame(unitFrame)
         unitFrame:SetAlpha(0)
         unitFrame:SetScale(0.00000001)
         unitFrame:EnableMouse(false)
+        PlayerCastingBarFrame:UnregisterAllEvents() -- specifically nuke the player cast bar, but leave the frame active - for now.
     else
         unitFrame:Hide()
         unitFrame:SetScript("OnShow", unitFrame.Hide)
