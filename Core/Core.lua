@@ -18,4 +18,5 @@ function UnhaltedUnitFrames:OnEnable()
     UUF:SpawnUnitFrame("player")
     UUF:SpawnUnitFrame("target")
     UUF:SpawnUnitFrame("targettarget")
+    UUF:SpawnUnitFrame("focus")
 end

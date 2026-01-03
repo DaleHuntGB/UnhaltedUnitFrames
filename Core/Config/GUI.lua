@@ -1379,7 +1379,7 @@ local function CreateIndicatorSettings(containerParent, unit)
             { text = "Leader & Assistant", value = "LeaderAssistant" },
             { text = "Mouseover", value = "Mouseover" },
         })
-    elseif unit == "targettarget" then
+    elseif unit == "targettarget" or unit == "focus" then
         IndicatorContainerTabGroup:SetTabs({
             { text = "Raid Target Marker", value = "RaidTargetMarker" },
             { text = "Mouseover", value = "Mouseover" },
@@ -1979,6 +1979,12 @@ function UUF:CreateGUI()
             local ScrollFrame = UUFG.CreateScrollFrame(Wrapper)
 
             CreateUnitSettings(ScrollFrame, "targettarget")
+
+            ScrollFrame:DoLayout()
+        elseif MainTab == "Focus" then
+            local ScrollFrame = UUFG.CreateScrollFrame(Wrapper)
+
+            CreateUnitSettings(ScrollFrame, "focus")
 
             ScrollFrame:DoLayout()
         elseif MainTab == "Profiles" then
