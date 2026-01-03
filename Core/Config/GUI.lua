@@ -1530,8 +1530,15 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
     Toggle:SetLabel("Enable |cFF8080FF"..auraDB.."|r")
     Toggle:SetValue(AuraDB.Enabled)
     Toggle:SetCallback("OnValueChanged", function(_, _, value) AuraDB.Enabled = value UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) RefreshAuraGUI() end)
-    Toggle:SetRelativeWidth(0.33)
+    Toggle:SetRelativeWidth(0.5)
     AuraContainer:AddChild(Toggle)
+
+    local OnlyShowPlayerToggle = AG:Create("CheckBox")
+    OnlyShowPlayerToggle:SetLabel("Only Show Player "..auraDB)
+    OnlyShowPlayerToggle:SetValue(AuraDB.OnlyShowPlayer)
+    OnlyShowPlayerToggle:SetCallback("OnValueChanged", function(_, _, value) AuraDB.OnlyShowPlayer = value UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end)
+    OnlyShowPlayerToggle:SetRelativeWidth(0.5)
+    AuraContainer:AddChild(OnlyShowPlayerToggle)
 
     local LayoutContainer = UUFG.CreateInlineGroup(containerParent, "Layout & Positioning")
 
