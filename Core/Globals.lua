@@ -1,98 +1,122 @@
 local _, UUF = ...
-UUF.AddOnName = C_AddOns.GetAddOnMetadata("UnhaltedUnitFrames", "Title")
-UUF.Version = C_AddOns.GetAddOnMetadata("UnhaltedUnitFrames", "Version")
-UUF.Author = C_AddOns.GetAddOnMetadata("UnhaltedUnitFrames", "Author")
-UUF.InfoButton = "|A:glueannouncementpopup-icon-info:16:16|a "
-UUF.LSM = LibStub("LibSharedMedia-3.0")
-UUF.BossFrames = {}
-UUF.TargetHighlightEvtFrames = {}
-UUF.MaxBossFrames = 10
 UUFG = UUFG or {}
-UUF.TestMode = false
-UUF.BackdropTemplate = { bgFile = "Interface\\Buttons\\WHITE8X8", edgeFile = "Interface\\Buttons\\WHITE8X8", edgeSize = 1, insets = { left = 0, right = 0, top = 0, bottom = 0 }, }
-if UUF.LSM then UUF.LSM:Register("border", "WHITE8X8", [[Interface\Buttons\WHITE8X8]]) end
-if UUF.LSM then UUF.LSM:Register("statusbar", "Dragonflight", [[Interface\AddOns\UnhaltedUnitFrames\Media\Textures\Dragonflight.tga]]) end
-if UUF.LSM then UUF.LSM:Register("statusbar", "Better Blizzard", [[Interface\AddOns\UnhaltedUnitFrames\Media\Textures\BetterBlizzard.blp]]) end
-if UUF.LSM then UUF.LSM:Register("background", "Dragonflight", [[Interface\AddOns\UnhaltedUnitFrames\Media\Textures\Dragonflight_BG.tga]]) end
-if UUF.LSM then UUF.LSM:Register("statusbar", "Skyline", [[Interface\AddOns\UnhaltedUnitFrames\Media\Textures\Skyline.tga]]) end
-if UUF.LSM then UUF.LSM:Register("font", "Avantgarde - Book", [[Interface\AddOns\UnhaltedUnitFrames\Media\Fonts\AvantGarde\Book.ttf]]) end
-if UUF.LSM then UUF.LSM:Register("font", "Avantgarde - Book (Oblique)", [[Interface\AddOns\UnhaltedUnitFrames\Media\Fonts\AvantGarde\BookOblique.ttf]]) end
-if UUF.LSM then UUF.LSM:Register("font", "Avantgarde - Demi", [[Interface\AddOns\UnhaltedUnitFrames\Media\Fonts\AvantGarde\Demi.ttf]]) end
-if UUF.LSM then UUF.LSM:Register("font", "Avantgarde - Regular", [[Interface\AddOns\UnhaltedUnitFrames\Media\Fonts\AvantGarde\Regular.ttf]]) end
-if UUF.LSM then UUF.LSM:Register("font", "Expressway - Regular", [[Interface\AddOns\UnhaltedUnitFrames\Media\Fonts\Expressway.ttf]]) end
-if UUF.LSM then UUF.LSM:Register("font", "Avante", [[Interface\AddOns\UnhaltedUnitFrames\Media\Fonts\Avante.ttf]]) end
+UUF.AURA_TEST_MODE = false
+UUF.CASTBAR_TEST_MODE = false
 
-UUF.UnitToFrameName = {
-    ["player"] = "UUF_Player",
-    ["target"] = "UUF_Target",
-    ["targettarget"] = "UUF_TargetTarget",
-    ["pet"] = "UUF_Pet",
-    ["focus"] = "UUF_Focus",
-    ["boss"] = "UUF_Boss",
+UUF.LSM = LibStub("LibSharedMedia-3.0")
+UUF.AG = LibStub("AceGUI-3.0")
+UUF.BACKDROP = { bgFile = "Interface\\Buttons\\WHITE8X8", edgeFile = "Interface\\Buttons\\WHITE8X8", edgeSize = 1, insets = {left = 0, right = 0, top = 0, bottom = 0} }
+UUF.INFOBUTTON = "|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\InfoButton.png:16:16|t "
+UUF.ADDON_NAME = C_AddOns.GetAddOnMetadata("UnhaltedUnitFrames", "Title")
+UUF.ADDON_VERSION = C_AddOns.GetAddOnMetadata("UnhaltedUnitFrames", "Version")
+UUF.ADDON_AUTHOR = C_AddOns.GetAddOnMetadata("UnhaltedUnitFrames", "Author")
+UUF.ADDON_LOGO = "|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Logo:11:12|t"
+UUF.PRETTY_ADDON_NAME = UUF.ADDON_LOGO .. " " .. UUF.ADDON_NAME
+
+UUF.LSM:Register("statusbar", "Better Blizzard", "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\BetterBlizzard.blp")
+UUF.LSM:Register("statusbar", "Dragonflight", "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Dragonflight.tga")
+UUF.LSM:Register("statusbar", "Skyline", "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Skyline.tga")
+UUF.LSM:Register("statusbar", "Striped", "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Striped.png")
+
+UUF.LSM:Register("background", "Dragonflight", "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Backgrounds\\Dragonflight_BG.tga")
+
+UUF.LSM:Register("font", "Expressway", "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Fonts\\Expressway.ttf")
+UUF.LSM:Register("font", "Avante", "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Fonts\\Avante.ttf")
+UUF.LSM:Register("font", "Avantgarde (Book)", "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Fonts\\AvantGarde\\Book.ttf")
+UUF.LSM:Register("font", "Avantgarde (Book Oblique)", "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Fonts\\AvantGarde\\BookOblique.ttf")
+UUF.LSM:Register("font", "Avantgarde (Demi)", "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Fonts\\AvantGarde\\Demi.ttf")
+UUF.LSM:Register("font", "Avantgarde (Regular)", "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Fonts\\AvantGarde\\Regular.ttf")
+
+UUF.StatusTextures = {
+    Combat = {
+        ["COMBAT0"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Combat\\Combat0.tga",
+        ["COMBAT1"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Combat\\Combat1.tga",
+        ["COMBAT2"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Combat\\Combat2.tga",
+        ["COMBAT3"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Combat\\Combat3.tga",
+        ["COMBAT4"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Combat\\Combat4.tga",
+        ["COMBAT5"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Combat\\Combat5.tga",
+        ["COMBAT6"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Combat\\Combat6.tga",
+        ["COMBAT7"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Combat\\Combat7.tga",
+    },
+    Resting = {
+        ["RESTING0"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Resting\\Resting0.tga",
+        ["RESTING1"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Resting\\Resting1.tga",
+        ["RESTING2"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Resting\\Resting2.tga",
+        ["RESTING3"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Resting\\Resting3.tga",
+        ["RESTING4"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Resting\\Resting4.tga",
+        ["RESTING5"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Resting\\Resting5.tga",
+        ["RESTING6"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Resting\\Resting6.tga",
+        ["RESTING7"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Resting\\Resting7.tga",
+    },
 }
 
-UUF.UnitFrames = {
-    ["UUF_Player"] = "player",
-    ["UUF_Target"] = "target",
-    ["UUF_TargetTarget"] = "targettarget",
-    ["UUF_Pet"] = "pet",
-    ["UUF_Focus"] = "focus",
-    ["UUF_Boss"] = "boss",
-}
+function UUF:PrettyPrint(MSG) print(UUF.ADDON_NAME .. ":|r " .. MSG) end
 
-UUF.StatusTextureMap = {
-    ["COMBAT0"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Combat\\Combat0.tga",
-    ["COMBAT1"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Combat\\Combat1.tga",
-    ["COMBAT2"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Combat\\Combat2.tga",
-    ["COMBAT3"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Combat\\Combat3.tga",
-    ["COMBAT4"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Combat\\Combat4.tga",
-    ["COMBAT5"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Combat\\Combat5.tga",
-    ["COMBAT6"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Combat\\Combat6.tga",
-    ["COMBAT7"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Combat\\Combat7.tga",
-    ["RESTING0"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Resting\\Resting0.tga",
-    ["RESTING1"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Resting\\Resting1.tga",
-    ["RESTING2"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Resting\\Resting2.tga",
-    ["RESTING3"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Resting\\Resting3.tga",
-    ["RESTING4"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Resting\\Resting4.tga",
-    ["RESTING5"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Resting\\Resting5.tga",
-    ["RESTING6"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Resting\\Resting6.tga",
-    ["RESTING7"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Resting\\Resting7.tga",
-}
-
-UUF.LayoutConfig = {
-    TOPLEFT     = { anchor="TOPLEFT",   offsetMultiplier=0   },
-    TOP         = { anchor="TOP",       offsetMultiplier=0   },
-    TOPRIGHT    = { anchor="TOPRIGHT",  offsetMultiplier=0   },
-    BOTTOMLEFT  = { anchor="TOPLEFT",   offsetMultiplier=1   },
-    BOTTOM      = { anchor="TOP",       offsetMultiplier=1   },
-    BOTTOMRIGHT = { anchor="TOPRIGHT",  offsetMultiplier=1   },
-    CENTER      = { anchor="CENTER",    offsetMultiplier=0.5, isCenter=true },
-    LEFT        = { anchor="LEFT",      offsetMultiplier=0.5, isCenter=true },
-    RIGHT       = { anchor="RIGHT",     offsetMultiplier=0.5, isCenter=true },
-}
-
-local IndexToRaidTargetMarker = {
-    [1] = "STAR",
-    [2] = "CIRCLE",
-    [3] = "DIAMOND",
-    [4] = "TRIANGLE",
-    [5] = "MOON",
-    [6] = "SQUARE",
-    [7] = "CROSS",
-    [8] = "SKULL",
-}
-
-function UUF:Print(MSG)
-    print(UUF.AddOnName .. ":|r " .. MSG)
+function UUF:FetchFrameName(unit)
+    local UnitToFrame = {
+        ["player"] = "UUF_Player",
+        ["target"] = "UUF_Target",
+        ["targettarget"] = "UUF_TargetTarget",
+        ["focus"] = "UUF_Focus",
+        ["pet"] = "UUF_Pet",
+        ["boss"] = "UUF_Boss",
+    }
+    if not unit then return end
+    if unit:match("^boss(%d+)$") then local unitID = unit:match("^boss(%d+)$") return "UUF_Boss" .. unitID end
+    return UnitToFrame[unit]
 end
 
-function UUF:ResolveMedia()
+function UUF:ResolveLSM()
     local LSM = UUF.LSM
     local General = UUF.db.profile.General
     UUF.Media = UUF.Media or {}
-    UUF.Media.Font = LSM:Fetch("font", General.Font) or STANDARD_TEXT_FONT
-    UUF.Media.ForegroundTexture = LSM:Fetch("statusbar", General.ForegroundTexture) or "Interface\\RaidFrame\\Raid-Bar-Hp-Fill"
-    UUF.Media.BackgroundTexture = LSM:Fetch("background", General.BackgroundTexture) or "Interface\\Buttons\\WHITE8X8"
+    UUF.Media.Font = LSM:Fetch("font", General.Fonts.Font) or STANDARD_TEXT_FONT
+    UUF.Media.Foreground = LSM:Fetch("statusbar", General.Textures.Foreground) or "Interface\\RaidFrame\\Raid-Bar-Hp-Fill"
+    UUF.Media.Background = LSM:Fetch("background", General.Textures.Background) or "Interface\\Buttons\\WHITE8X8"
+end
+
+function UUF:Capitalize(STR)
+    return "|cFFFFCC00" .. (STR:gsub("^%l", string.upper)) .. "|r"
+end
+
+function UUF:GetPixelPerfectScale()
+    local _, screenHeight = GetPhysicalScreenSize()
+    local pixelSize = 768 / screenHeight
+    return pixelSize
+end
+
+local function SetupSlashCommands()
+    SLASH_UUF1 = "/uuf"
+    SLASH_UUF2 = "/unhaltedunitframes"
+    SLASH_UUF3 = "/uf"
+    SlashCmdList["UUF"] = function() UUF:CreateGUI() end
+    UUF:PrettyPrint("'|cFF8080FF/uuf|r' for in-game configuration.")
+end
+
+function UUF:SetUIScale()
+    local GeneralDB = UUF.db.profile.General
+    if GeneralDB.UIScale.Enabled then
+        UIParent:SetScale(GeneralDB.UIScale.Scale or 0.5333333333333)
+    else
+        UIParent:SetScale(0.64)
+    end
+end
+
+function UUF:Init()
+    SetupSlashCommands()
+    UUF:SetUIScale()
+    UUF:ResolveLSM()
+end
+
+function UUF:CopyTabe(originalTable, destinationTable)
+    for key, value in pairs(originalTable) do
+        if type(value) == "table" then
+            destinationTable[key] = destinationTable[key] or {}
+            UUF:CopyTabe(value, destinationTable[key])
+        else
+            destinationTable[key] = value
+        end
+    end
 end
 
 function UUF:SetJustification(anchorFrom)
@@ -105,255 +129,10 @@ function UUF:SetJustification(anchorFrom)
     end
 end
 
-local function SetupSlashCommands()
-    SLASH_UUF1 = "/uuf"
-    SlashCmdList["UUF"] = function(msg)
-        UUF:CreateGUI()
-    end
-    UUF:Print("'|cFF8080FF/uuf|r' for in-game configuration.")
-end
-
-function UUF:Init()
-    SetupSlashCommands()
-end
-
-local function KillFrame(unitFrame)
-    if not unitFrame then return end
-    unitFrame:UnregisterAllEvents()
-    if unitFrame == PlayerFrame then
-        unitFrame:SetAlpha(0)
-        unitFrame:SetScale(0.00000001)
-        unitFrame:EnableMouse(false)
-        PlayerCastingBarFrame:UnregisterAllEvents() -- specifically nuke the player cast bar, but leave the frame active - for now.
-    else
-        unitFrame:Hide()
-        unitFrame:SetScript("OnShow", unitFrame.Hide)
-    end
-end
-
-function UUF:HideDefaultUnitFrames()
-    KillFrame(PlayerFrame)
-    KillFrame(TargetFrame)
-    KillFrame(FocusFrame)
-    KillFrame(TargetFrameToT)
-    KillFrame(PetFrame)
-    KillFrame(Boss1TargetFrame)
-    KillFrame(Boss2TargetFrame)
-    KillFrame(Boss3TargetFrame)
-    KillFrame(Boss4TargetFrame)
-    KillFrame(Boss5TargetFrame)
-end
-
-function UUF:CreatePrompt(title, text, onAccept, onCancel, acceptText, cancelText)
-    StaticPopupDialogs["UUF_PROMPT_DIALOG"] = {
-        text = text or "",
-        button1 = acceptText or ACCEPT,
-        button2 = cancelText or CANCEL,
-        OnAccept = function(self, data)
-            if data and data.onAccept then
-                data.onAccept()
-            end
-        end,
-        OnCancel = function(self, data)
-            if data and data.onCancel then
-                data.onCancel()
-            end
-        end,
-        timeout = 0,
-        whileDead = true,
-        hideOnEscape = true,
-        preferredIndex = 3,
-        showAlert = true,
-    }
-    local promptDialog = StaticPopup_Show("UUF_PROMPT_DIALOG", title, text)
-    if promptDialog then
-        promptDialog.data = { onAccept = onAccept, onCancel = onCancel }
-        promptDialog:SetFrameStrata("TOOLTIP")
-    end
-    return promptDialog
-end
-
-function UUF:OpenURL(title, urlText)
-    StaticPopupDialogs["UUF_URL_POPUP"] = {
-        text = title or "",
-        button1 = CLOSE,
-        hasEditBox = true,
-        editBoxWidth = 300,
-        OnShow = function(self)
-            self.EditBox:SetText(urlText or "")
-            self.EditBox:SetFocus()
-            self.EditBox:HighlightText()
-        end,
-        OnAccept = function(self) end,
-        EditBoxOnEscapePressed = function(self) self:GetParent():Hide() end,
-        timeout = 0,
-        whileDead = true,
-        hideOnEscape = true,
-        preferredIndex = 3,
-    }
-    local urlDialog = StaticPopup_Show("UUF_URL_POPUP")
-    if urlDialog then
-        urlDialog:SetFrameStrata("TOOLTIP")
-    end
-    return urlDialog
-end
-
-function UUF:SetUIScale()
-    if UUF.db.profile.General.AllowUIScaling then
-        UIParent:SetScale(UUF.db.profile.General.UIScale)
-    end
-end
-
-function UUF:GetPixelPerfectScale()
-    local _, screenHeight = GetPhysicalScreenSize()
-    local pixelSize = 768 / screenHeight
-    return pixelSize
-end
-
-function UUF:RequiresAlternatePowerBar()
-    local SpecsNeedingAltPower = {
-        PRIEST = { 258 },           -- Shadow
-        MAGE   = { 62, 63, 64 },    -- Arcane, Fire, Frost
-        PALADIN = { 70 },           -- Ret
-        SHAMAN  = { 262, 263 },     -- Ele, Enh
-        EVOKER  = { 1467, 1473 },   -- Dev, Aug
-        DRUID = { 102, 103, 104 },    -- Balance, Feral, Guardian
-    }
-    local class = select(2, UnitClass("player"))
-    local specIndex = GetSpecialization()
-    if not specIndex then return false end
-    local specID = GetSpecializationInfo(specIndex)
-    local classSpecs = SpecsNeedingAltPower[class]
-    if not classSpecs then return false end
-    for _, requiredSpec in ipairs(classSpecs) do if specID == requiredSpec then return true end end
-    return false
-end
-
-function UUF:CreateCDMAnchor()
-    local ECDM = _G["EssentialCooldownViewer"]
-    if ECDM and ECDM:IsShown() then
-        local CDMAnchor = CreateFrame("Frame", "UUF_CDMAnchor", UIParent, "SecureFrameTemplate, BackdropTemplate")
-        CDMAnchor:SetAllPoints(ECDM)
-        CDMAnchor:SetSize(ECDM:GetWidth() or 300, ECDM:GetHeight() or 48)
-    else
-        UUF:Print("|cFFFFCC00Essential Cooldown Viewer|r is not enabled, please do so & reload.")
-    end
-end
-
-function UUF:IsCDMAnchorActive()
-    local ECDM = _G["EssentialCooldownViewer"]
-    local CDMAnchor = _G["UUF_CDMAnchor"]
-    return  ECDM and ECDM:IsShown() and CDMAnchor and CDMAnchor:IsShown()
-end
-
-function UUF:FetchRaidTargetMarkerTexture(index)
-    if not index then return end
-    if issecretvalue and issecretvalue(index) then return end
-    return IndexToRaidTargetMarker[index]
-end
-
-function UUF:CopyTable(defaultTable)
-    if type(defaultTable) ~= "table" then return defaultTable end
-    local newTable = {}
-    for k, v in pairs(defaultTable) do
-        if type(v) == "table" then
-            newTable[k] = UUF:CopyTable(v)
-        else
-            newTable[k] = v
-        end
-    end
-    return newTable
-end
-
-function UUF:GetUnitFrameName(unit)
-    return UUF.UnitToFrameName[unit]
-end
-
-function UUF:FrameIsValid(frameToAnchor, frameName)
-    if not frameName or type(frameName) ~= "string" then return false end
-    if UUF:GetUnitFrameName(frameToAnchor) == frameName then UUF:Print("You cannot anchor a frame to itself.") return false end
-    local frame = _G[frameName]
-    if frame and type(frame) == "table" and frame.IsObjectType and frame:IsObjectType("Frame") then
-        return true
-    else
-        UUF:Print("|cFF8080FF" .. frameName .. "|r could not be found, please check the name and try again.")
-        return false
-    end
-end
-
-function UUF:FixDatabaseIssues()
-    local variablesAdded = {}
-    local variablesRemoved = {}
-
-    local function Record(list, path)
-        list[#list + 1] = path
-    end
-
-    local function IsIgnoredPath(path)
-        return path:match("^profileKeys") or path:match("^global")
-    end
-
-    local function Reconcile(defaults, user, path)
-        path = path or ""
-
-        for k in pairs(user) do
-            if defaults[k] == nil then
-                local fullPath = path .. k
-                if not IsIgnoredPath(fullPath) then
-                    Record(variablesRemoved, fullPath)
-                end
-                user[k] = nil
-            end
-        end
-
-        for k, v in pairs(defaults) do
-            local currentPath = path .. k
-
-            if type(v) == "table" then
-                if type(user[k]) ~= "table" then
-                    user[k] = UUF:CopyTable(v)
-                    if not IsIgnoredPath(currentPath) then
-                        Record(variablesAdded, currentPath)
-                    end
-                else
-                    Reconcile(v, user[k], currentPath .. ".")
-                end
-            else
-                if user[k] == nil then
-                    user[k] = v
-                    if not IsIgnoredPath(currentPath) then
-                        Record(variablesAdded, currentPath)
-                    end
-                end
-            end
-        end
-    end
-
-    local profileName = UUF.db:GetCurrentProfile()
-    local profileDB = UnhaltedUFDB.profiles[profileName]
-    if not profileDB then
-        UUF:Print("Database Reconcile Aborted, Profile '" .. profileName .. "' not found.")
-        return
-    end
-    Reconcile(UUF.Defaults.profile, profileDB)
-    UUF:Print("Database Reconcile Completed For: " .. profileName)
-    if #variablesRemoved > 1 then
-        UUF:Print("Removed - " .. #variablesRemoved .. ":")
-        for _, k in ipairs(variablesRemoved) do
-            if k ~= "profile" and k ~= "global" then
-                UUF:Print(" • " .. k)
-            end
-        end
-    else
-        UUF:Print("Nothing To Remove!")
-    end
-
-    if #variablesAdded > 0 then
-        UUF:Print("Added - " .. #variablesAdded .. ":")
-        for _, k in ipairs(variablesAdded) do
-            UUF:Print(" • " .. k)
-        end
-    else
-        UUF:Print("Nothing To Add!")
+function UUF:GetClassColour(unitFrame)
+    local _, class = UnitClass(unitFrame.unit)
+    local classColour = RAID_CLASS_COLORS[class]
+    if classColour then
+        return {classColour.r, classColour.g, classColour.b, 1}
     end
 end

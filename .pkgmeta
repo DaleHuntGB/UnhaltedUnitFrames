@@ -1,30 +1,28 @@
 package-as: UnhaltedUnitFrames
-release-type: beta
-enable-nolib-creation: yes
+enable-nolib-creation: no
 
 curse-id: 1235670
 wago-id: 96do35NO
 
 externals:
-    Libs/Ace3:
-        url: https://repos.wowace.com/wow/ace3/trunk
+    Libraries/Ace3/AceAddon-3.0: https://repos.curseforge.com/wow/ace3/trunk/AceAddon-3.0
+    Libraries/Ace3/AceGUI-3.0: https://repos.curseforge.com/wow/ace3/trunk/AceGUI-3.0
+    Libraries/Ace3/AceDB-3.0: https://repos.curseforge.com/wow/ace3/trunk/AceDB-3.0
+    Libraries/Ace3/AceDBOptions-3.0: https://repos.curseforge.com/wow/ace3/trunk/AceDBOptions-3.0
+    Libraries/Ace3/AceSerializer-3.0: https://repos.curseforge.com/wow/ace3/trunk/AceSerializer-3.0
+    Libraries/Ace3/AceGUI-3.0-SharedMediaWidgets: https://repos.curseforge.com/wow/ace-gui-3-0-shared-media-widgets/trunk/AceGUI-3.0-SharedMediaWidgets
+    Libraries/CallbackHandler-1.0: https://repos.curseforge.com/wow/callbackhandler/trunk/CallbackHandler-1.0
+    Libraries/LibStub: https://repos.curseforge.com/wow/libstub/trunk
+    Libraries/LibSharedMedia-3.0: https://repos.curseforge.com/wow/libsharedmedia-3-0/trunk/LibSharedMedia-3.0
+    Libraries/LibDeflate:
+        url: https://github.com/SafeteeWoW/LibDeflate.git
         tag: latest
-
-    Libs/CallbackHandler-1.0:
-        url: https://repos.wowace.com/wow/callbackhandler/trunk/CallbackHandler-1.0
-        tag: latest
-
-    Libs/LibSharedMedia-3.0:
-        url: https://repos.wowace.com/wow/libsharedmedia-3-0/trunk
-        tag: latest
-
-    Libs/LibDeflate:
-        url: https://github.com/safeteeWoW/LibDeflate.git
-        tag: latest
-
-    Libs/LibStub:
-        url: https://repos.wowace.com/wow/libstub/trunk
-        tag: latest
+    Libraries/TaintLess:
+        url: https://www.townlong-yak.com/addons.git/taintless
+        commit: default
+    Libraries/oUF:
+        url: https://github.com/oUF-wow/oUF.git
+        branch: midnight
 
 ignore:
     - README.md
