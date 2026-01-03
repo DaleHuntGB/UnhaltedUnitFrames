@@ -102,10 +102,48 @@ function UUF:SetUIScale()
     end
 end
 
+function UUF:LoadCustomColours()
+    local General = UUF.db.profile.General
+    local oUF = UUF.oUF
+
+    local PowerTypesToString = {
+        [0] = "MANA",
+        [1] = "RAGE",
+        [2] = "FOCUS",
+        [3] = "ENERGY",
+        [6] = "RUNIC_POWER",
+        [8] = "LUNAR_POWER",
+        [11] = "MAELSTROM",
+        [13] = "INSANITY",
+        [17] = "FURY",
+        [18] = "PAIN"
+    }
+
+    for powerType, color in pairs(General.Colours.Power) do
+        local powerTypeString = PowerTypesToString[powerType]
+        if powerTypeString then oUF.colors.power[powerTypeString] = oUF:CreateColor(color[1], color[2], color[3]) end
+    end
+
+    for reaction, color in pairs(General.Colours.Reaction) do
+        oUF.colors.reaction[reaction] = oUF:CreateColor(color[1], color[2], color[3])
+    end
+
+    -- oUF.colors.health = { General.ForegroundColour[1], General.ForegroundColour[2], General.ForegroundColour[3] }
+    -- oUF.colors.tapped = { General.CustomColours.Status[2][1], General.CustomColours.Status[2][2], General.CustomColours.Status[2][3] }
+    -- oUF.colors.disconnected = { General.CustomColours.Status[3][1], General.CustomColours.Status[3][2], General.CustomColours.Status[3][3] }
+
+    for _, obj in next, oUF.objects do
+        if obj.UpdateTags then
+            obj:UpdateTags()
+        end
+    end
+end
+
 function UUF:Init()
     SetupSlashCommands()
     UUF:SetUIScale()
     UUF:ResolveLSM()
+    UUF:LoadCustomColours()
 end
 
 function UUF:CopyTabe(originalTable, destinationTable)
