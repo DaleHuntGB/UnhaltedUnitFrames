@@ -52,6 +52,15 @@ local function StyleAuras(_, button, unit, auraType)
             auraStacks:SetTextColor(unpack(Debuffs.Count.Colour))
         end
     end
+
+    local auraOverlay = button.Overlay
+    if auraOverlay then
+        auraOverlay:SetTexture("Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\AuraOverlay.png")
+        auraOverlay:ClearAllPoints()
+        auraOverlay:SetPoint("TOPLEFT", button, "TOPLEFT", 1, -1)
+        auraOverlay:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", -1, 1)
+        auraOverlay:SetTexCoord(0, 1, 0, 1)
+    end
 end
 
 local function RestyleAuras(_, button, unit, auraType)
@@ -125,6 +134,8 @@ local function CreateUnitBuffs(unitFrame, unit)
         unitFrame.BuffContainer.anchoredButtons = 0
         unitFrame.BuffContainer.createdButtons = 0
         unitFrame.BuffContainer.tooltipAnchor = "ANCHOR_CURSOR"
+        unitFrame.BuffContainer.showType = BuffsDB.ShowType
+        unitFrame.BuffContainer.showBuffType = BuffsDB.ShowType
 
         if BuffsDB.Enabled then
             unitFrame.Buffs = unitFrame.BuffContainer
@@ -156,6 +167,8 @@ local function CreateUnitDebuffs(unitFrame, unit)
         unitFrame.DebuffContainer.createdButtons = 0
         unitFrame.DebuffContainer.PostCreateButton = function(_, button) StyleAuras(_, button, unit, "HARMFUL") end
         unitFrame.DebuffContainer.tooltipAnchor = "ANCHOR_CURSOR"
+        unitFrame.DebuffContainer.showType = DebuffsDB.ShowType
+        unitFrame.DebuffContainer.showDebuffType = DebuffsDB.ShowType
 
         if DebuffsDB.Enabled then
             unitFrame.Debuffs = unitFrame.DebuffContainer
@@ -193,6 +206,8 @@ function UUF:UpdateUnitAuras(unitFrame, unit)
         unitFrame.BuffContainer.createdButtons = unitFrame.Buffs.createdButtons or 0
         unitFrame.BuffContainer.anchoredButtons = unitFrame.Buffs.anchoredButtons or 0
         unitFrame.BuffContainer.PostCreateButton = function(_, button) StyleAuras(_, button, unit, "HELPFUL") end
+        unitFrame.BuffContainer.showType = BuffsDB.ShowType
+        unitFrame.BuffContainer.showBuffType = BuffsDB.ShowType
         unitFrame.BuffContainer:Show()
         if unitFrame.BuffContainer and unitFrame.BuffContainer.ForceUpdate then unitFrame.BuffContainer:ForceUpdate() end
     else
@@ -222,6 +237,8 @@ function UUF:UpdateUnitAuras(unitFrame, unit)
         unitFrame.DebuffContainer.createdButtons = unitFrame.Debuffs.createdButtons or 0
         unitFrame.DebuffContainer.anchoredButtons = unitFrame.Debuffs.anchoredButtons or 0
         unitFrame.DebuffContainer.PostCreateButton = function(_, button) StyleAuras(_, button, unit, "HARMFUL") end
+        unitFrame.DebuffContainer.showType = DebuffsDB.ShowType
+        unitFrame.DebuffContainer.showDebuffType = DebuffsDB.ShowType
         unitFrame.DebuffContainer:Show()
         if unitFrame.DebuffContainer and unitFrame.DebuffContainer.ForceUpdate then unitFrame.DebuffContainer:ForceUpdate() end
     else
