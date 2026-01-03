@@ -72,7 +72,7 @@ function UUF:ResolveLSM()
     UUF.Media = UUF.Media or {}
     UUF.Media.Font = LSM:Fetch("font", General.Fonts.Font) or STANDARD_TEXT_FONT
     UUF.Media.Foreground = LSM:Fetch("statusbar", General.Textures.Foreground) or "Interface\\RaidFrame\\Raid-Bar-Hp-Fill"
-    UUF.Media.Background = LSM:Fetch("background", General.Textures.Background) or "Interface\\Buttons\\WHITE8X8"
+    UUF.Media.Background = LSM:Fetch("statusbar", General.Textures.Background) or "Interface\\Buttons\\WHITE8X8"
 end
 
 function UUF:Capitalize(STR)

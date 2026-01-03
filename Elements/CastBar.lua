@@ -135,6 +135,8 @@ function UUF:UpdateUnitCastBar(unitFrame, unit)
             if CastBarContainer then CastBarContainer:SetPoint(CastBarDB.Layout[1], unitFrame, CastBarDB.Layout[2], CastBarDB.Layout[3], CastBarDB.Layout[4]) end
             if CastBarDB.MatchParentWidth then if CastBarContainer then CastBarContainer:SetWidth(FrameDB.Width) end else if CastBarContainer then CastBarContainer:SetWidth(CastBarDB.Width) end end
             if CastBarContainer then CastBarContainer:SetHeight(CastBarDB.Height) end
+            unitFrame.Castbar:SetStatusBarTexture(UUF.Media.Foreground)
+            unitFrame.Castbar.Background:SetTexture(UUF.Media.Background)
 
             if CastBarDB.Icon.Enabled then
                 unitFrame.Castbar.Icon = unitFrame.Castbar.Icon or unitFrame.Castbar:CreateTexture(UUF:FetchFrameName(unit) .. "_CastBarIcon", "ARTWORK")

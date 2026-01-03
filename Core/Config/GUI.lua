@@ -221,7 +221,7 @@ local function CreateTextureSettings(containerParent)
     ForegroundTextureDropdown:SetLabel("Foreground Texture")
     ForegroundTextureDropdown:SetValue(UUF.db.profile.General.Textures.Foreground)
     ForegroundTextureDropdown:SetRelativeWidth(0.5)
-    ForegroundTextureDropdown:SetCallback("OnValueChanged", function(widget, _, value) widget:SetValue(value) UUF.db.profile.General.Textures.Foreground = value UUF:ResolveLSM() end)
+    ForegroundTextureDropdown:SetCallback("OnValueChanged", function(widget, _, value) widget:SetValue(value) UUF.db.profile.General.Textures.Foreground = value UUF:ResolveLSM() UUF:UpdateAllUnitFrames() end)
     Container:AddChild(ForegroundTextureDropdown)
 
     local BackgroundTextureDropdown = AG:Create("LSM30_Statusbar")
@@ -229,7 +229,7 @@ local function CreateTextureSettings(containerParent)
     BackgroundTextureDropdown:SetLabel("Background Texture")
     BackgroundTextureDropdown:SetValue(UUF.db.profile.General.Textures.Background)
     BackgroundTextureDropdown:SetRelativeWidth(0.5)
-    BackgroundTextureDropdown:SetCallback("OnValueChanged", function(widget, _, value) widget:SetValue(value) UUF.db.profile.General.Textures.Background = value UUF:ResolveLSM() end)
+    BackgroundTextureDropdown:SetCallback("OnValueChanged", function(widget, _, value) widget:SetValue(value) UUF.db.profile.General.Textures.Background = value UUF:ResolveLSM() UUF:UpdateAllUnitFrames() end)
     Container:AddChild(BackgroundTextureDropdown)
 end
 

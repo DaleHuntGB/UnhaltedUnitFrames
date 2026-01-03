@@ -56,11 +56,13 @@ function UUF:UpdateUnitHealthBar(unitFrame, unit)
         unitFrame.Health.colorReaction = HealthBarDB.ColourByReaction
         unitFrame.Health.colorTapped = HealthBarDB.ColourWhenTapped
         unitFrame.Health:SetStatusBarColor(HealthBarDB.Foreground[1], HealthBarDB.Foreground[2], HealthBarDB.Foreground[3], HealthBarDB.ForegroundOpacity)
+        unitFrame.Health:SetStatusBarTexture(UUF.Media.Foreground)
     end
 
     if unitFrame.HealthBackground then
         unitFrame.HealthBackground:SetSize(FrameDB.Width - 2, FrameDB.Height - 2)
         unitFrame.HealthBackground:SetStatusBarColor(HealthBarDB.Background[1], HealthBarDB.Background[2], HealthBarDB.Background[3], HealthBarDB.BackgroundOpacity)
+        unitFrame.HealthBackground:SetStatusBarTexture(UUF.Media.Background)
     end
     unitFrame.Health:ForceUpdate()
 end

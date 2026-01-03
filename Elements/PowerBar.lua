@@ -61,6 +61,7 @@ function UUF:UpdateUnitPowerBar(unitFrame, unit)
             unitFrame.Power:SetPoint("BOTTOMLEFT", unitFrame.Container, "BOTTOMLEFT", 1, 1)
             unitFrame.Power:SetSize(unitFrame:GetWidth() - 2, PowerBarDB.Height)
             unitFrame.Power:SetStatusBarColor(PowerBarDB.Foreground[1], PowerBarDB.Foreground[2], PowerBarDB.Foreground[3], 1)
+            unitFrame.Power:SetStatusBarTexture(UUF.Media.Foreground)
             unitFrame.Power.colorPower = PowerBarDB.ColourByType
             unitFrame.Power.colorClass = PowerBarDB.ColourByClass
             unitFrame.Power.frequentUpdates = PowerBarDB.Smooth
@@ -69,6 +70,7 @@ function UUF:UpdateUnitPowerBar(unitFrame, unit)
         if unitFrame.Power.Background then
             unitFrame.Power.Background:SetSize(unitFrame:GetWidth() - 2, PowerBarDB.Height)
             unitFrame.Power.Background:SetVertexColor(PowerBarDB.Background[1], PowerBarDB.Background[2], PowerBarDB.Background[3], 1)
+            unitFrame.Power.Background:SetTexture(UUF.Media.Background)
         end
 
         unitFrame.HealthBackground:SetHeight(FrameDB.Height - PowerBarDB.Height - 3)
