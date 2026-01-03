@@ -1379,6 +1379,11 @@ local function CreateIndicatorSettings(containerParent, unit)
             { text = "Leader & Assistant", value = "LeaderAssistant" },
             { text = "Mouseover", value = "Mouseover" },
         })
+    elseif unit == "targettarget" then
+        IndicatorContainerTabGroup:SetTabs({
+            { text = "Raid Target Marker", value = "RaidTargetMarker" },
+            { text = "Mouseover", value = "Mouseover" },
+        })
     end
     IndicatorContainerTabGroup:SetCallback("OnGroupSelected", SelectIndicatorTab)
     IndicatorContainerTabGroup:SelectTab("RaidTargetMarker")
@@ -1725,7 +1730,7 @@ local function CreateUnitSettings(containerParent, unit)
     local function SelectUnitTab(SubContainer, _, UnitTab)
         SubContainer:ReleaseChildren()
         if UnitTab == "Frame" then
-            CreateFrameSettings(SubContainer, unit, false, function() UUF:UpdateUnitFrame(UUF[unit:upper()], unit) end)
+            CreateFrameSettings(SubContainer, unit, UUF.db.profile.Units[unit].Frame.AnchorParent and true or false, function() UUF:UpdateUnitFrame(UUF[unit:upper()], unit) end)
         elseif UnitTab == "HealPrediction" then
             CreateHealPredictionSettings(SubContainer, unit, function() UUF:UpdateUnitHealPrediction(UUF[unit:upper()], unit) end)
         elseif UnitTab == "Auras" then
@@ -1749,16 +1754,28 @@ local function CreateUnitSettings(containerParent, unit)
     local SubContainerTabGroup = AG:Create("TabGroup")
     SubContainerTabGroup:SetLayout("Flow")
     SubContainerTabGroup:SetFullWidth(true)
-    SubContainerTabGroup:SetTabs({
-        { text = "Frame", value = "Frame"},
-        { text = "Heal Prediction", value = "HealPrediction"},
-        { text = "Auras", value = "Auras"},
-        { text = "Power Bar", value = "PowerBar"},
-        { text = "Cast Bar", value = "CastBar"},
-        { text = "Portrait", value = "Portrait"},
-        { text = "Indicators", value = "Indicators"},
-        { text = "Tags", value = "Tags"},
-    })
+    if unit ~= "targettarget" then
+        SubContainerTabGroup:SetTabs({
+            { text = "Frame", value = "Frame"},
+            { text = "Heal Prediction", value = "HealPrediction"},
+            { text = "Auras", value = "Auras"},
+            { text = "Power Bar", value = "PowerBar"},
+            { text = "Cast Bar", value = "CastBar"},
+            { text = "Portrait", value = "Portrait"},
+            { text = "Indicators", value = "Indicators"},
+            { text = "Tags", value = "Tags"},
+        })
+    else
+        SubContainerTabGroup:SetTabs({
+            { text = "Frame", value = "Frame"},
+            { text = "Heal Prediction", value = "HealPrediction"},
+            { text = "Auras", value = "Auras"},
+            { text = "Power Bar", value = "PowerBar"},
+            { text = "Portrait", value = "Portrait"},
+            { text = "Indicators", value = "Indicators"},
+            { text = "Tags", value = "Tags"},
+        })
+    end
     SubContainerTabGroup:SetCallback("OnGroupSelected", SelectUnitTab)
     SubContainerTabGroup:SelectTab("Frame")
     containerParent:AddChild(SubContainerTabGroup)
@@ -1956,6 +1973,12 @@ function UUF:CreateGUI()
             local ScrollFrame = UUFG.CreateScrollFrame(Wrapper)
 
             CreateUnitSettings(ScrollFrame, "target")
+
+            ScrollFrame:DoLayout()
+        elseif MainTab == "TargetTarget" then
+            local ScrollFrame = UUFG.CreateScrollFrame(Wrapper)
+
+            CreateUnitSettings(ScrollFrame, "targettarget")
 
             ScrollFrame:DoLayout()
         elseif MainTab == "Profiles" then

@@ -384,6 +384,162 @@ local Defaults = {
                     },
                 }
             },
+            targettarget = {
+                Frame = {
+                    Width = 122,
+                    Height = 22,
+                    AnchorParent = "UUF_Target",
+                    Layout = {"TOPRIGHT", "BOTTOMRIGHT", 0, -26.1}
+                },
+                HealthBar = {
+                    ColourByClass = true,
+                    ColourByReaction = true,
+                    ColourWhenTapped = true,
+                    AnchorToCooldownViewer = false,
+                    Foreground = {8/255, 8/255, 8/255},
+                    ForegroundOpacity = 0.8,
+                    Background = {34/255, 34/255, 34/255},
+                    BackgroundOpacity = 1.0,
+                },
+                HealPrediction = {
+                    Absorbs = {
+                        Enabled = true,
+                        UseStripedTexture = true,
+                        Colour = {255/255, 204/255, 0/255, 1.0},
+                        Position = "LEFT",
+                    },
+                    HealAbsorbs = {
+                        Enabled = true,
+                        UseStripedTexture = false,
+                        Colour = {128/255, 64/255, 255/255, 1.0},
+                        Position = "RIGHT",
+                    },
+                },
+                PowerBar = {
+                    Enabled = false,
+                    Height = 3,
+                    Foreground = {8/255, 8/255, 8/255},
+                    Background = {128/255, 128/255, 128/255},
+                    ColourByType = true,
+                    ColourBackgroundByType = false,
+                    ColourByClass = false,
+                    Smooth = true,
+                    BackgroundMultiplier = 0.75,
+                },
+                -- CastBar = {
+                --     Enabled = false,
+                --     Width = 244,
+                --     Height = 24,
+                --     Layout = {"TOPLEFT", "BOTTOMLEFT", 0, -1},
+                --     Foreground = {128/255, 128/255, 255/255},
+                --     Background = {34/255, 34/255, 34/255},
+                --     NotInterruptibleColour = {255/255, 64/255, 64/255},
+                --     MatchParentWidth = true,
+                --     ColourByClass = false,
+                --     Icon = {
+                --         Enabled = true,
+                --         Position = "LEFT",
+                --     },
+                --     Text = {
+                --         SpellName = {
+                --             Enabled = true,
+                --             FontSize = 12,
+                --             Layout = {"LEFT", "LEFT", 3, 0},
+                --             Colour = {1, 1, 1},
+                --         },
+                --         Duration = {
+                --             Enabled = true,
+                --             FontSize = 12,
+                --             Layout = {"RIGHT", "RIGHT", -3, 0},
+                --             Colour = {1, 1, 1},
+                --         }
+                --     }
+                -- },
+                Portrait = {
+                    Enabled = false,
+                    Size = 22,
+                    Layout = {"RIGHT", "LEFT", -1, 0},
+                    Zoom = 0.3,
+                    UseClassPortrait = false,
+                },
+                Indicators = {
+                    RaidTargetMarker = {
+                        Enabled = true,
+                        Size = 24,
+                        Layout = {"CENTER", "CENTER", 0, 0},
+                    },
+                    Mouseover = {
+                        Enabled = true,
+                        Colour = {1, 1, 1},
+                        HighlightOpacity = 0.75,
+                        Style = "GRADIENT"
+                    },
+                },
+                Auras = {
+                    Buffs = {
+                        Enabled = false,
+                        OnlyShowPlayer = false,
+                        Size = 34,
+                        Layout = {"BOTTOMLEFT", "TOPLEFT", 0, 1, 1},
+                        Num = 3,
+                        Wrap = 3,
+                        GrowthDirection = "RIGHT",
+                        WrapDirection = "UP",
+                        Count = {
+                            Layout = {"BOTTOMRIGHT", "BOTTOMRIGHT", 0, 2},
+                            FontSize = 12,
+                            Colour = {1, 1, 1, 1}
+                        }
+                    },
+                    Debuffs = {
+                        Enabled = true,
+                        OnlyShowPlayer = false,
+                        Size = 22,
+                        Layout = {"LEFT", "RIGHT", 1, 0, 1},
+                        Num = 3,
+                        Wrap = 3,
+                        GrowthDirection = "RIGHT",
+                        WrapDirection = "UP",
+                        Count = {
+                            Layout = {"BOTTOMRIGHT", "BOTTOMRIGHT", 0, 2},
+                            FontSize = 12,
+                            Colour = {1, 1, 1, 1}
+                        }
+                    },
+                },
+                Tags = {
+                    TagOne = {
+                        FontSize = 12,
+                        Layout = {"CENTER", "CENTER", 0, 0},
+                        Colour = {1, 1, 1},
+                        Tag = "[name]",
+                    },
+                    TagTwo = {
+                        FontSize = 12,
+                        Layout = {"CENTER", "CENTER",0, 0},
+                        Colour = {1, 1, 1},
+                        Tag = "",
+                    },
+                    TagThree = {
+                        FontSize = 12,
+                        Layout = {"CENTER", "CENTER",0, 0},
+                        Colour = {1, 1, 1},
+                        Tag = "",
+                    },
+                    TagFour = {
+                        FontSize = 12,
+                        Layout = {"CENTER", "CENTER", 0, 0},
+                        Colour = {1, 1, 1},
+                        Tag = "",
+                    },
+                    TagFive = {
+                        FontSize = 12,
+                        Layout = {"CENTER", "CENTER", 0, 0},
+                        Colour = {1, 1, 1},
+                        Tag = "",
+                    },
+                }
+            },
         }
     },
 }

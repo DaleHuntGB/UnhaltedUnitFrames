@@ -56,7 +56,7 @@ function UUF:FetchFrameName(unit)
     local UnitToFrame = {
         ["player"] = "UUF_Player",
         ["target"] = "UUF_Target",
-        ["targettarget"] = "UUF_TargetTarget",
+        ["targettarget"] = "UUF_Targetarget",
         ["focus"] = "UUF_Focus",
         ["pet"] = "UUF_Pet",
         ["boss"] = "UUF_Boss",
