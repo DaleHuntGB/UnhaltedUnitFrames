@@ -16,4 +16,5 @@ function UnhaltedUnitFrames:OnEnable()
     UUF:Init()
     UUF:CreatePositionController()
     UUF:SpawnUnitFrame("player")
+    UUF:SpawnUnitFrame("target")
 end

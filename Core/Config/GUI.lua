@@ -392,14 +392,25 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
                 XPosSlider:SetValue(FrameDB.Layout[3])
                 YPosSlider:SetValue(FrameDB.Layout[4])
             else
-                FrameDB.Layout[1] = "RIGHT"
-                FrameDB.Layout[2] = "LEFT"
-                FrameDB.Layout[3] = 0
-                FrameDB.Layout[4] = 0
-                AnchorFromDropdown:SetValue(FrameDB.Layout[1])
-                AnchorToDropdown:SetValue(FrameDB.Layout[2])
-                XPosSlider:SetValue(FrameDB.Layout[3])
-                YPosSlider:SetValue(FrameDB.Layout[4])
+                if unit == "player" then
+                    FrameDB.Layout[1] = "RIGHT"
+                    FrameDB.Layout[2] = "LEFT"
+                    FrameDB.Layout[3] = 0
+                    FrameDB.Layout[4] = 0
+                    AnchorFromDropdown:SetValue(FrameDB.Layout[1])
+                    AnchorToDropdown:SetValue(FrameDB.Layout[2])
+                    XPosSlider:SetValue(FrameDB.Layout[3])
+                    YPosSlider:SetValue(FrameDB.Layout[4])
+                elseif unit == "target" then
+                    FrameDB.Layout[1] = "LEFT"
+                    FrameDB.Layout[2] = "RIGHT"
+                    FrameDB.Layout[3] = 0
+                    FrameDB.Layout[4] = 0
+                    AnchorFromDropdown:SetValue(FrameDB.Layout[1])
+                    AnchorToDropdown:SetValue(FrameDB.Layout[2])
+                    XPosSlider:SetValue(FrameDB.Layout[3])
+                    YPosSlider:SetValue(FrameDB.Layout[4])
+                end
             end
             updateCallback()
         end)
@@ -1354,13 +1365,21 @@ local function CreateIndicatorSettings(containerParent, unit)
     local IndicatorContainerTabGroup = AG:Create("TabGroup")
     IndicatorContainerTabGroup:SetLayout("Flow")
     IndicatorContainerTabGroup:SetFullWidth(true)
-    IndicatorContainerTabGroup:SetTabs({
-        { text = "Raid Target Marker", value = "RaidTargetMarker" },
-        { text = "Leader & Assistant", value = "LeaderAssistant" },
-        { text = "Resting", value = "Resting" },
-        { text = "Combat", value = "Combat" },
-        { text = "Mouseover", value = "Mouseover" },
-    })
+    if unit == "player" then
+        IndicatorContainerTabGroup:SetTabs({
+            { text = "Raid Target Marker", value = "RaidTargetMarker" },
+            { text = "Leader & Assistant", value = "LeaderAssistant" },
+            { text = "Resting", value = "Resting" },
+            { text = "Combat", value = "Combat" },
+            { text = "Mouseover", value = "Mouseover" },
+        })
+    elseif unit == "target" then
+        IndicatorContainerTabGroup:SetTabs({
+            { text = "Raid Target Marker", value = "RaidTargetMarker" },
+            { text = "Leader & Assistant", value = "LeaderAssistant" },
+            { text = "Mouseover", value = "Mouseover" },
+        })
+    end
     IndicatorContainerTabGroup:SetCallback("OnGroupSelected", SelectIndicatorTab)
     IndicatorContainerTabGroup:SelectTab("RaidTargetMarker")
     containerParent:AddChild(IndicatorContainerTabGroup)
@@ -1917,6 +1936,12 @@ function UUF:CreateGUI()
             local ScrollFrame = UUFG.CreateScrollFrame(Wrapper)
 
             CreateUnitSettings(ScrollFrame, "player")
+
+            ScrollFrame:DoLayout()
+        elseif MainTab == "Target" then
+            local ScrollFrame = UUFG.CreateScrollFrame(Wrapper)
+
+            CreateUnitSettings(ScrollFrame, "target")
 
             ScrollFrame:DoLayout()
         elseif MainTab == "Profiles" then

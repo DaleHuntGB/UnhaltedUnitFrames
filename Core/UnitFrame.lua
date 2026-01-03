@@ -45,8 +45,8 @@ function UUF:UpdateUnitFrame(unitFrame, unit)
     UUF:UpdateUnitPowerBar(unitFrame, unit)
     UUF:UpdateUnitRaidTargetMarker(unitFrame, unit)
     UUF:UpdateUnitLeaderAssistantIndicator(unitFrame, unit)
-    UUF:UpdateUnitCombatIndicator(unitFrame, unit)
-    UUF:UpdateUnitRestingIndicator(unitFrame, unit)
+    if unit == "player" then UUF:UpdateUnitCombatIndicator(unitFrame, unit) end
+    if unit == "player" then UUF:UpdateUnitRestingIndicator(unitFrame, unit) end
     UUF:UpdateUnitMouseoverIndicator(unitFrame, unit)
     UUF:UpdateUnitAuras(unitFrame, unit)
     UUF:UpdateUnitTags()
