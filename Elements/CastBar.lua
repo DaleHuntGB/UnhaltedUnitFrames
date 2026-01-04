@@ -105,8 +105,13 @@ function UUF:CreateUnitCastBar(unitFrame, unit)
             CastBarContainer:Show()
             local spellName = C_Spell.GetSpellInfo(frameCastBar.spellID).name
             if spellName then frameCastBar.Text:SetText(spellName) else frameCastBar.Text:SetText("") end
-            local castBarColour = (frameCastBar.notInterruptible and CastBarDB.NotInterruptibleColour) or (CastBarDB.ColourByClass and UUF:GetClassColour(unitFrame)) or CastBarDB.Foreground
-            frameCastBar:SetStatusBarColor(castBarColour[1], castBarColour[2], castBarColour[3], castBarColour[4])
+            -- Look at this in the future
+            if not issecretvalue and issecretvalue(frameCastBar.notInterruptible) then
+                frameCastBar:SetStatusBarColor(CastBarDB.NotInterruptibleColour[1], CastBarDB.NotInterruptibleColour[2], CastBarDB.NotInterruptibleColour[3], CastBarDB.NotInterruptibleColour[4])
+            else
+                local castBarColour = (CastBarDB.ColourByClass and UUF:GetClassColour(unitFrame)) or CastBarDB.Foreground
+                frameCastBar:SetStatusBarColor(castBarColour[1], castBarColour[2], castBarColour[3], castBarColour[4])
+            end
         end
     else
         CastBarContainer:Hide()

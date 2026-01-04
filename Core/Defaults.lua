@@ -492,7 +492,7 @@ local Defaults = {
                         }
                     },
                     Debuffs = {
-                        Enabled = true,
+                        Enabled = false,
                         OnlyShowPlayer = false,
                         Size = 22,
                         Layout = {"LEFT", "RIGHT", 1, 0, 1},
