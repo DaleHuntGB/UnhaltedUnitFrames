@@ -19,4 +19,5 @@ function UnhaltedUnitFrames:OnEnable()
     UUF:SpawnUnitFrame("target")
     UUF:SpawnUnitFrame("targettarget")
     UUF:SpawnUnitFrame("focus")
+    UUF:SpawnUnitFrame("pet")
 end
