@@ -2,6 +2,7 @@ local _, UUF = ...
 UUFG = UUFG or {}
 UUF.AURA_TEST_MODE = false
 UUF.CASTBAR_TEST_MODE = false
+UUF.BOSS_TEST_MODE = false
 UUF.BOSS_FRAMES = {}
 UUF.MAX_BOSS_FRAMES = 10
 

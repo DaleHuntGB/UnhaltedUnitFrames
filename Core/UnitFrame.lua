@@ -23,6 +23,7 @@ function UUF:CreateUnitFrame(unitFrame, unit)
     UUF:CreateUnitAuras(unitFrame, unit)
     UUF:CreateUnitTags(unitFrame, unit)
     ApplyScripts(unitFrame)
+    return unitFrame
 end
 
 function UUF:LayoutBossFrames()
@@ -42,12 +43,23 @@ function UUF:LayoutBossFrames()
     AnchorUtil.VerticalLayout(bossFrames, initialAnchor, Frame.Layout[5])
 end
 
+local function SpawnBossUnitFrames()
+    for i = 1, UUF.MAX_BOSS_FRAMES do
+        local BossFrame = oUF:Spawn("boss" .. i, "UUF_Boss" .. i)
+        BossFrame:SetSize(UUF.db.profile.Units.boss.Frame.Width, UUF.db.profile.Units.boss.Frame.Height)
+        UUF.BOSS_FRAMES[i] = BossFrame
+    end
+    UUF:LayoutBossFrames()
+end
+
 function UUF:SpawnUnitFrame(unit)
     local FrameDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Frame
 
     oUF:RegisterStyle(UUF:FetchFrameName(unit), function(unitFrame) UUF:CreateUnitFrame(unitFrame, unit) end)
     oUF:SetActiveStyle(UUF:FetchFrameName(unit))
+
     UUF[unit:upper()] = oUF:Spawn(unit, UUF:FetchFrameName(unit))
+
     if unit == "player" or unit == "target" then
         local parentFrame = UUF.db.profile.Units[unit].HealthBar.AnchorToCooldownViewer and _G["UUF_CDMAnchor"] or UIParent
         UUF[unit:upper()]:SetPoint(FrameDB.Layout[1], parentFrame, FrameDB.Layout[2], FrameDB.Layout[3], FrameDB.Layout[4])
@@ -56,8 +68,11 @@ function UUF:SpawnUnitFrame(unit)
         local parentFrame = _G[UUF.db.profile.Units[unit].Frame.AnchorParent] or UIParent
         UUF[unit:upper()]:SetPoint(FrameDB.Layout[1], parentFrame, FrameDB.Layout[2], FrameDB.Layout[3], FrameDB.Layout[4])
         UUF[unit:upper()]:SetSize(FrameDB.Width, FrameDB.Height)
+    elseif unit == "boss" then
+        SpawnBossUnitFrames()
     end
-    UUF:PrettyPrint("Spawned " .. UUF:Capitalize(unit) .. ".")
+
+    return UUF[unit:upper()]
 end
 
 function UUF:UpdateUnitFrame(unitFrame, unit)

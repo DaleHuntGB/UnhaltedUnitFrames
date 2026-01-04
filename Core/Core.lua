@@ -20,9 +20,5 @@ function UnhaltedUnitFrames:OnEnable()
     UUF:SpawnUnitFrame("targettarget")
     UUF:SpawnUnitFrame("focus")
     UUF:SpawnUnitFrame("pet")
-    for i = 1, UUF.MAX_BOSS_FRAMES do
-        local BossFrame = UUF:SpawnUnitFrame("boss"..i)
-        UUF.BOSS_FRAMES[i] = BossFrame
-    end
-    UUF:LayoutBossFrames()
+    UUF:SpawnUnitFrame("boss")
 end
