@@ -2,6 +2,7 @@
 	<Script file="Core.lua"/>
     <Script file="Defaults.lua"/>
     <Script file="Globals.lua"/>
+    <Script file="TestEnvironment.lua"/>
     <Script file="UnitFrame.lua"/>
 
     <Script file="Config/GUIWidgets.lua"/>
