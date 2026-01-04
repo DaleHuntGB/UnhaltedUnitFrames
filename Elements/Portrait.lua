@@ -1,7 +1,7 @@
 local _, UUF = ...
 
 function UUF:CreateUnitPortrait(unitFrame, unit)
-    local PortraitDB = UUF.db.profile.Units[unit].Portrait
+    local PortraitDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Portrait
 
     local PortraitTexture = unitFrame.HighLevelContainer:CreateTexture(UUF:FetchFrameName(unit) .. "_PortraitTexture", "BACKGROUND")
     PortraitTexture:SetSize(PortraitDB.Size, PortraitDB.Size)
@@ -28,7 +28,7 @@ function UUF:CreateUnitPortrait(unitFrame, unit)
 end
 
 function UUF:UpdateUnitPortrait(unitFrame, unit)
-    local PortraitDB = UUF.db.profile.Units[unit].Portrait
+    local PortraitDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Portrait
 
     if PortraitDB.Enabled then
         unitFrame.Portrait = unitFrame.Portrait or UUF:CreateUnitPortrait(unitFrame, unit)

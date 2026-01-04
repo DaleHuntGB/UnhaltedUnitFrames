@@ -3,7 +3,7 @@ local _, UUF = ...
 local function StyleAuras(_, button, unit, auraType)
     if not button or not unit or not auraType then return end
     local GeneralDB = UUF.db.profile.General
-    local AurasDB = UUF.db.profile.Units[unit].Auras
+    local AurasDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Auras
     if not AurasDB then return end
     local Buffs = AurasDB.Buffs
     local Debuffs = AurasDB.Debuffs
@@ -66,7 +66,7 @@ end
 local function RestyleAuras(_, button, unit, auraType)
     if not button or not unit or not auraType then return end
     local GeneralDB = UUF.db.profile.General
-    local AurasDB = UUF.db.profile.Units[unit].Auras
+    local AurasDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Auras
     if not AurasDB then return end
     local Buffs = AurasDB.Buffs
     local Debuffs = AurasDB.Debuffs
@@ -113,7 +113,7 @@ local function RestyleAuras(_, button, unit, auraType)
 end
 
 local function CreateUnitBuffs(unitFrame, unit)
-    local BuffsDB = UUF.db.profile.Units[unit].Auras.Buffs
+    local BuffsDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Auras.Buffs
     if not unitFrame.BuffContainer then
         unitFrame.BuffContainer = CreateFrame("Frame", UUF:FetchFrameName(unit) .. "_BuffsContainer", unitFrame)
         local buffPerRow = BuffsDB.Wrap or 4
@@ -146,7 +146,7 @@ local function CreateUnitBuffs(unitFrame, unit)
 end
 
 local function CreateUnitDebuffs(unitFrame, unit)
-    local DebuffsDB = UUF.db.profile.Units[unit].Auras.Debuffs
+    local DebuffsDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Auras.Debuffs
     if not unitFrame.DebuffContainer then
         unitFrame.DebuffContainer = CreateFrame("Frame", UUF:FetchFrameName(unit) .. "_DebuffsContainer", unitFrame)
         local debuffPerRow = DebuffsDB.Wrap or 3
@@ -180,7 +180,7 @@ end
 
 function UUF:UpdateUnitAuras(unitFrame, unit)
     if not unit or not unitFrame then return end
-    local AurasDB = UUF.db.profile.Units[unit].Auras
+    local AurasDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Auras
     if not AurasDB then return end
     local BuffsDB = AurasDB.Buffs
     local DebuffsDB = AurasDB.Debuffs
@@ -275,8 +275,8 @@ function UUF:CreateTestAuras(unitFrame, unit)
     if not unit then return end
     if not unitFrame then return end
     local General = UUF.db.profile.General
-    local BuffsDB = UUF.db.profile.Units[unit].Auras.Buffs
-    local DebuffsDB = UUF.db.profile.Units[unit].Auras.Debuffs
+    local BuffsDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Auras.Buffs
+    local DebuffsDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Auras.Debuffs
     if UUF.AURA_TEST_MODE then
         if unitFrame.BuffContainer then
             if BuffsDB.Enabled then

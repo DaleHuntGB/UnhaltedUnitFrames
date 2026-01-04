@@ -1,7 +1,7 @@
 local _, UUF = ...
 
 local function CreateUnitAbsorbs(unitFrame, unit)
-    local AbsorbDB = UUF.db.profile.Units[unit].HealPrediction.Absorbs
+    local AbsorbDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].HealPrediction.Absorbs
     if not unitFrame.Health then return end
 
     local AbsorbBar = CreateFrame("StatusBar", UUF:FetchFrameName(unit) .. "_AbsorbBar", unitFrame.Health)
@@ -24,7 +24,7 @@ local function CreateUnitAbsorbs(unitFrame, unit)
 end
 
 local function CreateUnitHealAbsorbs(unitFrame, unit)
-    local HealAbsorbDB = UUF.db.profile.Units[unit].HealPrediction.HealAbsorbs
+    local HealAbsorbDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].HealPrediction.HealAbsorbs
     if not unitFrame.Health then return end
 
     local HealAbsorbBar = CreateFrame("StatusBar", UUF:FetchFrameName(unit) .. "_HealAbsorbBar", unitFrame.Health)
@@ -47,8 +47,8 @@ local function CreateUnitHealAbsorbs(unitFrame, unit)
 end
 
 function UUF:CreateUnitHealPrediction(unitFrame, unit)
-    local AbsorbDB = UUF.db.profile.Units[unit].HealPrediction.Absorbs
-    local HealAbsorbDB = UUF.db.profile.Units[unit].HealPrediction.HealAbsorbs
+    local AbsorbDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].HealPrediction.Absorbs
+    local HealAbsorbDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].HealPrediction.HealAbsorbs
 
     CreateUnitAbsorbs(unitFrame, unit)
     CreateUnitHealAbsorbs(unitFrame, unit)
@@ -63,8 +63,8 @@ function UUF:CreateUnitHealPrediction(unitFrame, unit)
 end
 
 function UUF:UpdateUnitHealPrediction(unitFrame, unit)
-    local AbsorbDB = UUF.db.profile.Units[unit].HealPrediction.Absorbs
-    local HealAbsorbDB = UUF.db.profile.Units[unit].HealPrediction.HealAbsorbs
+    local AbsorbDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].HealPrediction.Absorbs
+    local HealAbsorbDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].HealPrediction.HealAbsorbs
 
     if unitFrame.HealthPrediction then
         if AbsorbDB.Enabled then

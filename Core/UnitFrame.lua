@@ -25,8 +25,25 @@ function UUF:CreateUnitFrame(unitFrame, unit)
     ApplyScripts(unitFrame)
 end
 
+function UUF:LayoutBossFrames()
+    local Frame = UUF.db.profile.Units.boss.Frame
+    if #UUF.BOSS_FRAMES == 0 then return end
+    local bossFrames = UUF.BOSS_FRAMES
+    if Frame.GrowthDirection == "UP" then
+        bossFrames = {}
+        for i = #UUF.BOSS_FRAMES, 1, -1 do bossFrames[#bossFrames+1] = UUF.BOSS_FRAMES[i] end
+    end
+    local layoutConfig = UUF.LayoutConfig[Frame.Layout[1]]
+    local frameHeight = bossFrames[1]:GetHeight()
+    local containerHeight = (frameHeight + Frame.Layout[5]) * #bossFrames - Frame.Layout[5]
+    local offsetY = containerHeight * layoutConfig.offsetMultiplier
+    if layoutConfig.isCenter then offsetY = offsetY - (frameHeight / 2) end
+    local initialAnchor = AnchorUtil.CreateAnchor(layoutConfig.anchor, UIParent, Frame.Layout[2], Frame.Layout[3], Frame.Layout[4] + offsetY)
+    AnchorUtil.VerticalLayout(bossFrames, initialAnchor, Frame.Layout[5])
+end
+
 function UUF:SpawnUnitFrame(unit)
-    local FrameDB = UUF.db.profile.Units[unit].Frame
+    local FrameDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Frame
 
     oUF:RegisterStyle(UUF:FetchFrameName(unit), function(unitFrame) UUF:CreateUnitFrame(unitFrame, unit) end)
     oUF:SetActiveStyle(UUF:FetchFrameName(unit))

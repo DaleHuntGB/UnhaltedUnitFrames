@@ -6,7 +6,7 @@ local function SetCombatTexture(combatTexture)
 end
 
 function UUF:CreateUnitCombatIndicator(unitFrame, unit)
-    local CombatDB = UUF.db.profile.Units[unit].Indicators.Combat
+    local CombatDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Indicators.Combat
 
     local Combat = unitFrame.HighLevelContainer:CreateTexture(UUF:FetchFrameName(unit).."_CombatIndicator", "OVERLAY")
     Combat:SetSize(CombatDB.Size, CombatDB.Size)
@@ -28,7 +28,7 @@ function UUF:CreateUnitCombatIndicator(unitFrame, unit)
 end
 
 function UUF:UpdateUnitCombatIndicator(unitFrame, unit)
-    local CombatDB = UUF.db.profile.Units[unit].Indicators.Combat
+    local CombatDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Indicators.Combat
 
     if CombatDB.Enabled then
         unitFrame.CombatIndicator = unitFrame.CombatIndicator or UUF:CreateUnitCombatIndicator(unitFrame, unit)

@@ -1,7 +1,7 @@
 local _, UUF = ...
 
 function UUF:CreateUnitMouseoverIndicator(unitFrame, unit)
-    local MouseoverDB = UUF.db.profile.Units[unit].Indicators.Mouseover
+    local MouseoverDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Indicators.Mouseover
 
     local MouseoverHighlight = CreateFrame("Frame", nil, unitFrame.Container, "BackdropTemplate")
     MouseoverHighlight:SetPoint("TOPLEFT", unitFrame.Container, "TOPLEFT", 1, -1)
@@ -35,7 +35,7 @@ function UUF:CreateUnitMouseoverIndicator(unitFrame, unit)
 end
 
 function UUF:UpdateUnitMouseoverIndicator(unitFrame, unit)
-    local MouseoverDB = UUF.db.profile.Units[unit].Indicators.Mouseover
+    local MouseoverDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Indicators.Mouseover
 
     if MouseoverDB.Enabled then
         unitFrame.MouseoverHighlight = unitFrame.MouseoverHighlight or UUF:CreateUnitMouseoverIndicator(unitFrame, unit)

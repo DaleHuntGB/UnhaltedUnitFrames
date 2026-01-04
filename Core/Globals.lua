@@ -2,6 +2,8 @@ local _, UUF = ...
 UUFG = UUFG or {}
 UUF.AURA_TEST_MODE = false
 UUF.CASTBAR_TEST_MODE = false
+UUF.BOSS_FRAMES = {}
+UUF.MAX_BOSS_FRAMES = 10
 
 UUF.LSM = LibStub("LibSharedMedia-3.0")
 UUF.AG = LibStub("AceGUI-3.0")
@@ -174,3 +176,20 @@ function UUF:GetClassColour(unitFrame)
         return {classColour.r, classColour.g, classColour.b, 1}
     end
 end
+
+function UUF:GetNormalizedUnit(unit)
+    local normalizedUnit = unit:match("^boss%d+$") and "boss" or unit
+    return normalizedUnit
+end
+
+UUF.LayoutConfig = {
+    TOPLEFT     = { anchor="TOPLEFT",   offsetMultiplier=0   },
+    TOP         = { anchor="TOP",       offsetMultiplier=0   },
+    TOPRIGHT    = { anchor="TOPRIGHT",  offsetMultiplier=0   },
+    BOTTOMLEFT  = { anchor="TOPLEFT",   offsetMultiplier=1   },
+    BOTTOM      = { anchor="TOP",       offsetMultiplier=1   },
+    BOTTOMRIGHT = { anchor="TOPRIGHT",  offsetMultiplier=1   },
+    CENTER      = { anchor="CENTER",    offsetMultiplier=0.5, isCenter=true },
+    LEFT        = { anchor="LEFT",      offsetMultiplier=0.5, isCenter=true },
+    RIGHT       = { anchor="RIGHT",     offsetMultiplier=0.5, isCenter=true },
+}

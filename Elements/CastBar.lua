@@ -3,10 +3,10 @@ local _, UUF = ...
 function UUF:CreateUnitCastBar(unitFrame, unit)
     local FontDB = UUF.db.profile.General.Fonts
     local GeneralDB = UUF.db.profile.General
-    local FrameDB = UUF.db.profile.Units[unit].Frame
-    local CastBarDB = UUF.db.profile.Units[unit].CastBar
-    local SpellNameDB = UUF.db.profile.Units[unit].CastBar.Text.SpellName
-    local DurationDB = UUF.db.profile.Units[unit].CastBar.Text.Duration
+    local FrameDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Frame
+    local CastBarDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].CastBar
+    local SpellNameDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].CastBar.Text.SpellName
+    local DurationDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].CastBar.Text.Duration
 
     local CastBarContainer = CreateFrame("Frame", UUF:FetchFrameName(unit) .. "_CastBarContainer", unitFrame, "BackdropTemplate")
     CastBarContainer:SetBackdrop(UUF.BACKDROP)
@@ -126,8 +126,8 @@ end
 
 function UUF:UpdateUnitCastBar(unitFrame, unit)
     local GeneralDB = UUF.db.profile.General
-    local FrameDB = UUF.db.profile.Units[unit].Frame
-    local CastBarDB = UUF.db.profile.Units[unit].CastBar
+    local FrameDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Frame
+    local CastBarDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].CastBar
     local CastBarContainer = unitFrame.Castbar and unitFrame.Castbar:GetParent()
 
     if CastBarDB.Enabled then

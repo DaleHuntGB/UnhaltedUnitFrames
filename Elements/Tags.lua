@@ -2,7 +2,7 @@ local _, UUF = ...
 
 local function CreateUnitTag(unitFrame, unit, tagDB)
     local GeneralDB = UUF.db.profile.General
-    local TagDB = UUF.db.profile.Units[unit].Tags[tagDB]
+    local TagDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Tags[tagDB]
 
     if not unitFrame.Tags[tagDB] then
         unitFrame.Tags[tagDB] = unitFrame.HighLevelContainer:CreateFontString(UUF:FetchFrameName(unit) .. "_" .. tagDB, "ARTWORK")
@@ -23,7 +23,7 @@ end
 
 function UUF:UpdateUnitTag(unitFrame, unit, tagDB)
     local GeneralDB = UUF.db.profile.General
-    local TagDB = UUF.db.profile.Units[unit].Tags[tagDB]
+    local TagDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Tags[tagDB]
 
     if unitFrame.Tags[tagDB] then
         unitFrame.Tags[tagDB]:SetFont(UUF.Media.Font, TagDB.FontSize, GeneralDB.Fonts.FontFlag)
@@ -45,14 +45,14 @@ end
 
 function UUF:CreateUnitTags(unitFrame, unit)
     unitFrame.Tags = unitFrame.Tags or {}
-    for tagName, _ in pairs(UUF.db.profile.Units[unit].Tags) do
+    for tagName, _ in pairs(UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Tags) do
         CreateUnitTag(unitFrame, unit, tagName)
     end
 end
 
 function UUF:UpdateUnitTags()
     for unit, _ in pairs(UUF.db.profile.Units) do
-        for tagName, _ in pairs(UUF.db.profile.Units[unit].Tags) do
+        for tagName, _ in pairs(UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Tags) do
             if UUF[unit:upper()] then
                 UUF:UpdateUnitTag(UUF[unit:upper()], unit, tagName)
             end

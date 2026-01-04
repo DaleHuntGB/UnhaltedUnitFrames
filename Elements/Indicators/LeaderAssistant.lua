@@ -1,7 +1,7 @@
 local _, UUF = ...
 
 function UUF:CreateUnitLeaderAssistantIndicator(unitFrame, unit)
-    local LeaderAssistantDB = UUF.db.profile.Units[unit].Indicators.LeaderAssistantIndicator
+    local LeaderAssistantDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Indicators.LeaderAssistantIndicator
 
     if LeaderAssistantDB then
         local Leader = unitFrame.HighLevelContainer:CreateTexture(UUF:FetchFrameName(unit) .. "_LeaderIndicator", "OVERLAY")
@@ -24,7 +24,7 @@ function UUF:CreateUnitLeaderAssistantIndicator(unitFrame, unit)
 end
 
 function UUF:UpdateUnitLeaderAssistantIndicator(unitFrame, unit)
-    local LeaderAssistantDB = UUF.db.profile.Units[unit].Indicators.LeaderAssistantIndicator
+    local LeaderAssistantDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Indicators.LeaderAssistantIndicator
 
     if LeaderAssistantDB.Enabled then
         unitFrame.LeaderIndicator = unitFrame.LeaderIndicator or UUF:CreateUnitLeaderAssistantIndicator(unitFrame, unit)

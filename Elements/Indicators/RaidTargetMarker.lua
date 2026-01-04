@@ -1,7 +1,7 @@
 local _, UUF = ...
 
 function UUF:CreateUnitRaidTargetMarker(unitFrame, unit)
-    local RaidTargetMarkerDB = UUF.db.profile.Units[unit].Indicators.RaidTargetMarker
+    local RaidTargetMarkerDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Indicators.RaidTargetMarker
 
     local RaidTargetMarker = unitFrame.HighLevelContainer:CreateTexture(UUF:FetchFrameName(unit) .. "_RaidTargetMarkerIndicator", "OVERLAY")
     RaidTargetMarker:SetSize(RaidTargetMarkerDB.Size, RaidTargetMarkerDB.Size)
@@ -19,7 +19,7 @@ function UUF:CreateUnitRaidTargetMarker(unitFrame, unit)
 end
 
 function UUF:UpdateUnitRaidTargetMarker(unitFrame, unit)
-    local RaidTargetMarkerDB = UUF.db.profile.Units[unit].Indicators.RaidTargetMarker
+    local RaidTargetMarkerDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Indicators.RaidTargetMarker
 
     if RaidTargetMarkerDB.Enabled then
         unitFrame.RaidTargetIndicator = unitFrame.RaidTargetIndicator or UUF:CreateUnitRaidTargetMarker(unitFrame, unit)

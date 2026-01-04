@@ -1,8 +1,8 @@
 local _, UUF = ...
 
 function UUF:CreateUnitPowerBar(unitFrame, unit)
-    local FrameDB = UUF.db.profile.Units[unit].Frame
-    local PowerBarDB = UUF.db.profile.Units[unit].PowerBar
+    local FrameDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Frame
+    local PowerBarDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].PowerBar
     local unitContainer = unitFrame.Container
 
     local PowerBar = CreateFrame("StatusBar", UUF:FetchFrameName(unit) .. "_PowerBar", unitContainer)
@@ -48,8 +48,8 @@ function UUF:CreateUnitPowerBar(unitFrame, unit)
 end
 
 function UUF:UpdateUnitPowerBar(unitFrame, unit)
-    local FrameDB = UUF.db.profile.Units[unit].Frame
-    local PowerBarDB = UUF.db.profile.Units[unit].PowerBar
+    local FrameDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Frame
+    local PowerBarDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].PowerBar
 
     if PowerBarDB.Enabled then
         unitFrame.Power = unitFrame.Power or UUF:CreateUnitPowerBar(unitFrame, unit)
