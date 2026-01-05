@@ -1747,7 +1747,12 @@ local function CreateAuraSettings(containerParent, unit)
 end
 
 local function CreateGlobalSettings(containerParent)
-    local ColourContainer = UUFG.CreateInlineGroup(containerParent, "General Colour Settings")
+    local GlobalContainer = UUFG.CreateInlineGroup(containerParent, "Global Settings")
+
+    CreateFontSettings(GlobalContainer)
+    CreateTextureSettings(GlobalContainer)
+
+    local ToggleContainer = UUFG.CreateInlineGroup(GlobalContainer, "Toggles")
 
     local function ConvertBoolToTexture(value)
         if value == true then
@@ -1796,7 +1801,7 @@ local function CreateGlobalSettings(containerParent)
     ApplyClassColourButton:SetCallback("OnClick", function() for _, unitDB in pairs(UUF.db.profile.Units) do if unitDB.HealthBar.ColourByClass == nil then unitDB.HealthBar.ColourByClass = true else unitDB.HealthBar.ColourByClass = not unitDB.HealthBar.ColourByClass end end if GameTooltip:IsOwned(ApplyClassColourButton.frame) then GameTooltip:ClearLines() DetermineDBStatusPerFrameTooltip("ColourByClass") GameTooltip:Show() end UUF:UpdateAllUnitFrames() end)
     ApplyClassColourButton:SetCallback("OnEnter", function() GameTooltip:SetOwner(ApplyClassColourButton.frame, "ANCHOR_BOTTOM") GameTooltip:ClearLines() DetermineDBStatusPerFrameTooltip("ColourByClass") GameTooltip:Show() end)
     ApplyClassColourButton:SetCallback("OnLeave", function() GameTooltip:Hide() end)
-    ColourContainer:AddChild(ApplyClassColourButton)
+    ToggleContainer:AddChild(ApplyClassColourButton)
 
     local ApplyReactionColourButton = AG:Create("Button")
     ApplyReactionColourButton:SetText("Toggle Reaction Colours")
@@ -1804,7 +1809,7 @@ local function CreateGlobalSettings(containerParent)
     ApplyReactionColourButton:SetCallback("OnClick", function() for _, unitDB in pairs(UUF.db.profile.Units) do if unitDB.HealthBar.ColourByReaction == nil then unitDB.HealthBar.ColourByReaction = true else unitDB.HealthBar.ColourByReaction = not unitDB.HealthBar.ColourByReaction end end if GameTooltip:IsOwned(ApplyReactionColourButton.frame) then GameTooltip:ClearLines() DetermineDBStatusPerFrameTooltip("ColourByReaction") GameTooltip:Show() end UUF:UpdateAllUnitFrames() end)
     ApplyReactionColourButton:SetCallback("OnEnter", function() GameTooltip:SetOwner(ApplyReactionColourButton.frame, "ANCHOR_BOTTOM") GameTooltip:ClearLines() DetermineDBStatusPerFrameTooltip("ColourByReaction") GameTooltip:Show() end)
     ApplyReactionColourButton:SetCallback("OnLeave", function() GameTooltip:Hide() end)
-    ColourContainer:AddChild(ApplyReactionColourButton)
+    ToggleContainer:AddChild(ApplyReactionColourButton)
 
     local ApplyTappedColourButton = AG:Create("Button")
     ApplyTappedColourButton:SetText("Toggle Colour If Tapped")
@@ -1812,7 +1817,7 @@ local function CreateGlobalSettings(containerParent)
     ApplyTappedColourButton:SetCallback("OnClick", function() for _, unitDB in pairs(UUF.db.profile.Units) do if unitDB.HealthBar.ColourWhenTapped == nil then unitDB.HealthBar.ColourWhenTapped = true else unitDB.HealthBar.ColourWhenTapped = not unitDB.HealthBar.ColourWhenTapped end end if GameTooltip:IsOwned(ApplyTappedColourButton.frame) then GameTooltip:ClearLines() DetermineDBStatusPerFrameTooltip("ColourWhenTapped") GameTooltip:Show() end UUF:UpdateAllUnitFrames() end)
     ApplyTappedColourButton:SetCallback("OnEnter", function() GameTooltip:SetOwner(ApplyTappedColourButton.frame, "ANCHOR_BOTTOM") GameTooltip:ClearLines() DetermineDBStatusPerFrameTooltip("ColourWhenTapped") GameTooltip:Show() end)
     ApplyTappedColourButton:SetCallback("OnLeave", function() GameTooltip:Hide() end)
-    ColourContainer:AddChild(ApplyTappedColourButton)
+    ToggleContainer:AddChild(ApplyTappedColourButton)
 
     containerParent:DoLayout()
 end
@@ -2050,15 +2055,8 @@ function UUF:CreateGUI()
             local ScrollFrame = UUFG.CreateScrollFrame(Wrapper)
 
             CreateUIScaleSettings(ScrollFrame)
-            CreateFontSettings(ScrollFrame)
-            CreateTextureSettings(ScrollFrame)
-            CreateColourSettings(ScrollFrame)
-
-            ScrollFrame:DoLayout()
-        elseif MainTab == "Global" then
-            local ScrollFrame = UUFG.CreateScrollFrame(Wrapper)
-
             CreateGlobalSettings(ScrollFrame)
+            CreateColourSettings(ScrollFrame)
 
             ScrollFrame:DoLayout()
         elseif MainTab == "Player" then
@@ -2112,7 +2110,6 @@ function UUF:CreateGUI()
     ContainerTabGroup:SetFullWidth(true)
     ContainerTabGroup:SetTabs({
         { text = "General", value = "General"},
-        { text = "Global", value = "Global"},
         { text = "Player", value = "Player"},
         { text = "Target", value = "Target"},
         { text = "Target of Target", value = "TargetTarget"},
