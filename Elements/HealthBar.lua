@@ -25,6 +25,17 @@ function UUF:CreateUnitHealthBar(unitFrame, unit)
         HealthBar.colorReaction = HealthBarDB.ColourByReaction
         HealthBar.colorTapped = HealthBarDB.ColourWhenTapped
 
+        if unit == "pet" and HealthBarDB.ColourByClass then
+            HealthBar.colorClass = false
+            HealthBar.colorReaction = false
+            HealthBar.colorHealth = false
+            local unitClass = select(2, UnitClass("player"))
+            local unitColor = RAID_CLASS_COLORS[unitClass]
+            if unitColor then
+                HealthBar:SetStatusBarColor(unitColor.r, unitColor.g, unitColor.b, HealthBarDB.ForegroundOpacity)
+            end
+        end
+
         unitFrame.Health = HealthBar
 
         unitFrame.Health.PostUpdate = function(_, _, curHP, maxHP)
@@ -59,11 +70,21 @@ function UUF:UpdateUnitHealthBar(unitFrame, unit)
 
     if unitFrame.Health then
         unitFrame.Health:SetSize(FrameDB.Width - 2, FrameDB.Height - 2)
+        unitFrame.Health:SetStatusBarColor(HealthBarDB.Foreground[1], HealthBarDB.Foreground[2], HealthBarDB.Foreground[3], HealthBarDB.ForegroundOpacity)
         unitFrame.Health.colorClass = HealthBarDB.ColourByClass
         unitFrame.Health.colorReaction = HealthBarDB.ColourByReaction
         unitFrame.Health.colorTapped = HealthBarDB.ColourWhenTapped
-        unitFrame.Health:SetStatusBarColor(HealthBarDB.Foreground[1], HealthBarDB.Foreground[2], HealthBarDB.Foreground[3], HealthBarDB.ForegroundOpacity)
         unitFrame.Health:SetStatusBarTexture(UUF.Media.Foreground)
+        if unit == "pet" and HealthBarDB.ColourByClass then
+            unitFrame.Health.colorClass = false
+            unitFrame.Health.colorReaction = false
+            unitFrame.Health.colorHealth = false
+            local unitClass = select(2, UnitClass("player"))
+            local unitColor = RAID_CLASS_COLORS[unitClass]
+            if unitColor then
+                unitFrame.Health:SetStatusBarColor(unitColor.r, unitColor.g, unitColor.b, HealthBarDB.ForegroundOpacity)
+            end
+        end
     end
 
     if unitFrame.HealthBackground then
