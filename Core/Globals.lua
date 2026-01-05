@@ -1,8 +1,9 @@
 local _, UUF = ...
+local oUF = UUF.oUF
 UUFG = UUFG or {}
 UUF.AURA_TEST_MODE = false
 UUF.CASTBAR_TEST_MODE = false
-UUF.BOSS_TEST_MODE = false
+UUF.BOSS_TEST_MODE = true
 UUF.BOSS_FRAMES = {}
 UUF.MAX_BOSS_FRAMES = 10
 
@@ -175,6 +176,13 @@ function UUF:GetClassColour(unitFrame)
     local classColour = RAID_CLASS_COLORS[class]
     if classColour then
         return {classColour.r, classColour.g, classColour.b, 1}
+    end
+end
+
+function UUF:GetReactionColour(reaction)
+    local reactionColour = oUF.colors.reaction[reaction]
+    if reactionColour then
+        return {reactionColour.r, reactionColour.g, reactionColour.b, 1}
     end
 end
 
