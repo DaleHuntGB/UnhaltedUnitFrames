@@ -1766,10 +1766,16 @@ local function CreateGlobalSettings(containerParent)
         boss = "Boss",
     }
 
+    local dbToCheckToPrettyName = {
+        ColourByClass = "Class Colouring",
+        ColourByReaction = "Reaction Colouring",
+        ColourWhenTapped = "Colour When Tapped",
+    }
+
     local UnitOrder = { "player", "target", "targettarget", "focus", "pet", "boss" }
 
     local function DetermineDBStatusPerFrameTooltip(dbToCheck)
-        GameTooltip:AddLine("Toggle State")
+        GameTooltip:AddLine(dbToCheckToPrettyName[dbToCheck])
         for _, unit in ipairs(UnitOrder) do
             local unitDB = UUF.db.profile.Units[unit]
             if unitDB then
