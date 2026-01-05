@@ -231,12 +231,12 @@ local function Enable(self)
 			element.values = CreateUnitHealPredictionCalculator()
 		end
 
-		if(element.damageAbsorbClampMode) then
-			element.values:SetDamageAbsorbClampMode(element.damageAbsorbClampMode)
+		if(element.damageAbsorbBounds) then
+			element.values:SetDamageAbsorbClampMode(element.damageAbsorbBounds)
 		end
 
-		if(element.healAbsorbClampMode) then
-			element.values:SetHealAbsorbClampMode(element.healAbsorbClampMode)
+		if(element.healAbsorbBounds) then
+			element.values:SetHealAbsorbClampMode(element.healAbsorbBounds)
 		end
 
 		if(element.healAbsorbMode) then

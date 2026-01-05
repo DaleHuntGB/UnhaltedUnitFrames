@@ -1,6 +1,6 @@
 local parent, ns = ...
 local global = C_AddOns.GetAddOnMetadata(parent, 'X-oUF')
-local _VERSION = 'cd8e2d2'
+local _VERSION = 'a135426'
 if(_VERSION:find('project%-version')) then
 	_VERSION = 'devel'
 end
@@ -927,7 +927,7 @@ do
 		end
 	end
 
-	--[[ oUF:SpawnNamePlates(prefix, callback, variables)
+	--[[ oUF:SpawnNamePlates(prefix)
 	Used to create nameplates and apply the currently active style to them.
 
 	* self      - the global oUF object
