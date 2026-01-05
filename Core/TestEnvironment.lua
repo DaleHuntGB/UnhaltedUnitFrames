@@ -133,6 +133,151 @@ function UUF:CreateTestBossFrames()
                     if BossFrame.Castbar and BossFrame.Castbar.Icon then BossFrame.Castbar.Icon:Hide() end
                 end
             end
+
+            if UUF.BOSS_TEST_MODE then
+                local General = UUF.db.profile.General
+                local BuffsDB = UUF.db.profile.Units.boss.Auras.Buffs
+                local DebuffsDB = UUF.db.profile.Units.boss.Auras.Debuffs
+                if BossFrame.BuffContainer then
+                    if BuffsDB.Enabled then
+                        BossFrame.BuffContainer:ClearAllPoints()
+                        BossFrame.BuffContainer:SetPoint(BuffsDB.Layout[1], BossFrame, BuffsDB.Layout[2], BuffsDB.Layout[3], BuffsDB.Layout[4])
+                        BossFrame.BuffContainer:Show()
+
+                        for j = 1, BuffsDB.Num do
+                            local button = BossFrame.BuffContainer["fake" .. j]
+                            if not button then
+                                button = CreateFrame("Button", nil, BossFrame.BuffContainer, "BackdropTemplate")
+                                button:SetBackdrop(UUF.BACKDROP)
+                                button:SetBackdropColor(0, 0, 0, 0)
+                                button:SetBackdropBorderColor(0, 0, 0, 1)
+                                button:SetFrameStrata("MEDIUM")
+
+                                button.Icon = button:CreateTexture(nil, "BORDER")
+                                button.Icon:SetAllPoints()
+
+                                button.Count = button:CreateFontString(nil, "OVERLAY")
+                                BossFrame.BuffContainer["fake" .. j] = button
+                            end
+
+                            button:SetSize(BuffsDB.Size, BuffsDB.Size)
+                            button.Count:ClearAllPoints()
+                            button.Count:SetPoint(BuffsDB.Count.Layout[1], button, BuffsDB.Count.Layout[2], BuffsDB.Count.Layout[3], BuffsDB.Count.Layout[4])
+                            button.Count:SetFont(UUF.Media.Font, BuffsDB.Count.FontSize, General.Fonts.FontFlag)
+                            if General.Fonts.Shadow.Enabled then
+                                button.Count:SetShadowColor(unpack(General.Fonts.Shadow.Colour))
+                                button.Count:SetShadowOffset(General.Fonts.Shadow.XPos, General.Fonts.Shadow.YPos)
+                            else
+                                button.Count:SetShadowColor(0, 0, 0, 0)
+                                button.Count:SetShadowOffset(0, 0)
+                            end
+                            button.Count:SetTextColor(unpack(BuffsDB.Count.Colour))
+
+                            local row = math.floor((j - 1) / BuffsDB.Wrap)
+                            local col = (j - 1) % BuffsDB.Wrap
+                            local x = col * (BuffsDB.Size + BuffsDB.Layout[5])
+                            local y = row * (BuffsDB.Size + BuffsDB.Layout[5])
+                            if BuffsDB.GrowthDirection == "LEFT" then x = -x end
+                            if BuffsDB.WrapDirection == "DOWN" then y = -y end
+
+                            button:ClearAllPoints()
+                            button:SetPoint(BuffsDB.Layout[1], BossFrame.BuffContainer, BuffsDB.Layout[1], x, y)
+
+                            button.Icon:SetTexture(135769)
+                            button.Icon:SetPoint("TOPLEFT", button, "TOPLEFT", 1, -1)
+                            button.Icon:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", -1, 1)
+                            button.Icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
+                            button.Count:SetText(j)
+                            button:Show()
+                        end
+
+                        local maxFake = BuffsDB.Num
+                        for j = maxFake + 1, (BossFrame.BuffContainer.maxFake or maxFake) do
+                            local button = BossFrame.BuffContainer["fake" .. j]
+                            if button then button:Hide() end
+                        end
+                        BossFrame.BuffContainer.maxFake = BuffsDB.Num
+                    else
+                        BossFrame.BuffContainer:Hide()
+                    end
+                end
+
+                if BossFrame.DebuffContainer then
+                    if DebuffsDB.Enabled then
+                        BossFrame.DebuffContainer:ClearAllPoints()
+                        BossFrame.DebuffContainer:SetPoint(DebuffsDB.Layout[1], BossFrame, DebuffsDB.Layout[2], DebuffsDB.Layout[3], DebuffsDB.Layout[4])
+                        BossFrame.DebuffContainer:Show()
+
+                        for j = 1, DebuffsDB.Num do
+                            local button = BossFrame.DebuffContainer["fake" .. j]
+                            if not button then
+                                button = CreateFrame("Button", nil, BossFrame.DebuffContainer, "BackdropTemplate")
+                                button:SetBackdrop(UUF.BACKDROP)
+                                button:SetBackdropColor(0, 0, 0, 0)
+                                button:SetBackdropBorderColor(0, 0, 0, 1)
+                                button:SetFrameStrata("MEDIUM")
+
+                                button.Icon = button:CreateTexture(nil, "BORDER")
+                                button.Icon:SetAllPoints()
+
+                                button.Count = button:CreateFontString(nil, "OVERLAY")
+                                BossFrame.DebuffContainer["fake" .. j] = button
+                            end
+
+                            button:SetSize(DebuffsDB.Size, DebuffsDB.Size)
+                            button.Count:ClearAllPoints()
+                            button.Count:SetPoint(DebuffsDB.Count.Layout[1], button, DebuffsDB.Count.Layout[2], DebuffsDB.Count.Layout[3], DebuffsDB.Count.Layout[4])
+                            button.Count:SetFont(UUF.Media.Font, DebuffsDB.Count.FontSize, General.Fonts.FontFlag)
+                            if General.Fonts.Shadow.Enabled then
+                                button.Count:SetShadowColor(unpack(General.Fonts.Shadow.Colour))
+                                button.Count:SetShadowOffset(General.Fonts.Shadow.XPos, General.Fonts.Shadow.YPos)
+                            else
+                                button.Count:SetShadowColor(0, 0, 0, 0)
+                                button.Count:SetShadowOffset(0, 0)
+                            end
+                            button.Count:SetTextColor(unpack(DebuffsDB.Count.Colour))
+
+                            local row = math.floor((j - 1) / DebuffsDB.Wrap)
+                            local col = (j - 1) % DebuffsDB.Wrap
+                            local x = col * (DebuffsDB.Size + DebuffsDB.Layout[5])
+                            local y = row * (DebuffsDB.Size + DebuffsDB.Layout[5])
+                            if DebuffsDB.GrowthDirection == "LEFT" then x = -x end
+                            if DebuffsDB.WrapDirection == "DOWN" then y = -y end
+
+                            button:ClearAllPoints()
+                            button:SetPoint(DebuffsDB.Layout[1], BossFrame.DebuffContainer, DebuffsDB.Layout[1], x, y)
+                            button.Icon:SetTexture(135768)
+                            button.Icon:SetPoint("TOPLEFT", button, "TOPLEFT", 1, -1)
+                            button.Icon:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", -1, 1)
+                            button.Icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
+                            button.Count:SetText(j)
+                            button:Show()
+                        end
+
+                        local maxFake = DebuffsDB.Num
+                        for j = maxFake + 1, (BossFrame.DebuffContainer.maxFake or maxFake) do
+                            local button = BossFrame.DebuffContainer["fake" .. j]
+                            if button then button:Hide() end
+                        end
+                        BossFrame.DebuffContainer.maxFake = DebuffsDB.Num
+                    else
+                        BossFrame.DebuffContainer:Hide()
+                    end
+                end
+            else
+                if BossFrame.BuffContainer then
+                    for j = 1, (BossFrame.BuffContainer.maxFake or 0) do
+                        local button = BossFrame.BuffContainer["fake" .. j]
+                        if button then button:Hide() end
+                    end
+                end
+                if BossFrame.DebuffContainer then
+                    for j = 1, (BossFrame.DebuffContainer.maxFake or 0) do
+                        local button = BossFrame.DebuffContainer["fake" .. j]
+                        if button then button:Hide() end
+                    end
+                end
+            end
         end
     end
 end

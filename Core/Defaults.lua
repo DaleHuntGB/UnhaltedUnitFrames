@@ -926,7 +926,7 @@ local Defaults = {
                 Portrait = {
                     Enabled = true,
                     Size = 42,
-                    Layout = {"LEFT", "RIGHT", 1, 0},
+                    Layout = {"RIGHT", "LEFT", -1, 0},
                     Zoom = 0.3,
                     UseClassPortrait = false,
                 },
