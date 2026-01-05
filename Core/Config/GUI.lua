@@ -314,7 +314,7 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
     AnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
     AnchorFromDropdown:SetLabel("Anchor From")
     AnchorFromDropdown:SetValue(FrameDB.Layout[1])
-    AnchorFromDropdown:SetRelativeWidth(unitHasParent and 0.33 or 0.5)
+    AnchorFromDropdown:SetRelativeWidth((unitHasParent or unit == "boss") and 0.33 or 0.5)
     AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) FrameDB.Layout[1] = value updateCallback() end)
     LayoutContainer:AddChild(AnchorFromDropdown)
 
@@ -332,9 +332,19 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
     AnchorToDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
     AnchorToDropdown:SetLabel("Anchor To")
     AnchorToDropdown:SetValue(FrameDB.Layout[2])
-    AnchorToDropdown:SetRelativeWidth(unitHasParent and 0.33 or 0.5)
+    AnchorToDropdown:SetRelativeWidth((unitHasParent or unit == "boss") and 0.33 or 0.5)
     AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) FrameDB.Layout[2] = value updateCallback() end)
     LayoutContainer:AddChild(AnchorToDropdown)
+
+    if unit == "boss" then
+        local GrowthDirectionDropdown = AG:Create("Dropdown")
+        GrowthDirectionDropdown:SetList({["UP"] = "Up", ["DOWN"] = "Down"})
+        GrowthDirectionDropdown:SetLabel("Growth Direction")
+        GrowthDirectionDropdown:SetValue(FrameDB.GrowthDirection)
+        GrowthDirectionDropdown:SetRelativeWidth(0.33)
+        GrowthDirectionDropdown:SetCallback("OnValueChanged", function(_, _, value) FrameDB.GrowthDirection = value updateCallback() end)
+        LayoutContainer:AddChild(GrowthDirectionDropdown)
+    end
 
     local XPosSlider = AG:Create("Slider")
     XPosSlider:SetLabel("X Position")
@@ -358,24 +368,24 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
     ColourByClassToggle:SetLabel("Colour By Class")
     ColourByClassToggle:SetValue(HealthBarDB.ColourByClass)
     ColourByClassToggle:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.ColourByClass = value UUFGUI.FrameFGColourPicker:SetDisabled(HealthBarDB.ColourByClass or HealthBarDB.ColourByReaction) updateCallback() end)
-    ColourByClassToggle:SetRelativeWidth(not unitHasParent and 0.25 or 0.33)
+    ColourByClassToggle:SetRelativeWidth((unit == "player" or unit == "target") and 0.25 or 0.33)
     ColourContainer:AddChild(ColourByClassToggle)
 
     local ColourByReactionToggle = AG:Create("CheckBox")
     ColourByReactionToggle:SetLabel("Colour By Reaction")
     ColourByReactionToggle:SetValue(HealthBarDB.ColourByReaction)
     ColourByReactionToggle:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.ColourByReaction = value UUFGUI.FrameFGColourPicker:SetDisabled(HealthBarDB.ColourByClass or HealthBarDB.ColourByReaction) updateCallback() end)
-    ColourByReactionToggle:SetRelativeWidth(not unitHasParent and 0.25 or 0.33)
+    ColourByReactionToggle:SetRelativeWidth((unit == "player" or unit == "target") and 0.25 or 0.33)
     ColourContainer:AddChild(ColourByReactionToggle)
 
     local ColourWhenTappedToggle = AG:Create("CheckBox")
     ColourWhenTappedToggle:SetLabel("Colour When Tapped")
     ColourWhenTappedToggle:SetValue(HealthBarDB.ColourWhenTapped)
     ColourWhenTappedToggle:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.ColourWhenTapped = value updateCallback() end)
-    ColourWhenTappedToggle:SetRelativeWidth(not unitHasParent and 0.25 or 0.33)
+    ColourWhenTappedToggle:SetRelativeWidth((unit == "player" or unit == "target") and 0.25 or 0.33)
     ColourContainer:AddChild(ColourWhenTappedToggle)
 
-    if not unitHasParent then
+    if unit == "player" or unit == "target" then
         local AnchorToCooldownViewerToggle = AG:Create("CheckBox")
         AnchorToCooldownViewerToggle:SetLabel("Anchor To Cooldown Viewer")
         AnchorToCooldownViewerToggle:SetValue(HealthBarDB.AnchorToCooldownViewer)
@@ -1378,7 +1388,7 @@ local function CreateIndicatorSettings(containerParent, unit)
             { text = "Leader & Assistant", value = "LeaderAssistant" },
             { text = "Mouseover", value = "Mouseover" },
         })
-    elseif unit == "targettarget" or unit == "focus" or unit == "pet" then
+    elseif unit == "targettarget" or unit == "focus" or unit == "pet" or unit == "boss" then
         IndicatorContainerTabGroup:SetTabs({
             { text = "Raid Target Marker", value = "RaidTargetMarker" },
             { text = "Mouseover", value = "Mouseover" },
@@ -1990,6 +2000,12 @@ function UUF:CreateGUI()
             local ScrollFrame = UUFG.CreateScrollFrame(Wrapper)
 
             CreateUnitSettings(ScrollFrame, "focus")
+
+            ScrollFrame:DoLayout()
+        elseif MainTab == "Boss" then
+            local ScrollFrame = UUFG.CreateScrollFrame(Wrapper)
+
+            CreateUnitSettings(ScrollFrame, "boss")
 
             ScrollFrame:DoLayout()
         elseif MainTab == "Profiles" then

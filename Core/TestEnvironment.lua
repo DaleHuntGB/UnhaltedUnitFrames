@@ -279,5 +279,11 @@ function UUF:CreateTestBossFrames()
                 end
             end
         end
+    else
+        for i, BossFrame in ipairs(UUF.BOSS_FRAMES) do
+            BossFrame:SetAttribute("unit", "boss" .. i)
+            RegisterUnitWatch(BossFrame)
+            BossFrame:Hide()
+        end
     end
 end
