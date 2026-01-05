@@ -95,6 +95,10 @@ local function SetupSlashCommands()
     SLASH_UUF3 = "/uf"
     SlashCmdList["UUF"] = function() UUF:CreateGUI() end
     UUF:PrettyPrint("'|cFF8080FF/uuf|r' for in-game configuration.")
+
+    -- RL command
+    SLASH_UUFRELOAD1 = "/rl"
+    SlashCmdList["UUFRELOAD"] = function() ReloadUI() end
 end
 
 function UUF:SetUIScale()
