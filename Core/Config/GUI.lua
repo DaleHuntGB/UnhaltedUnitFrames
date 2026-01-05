@@ -1746,6 +1746,71 @@ local function CreateAuraSettings(containerParent, unit)
     containerParent:DoLayout()
 end
 
+local function CreateGlobalSettings(containerParent)
+    local ColourContainer = UUFG.CreateInlineGroup(containerParent, "General Colour Settings")
+
+    local function ConvertBoolToTexture(value)
+        if value == true then
+            return "|Tinterface/raidframe/readycheck-ready:16:16|t"
+        else
+            return "|Tinterface/raidframe/readycheck-notready:16:16|t"
+        end
+    end
+
+    local UnitToPrettyUnit = {
+        player = "Player",
+        target = "Target",
+        targettarget = "Target of Target",
+        focus = "Focus",
+        pet = "Pet",
+        boss = "Boss",
+    }
+
+    local UnitOrder = { "player", "target", "targettarget", "focus", "pet", "boss" }
+
+    local function DetermineDBStatusPerFrameTooltip(dbToCheck)
+        GameTooltip:AddLine("Toggle State")
+        for _, unit in ipairs(UnitOrder) do
+            local unitDB = UUF.db.profile.Units[unit]
+            if unitDB then
+                if dbToCheck == "ColourByClass" then
+                    GameTooltip:AddDoubleLine(UnitToPrettyUnit[unit], ConvertBoolToTexture(unitDB.HealthBar.ColourByClass), 1, 1, 1, 1, 1, 1)
+                elseif dbToCheck == "ColourByReaction" then
+                    GameTooltip:AddDoubleLine(UnitToPrettyUnit[unit], ConvertBoolToTexture(unitDB.HealthBar.ColourByReaction), 1, 1, 1, 1, 1, 1)
+                elseif dbToCheck == "ColourWhenTapped" then
+                    GameTooltip:AddDoubleLine(UnitToPrettyUnit[unit], ConvertBoolToTexture(unitDB.HealthBar.ColourWhenTapped), 1, 1, 1, 1, 1, 1)
+                end
+            end
+        end
+    end
+
+    local ApplyClassColourButton = AG:Create("Button")
+    ApplyClassColourButton:SetText("Toggle Class Colours")
+    ApplyClassColourButton:SetRelativeWidth(0.33)
+    ApplyClassColourButton:SetCallback("OnClick", function() for _, unitDB in pairs(UUF.db.profile.Units) do if unitDB.HealthBar.ColourByClass == nil then unitDB.HealthBar.ColourByClass = true else unitDB.HealthBar.ColourByClass = not unitDB.HealthBar.ColourByClass end end if GameTooltip:IsOwned(ApplyClassColourButton.frame) then GameTooltip:ClearLines() DetermineDBStatusPerFrameTooltip("ColourByClass") GameTooltip:Show() end UUF:UpdateAllUnitFrames() end)
+    ApplyClassColourButton:SetCallback("OnEnter", function() GameTooltip:SetOwner(ApplyClassColourButton.frame, "ANCHOR_BOTTOM") GameTooltip:ClearLines() DetermineDBStatusPerFrameTooltip("ColourByClass") GameTooltip:Show() end)
+    ApplyClassColourButton:SetCallback("OnLeave", function() GameTooltip:Hide() end)
+    ColourContainer:AddChild(ApplyClassColourButton)
+
+    local ApplyReactionColourButton = AG:Create("Button")
+    ApplyReactionColourButton:SetText("Toggle Reaction Colours")
+    ApplyReactionColourButton:SetRelativeWidth(0.33)
+    ApplyReactionColourButton:SetCallback("OnClick", function() for _, unitDB in pairs(UUF.db.profile.Units) do if unitDB.HealthBar.ColourByReaction == nil then unitDB.HealthBar.ColourByReaction = true else unitDB.HealthBar.ColourByReaction = not unitDB.HealthBar.ColourByReaction end end if GameTooltip:IsOwned(ApplyReactionColourButton.frame) then GameTooltip:ClearLines() DetermineDBStatusPerFrameTooltip("ColourByReaction") GameTooltip:Show() end UUF:UpdateAllUnitFrames() end)
+    ApplyReactionColourButton:SetCallback("OnEnter", function() GameTooltip:SetOwner(ApplyReactionColourButton.frame, "ANCHOR_BOTTOM") GameTooltip:ClearLines() DetermineDBStatusPerFrameTooltip("ColourByReaction") GameTooltip:Show() end)
+    ApplyReactionColourButton:SetCallback("OnLeave", function() GameTooltip:Hide() end)
+    ColourContainer:AddChild(ApplyReactionColourButton)
+
+    local ApplyTappedColourButton = AG:Create("Button")
+    ApplyTappedColourButton:SetText("Toggle Colour If Tapped")
+    ApplyTappedColourButton:SetRelativeWidth(0.33)
+    ApplyTappedColourButton:SetCallback("OnClick", function() for _, unitDB in pairs(UUF.db.profile.Units) do if unitDB.HealthBar.ColourWhenTapped == nil then unitDB.HealthBar.ColourWhenTapped = true else unitDB.HealthBar.ColourWhenTapped = not unitDB.HealthBar.ColourWhenTapped end end if GameTooltip:IsOwned(ApplyTappedColourButton.frame) then GameTooltip:ClearLines() DetermineDBStatusPerFrameTooltip("ColourWhenTapped") GameTooltip:Show() end UUF:UpdateAllUnitFrames() end)
+    ApplyTappedColourButton:SetCallback("OnEnter", function() GameTooltip:SetOwner(ApplyTappedColourButton.frame, "ANCHOR_BOTTOM") GameTooltip:ClearLines() DetermineDBStatusPerFrameTooltip("ColourWhenTapped") GameTooltip:Show() end)
+    ApplyTappedColourButton:SetCallback("OnLeave", function() GameTooltip:Hide() end)
+    ColourContainer:AddChild(ApplyTappedColourButton)
+
+    containerParent:DoLayout()
+end
+
 local function CreateUnitSettings(containerParent, unit)
 
     local function SelectUnitTab(SubContainer, _, UnitTab)
@@ -1984,6 +2049,12 @@ function UUF:CreateGUI()
             CreateColourSettings(ScrollFrame)
 
             ScrollFrame:DoLayout()
+        elseif MainTab == "Global" then
+            local ScrollFrame = UUFG.CreateScrollFrame(Wrapper)
+
+            CreateGlobalSettings(ScrollFrame)
+
+            ScrollFrame:DoLayout()
         elseif MainTab == "Player" then
             local ScrollFrame = UUFG.CreateScrollFrame(Wrapper)
 
@@ -2035,6 +2106,7 @@ function UUF:CreateGUI()
     ContainerTabGroup:SetFullWidth(true)
     ContainerTabGroup:SetTabs({
         { text = "General", value = "General"},
+        { text = "Global", value = "Global"},
         { text = "Player", value = "Player"},
         { text = "Target", value = "Target"},
         { text = "Target of Target", value = "TargetTarget"},
