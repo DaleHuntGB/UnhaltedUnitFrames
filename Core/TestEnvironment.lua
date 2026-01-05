@@ -111,6 +111,7 @@ function UUF:CreateTestBossFrames()
             if BossFrame.RaidTargetIndicator and i and raidTargetMarkerCoords[i] then
                 BossFrame.RaidTargetIndicator:SetTexture("Interface\\TargetingFrame\\UI-RaidTargetingIcons")
                 BossFrame.RaidTargetIndicator:SetTexCoord(unpack(raidTargetMarkerCoords[i]))
+                BossFrame.RaidTargetIndicator:Show()
             end
 
             if BossFrame.Castbar then

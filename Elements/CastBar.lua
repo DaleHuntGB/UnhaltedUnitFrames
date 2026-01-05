@@ -169,7 +169,7 @@ function UUF:UpdateUnitCastBar(unitFrame, unit)
             end
 
             if unitFrame.Castbar.Text then
-                local SpellNameDB = UUF.db.profile.Units[unit].CastBar.Text.SpellName
+                local SpellNameDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].CastBar.Text.SpellName
                 unitFrame.Castbar.Text:ClearAllPoints()
                 unitFrame.Castbar.Text:SetPoint(SpellNameDB.Layout[1], unitFrame.Castbar, SpellNameDB.Layout[2], SpellNameDB.Layout[3], SpellNameDB.Layout[4])
                 unitFrame.Castbar.Text:SetFont(UUF.Media.Font, SpellNameDB.FontSize, UUF.db.profile.General.Fonts.FontFlag)
@@ -186,7 +186,7 @@ function UUF:UpdateUnitCastBar(unitFrame, unit)
             end
 
             if unitFrame.Castbar.Time then
-                local DurationDB = UUF.db.profile.Units[unit].CastBar.Text.Duration
+                local DurationDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].CastBar.Text.Duration
                 unitFrame.Castbar.Time:ClearAllPoints()
                 unitFrame.Castbar.Time:SetPoint(DurationDB.Layout[1], unitFrame.Castbar, DurationDB.Layout[2], DurationDB.Layout[3], DurationDB.Layout[4])
                 unitFrame.Castbar.Time:SetFont(UUF.Media.Font, DurationDB.FontSize, UUF.db.profile.General.Fonts.FontFlag)
@@ -216,7 +216,7 @@ function UUF:CreateTestCastBar(unitFrame, unit)
     if not unit then return end
     if not unitFrame then return end
     local GeneralDB = UUF.db.profile.General
-    local CastBarDB = UUF.db.profile.Units[unit].CastBar
+    local CastBarDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].CastBar
     local CastBarContainer = unitFrame.Castbar and unitFrame.Castbar:GetParent()
     if UUF.CASTBAR_TEST_MODE then
         if unitFrame.Castbar and CastBarDB.Enabled then

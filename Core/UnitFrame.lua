@@ -45,9 +45,10 @@ end
 
 local function SpawnBossUnitFrames()
     for i = 1, UUF.MAX_BOSS_FRAMES do
-        local BossFrame = oUF:Spawn("boss" .. i, "UUF_Boss" .. i)
+        local BossFrame = oUF:Spawn("boss" .. i, UUF:FetchFrameName("boss" .. i))
         BossFrame:SetSize(UUF.db.profile.Units.boss.Frame.Width, UUF.db.profile.Units.boss.Frame.Height)
         UUF.BOSS_FRAMES[i] = BossFrame
+        UUF["BOSS" .. i] = BossFrame
     end
     UUF:LayoutBossFrames()
 end
@@ -89,6 +90,15 @@ function UUF:UpdateUnitFrame(unitFrame, unit)
     UUF:UpdateUnitAuras(unitFrame, unit)
     UUF:UpdateUnitTags()
 end
+
+function UUF:UpdateBossFrames()
+    for i in pairs(UUF.BOSS_FRAMES) do
+        UUF:UpdateUnitFrame(UUF["BOSS"..i], "boss"..i)
+    end
+    UUF:CreateTestBossFrames()
+    UUF:LayoutBossFrames()
+end
+
 
 function UUF:UpdateAllUnitFrames()
     for unit, _ in pairs(UUF.db.profile.Units) do
