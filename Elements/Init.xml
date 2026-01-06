@@ -14,4 +14,5 @@
 	<Script file="Indicators/RaidTargetMarker.lua"/>
 	<Script file="Indicators/Resting.lua"/>
 	<Script file="Indicators/Combat.lua"/>
+	<Script file="Indicators/TargetGlow.lua"/>
 </Ui>

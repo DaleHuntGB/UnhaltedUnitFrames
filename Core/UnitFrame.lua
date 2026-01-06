@@ -20,6 +20,7 @@ function UUF:CreateUnitFrame(unitFrame, unit)
     if unit == "player" then UUF:CreateUnitCombatIndicator(unitFrame, unit) end
     if unit == "player" then UUF:CreateUnitRestingIndicator(unitFrame, unit) end
     UUF:CreateUnitMouseoverIndicator(unitFrame, unit)
+    UUF:CreateUnitTargetGlowIndicator(unitFrame, unit)
     UUF:CreateUnitAuras(unitFrame, unit)
     UUF:CreateUnitTags(unitFrame, unit)
     ApplyScripts(unitFrame)
@@ -72,6 +73,8 @@ function UUF:SpawnUnitFrame(unit)
     elseif unit == "boss" then
         SpawnBossUnitFrames()
     end
+
+    UUF:RegisterTargetGlowIndicatorFrame(UUF:FetchFrameName(unit), unit)
 
     return UUF[unit:upper()]
 end

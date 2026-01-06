@@ -1379,6 +1379,37 @@ local function CreateMouseoverSettings(containerParent, unit, updateCallback)
     RefreshMouseoverGUI()
 end
 
+local function CreateTargetIndicatorSettings(containerParent, unit, updateCallback)
+    local TargetIndicatorDB = UUF.db.profile.Units[unit].Indicators.Target
+
+    local ToggleContainer = UUFG.CreateInlineGroup(containerParent, "Target Indicator Settings")
+
+    local Toggle = AG:Create("CheckBox")
+    Toggle:SetLabel("Enable |cFF8080FFTarget Indicator|r")
+    Toggle:SetValue(TargetIndicatorDB.Enabled)
+    Toggle:SetCallback("OnValueChanged", function(_, _, value) TargetIndicatorDB.Enabled = value updateCallback() RefreshTargetIndicatorGUI() end)
+    Toggle:SetRelativeWidth(0.5)
+    ToggleContainer:AddChild(Toggle)
+
+    local ColourPicker = AG:Create("ColorPicker")
+    ColourPicker:SetLabel("Indicator Colour")
+    ColourPicker:SetColor(TargetIndicatorDB.Colour[1], TargetIndicatorDB.Colour[2], TargetIndicatorDB.Colour[3])
+    ColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) TargetIndicatorDB.Colour = {r, g, b} updateCallback() end)
+    ColourPicker:SetHasAlpha(false)
+    ColourPicker:SetRelativeWidth(0.5)
+    ToggleContainer:AddChild(ColourPicker)
+
+    function RefreshTargetIndicatorGUI()
+        if TargetIndicatorDB.Enabled then
+            UUFG.DeepDisable(ToggleContainer, false, Toggle)
+        else
+            UUFG.DeepDisable(ToggleContainer, true, Toggle)
+        end
+    end
+
+    RefreshTargetIndicatorGUI()
+end
+
 local function CreateIndicatorSettings(containerParent, unit)
     local function SelectIndicatorTab(IndicatorContainer, _, IndicatorTab)
         IndicatorContainer:ReleaseChildren()
@@ -1392,6 +1423,8 @@ local function CreateIndicatorSettings(containerParent, unit)
             CreateStatusSettings(IndicatorContainer, unit, "Combat", function() UUF:UpdateUnitCombatIndicator(UUF[unit:upper()], unit) end)
         elseif IndicatorTab == "Mouseover" then
             CreateMouseoverSettings(IndicatorContainer, unit, function() if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitMouseoverIndicator(UUF[unit:upper()], unit) end end)
+        elseif IndicatorTab == "TargetIndicator" then
+            CreateTargetIndicatorSettings(IndicatorContainer, unit, function() if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitTargetGlowIndicator(UUF[unit:upper()], unit) end end)
         end
     end
 
@@ -1411,11 +1444,13 @@ local function CreateIndicatorSettings(containerParent, unit)
             { text = "Raid Target Marker", value = "RaidTargetMarker" },
             { text = "Leader & Assistant", value = "LeaderAssistant" },
             { text = "Mouseover", value = "Mouseover" },
+            { text = "Target Indicator", value = "TargetIndicator" },
         })
     elseif unit == "targettarget" or unit == "focus" or unit == "pet" or unit == "boss" then
         IndicatorContainerTabGroup:SetTabs({
             { text = "Raid Target Marker", value = "RaidTargetMarker" },
             { text = "Mouseover", value = "Mouseover" },
+            { text = "Target Indicator", value = "TargetIndicator" },
         })
     end
     IndicatorContainerTabGroup:SetCallback("OnGroupSelected", SelectIndicatorTab)

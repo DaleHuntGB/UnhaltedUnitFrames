@@ -318,6 +318,10 @@ local Defaults = {
                         HighlightOpacity = 0.75,
                         Style = "GRADIENT"
                     },
+                    Target = {
+                        Enabled = false,
+                        Colour = {1, 1, 1},
+                    }
                 },
                 Auras = {
                     Buffs = {
@@ -474,6 +478,10 @@ local Defaults = {
                         HighlightOpacity = 0.75,
                         Style = "GRADIENT"
                     },
+                    Target = {
+                        Enabled = false,
+                        Colour = {1, 1, 1},
+                    }
                 },
                 Auras = {
                     Buffs = {
@@ -630,6 +638,10 @@ local Defaults = {
                         HighlightOpacity = 0.75,
                         Style = "GRADIENT"
                     },
+                    Target = {
+                        Enabled = false,
+                        Colour = {1, 1, 1},
+                    }
                 },
                 Auras = {
                     Buffs = {
@@ -786,6 +798,10 @@ local Defaults = {
                         HighlightOpacity = 0.75,
                         Style = "GRADIENT"
                     },
+                    Target = {
+                        Enabled = false,
+                        Colour = {1, 1, 1},
+                    }
                 },
                 Auras = {
                     Buffs = {
@@ -942,6 +958,10 @@ local Defaults = {
                         HighlightOpacity = 0.75,
                         Style = "GRADIENT"
                     },
+                    Target = {
+                        Enabled = true,
+                        Colour = {1, 1, 1},
+                    }
                 },
                 Auras = {
                     Buffs = {
