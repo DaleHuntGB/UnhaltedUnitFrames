@@ -265,6 +265,15 @@ function UUF:CreateTestBossFrames()
                         BossFrame.DebuffContainer:Hide()
                     end
                 end
+
+                if BossFrame.TargetIndicator then
+                    local TargetIndicatorDB = UUF.db.profile.Units.boss.Indicators.Target
+                    if TargetIndicatorDB.Enabled and i % 2 == 1 then
+                        BossFrame.TargetIndicator:Show()
+                    else
+                        BossFrame.TargetIndicator:Hide()
+                    end
+                end
             else
                 if BossFrame.BuffContainer then
                     for j = 1, (BossFrame.BuffContainer.maxFake or 0) do
