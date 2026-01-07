@@ -166,7 +166,7 @@ local Defaults = {
                     },
                 },
                 Auras = {
-                    CooldownText = {
+                    AuraDuration = {
                         Layout = {"CENTER", "CENTER", 0, 0},
                         FontSize = 12,
                         ScaleByIconSize = false,
@@ -342,7 +342,7 @@ local Defaults = {
                     OutOfRange = 0.5,
                 },
                 Auras = {
-                    CooldownText = {
+                    AuraDuration = {
                         Layout = {"CENTER", "CENTER", 0, 0},
                         FontSize = 12,
                         ScaleByIconSize = false,
@@ -509,7 +509,7 @@ local Defaults = {
                     }
                 },
                 Auras = {
-                    CooldownText = {
+                    AuraDuration = {
                         Layout = {"CENTER", "CENTER", 0, 0},
                         FontSize = 12,
                         ScaleByIconSize = false,
@@ -676,7 +676,7 @@ local Defaults = {
                     }
                 },
                 Auras = {
-                    CooldownText = {
+                    AuraDuration = {
                         Layout = {"CENTER", "CENTER", 0, 0},
                         FontSize = 12,
                         ScaleByIconSize = false,
@@ -843,7 +843,7 @@ local Defaults = {
                     }
                 },
                 Auras = {
-                    CooldownText = {
+                    AuraDuration = {
                         Layout = {"CENTER", "CENTER", 0, 0},
                         FontSize = 12,
                         ScaleByIconSize = false,
@@ -1010,7 +1010,7 @@ local Defaults = {
                     }
                 },
                 Auras = {
-                    CooldownText = {
+                    AuraDuration = {
                         Layout = {"CENTER", "CENTER", 0, 0},
                         FontSize = 12,
                         ScaleByIconSize = false,

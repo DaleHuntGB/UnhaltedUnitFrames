@@ -1,31 +1,31 @@
 local _, UUF = ...
 
-local function FetchCooldownTextRegion(cooldown)
+local function FetchAuraDurationRegion(cooldown)
     if not cooldown then return end
-    if cooldown.UUFCooldownText then return cooldown.UUFCooldownText end
+    if cooldown.UUFAuraDuration then return cooldown.UUFAuraDuration end
     for _, region in ipairs({ cooldown:GetRegions() }) do
-        if region:GetObjectType() == "FontString" then cooldown.UUFCooldownText = region return region end
+        if region:GetObjectType() == "FontString" then cooldown.UUFAuraDuration = region return region end
     end
 end
 
-local function ApplyCooldownText(icon, unit)
+local function ApplyAuraDuration(icon, unit)
     local UUFDB = UUF.db.profile
     local FontsDB = UUFDB.General.Fonts
     local AurasDB = UUFDB.Units[UUF:GetNormalizedUnit(unit)].Auras
-    local CooldownTextDB = AurasDB.CooldownText
+    local AuraDurationDB = AurasDB.AuraDuration
     if not icon then return end
-    local textRegion = FetchCooldownTextRegion(icon)
+    local textRegion = FetchAuraDurationRegion(icon)
     if textRegion then
-        if CooldownTextDB.ScaleByIconSize then
+        if AuraDurationDB.ScaleByIconSize then
             local iconWidth = icon:GetWidth()
             local scaleFactor = iconWidth / 36
-            textRegion:SetFont(UUF.Media.Font, CooldownTextDB.FontSize * scaleFactor, FontsDB.FontFlag)
+            textRegion:SetFont(UUF.Media.Font, AuraDurationDB.FontSize * scaleFactor, FontsDB.FontFlag)
         else
-            textRegion:SetFont(UUF.Media.Font, CooldownTextDB.FontSize, FontsDB.FontFlag)
+            textRegion:SetFont(UUF.Media.Font, AuraDurationDB.FontSize, FontsDB.FontFlag)
         end
-        textRegion:SetTextColor(CooldownTextDB.Colour[1], CooldownTextDB.Colour[2], CooldownTextDB.Colour[3], 1)
+        textRegion:SetTextColor(AuraDurationDB.Colour[1], AuraDurationDB.Colour[2], AuraDurationDB.Colour[3], 1)
         textRegion:ClearAllPoints()
-        textRegion:SetPoint(CooldownTextDB.Layout[1], icon, CooldownTextDB.Layout[2], CooldownTextDB.Layout[3], CooldownTextDB.Layout[4])
+        textRegion:SetPoint(AuraDurationDB.Layout[1], icon, AuraDurationDB.Layout[2], AuraDurationDB.Layout[3], AuraDurationDB.Layout[4])
         if UUF.db.profile.General.Fonts.Shadow.Enabled then
             textRegion:SetShadowColor(FontsDB.Shadow.Colour[1], FontsDB.Shadow.Colour[2], FontsDB.Shadow.Colour[3], FontsDB.Shadow.Colour[4])
             textRegion:SetShadowOffset(FontsDB.Shadow.XPos, FontsDB.Shadow.YPos)
@@ -58,7 +58,7 @@ local function StyleAuras(_, button, unit, auraType)
     if auraCooldown then
         auraCooldown:SetDrawEdge(false)
         auraCooldown:SetReverse(true)
-        ApplyCooldownText(auraCooldown, unit)
+        ApplyAuraDuration(auraCooldown, unit)
     end
 
     local auraStacks = button.Count
@@ -117,7 +117,7 @@ local function RestyleAuras(_, button, unit, auraType)
     if auraCooldown then
         auraCooldown:SetDrawEdge(false)
         auraCooldown:SetReverse(true)
-        ApplyCooldownText(auraCooldown, unit)
+        ApplyAuraDuration(auraCooldown, unit)
     end
 
     local auraStacks = button.Count
@@ -313,7 +313,7 @@ function UUF:CreateTestAuras(unitFrame, unit)
     if not unit then return end
     if not unitFrame then return end
     local General = UUF.db.profile.General
-    local CooldownTextDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Auras.CooldownText
+    local AuraDurationDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Auras.AuraDuration
     local BuffsDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Auras.Buffs
     local DebuffsDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Auras.Debuffs
     if UUF.AURA_TEST_MODE then
@@ -369,13 +369,13 @@ function UUF:CreateTestAuras(unitFrame, unit)
                     button.Count:SetText(j)
                     button.Duration = button.Duration or button:CreateFontString(nil, "OVERLAY")
                     button.Duration:ClearAllPoints()
-                    button.Duration:SetPoint(CooldownTextDB.Layout[1], button, CooldownTextDB.Layout[2], CooldownTextDB.Layout[3], CooldownTextDB.Layout[4])
-                    if CooldownTextDB.ScaleByIconSize then
+                    button.Duration:SetPoint(AuraDurationDB.Layout[1], button, AuraDurationDB.Layout[2], AuraDurationDB.Layout[3], AuraDurationDB.Layout[4])
+                    if AuraDurationDB.ScaleByIconSize then
                         local iconWidth = button:GetWidth()
                         local scaleFactor = iconWidth / 36
-                        button.Duration:SetFont(UUF.Media.Font, CooldownTextDB.FontSize * scaleFactor, General.Fonts.FontFlag)
+                        button.Duration:SetFont(UUF.Media.Font, AuraDurationDB.FontSize * scaleFactor, General.Fonts.FontFlag)
                     else
-                        button.Duration:SetFont(UUF.Media.Font, CooldownTextDB.FontSize, General.Fonts.FontFlag)
+                        button.Duration:SetFont(UUF.Media.Font, AuraDurationDB.FontSize, General.Fonts.FontFlag)
                     end
                     if General.Fonts.Shadow.Enabled then
                         button.Duration:SetShadowColor(unpack(General.Fonts.Shadow.Colour))
@@ -384,7 +384,7 @@ function UUF:CreateTestAuras(unitFrame, unit)
                         button.Duration:SetShadowColor(0, 0, 0, 0)
                         button.Duration:SetShadowOffset(0, 0)
                     end
-                    button.Duration:SetTextColor(CooldownTextDB.Colour[1], CooldownTextDB.Colour[2], CooldownTextDB.Colour[3], 1)
+                    button.Duration:SetTextColor(AuraDurationDB.Colour[1], AuraDurationDB.Colour[2], AuraDurationDB.Colour[3], 1)
                     button.Duration:SetText("10m")
                     button:Show()
                 end
@@ -451,13 +451,13 @@ function UUF:CreateTestAuras(unitFrame, unit)
                     button.Count:SetText(j)
                     button.Duration = button.Duration or button:CreateFontString(nil, "OVERLAY")
                     button.Duration:ClearAllPoints()
-                    button.Duration:SetPoint(CooldownTextDB.Layout[1], button, CooldownTextDB.Layout[2], CooldownTextDB.Layout[3], CooldownTextDB.Layout[4])
-                    if CooldownTextDB.ScaleByIconSize then
+                    button.Duration:SetPoint(AuraDurationDB.Layout[1], button, AuraDurationDB.Layout[2], AuraDurationDB.Layout[3], AuraDurationDB.Layout[4])
+                    if AuraDurationDB.ScaleByIconSize then
                         local iconWidth = button:GetWidth()
                         local scaleFactor = iconWidth / 36
-                        button.Duration:SetFont(UUF.Media.Font, CooldownTextDB.FontSize * scaleFactor, General.Fonts.FontFlag)
+                        button.Duration:SetFont(UUF.Media.Font, AuraDurationDB.FontSize * scaleFactor, General.Fonts.FontFlag)
                     else
-                        button.Duration:SetFont(UUF.Media.Font, CooldownTextDB.FontSize, General.Fonts.FontFlag)
+                        button.Duration:SetFont(UUF.Media.Font, AuraDurationDB.FontSize, General.Fonts.FontFlag)
                     end
                     if General.Fonts.Shadow.Enabled then
                         button.Duration:SetShadowColor(unpack(General.Fonts.Shadow.Colour))
@@ -466,7 +466,7 @@ function UUF:CreateTestAuras(unitFrame, unit)
                         button.Duration:SetShadowColor(0, 0, 0, 0)
                         button.Duration:SetShadowOffset(0, 0)
                     end
-                    button.Duration:SetTextColor(CooldownTextDB.Colour[1], CooldownTextDB.Colour[2], CooldownTextDB.Colour[3], 1)
+                    button.Duration:SetTextColor(AuraDurationDB.Colour[1], AuraDurationDB.Colour[2], AuraDurationDB.Colour[3], 1)
                     button.Duration:SetText("10m")
                     button:Show()
                 end
