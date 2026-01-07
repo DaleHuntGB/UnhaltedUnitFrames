@@ -5,6 +5,15 @@ local UUFG = UUF.GUIWidgets
 local UUFGUI = {}
 local isGUIOpen = false
 
+local UnitDBToUnitPrettyName = {
+    player = "Player",
+    target = "Target",
+    targettarget = "Target of Target",
+    focus = "Focus",
+    pet = "Pet",
+    boss = "Boss",
+}
+
 local AnchorPoints = { { ["TOPLEFT"] = "Top Left", ["TOP"] = "Top", ["TOPRIGHT"] = "Top Right", ["LEFT"] = "Left", ["CENTER"] = "Center", ["RIGHT"] = "Right", ["BOTTOMLEFT"] = "Bottom Left", ["BOTTOM"] = "Bottom", ["BOTTOMRIGHT"] = "Bottom Right" }, { "TOPLEFT", "TOP", "TOPRIGHT", "LEFT", "CENTER", "RIGHT", "BOTTOMLEFT", "BOTTOM", "BOTTOMRIGHT", } }
 
 local Power = {
@@ -1870,6 +1879,13 @@ local function CreateGlobalSettings(containerParent)
 end
 
 local function CreateUnitSettings(containerParent, unit)
+
+    local EnableUnitFrameToggle = AG:Create("CheckBox")
+    EnableUnitFrameToggle:SetLabel("Enable |cFFFFCC00"..(UnitDBToUnitPrettyName[unit] or unit) .."|r")
+    EnableUnitFrameToggle:SetValue(UUF.db.profile.Units[unit].Enabled)
+    EnableUnitFrameToggle:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.Units[unit].Enabled = value if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitFrame(UUF[unit:upper()], unit) end end)
+    EnableUnitFrameToggle:SetFullWidth(true)
+    containerParent:AddChild(EnableUnitFrameToggle)
 
     local function SelectUnitTab(SubContainer, _, UnitTab)
         SubContainer:ReleaseChildren()

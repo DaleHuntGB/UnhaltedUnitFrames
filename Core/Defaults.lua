@@ -53,6 +53,7 @@ local Defaults = {
         },
         Units = {
             player = {
+                Enabled = true,
                 Frame = {
                     Width = 244,
                     Height = 42,
@@ -225,6 +226,7 @@ local Defaults = {
                 }
             },
             target = {
+                Enabled = true,
                 Frame = {
                     Width = 244,
                     Height = 42,
@@ -389,6 +391,7 @@ local Defaults = {
                 }
             },
             targettarget = {
+                Enabled = true,
                 Frame = {
                     Width = 122,
                     Height = 22,
@@ -549,6 +552,7 @@ local Defaults = {
                 }
             },
             focus = {
+                Enabled = true,
                 Frame = {
                     Width = 122,
                     Height = 22,
@@ -709,6 +713,7 @@ local Defaults = {
                 }
             },
             pet = {
+                Enabled = true,
                 Frame = {
                     Width = 122,
                     Height = 22,
@@ -869,6 +874,7 @@ local Defaults = {
                 }
             },
             boss = {
+                Enabled = true,
                 Frame = {
                     Width = 244,
                     Height = 42,

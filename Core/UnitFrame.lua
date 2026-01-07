@@ -55,6 +55,7 @@ local function SpawnBossUnitFrames()
 end
 
 function UUF:SpawnUnitFrame(unit)
+    local UnitDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)]
     local FrameDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Frame
 
     oUF:RegisterStyle(UUF:FetchFrameName(unit), function(unitFrame) UUF:CreateUnitFrame(unitFrame, unit) end)
@@ -76,10 +77,19 @@ function UUF:SpawnUnitFrame(unit)
 
     UUF:RegisterTargetGlowIndicatorFrame(UUF:FetchFrameName(unit), unit)
 
+    if UnitDB.Enabled then
+        RegisterUnitWatch(UUF[unit:upper()])
+        UUF[unit:upper()]:Show()
+    else
+        UnregisterUnitWatch(UUF[unit:upper()])
+        UUF[unit:upper()]:Hide()
+    end
+
     return UUF[unit:upper()]
 end
 
 function UUF:UpdateUnitFrame(unitFrame, unit)
+    local UnitDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)]
     if unit ~= "targettarget" then UUF:UpdateUnitCastBar(unitFrame, unit) end
     UUF:UpdateUnitHealthBar(unitFrame, unit)
     UUF:UpdateUnitHealPrediction(unitFrame, unit)
@@ -92,6 +102,13 @@ function UUF:UpdateUnitFrame(unitFrame, unit)
     UUF:UpdateUnitMouseoverIndicator(unitFrame, unit)
     UUF:UpdateUnitAuras(unitFrame, unit)
     UUF:UpdateUnitTags()
+    if UnitDB.Enabled then
+        RegisterUnitWatch(unitFrame)
+        unitFrame:Show()
+    else
+        UnregisterUnitWatch(unitFrame)
+        unitFrame:Hide()
+    end
 end
 
 function UUF:UpdateBossFrames()
