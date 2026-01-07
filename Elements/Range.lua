@@ -42,10 +42,8 @@ local function FriendlyIsInRange(realUnit)
     if UnitIsPlayer(unit) and (isRetail and UnitPhaseReason(unit) or not isRetail) then
         return false
     end
-    local inRange, checkedRange = UnitInRange(unit)
-    if checkedRange and not inRange then
-        return false
-    end
+    -- local inRange, checkedRange = UnitInRange(unit)
+    -- if checkedRange and not inRange then return false end
     return IsUnitInRange(unit)
 end
 
