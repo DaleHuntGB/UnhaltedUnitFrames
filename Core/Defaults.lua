@@ -166,6 +166,12 @@ local Defaults = {
                     },
                 },
                 Auras = {
+                    CooldownText = {
+                        Layout = {"CENTER", "CENTER", 0, 0},
+                        FontSize = 12,
+                        ScaleByIconSize = false,
+                        Colour = {1, 1, 1},
+                    },
                     Buffs = {
                         Enabled = true,
                         OnlyShowPlayer = false,
@@ -336,6 +342,12 @@ local Defaults = {
                     OutOfRange = 0.5,
                 },
                 Auras = {
+                    CooldownText = {
+                        Layout = {"CENTER", "CENTER", 0, 0},
+                        FontSize = 12,
+                        ScaleByIconSize = false,
+                        Colour = {1, 1, 1},
+                    },
                     Buffs = {
                         Enabled = true,
                         OnlyShowPlayer = false,
@@ -497,6 +509,12 @@ local Defaults = {
                     }
                 },
                 Auras = {
+                    CooldownText = {
+                        Layout = {"CENTER", "CENTER", 0, 0},
+                        FontSize = 12,
+                        ScaleByIconSize = false,
+                        Colour = {1, 1, 1},
+                    },
                     Buffs = {
                         Enabled = false,
                         OnlyShowPlayer = false,
@@ -658,6 +676,12 @@ local Defaults = {
                     }
                 },
                 Auras = {
+                    CooldownText = {
+                        Layout = {"CENTER", "CENTER", 0, 0},
+                        FontSize = 12,
+                        ScaleByIconSize = false,
+                        Colour = {1, 1, 1},
+                    },
                     Buffs = {
                         Enabled = true,
                         OnlyShowPlayer = false,
@@ -819,6 +843,12 @@ local Defaults = {
                     }
                 },
                 Auras = {
+                    CooldownText = {
+                        Layout = {"CENTER", "CENTER", 0, 0},
+                        FontSize = 12,
+                        ScaleByIconSize = false,
+                        Colour = {1, 1, 1},
+                    },
                     Buffs = {
                         Enabled = false,
                         OnlyShowPlayer = false,
@@ -980,6 +1010,12 @@ local Defaults = {
                     }
                 },
                 Auras = {
+                    CooldownText = {
+                        Layout = {"CENTER", "CENTER", 0, 0},
+                        FontSize = 12,
+                        ScaleByIconSize = false,
+                        Colour = {1, 1, 1},
+                    },
                     Buffs = {
                         Enabled = true,
                         OnlyShowPlayer = false,
