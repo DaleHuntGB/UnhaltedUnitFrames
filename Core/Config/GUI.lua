@@ -1850,7 +1850,7 @@ local function CreateGlobalSettings(containerParent)
 
     CreateFontSettings(GlobalContainer)
     CreateTextureSettings(GlobalContainer)
-    -- CreateRangeSettings(GlobalContainer)
+    CreateRangeSettings(GlobalContainer)
 
     local ToggleContainer = UUFG.CreateInlineGroup(GlobalContainer, "Toggles")
 
