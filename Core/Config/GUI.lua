@@ -266,6 +266,41 @@ local function CreateTextureSettings(containerParent)
     Container:AddChild(MouseoverStyleDropdown)
 end
 
+local function CreateRangeSettings(containerParent)
+    local RangeDB = UUF.db.profile.General.Range
+    local Container = UUFG.CreateInlineGroup(containerParent, "Range")
+
+    local Toggle = AG:Create("CheckBox")
+    Toggle:SetLabel("Enable Range Fading")
+    Toggle:SetValue(RangeDB.Enabled)
+    Toggle:SetFullWidth(true)
+    Toggle:SetCallback("OnValueChanged", function(_, _, value) RangeDB.Enabled = value UUF:UpdateAllUnitFrames() UUFG.DeepDisable(Container, not value, Toggle) end)
+    Toggle:SetRelativeWidth(0.33)
+    Container:AddChild(Toggle)
+
+    local InAlphaSlider = AG:Create("Slider")
+    InAlphaSlider:SetLabel("In Range Alpha")
+    InAlphaSlider:SetValue(RangeDB.InRange)
+    InAlphaSlider:SetSliderValues(0.0, 1.0, 0.01)
+    InAlphaSlider:SetFullWidth(true)
+    InAlphaSlider:SetCallback("OnValueChanged", function(_, _, value) RangeDB.InRange = value UUF:UpdateAllUnitFrames() end)
+    InAlphaSlider:SetRelativeWidth(0.33)
+    InAlphaSlider:SetIsPercent(true)
+    Container:AddChild(InAlphaSlider)
+
+    local OutAlphaSlider = AG:Create("Slider")
+    OutAlphaSlider:SetLabel("Out of Range Alpha")
+    OutAlphaSlider:SetValue(RangeDB.OutOfRange)
+    OutAlphaSlider:SetSliderValues(0.0, 1.0, 0.01)
+    OutAlphaSlider:SetFullWidth(true)
+    OutAlphaSlider:SetCallback("OnValueChanged", function(_, _, value) RangeDB.OutOfRange = value UUF:UpdateAllUnitFrames() end)
+    OutAlphaSlider:SetRelativeWidth(0.33)
+    OutAlphaSlider:SetIsPercent(true)
+    Container:AddChild(OutAlphaSlider)
+
+    UUFG.DeepDisable(Container, not RangeDB.Enabled, Toggle)
+end
+
 local function CreateColourSettings(containerParent)
     local Container = UUFG.CreateInlineGroup(containerParent, "Colours")
 
@@ -1807,6 +1842,7 @@ local function CreateGlobalSettings(containerParent)
 
     CreateFontSettings(GlobalContainer)
     CreateTextureSettings(GlobalContainer)
+    CreateRangeSettings(GlobalContainer)
 
     local ToggleContainer = UUFG.CreateInlineGroup(GlobalContainer, "Toggles")
 

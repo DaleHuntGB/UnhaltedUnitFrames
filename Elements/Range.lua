@@ -6,7 +6,6 @@ UUF.RangeEvtFrames = {}
 local RangeEventFrame = CreateFrame("Frame")
 RangeEventFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
 RangeEventFrame:RegisterEvent("UNIT_TARGET")
-RangeEventFrame:RegisterEvent("UNIT_AURA")
 RangeEventFrame:RegisterEvent("SPELL_UPDATE_COOLDOWN")
 RangeEventFrame:SetScript("OnEvent", function()
     for _, frameData in ipairs(UUF.RangeEvtFrames) do
@@ -53,10 +52,10 @@ end
 function UUF:RegisterRangeFrame(frameName, unit)
     if not unit or not frameName then return end
     local unitFrame = type(frameName) == "table" and frameName or _G[frameName]
-    local UnitDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)]
+    local RangeDB = UUF.db.profile.General.Range
     table.insert(UUF.RangeEvtFrames, { frame = unitFrame, unit = unit })
-    if UnitDB and UnitDB.Range and UnitDB.Range.Enabled then
-        unitFrame.Range = UnitDB.Range
+    if RangeDB and RangeDB.Enabled then
+        unitFrame.Range = RangeDB
     else
         unitFrame.Range = nil
     end
@@ -73,18 +72,20 @@ function UUF:IsRangeFrameRegistered(unit)
 end
 
 function UUF:UpdateRangeAlpha(unitFrame, unit)
+    if not UUF.db.profile.General.Range.Enabled then unitFrame:SetAlpha(1.0) return end
     if not unitFrame:IsVisible() then return end
     if not unit or not UnitExists(unit) then return end
-    if unit == "player" then unitFrame:SetAlpha(1.0) return end
-    local UnitDB = unitFrame.Range
-    if not UnitDB then unitFrame:SetAlpha(1.0) return end
-    local inAlpha = UnitDB.InRange or 1.0
-    local outAlpha = UnitDB.OutOfRange or 0.5
-    local unitFrameAlpha
-    if UnitCanAttack('player', unit) or UnitIsUnit(unit, 'pet') then
-        unitFrameAlpha = (IsUnitInRange(unit) and inAlpha) or outAlpha
-    else
-        unitFrameAlpha = (UnitIsConnected(unit) and FriendlyIsInRange(unit) and inAlpha) or outAlpha
+    if unit ~= "player" then
+        local RangeDB = UUF.db.profile.General.Range
+        if not RangeDB then unitFrame:SetAlpha(1.0) return end
+        local inAlpha = RangeDB.InRange or 1.0
+        local outAlpha = RangeDB.OutOfRange or 0.5
+        local unitFrameAlpha
+        if UnitCanAttack('player', unit) or UnitIsUnit(unit, 'pet') then
+            unitFrameAlpha = (IsUnitInRange(unit) and inAlpha) or outAlpha
+        else
+            unitFrameAlpha = (UnitIsConnected(unit) and FriendlyIsInRange(unit) and inAlpha) or outAlpha
+        end
+        unitFrame:SetAlpha(unitFrameAlpha)
     end
-    unitFrame:SetAlpha(unitFrameAlpha)
 end

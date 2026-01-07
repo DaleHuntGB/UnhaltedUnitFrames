@@ -16,6 +16,11 @@ local Defaults = {
                 Foreground = "Better Blizzard",
                 Background = "Better Blizzard",
             },
+            Range = {
+                Enabled = true,
+                InRange = 1.0,
+                OutOfRange = 0.5,
+            },
             Fonts = {
                 Font = "Friz Quadrata TT",
                 FontFlag = "OUTLINE",
@@ -491,11 +496,6 @@ local Defaults = {
                         Colour = {1, 1, 1},
                     }
                 },
-                Range = {
-                    Enabled = true,
-                    InRange = 1.0,
-                    OutOfRange = 0.5,
-                },
                 Auras = {
                     Buffs = {
                         Enabled = false,
@@ -656,11 +656,6 @@ local Defaults = {
                         Enabled = false,
                         Colour = {1, 1, 1},
                     }
-                },
-                Range = {
-                    Enabled = true,
-                    InRange = 1.0,
-                    OutOfRange = 0.5,
                 },
                 Auras = {
                     Buffs = {
@@ -823,11 +818,6 @@ local Defaults = {
                         Colour = {1, 1, 1},
                     }
                 },
-                Range = {
-                    Enabled = true,
-                    InRange = 1.0,
-                    OutOfRange = 0.5,
-                },
                 Auras = {
                     Buffs = {
                         Enabled = false,
@@ -988,11 +978,6 @@ local Defaults = {
                         Enabled = true,
                         Colour = {1, 1, 1},
                     }
-                },
-                Range = {
-                    Enabled = true,
-                    InRange = 1.0,
-                    OutOfRange = 0.5,
                 },
                 Auras = {
                     Buffs = {
