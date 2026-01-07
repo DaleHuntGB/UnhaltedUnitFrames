@@ -50,6 +50,7 @@ local function SpawnBossUnitFrames()
         BossFrame:SetSize(UUF.db.profile.Units.boss.Frame.Width, UUF.db.profile.Units.boss.Frame.Height)
         UUF.BOSS_FRAMES[i] = BossFrame
         UUF["BOSS" .. i] = BossFrame
+        UUF:RegisterRangeFrame(UUF:FetchFrameName("boss" .. i), "boss" .. i)
     end
     UUF:LayoutBossFrames()
 end
@@ -76,6 +77,7 @@ function UUF:SpawnUnitFrame(unit)
     end
 
     UUF:RegisterTargetGlowIndicatorFrame(UUF:FetchFrameName(unit), unit)
+    UUF:RegisterRangeFrame(UUF:FetchFrameName(unit), unit)
 
     if UnitDB.Enabled then
         RegisterUnitWatch(UUF[unit:upper()])

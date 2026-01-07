@@ -325,6 +325,11 @@ local Defaults = {
                         Colour = {1, 1, 1},
                     }
                 },
+                Range = {
+                    Enabled = true,
+                    InRange = 1.0,
+                    OutOfRange = 0.5,
+                },
                 Auras = {
                     Buffs = {
                         Enabled = true,
@@ -485,6 +490,11 @@ local Defaults = {
                         Enabled = false,
                         Colour = {1, 1, 1},
                     }
+                },
+                Range = {
+                    Enabled = true,
+                    InRange = 1.0,
+                    OutOfRange = 0.5,
                 },
                 Auras = {
                     Buffs = {
@@ -647,6 +657,11 @@ local Defaults = {
                         Colour = {1, 1, 1},
                     }
                 },
+                Range = {
+                    Enabled = true,
+                    InRange = 1.0,
+                    OutOfRange = 0.5,
+                },
                 Auras = {
                     Buffs = {
                         Enabled = true,
@@ -808,6 +823,11 @@ local Defaults = {
                         Colour = {1, 1, 1},
                     }
                 },
+                Range = {
+                    Enabled = true,
+                    InRange = 1.0,
+                    OutOfRange = 0.5,
+                },
                 Auras = {
                     Buffs = {
                         Enabled = false,
@@ -968,6 +988,11 @@ local Defaults = {
                         Enabled = true,
                         Colour = {1, 1, 1},
                     }
+                },
+                Range = {
+                    Enabled = true,
+                    InRange = 1.0,
+                    OutOfRange = 0.5,
                 },
                 Auras = {
                     Buffs = {
