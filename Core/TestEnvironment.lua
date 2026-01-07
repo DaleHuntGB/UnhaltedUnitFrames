@@ -137,6 +137,7 @@ function UUF:CreateTestBossFrames()
 
             if UUF.BOSS_TEST_MODE then
                 local General = UUF.db.profile.General
+                local AuraDurationDB = UUF.db.profile.Units.boss.Auras.AuraDuration
                 local BuffsDB = UUF.db.profile.Units.boss.Auras.Buffs
                 local DebuffsDB = UUF.db.profile.Units.boss.Auras.Debuffs
                 if BossFrame.BuffContainer then
@@ -189,6 +190,25 @@ function UUF:CreateTestBossFrames()
                             button.Icon:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", -1, 1)
                             button.Icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
                             button.Count:SetText(j)
+                            button.Duration = button.Duration or button:CreateFontString(nil, "OVERLAY")
+                            button.Duration:ClearAllPoints()
+                            button.Duration:SetPoint(AuraDurationDB.Layout[1], button, AuraDurationDB.Layout[2], AuraDurationDB.Layout[3], AuraDurationDB.Layout[4])
+                            if AuraDurationDB.ScaleByIconSize then
+                                local iconWidth = button:GetWidth()
+                                local scaleFactor = iconWidth / 36
+                                button.Duration:SetFont(UUF.Media.Font, AuraDurationDB.FontSize * scaleFactor, General.Fonts.FontFlag)
+                            else
+                                button.Duration:SetFont(UUF.Media.Font, AuraDurationDB.FontSize, General.Fonts.FontFlag)
+                            end
+                            if General.Fonts.Shadow.Enabled then
+                                button.Duration:SetShadowColor(unpack(General.Fonts.Shadow.Colour))
+                                button.Duration:SetShadowOffset(General.Fonts.Shadow.XPos, General.Fonts.Shadow.YPos)
+                            else
+                                button.Duration:SetShadowColor(0, 0, 0, 0)
+                                button.Duration:SetShadowOffset(0, 0)
+                            end
+                            button.Duration:SetTextColor(AuraDurationDB.Colour[1], AuraDurationDB.Colour[2], AuraDurationDB.Colour[3], 1)
+                            button.Duration:SetText("10m")
                             button:Show()
                         end
 
@@ -252,6 +272,25 @@ function UUF:CreateTestBossFrames()
                             button.Icon:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", -1, 1)
                             button.Icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
                             button.Count:SetText(j)
+                            button.Duration = button.Duration or button:CreateFontString(nil, "OVERLAY")
+                            button.Duration:ClearAllPoints()
+                            button.Duration:SetPoint(AuraDurationDB.Layout[1], button, AuraDurationDB.Layout[2], AuraDurationDB.Layout[3], AuraDurationDB.Layout[4])
+                            if AuraDurationDB.ScaleByIconSize then
+                                local iconWidth = button:GetWidth()
+                                local scaleFactor = iconWidth / 36
+                                button.Duration:SetFont(UUF.Media.Font, AuraDurationDB.FontSize * scaleFactor, General.Fonts.FontFlag)
+                            else
+                                button.Duration:SetFont(UUF.Media.Font, AuraDurationDB.FontSize, General.Fonts.FontFlag)
+                            end
+                            if General.Fonts.Shadow.Enabled then
+                                button.Duration:SetShadowColor(unpack(General.Fonts.Shadow.Colour))
+                                button.Duration:SetShadowOffset(General.Fonts.Shadow.XPos, General.Fonts.Shadow.YPos)
+                            else
+                                button.Duration:SetShadowColor(0, 0, 0, 0)
+                                button.Duration:SetShadowOffset(0, 0)
+                            end
+                            button.Duration:SetTextColor(AuraDurationDB.Colour[1], AuraDurationDB.Colour[2], AuraDurationDB.Colour[3], 1)
+                            button.Duration:SetText("10m")
                             button:Show()
                         end
 

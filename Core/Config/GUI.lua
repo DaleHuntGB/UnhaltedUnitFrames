@@ -1837,7 +1837,7 @@ local function CreateAuraSettings(containerParent, unit)
     local ScaleByIconSizeCheckbox = AG:Create("CheckBox")
     ScaleByIconSizeCheckbox:SetLabel("Scale Cooldown Text By Icon Size")
     ScaleByIconSizeCheckbox:SetValue(UUF.db.profile.Units[unit].Auras.AuraDuration.ScaleByIconSize)
-    ScaleByIconSizeCheckbox:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.Units[unit].Auras.AuraDuration.ScaleByIconSize = value if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, "AuraDuration") end end)
+    ScaleByIconSizeCheckbox:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.Units[unit].Auras.AuraDuration.ScaleByIconSize = value if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, "AuraDuration") end RefreshFontSizeSlider() end)
     ScaleByIconSizeCheckbox:SetRelativeWidth(0.5)
     AuraDurationContainer:AddChild(ScaleByIconSizeCheckbox)
 
@@ -1879,7 +1879,16 @@ local function CreateAuraSettings(containerParent, unit)
     FontSizeSlider:SetSliderValues(8, 64, 1)
     FontSizeSlider:SetRelativeWidth(0.33)
     FontSizeSlider:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.Units[unit].Auras.AuraDuration.FontSize = value if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, "AuraDuration") end end)
+    FontSizeSlider:SetDisabled(UUF.db.profile.Units[unit].Auras.AuraDuration.ScaleByIconSize)
     AuraDurationContainer:AddChild(FontSizeSlider)
+
+    function RefreshFontSizeSlider()
+        if UUF.db.profile.Units[unit].Auras.AuraDuration.ScaleByIconSize then
+            FontSizeSlider:SetDisabled(true)
+        else
+            FontSizeSlider:SetDisabled(false)
+        end
+    end
 
     local function SelectAuraTab(AuraContainer, _, AuraTab)
         AuraContainer:ReleaseChildren()
@@ -1888,6 +1897,7 @@ local function CreateAuraSettings(containerParent, unit)
         elseif AuraTab == "Debuffs" then
             CreateSpecificAuraSettings(AuraContainer, unit, "Debuffs")
         end
+        C_Timer.After(0.001, RefreshFontSizeSlider)
         containerParent:DoLayout()
     end
 
