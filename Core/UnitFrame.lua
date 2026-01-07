@@ -77,7 +77,7 @@ function UUF:SpawnUnitFrame(unit)
     end
 
     UUF:RegisterTargetGlowIndicatorFrame(UUF:FetchFrameName(unit), unit)
-    UUF:RegisterRangeFrame(UUF:FetchFrameName(unit), unit)
+    -- UUF:RegisterRangeFrame(UUF:FetchFrameName(unit), unit)
 
     if UnitDB.Enabled then
         RegisterUnitWatch(UUF[unit:upper()])

@@ -72,6 +72,14 @@ local StatusTextures = {
     }
 }
 
+function RefreshUnitGUI(containerParent, unit)
+    if UUF.db.profile.Units[unit].Enabled then
+        UUFG.DeepDisable(containerParent, false, EnableUnitFrameToggle)
+    else
+        UUFG.DeepDisable(containerParent, true, EnableUnitFrameToggle)
+    end
+end
+
 local function EnableAurasTestMode(unit)
     UUF.AURA_TEST_MODE = true
     UUF:CreateTestAuras(UUF[unit:upper()], unit)
@@ -1842,7 +1850,7 @@ local function CreateGlobalSettings(containerParent)
 
     CreateFontSettings(GlobalContainer)
     CreateTextureSettings(GlobalContainer)
-    CreateRangeSettings(GlobalContainer)
+    -- CreateRangeSettings(GlobalContainer)
 
     local ToggleContainer = UUFG.CreateInlineGroup(GlobalContainer, "Toggles")
 
@@ -1916,10 +1924,10 @@ end
 
 local function CreateUnitSettings(containerParent, unit)
 
-    local EnableUnitFrameToggle = AG:Create("CheckBox")
+    EnableUnitFrameToggle = AG:Create("CheckBox")
     EnableUnitFrameToggle:SetLabel("Enable |cFFFFCC00"..(UnitDBToUnitPrettyName[unit] or unit) .."|r")
     EnableUnitFrameToggle:SetValue(UUF.db.profile.Units[unit].Enabled)
-    EnableUnitFrameToggle:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.Units[unit].Enabled = value if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitFrame(UUF[unit:upper()], unit) end end)
+    EnableUnitFrameToggle:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.Units[unit].Enabled = value if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitFrame(UUF[unit:upper()], unit) end RefreshUnitGUI(containerParent, unit) end)
     EnableUnitFrameToggle:SetFullWidth(true)
     containerParent:AddChild(EnableUnitFrameToggle)
 
@@ -1944,6 +1952,7 @@ local function CreateUnitSettings(containerParent, unit)
         end
         if UnitTab == "Auras" then EnableAurasTestMode(unit) else DisableAurasTestMode(unit) end
         if UnitTab == "CastBar" then EnableCastBarTestMode(unit) else DisableCastBarTestMode(unit) end
+        RefreshUnitGUI(SubContainer, unit)
         containerParent:DoLayout()
     end
 
@@ -1975,6 +1984,8 @@ local function CreateUnitSettings(containerParent, unit)
     SubContainerTabGroup:SetCallback("OnGroupSelected", SelectUnitTab)
     SubContainerTabGroup:SelectTab("Frame")
     containerParent:AddChild(SubContainerTabGroup)
+
+    RefreshUnitGUI(containerParent, unit)
 
     containerParent:DoLayout()
 end
