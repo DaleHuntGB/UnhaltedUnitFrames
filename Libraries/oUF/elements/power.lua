@@ -29,11 +29,9 @@ The following options are listed by priority. The first check that returns true 
 .colorThreat       - Use `self.colors.threat[threat]` to color the bar based on the unit's threat status. `threat` is
                      defined by the first return of [UnitThreatSituation](https://warcraft.wiki.gg/wiki/API_UnitThreatSituation) (boolean)
 .colorPower        - Use `self.colors.power[token]` to color the bar based on the unit's power type. This method will
-                     fall-back to `:GetAlternativeColor()` if it can't find a color matching the token. If this function
-                     isn't defined, then it will attempt to color based upon the alternative power colors returned by
-                     [UnitPowerType](https://warcraft.wiki.gg/wiki/API_UnitPowerType). If these aren't
-                     defined, then it will attempt to color the bar based upon `self.colors.power[type]`. In case of
-                     failure it'll default to `self.colors.power.MANA` (boolean)
+                     fall-back to the alternative power colors returned by [UnitPowerType](https://warcraft.wiki.gg/wiki/API_UnitPowerType)
+                     if it can't find a color matching the token. If these aren't defined, then it will attempt to color
+                     the bar based upon `self.colors.power[type]`. In case of failure it'll default to `self.colors.power.MANA` (boolean)
 .colorPowerAtlas   - Use atlas from `self.colors.power[token]` to replace the texture whenever it's available. The previously
                      defined texture (if any) will be restored if the color changes to one that doesn't have an atlas.
                      Requires `.colorPower` to be enabled (boolean)
@@ -116,9 +114,7 @@ local function UpdateColor(self, event, unit)
 		if(element.displayType ~= ALTERNATE_POWER_INDEX) then
 			color = self.colors.power[pToken]
 			if(not color) then
-				if(element.GetAlternativeColor) then
-					r, g, b = element:GetAlternativeColor(unit, pType, pToken, altR, altG, altB)
-				elseif(altR) then
+				if(altR) then
 					r, g, b = altR, altG, altB
 					if(r > 1 or g > 1 or b > 1) then
 						-- BUG: As of 7.0.3, altR, altG, altB may be in 0-1 or 0-255 range.
@@ -154,31 +150,30 @@ local function UpdateColor(self, event, unit)
 		element:SetStatusBarTexture(atlas)
 		element:GetStatusBarTexture():SetVertexColor(1, 1, 1)
 	else
-		if(color) then
-			r, g, b = color:GetRGB()
+		if(element.__texture) then
+			element:SetStatusBarTexture(element.__texture)
 		end
 
+		-- it's done this way so that only non-standard powers have r, g, b values
 		if(b) then
-			if(element.__texture) then
-				element:SetStatusBarTexture(element.__texture)
-			end
-
 			element:GetStatusBarTexture():SetVertexColor(r, g, b)
+		elseif(color) then
+			element:GetStatusBarTexture():SetVertexColor(color:GetRGB())
 		end
 	end
 
-	--[[ Callback: Power:PostUpdateColor(unit, r, g, b)
+	--[[ Callback: Power:PostUpdateColor(unit, color, altR, altG, altB)
 	Called after the element color has been updated.
 
 	* self  - the Power element
 	* unit  - the unit for which the update has been triggered (string)
-	* r     - the red component of the used color (number?)[0-1]
-	* g     - the green component of the used color (number?)[0-1]
-	* b     - the blue component of the used color (number?)[0-1]
-	* atlas - the atlas used instead of color (string?)
+	* color - the used ColorMixin-based object (table?)
+	* altR  - the red component of the used alternative color (number?)[0-1]
+	* altG  - the green component of the used alternative color (number?)[0-1]
+	* altB  - the blue component of the used alternative color (number?)[0-1]
 	--]]
 	if(element.PostUpdateColor) then
-		element:PostUpdateColor(unit, r, g, b, atlas)
+		element:PostUpdateColor(unit, color, r, g, b)
 	end
 end
 
