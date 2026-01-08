@@ -7,7 +7,7 @@ function UUF:CreatePositionController()
         CDMAnchor:SetAllPoints(ECDM)
         CDMAnchor:SetSize(ECDM:GetWidth() or 300, ECDM:GetHeight() or 48)
     else
-        UUF:PrettyPrint("|cFFFFCC00Essential Cooldown Viewer|r is not enabled, please do so & reload.")
+        UUF:PrettyPrint("|cFFFFCC00Essential Cooldown Viewer|r was not found.")
     end
 end
 
