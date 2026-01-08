@@ -197,6 +197,25 @@ function UUF:GetNormalizedUnit(unit)
     return normalizedUnit
 end
 
+function UUF:RequiresAlternativePowerBar()
+    local SpecsNeedingAltPower = {
+        PRIEST = { 258 },           -- Shadow
+        MAGE   = { 62, 63, 64 },    -- Arcane, Fire, Frost
+        PALADIN = { 70 },           -- Ret
+        SHAMAN  = { 262, 263 },     -- Ele, Enh
+        EVOKER  = { 1467, 1473 },   -- Dev, Aug
+        DRUID = { 102, 103, 104 },    -- Balance, Feral, Guardian
+    }
+    local class = select(2, UnitClass("player"))
+    local specIndex = GetSpecialization()
+    if not specIndex then return false end
+    local specID = GetSpecializationInfo(specIndex)
+    local classSpecs = SpecsNeedingAltPower[class]
+    if not classSpecs then return false end
+    for _, requiredSpec in ipairs(classSpecs) do if specID == requiredSpec then return true end end
+    return false
+end
+
 UUF.LayoutConfig = {
     TOPLEFT     = { anchor="TOPLEFT",   offsetMultiplier=0   },
     TOP         = { anchor="TOP",       offsetMultiplier=0   },

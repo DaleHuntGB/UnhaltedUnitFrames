@@ -72,14 +72,6 @@ local StatusTextures = {
     }
 }
 
-function RefreshUnitGUI(containerParent, unit)
-    if UUF.db.profile.Units[unit].Enabled then
-        UUFG.DeepDisable(containerParent, false, EnableUnitFrameToggle)
-    else
-        UUFG.DeepDisable(containerParent, true, EnableUnitFrameToggle)
-    end
-end
-
 local function EnableAurasTestMode(unit)
     UUF.AURA_TEST_MODE = true
     UUF:CreateTestAuras(UUF[unit:upper()], unit)
@@ -1002,7 +994,7 @@ local function CreatePowerBarSettings(containerParent, unit, updateCallback)
     HeightSlider:SetLabel("Height")
     HeightSlider:SetValue(PowerBarDB.Height)
     HeightSlider:SetSliderValues(1, FrameDB.Height - 2, 1)
-    HeightSlider:SetRelativeWidth(0.5)
+    HeightSlider:SetRelativeWidth( 0.5)
     HeightSlider:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.Height = value updateCallback() end)
     LayoutContainer:AddChild(HeightSlider)
 
@@ -1085,6 +1077,116 @@ local function CreatePowerBarSettings(containerParent, unit, updateCallback)
     end
 
     RefreshPowerBarGUI()
+end
+
+local function CreateAlternativePowerBarSettings(containerParent, unit, updateCallback)
+    local AlternativePowerBarDB = UUF.db.profile.Units[unit].AlternativePowerBar
+
+    UUFG.CreateInformationTag(containerParent, "The |cFF8080FFAlternative Power Bar|r will display |cFF4080FFMana|r for classes that have an alternative resource.")
+
+    local AlternativePowerBarSettings = UUFG.CreateInlineGroup(containerParent, "Alternative Power Bar Settings")
+
+    local Toggle = AG:Create("CheckBox")
+    Toggle:SetLabel("Enable |cFF8080FFAlternative Power Bar|r")
+    Toggle:SetValue(AlternativePowerBarDB.Enabled)
+    Toggle:SetCallback("OnValueChanged", function(_, _, value) AlternativePowerBarDB.Enabled = value updateCallback() RefreshAlternativePowerBarGUI() end)
+    Toggle:SetRelativeWidth(0.33)
+    AlternativePowerBarSettings:AddChild(Toggle)
+
+    local LayoutContainer = UUFG.CreateInlineGroup(containerParent, "Layout & Positioning")
+
+    local WidthSlider = AG:Create("Slider")
+    WidthSlider:SetLabel("Width")
+    WidthSlider:SetValue(AlternativePowerBarDB.Width)
+    WidthSlider:SetSliderValues(1, 1000, 1)
+    WidthSlider:SetRelativeWidth(0.5)
+    WidthSlider:SetCallback("OnValueChanged", function(_, _, value) AlternativePowerBarDB.Width = value updateCallback() end)
+    LayoutContainer:AddChild(WidthSlider)
+
+    local HeightSlider = AG:Create("Slider")
+    HeightSlider:SetLabel("Height")
+    HeightSlider:SetValue(AlternativePowerBarDB.Height)
+    HeightSlider:SetSliderValues(1, 64, 1)
+    HeightSlider:SetRelativeWidth(0.5)
+    HeightSlider:SetCallback("OnValueChanged", function(_, _, value) AlternativePowerBarDB.Height = value updateCallback() end)
+    LayoutContainer:AddChild(HeightSlider)
+
+    local AnchorFromDropdown = AG:Create("Dropdown")
+    AnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
+    AnchorFromDropdown:SetLabel("Anchor From")
+    AnchorFromDropdown:SetValue(AlternativePowerBarDB.Layout[1])
+    AnchorFromDropdown:SetRelativeWidth(0.5)
+    AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) AlternativePowerBarDB.Layout[1] = value updateCallback() end)
+    LayoutContainer:AddChild(AnchorFromDropdown)
+
+    local AnchorToDropdown = AG:Create("Dropdown")
+    AnchorToDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
+    AnchorToDropdown:SetLabel("Anchor To")
+    AnchorToDropdown:SetValue(AlternativePowerBarDB.Layout[2])
+    AnchorToDropdown:SetRelativeWidth(0.5)
+    AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) AlternativePowerBarDB.Layout[2] = value updateCallback() end)
+    LayoutContainer:AddChild(AnchorToDropdown)
+
+    local XPosSlider = AG:Create("Slider")
+    XPosSlider:SetLabel("X Position")
+    XPosSlider:SetValue(AlternativePowerBarDB.Layout[3])
+    XPosSlider:SetSliderValues(-1000, 1000, 0.1)
+    XPosSlider:SetRelativeWidth(0.5)
+    XPosSlider:SetCallback("OnValueChanged", function(_, _, value) AlternativePowerBarDB.Layout[3] = value updateCallback() end)
+    LayoutContainer:AddChild(XPosSlider)
+
+    local YPosSlider = AG:Create("Slider")
+    YPosSlider:SetLabel("Y Position")
+    YPosSlider:SetValue(AlternativePowerBarDB.Layout[4])
+    YPosSlider:SetSliderValues(-1000, 1000, 0.1)
+    YPosSlider:SetRelativeWidth(0.5)
+    YPosSlider:SetCallback("OnValueChanged", function(_, _, value) AlternativePowerBarDB.Layout[4] = value updateCallback() end)
+    LayoutContainer:AddChild(YPosSlider)
+
+    local ColourContainer = UUFG.CreateInlineGroup(containerParent, "Colours & Toggles")
+
+    local ColourByTypeToggle = AG:Create("CheckBox")
+    ColourByTypeToggle:SetLabel("Colour By Type")
+    ColourByTypeToggle:SetValue(AlternativePowerBarDB.ColourByType)
+    ColourByTypeToggle:SetCallback("OnValueChanged", function(_, _, value) AlternativePowerBarDB.ColourByType = value updateCallback() RefreshAlternativePowerBarGUI() end)
+    ColourByTypeToggle:SetRelativeWidth(0.33)
+    ColourContainer:AddChild(ColourByTypeToggle)
+
+    local ForegroundColourPicker = AG:Create("ColorPicker")
+    ForegroundColourPicker:SetLabel("Foreground Colour")
+    local R, G, B = unpack(AlternativePowerBarDB.Foreground)
+    ForegroundColourPicker:SetColor(R, G, B)
+    ForegroundColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) AlternativePowerBarDB.Foreground = {r, g, b} updateCallback() end)
+    ForegroundColourPicker:SetHasAlpha(false)
+    ForegroundColourPicker:SetRelativeWidth(0.33)
+    ForegroundColourPicker:SetDisabled(AlternativePowerBarDB.ColourByType)
+    ColourContainer:AddChild(ForegroundColourPicker)
+
+    local BackgroundColourPicker = AG:Create("ColorPicker")
+    BackgroundColourPicker:SetLabel("Background Colour")
+    local R2, G2, B2 = unpack(AlternativePowerBarDB.Background)
+    BackgroundColourPicker:SetColor(R2, G2, B2)
+    BackgroundColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) AlternativePowerBarDB.Background = {r, g, b} updateCallback() end)
+    BackgroundColourPicker:SetHasAlpha(false)
+    BackgroundColourPicker:SetRelativeWidth(0.33)
+    ColourContainer:AddChild(BackgroundColourPicker)
+
+    function RefreshAlternativePowerBarGUI()
+        if AlternativePowerBarDB.Enabled then
+            UUFG.DeepDisable(LayoutContainer, false, Toggle)
+            UUFG.DeepDisable(ColourContainer, false, Toggle)
+            if AlternativePowerBarDB.ColourByType then
+                ForegroundColourPicker:SetDisabled(true)
+            else
+                ForegroundColourPicker:SetDisabled(false)
+            end
+        else
+            UUFG.DeepDisable(LayoutContainer, true, Toggle)
+            UUFG.DeepDisable(ColourContainer, true, Toggle)
+        end
+    end
+
+    RefreshAlternativePowerBarGUI()
 end
 
 local function CreatePortraitSettings(containerParent, unit, updateCallback)
@@ -1994,7 +2096,7 @@ local function CreateUnitSettings(containerParent, unit)
     EnableUnitFrameToggle = AG:Create("CheckBox")
     EnableUnitFrameToggle:SetLabel("Enable |cFFFFCC00"..(UnitDBToUnitPrettyName[unit] or unit) .."|r")
     EnableUnitFrameToggle:SetValue(UUF.db.profile.Units[unit].Enabled)
-    EnableUnitFrameToggle:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.Units[unit].Enabled = value if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitFrame(UUF[unit:upper()], unit) end RefreshUnitGUI(containerParent, unit) end)
+    EnableUnitFrameToggle:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.Units[unit].Enabled = value if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitFrame(UUF[unit:upper()], unit) end end)
     EnableUnitFrameToggle:SetFullWidth(true)
     containerParent:AddChild(EnableUnitFrameToggle)
 
@@ -2008,6 +2110,8 @@ local function CreateUnitSettings(containerParent, unit)
             CreateAuraSettings(SubContainer, unit)
         elseif UnitTab == "PowerBar" then
             CreatePowerBarSettings(SubContainer, unit, function() if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitPowerBar(UUF[unit:upper()], unit) end end)
+        elseif UnitTab == "AlternativePowerBar" then
+            CreateAlternativePowerBarSettings(SubContainer, unit, function() if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAlternativePowerBar(UUF[unit:upper()], unit) end end)
         elseif UnitTab == "CastBar" then
             CreateCastBarSettings(SubContainer, unit)
         elseif UnitTab == "Portrait" then
@@ -2019,14 +2123,25 @@ local function CreateUnitSettings(containerParent, unit)
         end
         if UnitTab == "Auras" then EnableAurasTestMode(unit) else DisableAurasTestMode(unit) end
         if UnitTab == "CastBar" then EnableCastBarTestMode(unit) else DisableCastBarTestMode(unit) end
-        RefreshUnitGUI(SubContainer, unit)
         containerParent:DoLayout()
     end
 
     local SubContainerTabGroup = AG:Create("TabGroup")
     SubContainerTabGroup:SetLayout("Flow")
     SubContainerTabGroup:SetFullWidth(true)
-    if unit ~= "targettarget" then
+    if unit == "player" and UUF:RequiresAlternativePowerBar() then
+        SubContainerTabGroup:SetTabs({
+            { text = "Frame", value = "Frame"},
+            { text = "Heal Prediction", value = "HealPrediction"},
+            { text = "Auras", value = "Auras"},
+            { text = "Power Bar", value = "PowerBar"},
+            { text = "Alternative Power Bar", value = "AlternativePowerBar"},
+            { text = "Cast Bar", value = "CastBar"},
+            { text = "Portrait", value = "Portrait"},
+            { text = "Indicators", value = "Indicators"},
+            { text = "Tags", value = "Tags"},
+        })
+    elseif unit ~= "targettarget" then
         SubContainerTabGroup:SetTabs({
             { text = "Frame", value = "Frame"},
             { text = "Heal Prediction", value = "HealPrediction"},
@@ -2051,8 +2166,6 @@ local function CreateUnitSettings(containerParent, unit)
     SubContainerTabGroup:SetCallback("OnGroupSelected", SelectUnitTab)
     SubContainerTabGroup:SelectTab("Frame")
     containerParent:AddChild(SubContainerTabGroup)
-
-    RefreshUnitGUI(containerParent, unit)
 
     containerParent:DoLayout()
 end

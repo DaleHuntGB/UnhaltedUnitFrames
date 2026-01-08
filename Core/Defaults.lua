@@ -99,6 +99,15 @@ local Defaults = {
                     Smooth = true,
                     BackgroundMultiplier = 0.75,
                 },
+                AlternativePowerBar = {
+                    Enabled = true,
+                    Height = 5,
+                    Width = 100,
+                    Foreground = {8/255, 8/255, 8/255},
+                    Background = {34/255, 34/255, 34/255},
+                    ColourByType = true,
+                    Layout = {"LEFT", "BOTTOMLEFT", 3, 1},
+                },
                 CastBar = {
                     Enabled = true,
                     Width = 244,
