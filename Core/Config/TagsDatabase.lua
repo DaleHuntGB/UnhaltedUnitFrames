@@ -17,8 +17,9 @@ local Tags = {
 
 UUF.SEPARATOR_TAGS = {
 {
-    ["||"] = "|",
-    ["-"] = "-",
+    ["||"] = "Pipe",
+    ["-"] = "Dash",
+    ["/"] = "Slash",
     [" "] = "Space",
     ["[]"] = "Square Brackets",
     ["()"] = "Rounded Brackets",
@@ -26,6 +27,7 @@ UUF.SEPARATOR_TAGS = {
 {
     "||",
     "-",
+    "/",
     "[]",
     "()",
     " "
