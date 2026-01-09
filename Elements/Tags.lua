@@ -52,6 +52,7 @@ end
 
 function UUF:UpdateUnitTags()
     UUF.SEPARATOR = UUF.db.profile.General.Separator or "||"
+    UUF.TOT_SEPARATOR = UUF.db.profile.General.ToTSeparator or "»"
     for unit, _ in pairs(UUF.db.profile.Units) do
         for tagName, _ in pairs(UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Tags) do
             if UUF[unit:upper()] then

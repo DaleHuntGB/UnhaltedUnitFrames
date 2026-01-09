@@ -9,6 +9,7 @@ local Defaults = {
         General = {
             TagUpdateInterval = 0.25,
             Separator = "||",
+            ToTSeparator = "»",
             UIScale = {
                 Enabled = false,
                 Scale = 1.0,
