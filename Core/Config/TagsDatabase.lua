@@ -4,6 +4,7 @@ oUF.Tags = oUF.Tags or {}
 
 local Tags = {
     ["curhp:abbr"] = "UNIT_HEALTH UNIT_MAXHEALTH",
+    ["curhpperhp"] = "UNIT_HEALTH UNIT_MAXHEALTH",
     ["absorbs"] = "UNIT_ABSORB_AMOUNT_CHANGED",
     ["absorbs:abbr"] = "UNIT_ABSORB_AMOUNT_CHANGED",
 
@@ -18,12 +19,16 @@ UUF.SEPARATOR_TAGS = {
 {
     ["||"] = "|",
     ["-"] = "-",
-    ["Space"] = "Space"
+    [" "] = "Space",
+    ["[]"] = "Square Brackets",
+    ["()"] = "Rounded Brackets",
 },
 {
     "||",
     "-",
-    "Space"
+    "[]",
+    "()",
+    " "
 }
 }
 
@@ -75,7 +80,34 @@ oUF.Tags.Methods["curhpperhp"] = function(unit)
     if unitStatus then
         return unitStatus
     else
-        return string.format("%s%s%s%%", AbbreviateLargeNumbers(unitHealth), UUF.SEPARATOR, unitHealthPercent)
+        if UUF.SEPARATOR == "[]" then
+            return string.format("%s [%s%%]", unitHealth, unitHealthPercent)
+        elseif UUF.SEPARATOR == "()" then
+            return string.format("%s (%s%%)", unitHealth, unitHealthPercent)
+        elseif UUF.SEPARATOR == " " then
+            return string.format("%s %s%%", unitHealth, unitHealthPercent)
+        else
+            return string.format("%s %s %s%%", unitHealth, UUF.SEPARATOR, unitHealthPercent)
+        end
+    end
+end
+
+oUF.Tags.Methods["curhpperhp:abbr"] = function(unit)
+    if not unit or not UnitExists(unit) then return "" end
+    local unitHealth = UnitHealth(unit)
+    local unitMaxHealth = UnitHealthMax(unit)
+    local unitHealthPercent = UnitHealthPercent(unit, false, CurveConstants.ScaleTo100)
+    local unitStatus = UnitIsDead(unit) and "Dead" or UnitIsGhost(unit) and "Ghost" or not UnitIsConnected(unit) and "Offline"
+    if unitStatus then
+        return unitStatus
+    else
+        if UUF.SEPARATOR == "[]" then
+            return string.format("%s [%s%%]", AbbreviateLargeNumbers(unitHealth), unitHealthPercent)
+        elseif UUF.SEPARATOR == "()" then
+            return string.format("%s (%s%%)", AbbreviateLargeNumbers(unitHealth), unitHealthPercent)
+        else
+            return string.format("%s %s %s%%", AbbreviateLargeNumbers(unitHealth), UUF.SEPARATOR, unitHealthPercent)
+        end
     end
 end
 
@@ -131,6 +163,8 @@ local HealthTags = {
     {
         ["curhp"] = "Current Health",
         ["curhp:abbr"] = "Current Health with Abbreviation",
+        ["curhpperhp"] = "Current Health and Percentage",
+        ["curhpperhp:abbr"] = "Current Health and Percentage with Abbreviation",
         ["absorbs"] = "Total Absorbs",
         ["absorbs:abbr"] = "Total Absorbs with Abbreviation",
         ["missinghp"] = "Missing Health",
@@ -138,6 +172,8 @@ local HealthTags = {
     {
         "curhp",
         "curhp:abbr",
+        "curhpperhp",
+        "curhpperhp:abbr",
         "absorbs",
         "absorbs:abbr",
         "missinghp",

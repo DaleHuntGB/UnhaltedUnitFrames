@@ -2010,7 +2010,7 @@ local function CreateGlobalSettings(containerParent)
 
     local GlobalContainer = UUFG.CreateInlineGroup(containerParent, "Global Settings")
 
-    UUFG.CreateInformationTag(containerParent, "The settings below will apply to all unit frames within" .. UUF.PRETTY_ADDON_NAME .. ".")
+    UUFG.CreateInformationTag(GlobalContainer, "The settings below will apply to all unit frames within" .. UUF.PRETTY_ADDON_NAME .. ".")
 
     local ToggleContainer = UUFG.CreateInlineGroup(GlobalContainer, "Toggles")
 
