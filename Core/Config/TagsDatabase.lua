@@ -14,6 +14,19 @@ local Tags = {
     ["name:colour"] = "UNIT_CLASSIFICATION_CHANGED UNIT_FACTION UNIT_NAME_UPDATE",
 }
 
+UUF.SEPARATOR_TAGS = {
+{
+    ["||"] = "|",
+    ["-"] = "-",
+    ["Space"] = "Space"
+},
+{
+    "||",
+    "-",
+    "Space"
+}
+}
+
 for tagString, tagEvents in pairs(Tags) do
     oUF.Tags.Events[tagString] = (oUF.Tags.Events[tagString] and (oUF.Tags.Events[tagString] .. " ") or "") .. tagEvents
 end
@@ -50,6 +63,19 @@ oUF.Tags.Methods["curhp:abbr"] = function(unit)
         return unitStatus
     else
         return string.format("%s", AbbreviateLargeNumbers(unitHealth))
+    end
+end
+
+oUF.Tags.Methods["curhpperhp"] = function(unit)
+    if not unit or not UnitExists(unit) then return "" end
+    local unitHealth = UnitHealth(unit)
+    local unitMaxHealth = UnitHealthMax(unit)
+    local unitHealthPercent = UnitHealthPercent(unit, false, CurveConstants.ScaleTo100)
+    local unitStatus = UnitIsDead(unit) and "Dead" or UnitIsGhost(unit) and "Ghost" or not UnitIsConnected(unit) and "Offline"
+    if unitStatus then
+        return unitStatus
+    else
+        return string.format("%s%s%s%%", AbbreviateLargeNumbers(unitHealth), UUF.SEPARATOR, unitHealthPercent)
     end
 end
 

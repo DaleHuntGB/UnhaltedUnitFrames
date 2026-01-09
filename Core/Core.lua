@@ -9,6 +9,7 @@ function UnhaltedUnitFrames:OnInitialize()
         end
     end
     UUF.TagUpdateInterval = UUF.db.profile.General.TagUpdateInterval or 0.25
+    UUF.SEPARATOR = UUF.db.profile.General.Separator or "||"
     if UUF.db.global.UseGlobalProfile then UUF.db:SetProfile(UUF.db.global.GlobalProfile or "Default") end
 end
 

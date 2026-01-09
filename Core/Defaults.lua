@@ -8,6 +8,7 @@ local Defaults = {
     profile = {
         General = {
             TagUpdateInterval = 0.25,
+            Separator = "||",
             UIScale = {
                 Enabled = false,
                 Scale = 1.0,

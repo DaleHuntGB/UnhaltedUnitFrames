@@ -1717,14 +1717,6 @@ end
 
 local function CreateTagsSettings(containerParent, unit)
 
-    local TagIntervalSlider = AG:Create("Slider")
-    TagIntervalSlider:SetLabel("Tag Updates Per Second")
-    TagIntervalSlider:SetValue(UUF.db.profile.General.TagUpdateInterval)
-    TagIntervalSlider:SetSliderValues(0.1, 5, 0.1)
-    TagIntervalSlider:SetRelativeWidth(1)
-    TagIntervalSlider:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.General.TagUpdateInterval = value UUF.TagUpdateInterval = value UUF:UpdateUnitTags() end)
-    containerParent:AddChild(TagIntervalSlider)
-
     local function SelectTagTab(TagContainer, _, TagTab)
         TagContainer:ReleaseChildren()
         CreateTagSetting(TagContainer, unit, TagTab)
@@ -2015,11 +2007,10 @@ local function CreateAuraSettings(containerParent, unit)
 end
 
 local function CreateGlobalSettings(containerParent)
+
     local GlobalContainer = UUFG.CreateInlineGroup(containerParent, "Global Settings")
 
-    CreateFontSettings(GlobalContainer)
-    CreateTextureSettings(GlobalContainer)
-    CreateRangeSettings(GlobalContainer)
+    UUFG.CreateInformationTag(containerParent, "The settings below will apply to all unit frames within" .. UUF.PRETTY_ADDON_NAME .. ".")
 
     local ToggleContainer = UUFG.CreateInlineGroup(GlobalContainer, "Toggles")
 
@@ -2087,6 +2078,28 @@ local function CreateGlobalSettings(containerParent)
     ApplyTappedColourButton:SetCallback("OnEnter", function() GameTooltip:SetOwner(ApplyTappedColourButton.frame, "ANCHOR_BOTTOM") GameTooltip:ClearLines() DetermineDBStatusPerFrameTooltip("ColourWhenTapped") GameTooltip:Show() end)
     ApplyTappedColourButton:SetCallback("OnLeave", function() GameTooltip:Hide() end)
     ToggleContainer:AddChild(ApplyTappedColourButton)
+
+    CreateFontSettings(GlobalContainer)
+    CreateTextureSettings(GlobalContainer)
+    CreateRangeSettings(GlobalContainer)
+
+    local TagContainer = UUFG.CreateInlineGroup(GlobalContainer, "Tag Settings")
+
+    local TagIntervalSlider = AG:Create("Slider")
+    TagIntervalSlider:SetLabel("Tag Updates Per Second")
+    TagIntervalSlider:SetValue(1 / UUF.db.profile.General.TagUpdateInterval)
+    TagIntervalSlider:SetSliderValues(1, 10, 1)
+    TagIntervalSlider:SetRelativeWidth(0.5)
+    TagIntervalSlider:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.General.TagUpdateInterval = 1 / value UUF.TagUpdateInterval = 1 / value UUF:UpdateUnitTags() end)
+    TagContainer:AddChild(TagIntervalSlider)
+
+    local SeparatorDropdown = AG:Create("Dropdown")
+    SeparatorDropdown:SetList(UUF.SEPARATOR_TAGS[1], UUF.SEPARATOR_TAGS[2])
+    SeparatorDropdown:SetLabel("Tag Separator")
+    SeparatorDropdown:SetValue(UUF.db.profile.General.Separator)
+    SeparatorDropdown:SetRelativeWidth(0.5)
+    SeparatorDropdown:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.General.Separator = value UUF:UpdateUnitTags() end)
+    TagContainer:AddChild(SeparatorDropdown)
 
     containerParent:DoLayout()
 end
@@ -2345,8 +2358,13 @@ function UUF:CreateGUI()
             local ScrollFrame = UUFG.CreateScrollFrame(Wrapper)
 
             CreateUIScaleSettings(ScrollFrame)
-            CreateGlobalSettings(ScrollFrame)
             CreateColourSettings(ScrollFrame)
+
+            ScrollFrame:DoLayout()
+        elseif MainTab == "Global" then
+            local ScrollFrame = UUFG.CreateScrollFrame(Wrapper)
+
+            CreateGlobalSettings(ScrollFrame)
 
             ScrollFrame:DoLayout()
         elseif MainTab == "Player" then
@@ -2400,6 +2418,7 @@ function UUF:CreateGUI()
     ContainerTabGroup:SetFullWidth(true)
     ContainerTabGroup:SetTabs({
         { text = "General", value = "General"},
+        { text = "Global", value = "Global"},
         { text = "Player", value = "Player"},
         { text = "Target", value = "Target"},
         { text = "Target of Target", value = "TargetTarget"},
