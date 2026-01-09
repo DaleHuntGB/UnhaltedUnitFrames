@@ -2090,7 +2090,7 @@ local function CreateGlobalSettings(containerParent)
     TagIntervalSlider:SetValue(1 / UUF.db.profile.General.TagUpdateInterval)
     TagIntervalSlider:SetSliderValues(1, 10, 0.5)
     TagIntervalSlider:SetRelativeWidth(0.5)
-    TagIntervalSlider:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.General.TagUpdateInterval = 1 / value UUF.TagUpdateInterval = 1 / value UUF:UpdateUnitTags() end)
+    TagIntervalSlider:SetCallback("OnValueChanged", function(_, _, value) UUF.TAG_UPDATE_INTERVAL = 1 / value UUF.db.profile.General.TagUpdateInterval = 1 / value UUF:SetTagUpdateInterval() UUF:UpdateUnitTags() end)
     TagContainer:AddChild(TagIntervalSlider)
 
     local SeparatorDropdown = AG:Create("Dropdown")

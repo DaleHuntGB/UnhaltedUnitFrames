@@ -154,6 +154,7 @@ function UUF:Init()
     UUF:SetUIScale()
     UUF:ResolveLSM()
     UUF:LoadCustomColours()
+    UUF:SetTagUpdateInterval()
 end
 
 function UUF:CopyTabe(originalTable, destinationTable)
@@ -227,3 +228,7 @@ UUF.LayoutConfig = {
     LEFT        = { anchor="LEFT",      offsetMultiplier=0.5, isCenter=true },
     RIGHT       = { anchor="RIGHT",     offsetMultiplier=0.5, isCenter=true },
 }
+
+function UUF:SetTagUpdateInterval()
+    oUF.Tags:SetEventUpdateTimer(UUF.TAG_UPDATE_INTERVAL)
+end
