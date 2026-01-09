@@ -545,7 +545,7 @@ local function CreateHealPredictionSettings(containerParent, unit, updateCallbac
     local AbsorbSettings = UUFG.CreateInlineGroup(containerParent, "Absorb Settings")
 
     local ShowAbsorbToggle = AG:Create("CheckBox")
-    ShowAbsorbToggle:SetLabel("Show Absorb Amount")
+    ShowAbsorbToggle:SetLabel("Show Absorbs")
     ShowAbsorbToggle:SetValue(HealPredictionDB.Absorbs.Enabled)
     ShowAbsorbToggle:SetCallback("OnValueChanged", function(_, _, value) HealPredictionDB.Absorbs.Enabled = value updateCallback() RefreshHealPredictionSettings() end)
     ShowAbsorbToggle:SetRelativeWidth(0.5)
@@ -577,7 +577,7 @@ local function CreateHealPredictionSettings(containerParent, unit, updateCallbac
 
     local HealAbsorbSettings = UUFG.CreateInlineGroup(containerParent, "Heal Absorb Settings")
     local ShowHealAbsorbToggle = AG:Create("CheckBox")
-    ShowHealAbsorbToggle:SetLabel("Show Heal Absorb Amount")
+    ShowHealAbsorbToggle:SetLabel("Show Heal Absorbs")
     ShowHealAbsorbToggle:SetValue(HealPredictionDB.HealAbsorbs.Enabled)
     ShowHealAbsorbToggle:SetCallback("OnValueChanged", function(_, _, value) HealPredictionDB.HealAbsorbs.Enabled = value updateCallback() RefreshHealPredictionSettings() end)
     ShowHealAbsorbToggle:SetRelativeWidth(0.5)
