@@ -243,8 +243,8 @@ local function Enable(self)
 			element.values:SetHealAbsorbMode(element.healAbsorbMode)
 		end
 
-		if(element.incomingHealBounds) then
-			element.values:SetIncomingHealClampMode(element.incomingHealBounds)
+		if(element.incomingHealClampMode) then
+			element.values:SetIncomingHealClampMode(element.incomingHealClampMode)
 		end
 
 		if(element.incomingHealOverflow) then
