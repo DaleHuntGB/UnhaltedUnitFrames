@@ -1,6 +1,11 @@
 local _, UUF = ...
 local oUF = UUF.oUF
 oUF.Tags = oUF.Tags or {}
+-- AddOn Developers: You can push into this table to add your own custom tags.
+-- Example:
+-- UUFG.Tags.Methods["mytag"] = function(unit) return "myvalue" end
+-- UUFG.Tags.Events["mytag"] = "UNIT_HEALTH"
+UUFG.Tags = oUF.Tags
 
 local Tags = {
     ["curhp:abbr"] = "UNIT_HEALTH UNIT_MAXHEALTH",
