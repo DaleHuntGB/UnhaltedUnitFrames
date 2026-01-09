@@ -146,7 +146,7 @@ local NameTags = {
 local MiscTags = {
     {
         ["classification"] = "Unit Classification",
-        ["shortclassification"] = "Unit Classification with Abbreivation",
+        ["shortclassification"] = "Unit Classification with Abbreviation",
         ["creature"] = "Creature Type",
         ["group"] = "Group Number",
         ["level"] = "Unit Level",
