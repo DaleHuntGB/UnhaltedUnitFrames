@@ -37,13 +37,13 @@ function UUF:CreateUnitCastBar(unitFrame, unit)
     if CastBarDB.Icon.Enabled and CastBarDB.Icon.Position == "LEFT" then
         CastBar.Icon:SetPoint("TOPLEFT", CastBarContainer, "TOPLEFT", 1, -1)
         CastBar:ClearAllPoints()
-        CastBar:SetPoint("TOPLEFT", CastBar.Icon, "TOPRIGHT", 0, 0)
+        CastBar:SetPoint("TOPLEFT", CastBarContainer, "TOPLEFT", CastBarDB.Height - 1, -1)
         CastBar:SetPoint("BOTTOMRIGHT", CastBarContainer, "BOTTOMRIGHT", -1, 1)
     elseif CastBarDB.Icon.Enabled and CastBarDB.Icon.Position == "RIGHT" then
         CastBar.Icon:SetPoint("TOPRIGHT", CastBarContainer, "TOPRIGHT", -1, -1)
         CastBar:ClearAllPoints()
         CastBar:SetPoint("TOPLEFT", CastBarContainer, "TOPLEFT", 1, -1)
-        CastBar:SetPoint("BOTTOMRIGHT", CastBar.Icon, "BOTTOMLEFT", 0, 0)
+        CastBar:SetPoint("BOTTOMRIGHT", CastBarContainer, "BOTTOMRIGHT", -(CastBarDB.Height - 1), 1)
     elseif not CastBarDB.Icon.Enabled then
         CastBar.Icon:Hide()
         CastBar:ClearAllPoints()
@@ -148,16 +148,21 @@ function UUF:UpdateUnitCastBar(unitFrame, unit)
                 unitFrame.Castbar.Icon:SetSize(CastBarDB.Height - 2, CastBarDB.Height - 2)
                 unitFrame.Castbar.Icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
                 unitFrame.Castbar.Icon:ClearAllPoints()
-                if CastBarDB.Icon.Position == "LEFT" then
+                if CastBarDB.Icon.Enabled and CastBarDB.Icon.Position == "LEFT" then
                     unitFrame.Castbar.Icon:SetPoint("TOPLEFT", CastBarContainer, "TOPLEFT", 1, -1)
                     unitFrame.Castbar:ClearAllPoints()
-                    unitFrame.Castbar:SetPoint("TOPLEFT", unitFrame.Castbar.Icon, "TOPRIGHT", 0, 0)
+                    unitFrame.Castbar:SetPoint("TOPLEFT", CastBarContainer, "TOPLEFT", CastBarDB.Height - 1, -1)
                     unitFrame.Castbar:SetPoint("BOTTOMRIGHT", CastBarContainer, "BOTTOMRIGHT", -1, 1)
-                elseif CastBarDB.Icon.Position == "RIGHT" then
+                elseif CastBarDB.Icon.Enabled and CastBarDB.Icon.Position == "RIGHT" then
                     unitFrame.Castbar.Icon:SetPoint("TOPRIGHT", CastBarContainer, "TOPRIGHT", -1, -1)
                     unitFrame.Castbar:ClearAllPoints()
                     unitFrame.Castbar:SetPoint("TOPLEFT", CastBarContainer, "TOPLEFT", 1, -1)
-                    unitFrame.Castbar:SetPoint("BOTTOMRIGHT", unitFrame.Castbar.Icon, "BOTTOMLEFT", 0, 0)
+                    unitFrame.Castbar:SetPoint("BOTTOMRIGHT", CastBarContainer, "BOTTOMRIGHT", -(CastBarDB.Height - 1), 1)
+                elseif not CastBarDB.Icon.Enabled then
+                    unitFrame.Castbar.Icon:Hide()
+                    unitFrame.Castbar:ClearAllPoints()
+                    unitFrame.Castbar:SetPoint("TOPLEFT", CastBarContainer, "TOPLEFT", 1, -1)
+                    unitFrame.Castbar:SetPoint("BOTTOMRIGHT", CastBarContainer, "BOTTOMRIGHT", -1, 1)
                 end
                 unitFrame.Castbar.Icon:Show()
             else
