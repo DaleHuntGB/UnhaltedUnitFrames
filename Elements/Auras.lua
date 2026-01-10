@@ -165,8 +165,8 @@ local function CreateUnitBuffs(unitFrame, unit)
         unitFrame.BuffContainer.num = BuffsDB.Num
         unitFrame.BuffContainer.initialAnchor = BuffsDB.Layout[1]
         unitFrame.BuffContainer.onlyShowPlayer = BuffsDB.OnlyShowPlayer
-        unitFrame.BuffContainer["growth-x"] = BuffsDB.GrowthDirection
-        unitFrame.BuffContainer["growth-y"] = BuffsDB.WrapDirection
+        unitFrame.BuffContainer["growthX"] = BuffsDB.GrowthDirection
+        unitFrame.BuffContainer["growthY"] = BuffsDB.WrapDirection
         unitFrame.BuffContainer.filter = "HELPFUL"
         unitFrame.BuffContainer.PostCreateButton = function(_, button) StyleAuras(_, button, unit, "HELPFUL") end
         unitFrame.BuffContainer.anchoredButtons = 0
@@ -198,8 +198,8 @@ local function CreateUnitDebuffs(unitFrame, unit)
         unitFrame.DebuffContainer.num = DebuffsDB.Num
         unitFrame.DebuffContainer.initialAnchor = DebuffsDB.Layout[1]
         unitFrame.DebuffContainer.onlyShowPlayer = DebuffsDB.OnlyShowPlayer
-        unitFrame.DebuffContainer["growth-x"] = DebuffsDB.GrowthDirection
-        unitFrame.DebuffContainer["growth-y"] = DebuffsDB.WrapDirection
+        unitFrame.DebuffContainer["growthX"] = DebuffsDB.GrowthDirection
+        unitFrame.DebuffContainer["growthY"] = DebuffsDB.WrapDirection
         unitFrame.DebuffContainer.filter = "HARMFUL"
         unitFrame.DebuffContainer.anchoredButtons = 0
         unitFrame.DebuffContainer.createdButtons = 0
@@ -238,8 +238,8 @@ function UUF:UpdateUnitAuras(unitFrame, unit)
         unitFrame.BuffContainer.num = BuffsDB.Num
         unitFrame.BuffContainer.initialAnchor = BuffsDB.Layout[1]
         unitFrame.BuffContainer.onlyShowPlayer = BuffsDB.OnlyShowPlayer
-        unitFrame.BuffContainer["growth-x"] = BuffsDB.GrowthDirection
-        unitFrame.BuffContainer["growth-y"] = BuffsDB.WrapDirection
+        unitFrame.BuffContainer["growthX"] = BuffsDB.GrowthDirection
+        unitFrame.BuffContainer["growthY"] = BuffsDB.WrapDirection
         unitFrame.BuffContainer.filter = "HELPFUL"
         unitFrame.BuffContainer.createdButtons = unitFrame.Buffs.createdButtons or 0
         unitFrame.BuffContainer.anchoredButtons = unitFrame.Buffs.anchoredButtons or 0
@@ -269,8 +269,8 @@ function UUF:UpdateUnitAuras(unitFrame, unit)
         unitFrame.DebuffContainer.num = DebuffsDB.Num
         unitFrame.DebuffContainer.initialAnchor = DebuffsDB.Layout[1]
         unitFrame.DebuffContainer.onlyShowPlayer = DebuffsDB.OnlyShowPlayer
-        unitFrame.DebuffContainer["growth-x"] = DebuffsDB.GrowthDirection
-        unitFrame.DebuffContainer["growth-y"] = DebuffsDB.WrapDirection
+        unitFrame.DebuffContainer["growthX"] = DebuffsDB.GrowthDirection
+        unitFrame.DebuffContainer["growthY"] = DebuffsDB.WrapDirection
         unitFrame.DebuffContainer.filter = "HARMFUL"
         unitFrame.DebuffContainer.createdButtons = unitFrame.Debuffs.createdButtons or 0
         unitFrame.DebuffContainer.anchoredButtons = unitFrame.Debuffs.anchoredButtons or 0
