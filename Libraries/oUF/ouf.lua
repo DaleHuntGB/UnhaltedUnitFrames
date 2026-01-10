@@ -1,6 +1,6 @@
 local parent, ns = ...
 local global = C_AddOns.GetAddOnMetadata(parent, 'X-oUF')
-local _VERSION = '1a80842'
+local _VERSION = '7e2f913'
 if(_VERSION:find('project%-version')) then
 	_VERSION = 'devel'
 end
@@ -885,6 +885,7 @@ do
 				nameplate.unitFrame = CreateFrame('Button', self.prefix .. nameplate:GetName(), nameplate, 'PingableUnitFrameTemplate')
 				nameplate.unitFrame:EnableMouse(false)
 				nameplate.unitFrame.isNamePlate = true
+				nameplate.unitFrame:SetAllPoints()
 
 				Private.UpdateUnits(nameplate.unitFrame, unit)
 
