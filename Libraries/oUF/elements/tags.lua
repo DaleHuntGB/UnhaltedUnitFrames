@@ -114,12 +114,10 @@ local _PATTERN = '%[..-%]+'
 
 local _ENV = {
 	Hex = function(r, g, b)
-		if(type(r) == 'table') then
-			if(r.r) then
-				r, g, b = r.r, r.g, r.b
-			else
-				r, g, b = unpack(r)
-			end
+		if(not r or (issecretvalue(r) or (r.r and issecretvalue(r.r)))) then
+			return '|cffffffff'
+		elseif(type(r) == 'table') then
+			return '|c' .. C_ColorUtil.GenerateTextColorCode(r)
 		end
 		return string.format('|cff%02x%02x%02x', r * 255, g * 255, b * 255)
 	end,
@@ -204,7 +202,7 @@ local tagStrings = {
 	end]],
 
 	['difficulty'] = [[function(u)
-		if UnitCanAttack('player', u) then
+		if(UnitCanAttack('player', u)) then
 			local l = UnitEffectiveLevel(u)
 			return Hex(GetCreatureDifficultyColor((l > 0) and l or 999))
 		end
@@ -285,7 +283,7 @@ local tagStrings = {
 	end]],
 
 	['perpp'] = [[function(u)
-		return string.format('%d', UnitPowerPercent(u, true, CurveConstants.ScaleTo100))
+		return string.format('%d', UnitPowerPercent(u, nil, true, CurveConstants.ScaleTo100))
 	end]],
 
 	['plus'] = [[function(u)
@@ -297,9 +295,9 @@ local tagStrings = {
 
 	['powercolor'] = [[function(u)
 		local pType, pToken, altR, altG, altB = UnitPowerType(u)
-		local t = _COLORS.power[pToken]
+		local color = _COLORS.power[pToken]
 
-		if(not t) then
+		if(not color) then
 			if(altR) then
 				if(altR > 1 or altG > 1 or altB > 1) then
 					return Hex(altR / 255, altG / 255, altB / 255)
@@ -307,11 +305,11 @@ local tagStrings = {
 					return Hex(altR, altG, altB)
 				end
 			else
-				return Hex(_COLORS.power[pType] or _COLORS.power.MANA)
+				color =_COLORS.power[pType] or _COLORS.power.MANA
 			end
 		end
 
-		return Hex(t)
+		return color:GenerateHexColorMarkup()
 	end]],
 
 	['pvp'] = [[function(u)
@@ -323,14 +321,14 @@ local tagStrings = {
 	['raidcolor'] = [[function(u)
 		local _, class = UnitClass(u)
 		if(class) then
-			return Hex(_COLORS.class[class])
+			return _COLORS.class[class]:GenerateHexColorMarkup()
 		else
 			local id = u:match('arena(%d)$')
 			if(id) then
 				local specID = GetArenaOpponentSpec(tonumber(id))
 				if(specID and specID > 0) then
 					_, _, _, _, _, class = GetSpecializationInfoByID(specID)
-					return Hex(_COLORS.class[class])
+					return _COLORS.class[class]:GenerateHexColorMarkup()
 				end
 			end
 		end
@@ -440,7 +438,7 @@ local tagStrings = {
 	end]],
 
 	['threatcolor'] = [[function(u)
-		return Hex(GetThreatStatusColor(UnitThreatSituation(u) or 0))
+		return _COLORS.threat[UnitThreatSituation(u) or 0]:GenerateHexColorMarkup()
 	end]],
 }
 

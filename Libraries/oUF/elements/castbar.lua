@@ -25,6 +25,7 @@ A default texture will be applied to the StatusBar and Texture widgets if they d
 .timeToHold      - Indicates for how many seconds the castbar should be visible after a _FAILED or _INTERRUPTED
                    event. Defaults to 0 (number)
 .hideTradeSkills - Makes the element ignore casts related to crafting professions (boolean)
+.smoothing       - Which status bar smoothing method to use, defaults to `Enum.StatusBarInterpolation.Immediate` (number)
 
 ## Attributes
 
@@ -479,23 +480,27 @@ end
 local function onUpdate(self, elapsed)
 	if(self.casting or self.channeling or self.empowering) then
 		if(self.Time) then
-			local duration = self:GetTimerDuration():GetRemainingDuration()
-			if(self.delay ~= 0) then
-				local isCasting = self.casting or self.empowering
-				if(self.CustomDelayText) then
-					self:CustomDelayText(duration)
+			local durationObject = self:GetTimerDuration() -- can be nil
+			if durationObject then
+				local duration = durationObject:GetRemainingDuration()
+				if(self.delay ~= 0) then
+					local isCasting = self.casting or self.empowering
+					if(self.CustomDelayText) then
+						self:CustomDelayText(duration)
+					else
+						self.Time:SetFormattedText('%.1f|cffff0000%s%.2f|r', duration, isCasting and '+' or '-', self.delay)
+					end
 				else
-					self.Time:SetFormattedText('%.1f|cffff0000%s%.2f|r', duration, isCasting and '+' or '-', self.delay)
-				end
-			else
-				if(self.CustomTimeText) then
-					self:CustomTimeText(duration)
-				else
-					self.Time:SetFormattedText('%.1f', duration)
+					if(self.CustomTimeText) then
+						self:CustomTimeText(duration)
+					else
+						self.Time:SetFormattedText('%.1f', duration)
+					end
 				end
 			end
 		end
 
+		-- ISSUE: we have no way to get this information any more, Blizzard is aware
 		-- --[[ Callback: Castbar:PostUpdateStage(stage)
 		-- Called after the current stage changes.
 
