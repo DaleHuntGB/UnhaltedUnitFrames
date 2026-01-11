@@ -1,6 +1,6 @@
 local parent, ns = ...
 local global = C_AddOns.GetAddOnMetadata(parent, 'X-oUF')
-local _VERSION = '7e2f913'
+local _VERSION = 'e5895e1'
 if(_VERSION:find('project%-version')) then
 	_VERSION = 'devel'
 end

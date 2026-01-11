@@ -24,8 +24,6 @@ The following options are listed by priority. The first check that returns true 
                     (boolean)
 .colorPowerSmooth - Use color curve from `self.colors.power[token]` to color the bar with a smooth gradient based on the
                     player's current power percentage. Requires `.colorPower` to be enabled (boolean)
-.colorClass       - Use `self.colors.class[class]` to color the bar based on unit class. `class` is defined by the
-                    second return of [UnitClass](https://warcraft.wiki.gg/wiki/API_UnitClass) (boolean)
 
 ## Examples
 
@@ -43,7 +41,7 @@ The following options are listed by priority. The first check that returns true 
 local _, ns = ...
 local oUF = ns.oUF
 
-local _, playerClass = UnitClass('player')
+local playerClass = UnitClassBase('player')
 
 -- sourced from Blizzard_UnitFrame/AlternatePowerBar.lua
 local ALT_POWER_BAR_PAIR_DISPLAY_INFO = _G.ALT_POWER_BAR_PAIR_DISPLAY_INFO
@@ -62,8 +60,6 @@ local function UpdateColor(self, event, unit, powerType)
 		if(element.colorPowerSmooth and color and color:GetCurve()) then
 			color = UnitPowerPercent(unit, true, color:GetCurve())
 		end
-	elseif(element.colorClass) then
-		color = self.colors.class[playerClass]
 	end
 
 	if(color) then
