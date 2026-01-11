@@ -10,6 +10,7 @@ local UnitDBToUnitPrettyName = {
     target = "Target",
     targettarget = "Target of Target",
     focus = "Focus",
+    focustarget = "Focus Target",
     pet = "Pet",
     boss = "Boss",
 }
@@ -1600,7 +1601,7 @@ local function CreateIndicatorSettings(containerParent, unit)
             { text = "Mouseover", value = "Mouseover" },
             { text = "Target Indicator", value = "TargetIndicator" },
         })
-    elseif unit == "targettarget" or unit == "focus" or unit == "pet" or unit == "boss" then
+    elseif unit == "targettarget" or unit == "focus" or unit == "focustarget" or unit == "pet" or unit == "boss" then
         IndicatorContainerTabGroup:SetTabs({
             { text = "Raid Target Marker", value = "RaidTargetMarker" },
             { text = "Mouseover", value = "Mouseover" },
@@ -2164,7 +2165,7 @@ local function CreateUnitSettings(containerParent, unit)
             { text = "Indicators", value = "Indicators"},
             { text = "Tags", value = "Tags"},
         })
-    elseif unit ~= "targettarget" then
+    elseif unit ~= "targettarget" and unit ~= "focustarget" then
         SubContainerTabGroup:SetTabs({
             { text = "Frame", value = "Frame"},
             { text = "Heal Prediction", value = "HealPrediction"},
@@ -2407,6 +2408,12 @@ function UUF:CreateGUI()
             CreateUnitSettings(ScrollFrame, "focus")
 
             ScrollFrame:DoLayout()
+        elseif MainTab == "focustarget" then
+            local ScrollFrame = UUFG.CreateScrollFrame(Wrapper)
+
+            CreateUnitSettings(ScrollFrame, "focustarget")
+
+            ScrollFrame:DoLayout()
         elseif MainTab == "Boss" then
             local ScrollFrame = UUFG.CreateScrollFrame(Wrapper)
 
@@ -2434,6 +2441,7 @@ function UUF:CreateGUI()
         { text = "Target of Target", value = "TargetTarget"},
         { text = "Pet", value = "Pet"},
         { text = "Focus", value = "Focus"},
+        { text = "Focus Target", value = "focustarget"},
         { text = "Boss", value = "Boss"},
         { text = "Tags", value = "Tags"},
         { text = "Profiles", value = "Profiles"},

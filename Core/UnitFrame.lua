@@ -10,7 +10,7 @@ end
 function UUF:CreateUnitFrame(unitFrame, unit)
     if not unit or not unitFrame then return end
     UUF:CreateUnitContainer(unitFrame, unit)
-    if unit ~= "targettarget" then UUF:CreateUnitCastBar(unitFrame, unit) end
+    if unit ~= "targettarget" and unit ~= "focustarget" then UUF:CreateUnitCastBar(unitFrame, unit) end
     UUF:CreateUnitHealthBar(unitFrame, unit)
     UUF:CreateUnitHealPrediction(unitFrame, unit)
     UUF:CreateUnitPortrait(unitFrame, unit)
@@ -69,7 +69,7 @@ function UUF:SpawnUnitFrame(unit)
         local parentFrame = UUF.db.profile.Units[unit].HealthBar.AnchorToCooldownViewer and _G["UUF_CDMAnchor"] or UIParent
         UUF[unit:upper()]:SetPoint(FrameDB.Layout[1], parentFrame, FrameDB.Layout[2], FrameDB.Layout[3], FrameDB.Layout[4])
         UUF[unit:upper()]:SetSize(FrameDB.Width, FrameDB.Height)
-    elseif unit == "targettarget" or unit == "focus" or unit == "pet" then
+    elseif unit == "targettarget" or unit == "focus" or unit == "focustarget" or unit == "pet" then
         local parentFrame = _G[UUF.db.profile.Units[unit].Frame.AnchorParent] or UIParent
         UUF[unit:upper()]:SetPoint(FrameDB.Layout[1], parentFrame, FrameDB.Layout[2], FrameDB.Layout[3], FrameDB.Layout[4])
         UUF[unit:upper()]:SetSize(FrameDB.Width, FrameDB.Height)
@@ -93,7 +93,7 @@ end
 
 function UUF:UpdateUnitFrame(unitFrame, unit)
     local UnitDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)]
-    if unit ~= "targettarget" then UUF:UpdateUnitCastBar(unitFrame, unit) end
+    if unit ~= "targettarget" and unit ~= "focustarget" then UUF:UpdateUnitCastBar(unitFrame, unit) end
     UUF:UpdateUnitHealthBar(unitFrame, unit)
     UUF:UpdateUnitHealPrediction(unitFrame, unit)
     UUF:UpdateUnitPortrait(unitFrame, unit)
