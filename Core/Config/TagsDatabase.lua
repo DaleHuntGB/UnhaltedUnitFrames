@@ -103,13 +103,13 @@ oUF.Tags.Methods["curhpperhp"] = function(unit)
         return unitStatus
     else
         if UUF.SEPARATOR == "[]" then
-            return string.format("%s [%s%%]", unitHealth, unitHealthPercent)
+            return string.format("%s [%.0f%%]", unitHealth, unitHealthPercent)
         elseif UUF.SEPARATOR == "()" then
-            return string.format("%s (%s%%)", unitHealth, unitHealthPercent)
+            return string.format("%s (%.0f%%)", unitHealth, unitHealthPercent)
         elseif UUF.SEPARATOR == " " then
-            return string.format("%s %s%%", unitHealth, unitHealthPercent)
+            return string.format("%s %.0f%%", unitHealth, unitHealthPercent)
         else
-            return string.format("%s %s %s%%", unitHealth, UUF.SEPARATOR, unitHealthPercent)
+            return string.format("%s %s %.0f%%", unitHealth, UUF.SEPARATOR, unitHealthPercent)
         end
     end
 end
@@ -124,11 +124,13 @@ oUF.Tags.Methods["curhpperhp:abbr"] = function(unit)
         return unitStatus
     else
         if UUF.SEPARATOR == "[]" then
-            return string.format("%s [%s%%]", AbbreviateLargeNumbers(unitHealth), unitHealthPercent)
+            return string.format("%s [%.0f%%]", AbbreviateLargeNumbers(unitHealth), unitHealthPercent)
         elseif UUF.SEPARATOR == "()" then
-            return string.format("%s (%s%%)", AbbreviateLargeNumbers(unitHealth), unitHealthPercent)
+            return string.format("%s (%.0f%%)", AbbreviateLargeNumbers(unitHealth), unitHealthPercent)
+        elseif UUF.SEPARATOR == " " then
+            return string.format("%s %.0f%%", AbbreviateLargeNumbers(unitHealth), unitHealthPercent)
         else
-            return string.format("%s %s %s%%", AbbreviateLargeNumbers(unitHealth), UUF.SEPARATOR, unitHealthPercent)
+            return string.format("%s %s %.0f%%", AbbreviateLargeNumbers(unitHealth), UUF.SEPARATOR, unitHealthPercent)
         end
     end
 end
