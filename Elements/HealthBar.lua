@@ -61,7 +61,7 @@ function UUF:UpdateUnitHealthBar(unitFrame, unit)
             local parentFrame = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].HealthBar.AnchorToCooldownViewer and _G["UUF_CDMAnchor"] or UIParent
             UUF[unit:upper()]:SetPoint(FrameDB.Layout[1], parentFrame, FrameDB.Layout[2], FrameDB.Layout[3], FrameDB.Layout[4])
             UUF[unit:upper()]:SetSize(FrameDB.Width, FrameDB.Height)
-        elseif unit == "targettarget" or unit == "focus" or unit == "pet" then
+        elseif unit == "targettarget" or unit == "focus" or unit == "focustarget" or unit == "pet" then
             local parentFrame = _G[UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Frame.AnchorParent] or UIParent
             UUF[unit:upper()]:SetPoint(FrameDB.Layout[1], parentFrame, FrameDB.Layout[2], FrameDB.Layout[3], FrameDB.Layout[4])
             UUF[unit:upper()]:SetSize(FrameDB.Width, FrameDB.Height)

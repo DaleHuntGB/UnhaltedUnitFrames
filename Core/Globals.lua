@@ -115,7 +115,6 @@ end
 
 function UUF:LoadCustomColours()
     local General = UUF.db.profile.General
-    local oUF = UUF.oUF
 
     local PowerTypesToString = {
         [0] = "MANA",
