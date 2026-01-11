@@ -149,12 +149,22 @@ function UUF:LoadCustomColours()
     end
 end
 
+local function AddAnchorsToBCDM()
+    if not C_AddOns.IsAddOnLoaded("BetterCooldownManager") then return end
+    local UUF_Anchors = {
+        ["UUF_Player"] = "|cFF8080FFUnhalted|rUnitFrames: Player Frame",
+        ["UUF_Target"] = "|cFF8080FFUnhalted|rUnitFrames: Target Frame",
+    }
+    BCDMG.AddAnchors("UnhaltedUnitFrames", {"Utility", "Custom"}, UUF_Anchors)
+end
+
 function UUF:Init()
     SetupSlashCommands()
     UUF:SetUIScale()
     UUF:ResolveLSM()
     UUF:LoadCustomColours()
     UUF:SetTagUpdateInterval()
+    AddAnchorsToBCDM()
 end
 
 function UUF:CopyTabe(originalTable, destinationTable)
