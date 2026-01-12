@@ -46,7 +46,14 @@ function UUF:CreateUnitHealthBar(unitFrame, unit)
             unitHP:SetValue(UnitHealthMissing(unitFrame.unit, true))
         end
 
-        unitFrame.HealthBackground:SetReverseFill(true)
+        if HealthBarDB.Inverse then
+            unitFrame.Health:SetReverseFill(true)
+            unitFrame.HealthBackground:SetReverseFill(false)
+        else
+            unitFrame.Health:SetReverseFill(false)
+            unitFrame.HealthBackground:SetReverseFill(true)
+        end
+
     end
 end
 
@@ -91,6 +98,14 @@ function UUF:UpdateUnitHealthBar(unitFrame, unit)
         unitFrame.HealthBackground:SetSize(FrameDB.Width - 2, FrameDB.Height - 2)
         unitFrame.HealthBackground:SetStatusBarColor(HealthBarDB.Background[1], HealthBarDB.Background[2], HealthBarDB.Background[3], HealthBarDB.BackgroundOpacity)
         unitFrame.HealthBackground:SetStatusBarTexture(UUF.Media.Background)
+    end
+
+    if HealthBarDB.Inverse then
+        unitFrame.Health:SetReverseFill(true)
+        unitFrame.HealthBackground:SetReverseFill(false)
+    else
+        unitFrame.Health:SetReverseFill(false)
+        unitFrame.HealthBackground:SetReverseFill(true)
     end
     unitFrame.Health:ForceUpdate()
 end

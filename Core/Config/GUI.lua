@@ -446,22 +446,29 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
     ColourByClassToggle:SetLabel("Colour By Class")
     ColourByClassToggle:SetValue(HealthBarDB.ColourByClass)
     ColourByClassToggle:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.ColourByClass = value UUFGUI.FrameFGColourPicker:SetDisabled(HealthBarDB.ColourByClass or HealthBarDB.ColourByReaction) updateCallback() end)
-    ColourByClassToggle:SetRelativeWidth((unit == "player" or unit == "target") and 0.25 or 0.33)
+    ColourByClassToggle:SetRelativeWidth((unit == "player" or unit == "target") and 0.33 or 0.25)
     ColourContainer:AddChild(ColourByClassToggle)
 
     local ColourByReactionToggle = AG:Create("CheckBox")
     ColourByReactionToggle:SetLabel("Colour By Reaction")
     ColourByReactionToggle:SetValue(HealthBarDB.ColourByReaction)
     ColourByReactionToggle:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.ColourByReaction = value UUFGUI.FrameFGColourPicker:SetDisabled(HealthBarDB.ColourByClass or HealthBarDB.ColourByReaction) updateCallback() end)
-    ColourByReactionToggle:SetRelativeWidth((unit == "player" or unit == "target") and 0.25 or 0.33)
+    ColourByReactionToggle:SetRelativeWidth((unit == "player" or unit == "target") and 0.33 or 0.25)
     ColourContainer:AddChild(ColourByReactionToggle)
 
     local ColourWhenTappedToggle = AG:Create("CheckBox")
     ColourWhenTappedToggle:SetLabel("Colour When Tapped")
     ColourWhenTappedToggle:SetValue(HealthBarDB.ColourWhenTapped)
     ColourWhenTappedToggle:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.ColourWhenTapped = value updateCallback() end)
-    ColourWhenTappedToggle:SetRelativeWidth((unit == "player" or unit == "target") and 0.25 or 0.33)
+    ColourWhenTappedToggle:SetRelativeWidth((unit == "player" or unit == "target") and 0.33 or 0.25)
     ColourContainer:AddChild(ColourWhenTappedToggle)
+
+    local InverseGrowthDirectionToggle = AG:Create("CheckBox")
+    InverseGrowthDirectionToggle:SetLabel("Inverse Growth Direction")
+    InverseGrowthDirectionToggle:SetValue(HealthBarDB.Inverse)
+    InverseGrowthDirectionToggle:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.Inverse = value updateCallback() end)
+    InverseGrowthDirectionToggle:SetRelativeWidth((unit == "player" or unit == "target") and 0.5 or 0.25)
+    ColourContainer:AddChild(InverseGrowthDirectionToggle)
 
     if unit == "player" or unit == "target" then
         local AnchorToCooldownViewerToggle = AG:Create("CheckBox")
@@ -504,7 +511,7 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
         end)
         AnchorToCooldownViewerToggle:SetCallback("OnEnter", function() GameTooltip:SetOwner(AnchorToCooldownViewerToggle.frame, "ANCHOR_CURSOR") GameTooltip:AddLine("Anchor To |cFF8080FFEssential|r Cooldown Viewer. Toggling this will overwrite existing |cFF8080FFLayout|r Settings.", 1, 1, 1, false) GameTooltip:Show() end)
         AnchorToCooldownViewerToggle:SetCallback("OnLeave", function() GameTooltip:Hide() end)
-        AnchorToCooldownViewerToggle:SetRelativeWidth(0.25)
+        AnchorToCooldownViewerToggle:SetRelativeWidth(0.5)
         ColourContainer:AddChild(AnchorToCooldownViewerToggle)
     end
 
