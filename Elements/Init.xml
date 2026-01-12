@@ -8,7 +8,7 @@
 	<Script file="Portrait.lua"/>
 	<Script file="Positioner.lua"/>
 	<Script file="PowerBar.lua"/>
-	<Script file="Range.lua"/>
+	<!-- <Script file="Range.lua"/> -->
 	<Script file="Tags.lua"/>
 
 	<Script file="Indicators/LeaderAssistant.lua"/>

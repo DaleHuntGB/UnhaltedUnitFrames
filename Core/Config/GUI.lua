@@ -2082,7 +2082,7 @@ local function CreateGlobalSettings(containerParent)
 
     CreateFontSettings(GlobalContainer)
     CreateTextureSettings(GlobalContainer)
-    CreateRangeSettings(GlobalContainer)
+    -- CreateRangeSettings(GlobalContainer)
 
     local TagContainer = UUFG.CreateInlineGroup(GlobalContainer, "Tag Settings")
 
