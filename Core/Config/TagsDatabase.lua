@@ -20,6 +20,11 @@ local Tags = {
     ["name:colour"] = "UNIT_CLASSIFICATION_CHANGED UNIT_FACTION UNIT_NAME_UPDATE",
     ["name:tot"] = "UNIT_NAME_UPDATE",
     ["name:tot:colour"] = "UNIT_NAME_UPDATE",
+    ["name:tot:clean"] = "UNIT_NAME_UPDATE",
+    ["name:tot:colour:clean"] = "UNIT_NAME_UPDATE",
+    ["name:short:10"] = "UNIT_NAME_UPDATE",
+    ["name:short:5"] = "UNIT_NAME_UPDATE",
+    ["name:short:3"] = "UNIT_NAME_UPDATE",
 }
 
 UUF.SEPARATOR_TAGS = {
@@ -217,6 +222,21 @@ oUF.Tags.Methods["name:tot:colour:clean"] = function(unit)
     return string.format("|cff%02x%02x%02x%s|r", classColourR * 255, classColourG * 255, classColourB * 255, targetOfTargetName)
 end
 
+oUF.Tags.Methods["name:short:10"] = function(unit)
+    local unitName = UnitName(unit) or ""
+    return string.sub(unitName, 1, 10)
+end
+
+oUF.Tags.Methods["name:short:5"] = function(unit)
+    local unitName = UnitName(unit) or ""
+    return string.sub(unitName, 1, 5)
+end
+
+oUF.Tags.Methods["name:short:3"] = function(unit)
+    local unitName = UnitName(unit) or ""
+    return string.sub(unitName, 1, 3)
+end
+
 local HealthTags = {
     {
         ["curhp"] = "Current Health",
@@ -261,6 +281,9 @@ local NameTags = {
         ["name:tot:colour"] = "Target of Target Name with Colour",
         ["name:tot:clean"] = "Target of Target Name without Arrow Separator",
         ["name:tot:colour:clean"] = "Target of Target Name with Colour without Arrow Separator",
+        ["name:short:10"] = "Unit Name Shortened to 10 Characters",
+        ["name:short:5"] = "Unit Name Shortened to 5 Characters",
+        ["name:short:3"] = "Unit Name Shortened to 3 Characters",
     },
     {
         "name:colour",
@@ -268,6 +291,9 @@ local NameTags = {
         "name:tot:colour",
         "name:tot:clean",
         "name:tot:colour:clean",
+        "name:short:10",
+        "name:short:5",
+        "name:short:3",
     }
 }
 
