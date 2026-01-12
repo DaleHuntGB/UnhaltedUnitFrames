@@ -93,6 +93,12 @@ function UUF:CreateUnitCastBar(unitFrame, unit)
     end
     DurationText:SetJustifyH(UUF:SetJustification(DurationDB.Layout[1]))
 
+    if CastBarDB.Inverse then
+        CastBar:SetReverseFill(true)
+    else
+        CastBar:SetReverseFill(false)
+    end
+
     if CastBarDB.Enabled then
         if not unitFrame:IsElementEnabled("Castbar") then unitFrame:EnableElement("Castbar") end
         unitFrame.Castbar = CastBar
@@ -142,6 +148,12 @@ function UUF:UpdateUnitCastBar(unitFrame, unit)
             if CastBarContainer then CastBarContainer:SetHeight(CastBarDB.Height) end
             unitFrame.Castbar:SetStatusBarTexture(UUF.Media.Foreground)
             unitFrame.Castbar.Background:SetTexture(UUF.Media.Background)
+
+            if CastBarDB.Inverse then
+                unitFrame.Castbar:SetReverseFill(true)
+            else
+                unitFrame.Castbar:SetReverseFill(false)
+            end
 
             if CastBarDB.Icon.Enabled then
                 unitFrame.Castbar.Icon = unitFrame.Castbar.Icon or unitFrame.Castbar:CreateTexture(UUF:FetchFrameName(unit) .. "_CastBarIcon", "ARTWORK")
