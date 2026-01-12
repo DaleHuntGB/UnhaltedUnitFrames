@@ -3,7 +3,7 @@
 ## Author: |cFF8080FFUnhalted|r
 ## Notes: Replacement Unit Frames for Blizzard. Focused on performance, customization & a complete out of the box experience.
 ## SavedVariables: UUFDB
-## Category-enUS: Unit Frames
+## Category-enUS: |cFF8080FFUnhalted|r Development
 ## IconTexture: Interface\AddOns\UnhaltedUnitFrames\Media\Textures\Logo.tga
 ## X-oUF: UnhaltedUnitFrames
 ## X-Curse-Project-ID: 1235670
