@@ -15,6 +15,12 @@ function UUF:CreateUnitPowerBar(unitFrame, unit)
     PowerBar.colorClass = PowerBarDB.ColourByClass
     PowerBar.frequentUpdates = PowerBarDB.Smooth
 
+    if PowerBarDB.Inverse then
+        PowerBar:SetReverseFill(true)
+    else
+        PowerBar:SetReverseFill(false)
+    end
+
     PowerBar.Background = PowerBar:CreateTexture(UUF:FetchFrameName(unit) .. "_PowerBackground", "BACKGROUND")
     PowerBar.Background:SetPoint("BOTTOMLEFT", unitContainer, "BOTTOMLEFT", 1, 1)
     PowerBar.Background:SetSize(FrameDB.Width - 2, PowerBarDB.Height)
@@ -65,6 +71,11 @@ function UUF:UpdateUnitPowerBar(unitFrame, unit)
             unitFrame.Power.colorPower = PowerBarDB.ColourByType
             unitFrame.Power.colorClass = PowerBarDB.ColourByClass
             unitFrame.Power.frequentUpdates = PowerBarDB.Smooth
+            if PowerBarDB.Inverse then
+                unitFrame.Power:SetReverseFill(true)
+            else
+                unitFrame.Power:SetReverseFill(false)
+            end
         end
 
         if unitFrame.Power.Background then

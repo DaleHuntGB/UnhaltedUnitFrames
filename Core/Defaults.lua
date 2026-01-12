@@ -100,6 +100,7 @@ local Defaults = {
                     ColourBackgroundByType = false,
                     ColourByClass = false,
                     Smooth = true,
+                    Inverse = false,
                     BackgroundMultiplier = 0.75,
                 },
                 AlternativePowerBar = {
@@ -290,6 +291,7 @@ local Defaults = {
                     ColourBackgroundByType = false,
                     ColourByClass = false,
                     Smooth = true,
+                    Inverse = false,
                     BackgroundMultiplier = 0.75,
                 },
                 CastBar = {
@@ -469,6 +471,7 @@ local Defaults = {
                     ColourBackgroundByType = false,
                     ColourByClass = false,
                     Smooth = true,
+                    Inverse = false,
                     BackgroundMultiplier = 0.75,
                 },
                 -- CastBar = {
@@ -637,6 +640,7 @@ local Defaults = {
                     ColourBackgroundByType = false,
                     ColourByClass = false,
                     Smooth = true,
+                    Inverse = false,
                     BackgroundMultiplier = 0.75,
                 },
                 CastBar = {
@@ -806,6 +810,7 @@ local Defaults = {
                     ColourBackgroundByType = false,
                     ColourByClass = false,
                     Smooth = true,
+                    Inverse = false,
                     BackgroundMultiplier = 0.75,
                 },
                 -- CastBar = {
@@ -974,6 +979,7 @@ local Defaults = {
                     ColourBackgroundByType = false,
                     ColourByClass = false,
                     Smooth = true,
+                    Inverse = false,
                     BackgroundMultiplier = 0.75,
                 },
                 CastBar = {
@@ -1143,6 +1149,7 @@ local Defaults = {
                     ColourBackgroundByType = false,
                     ColourByClass = false,
                     Smooth = true,
+                    Inverse = false,
                     BackgroundMultiplier = 0.75,
                 },
                 CastBar = {
