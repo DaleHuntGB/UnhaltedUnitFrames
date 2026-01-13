@@ -116,8 +116,17 @@ local function DisableAllTestModes()
     UUF:CreateTestBossFrames()
 end
 
-local function GenerateSupportText()
-    return "Support"
+local function GenerateSupportText(parentFrame)
+    local SupportOptions = {
+        "Support Me on |TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Support\\Ko-Fi.png:13:18|t |cFF8080FFKo-Fi|r!",
+        "Support Me on |TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Support\\Patreon.png:14:14|t |cFF8080FFPatreon|r!",
+        "|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Support\\PayPal.png:20:18|t |cFF8080FFPayPal Donations|r are appreciated!",
+        "Join the |TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Support\\Discord.png:18:18|t |cFF8080FFDiscord|r Community!",
+        "Report Issues / Feedback on |TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Support\\GitHub.png:18:18|t |cFF8080FFGitHub|r!",
+        "Follow Me on |TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Support\\Twitch.png:18:14|t |cFF8080FFTwitch|r!",
+        "|cFF8080FFSupport|r is truly appreciated |TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Emotes\\peepoLove.png:18:18|t " .. "|cFF8080FFDevelopment|r takes time & effort."
+    }
+    parentFrame.statustext:SetText(SupportOptions[math.random(1, #SupportOptions)])
 end
 
 local function CreateUIScaleSettings(containerParent)
@@ -2443,7 +2452,6 @@ function UUF:CreateGUI()
 
     Container = AG:Create("Frame")
     Container:SetTitle(UUF.PRETTY_ADDON_NAME)
-    Container:SetStatusText(GenerateSupportText())
     Container:SetLayout("Fill")
     Container:SetWidth(900)
     Container:SetHeight(600)
@@ -2464,6 +2472,72 @@ function UUF:CreateGUI()
 
             CreateUIScaleSettings(ScrollFrame)
             CreateColourSettings(ScrollFrame)
+
+            local SupportMeContainer = AG:Create("InlineGroup")
+            SupportMeContainer:SetTitle("|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Emotes\\peepoLove.png:18:18|t  How To Support " .. UUF.PRETTY_ADDON_NAME .. " Development")
+            SupportMeContainer:SetLayout("Flow")
+            SupportMeContainer:SetFullWidth(true)
+            ScrollFrame:AddChild(SupportMeContainer)
+
+            local KoFiInteractive = AG:Create("InteractiveLabel")
+            KoFiInteractive:SetText("|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Support\\Ko-Fi.png:16:21|t |cFF8080FFKo-Fi|r")
+            KoFiInteractive:SetFont("Fonts\\FRIZQT__.TTF", 13, "OUTLINE")
+            KoFiInteractive:SetJustifyV("MIDDLE")
+            KoFiInteractive:SetRelativeWidth(0.33)
+            KoFiInteractive:SetCallback("OnClick", function() UUF:OpenURL("Support Me on Ko-Fi", "https://ko-fi.com/unhalted") end)
+            KoFiInteractive:SetCallback("OnEnter", function() KoFiInteractive:SetText("|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Support\\Ko-Fi.png:16:21|t |cFFFFFFFFKo-Fi|r") end)
+            KoFiInteractive:SetCallback("OnLeave", function() KoFiInteractive:SetText("|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Support\\Ko-Fi.png:16:21|t |cFF8080FFKo-Fi|r") end)
+            SupportMeContainer:AddChild(KoFiInteractive)
+
+            local PayPalInteractive = AG:Create("InteractiveLabel")
+            PayPalInteractive:SetText("|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Support\\PayPal.png:23:21|t |cFF8080FFPayPal|r")
+            PayPalInteractive:SetFont("Fonts\\FRIZQT__.TTF", 13, "OUTLINE")
+            PayPalInteractive:SetJustifyV("MIDDLE")
+            PayPalInteractive:SetRelativeWidth(0.33)
+            PayPalInteractive:SetCallback("OnClick", function() UUF:OpenURL("Support Me on PayPal", "https://www.paypal.com/paypalme/dhunt1911") end)
+            PayPalInteractive:SetCallback("OnEnter", function() PayPalInteractive:SetText("|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Support\\PayPal.png:23:21|t |cFFFFFFFFPayPal|r") end)
+            PayPalInteractive:SetCallback("OnLeave", function() PayPalInteractive:SetText("|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Support\\PayPal.png:23:21|t |cFF8080FFPayPal|r") end)
+            SupportMeContainer:AddChild(PayPalInteractive)
+
+            local TwitchInteractive = AG:Create("InteractiveLabel")
+            TwitchInteractive:SetText("|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Support\\Twitch.png:25:21|t |cFF8080FFTwitch|r")
+            TwitchInteractive:SetFont("Fonts\\FRIZQT__.TTF", 13, "OUTLINE")
+            TwitchInteractive:SetJustifyV("MIDDLE")
+            TwitchInteractive:SetRelativeWidth(0.33)
+            TwitchInteractive:SetCallback("OnClick", function() UUF:OpenURL("Support Me on Twitch", "https://www.twitch.tv/unhaltedgb") end)
+            TwitchInteractive:SetCallback("OnEnter", function() TwitchInteractive:SetText("|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Support\\Twitch.png:25:21|t |cFFFFFFFFTwitch|r") end)
+            TwitchInteractive:SetCallback("OnLeave", function() TwitchInteractive:SetText("|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Support\\Twitch.png:25:21|t |cFF8080FFTwitch|r") end)
+            SupportMeContainer:AddChild(TwitchInteractive)
+
+            local DiscordInteractive = AG:Create("InteractiveLabel")
+            DiscordInteractive:SetText("|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Support\\Discord.png:21:21|t |cFF8080FFDiscord|r")
+            DiscordInteractive:SetFont("Fonts\\FRIZQT__.TTF", 13, "OUTLINE")
+            DiscordInteractive:SetJustifyV("MIDDLE")
+            DiscordInteractive:SetRelativeWidth(0.33)
+            DiscordInteractive:SetCallback("OnClick", function() UUF:OpenURL("Support Me on Discord", "https://discord.gg/UZCgWRYvVE") end)
+            DiscordInteractive:SetCallback("OnEnter", function() DiscordInteractive:SetText("|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Support\\Discord.png:21:21|t |cFFFFFFFFDiscord|r") end)
+            DiscordInteractive:SetCallback("OnLeave", function() DiscordInteractive:SetText("|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Support\\Discord.png:21:21|t |cFF8080FFDiscord|r") end)
+            SupportMeContainer:AddChild(DiscordInteractive)
+
+            local PatreonInteractive = AG:Create("InteractiveLabel")
+            PatreonInteractive:SetText("|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Support\\Patreon.png:21:21|t |cFF8080FFPatreon|r")
+            PatreonInteractive:SetFont("Fonts\\FRIZQT__.TTF", 13, "OUTLINE")
+            PatreonInteractive:SetJustifyV("MIDDLE")
+            PatreonInteractive:SetRelativeWidth(0.33)
+            PatreonInteractive:SetCallback("OnClick", function() UUF:OpenURL("Support Me on Patreon", "https://www.patreon.com/unhalted") end)
+            PatreonInteractive:SetCallback("OnEnter", function() PatreonInteractive:SetText("|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Support\\Patreon.png:21:21|t |cFFFFFFFFPatreon|r") end)
+            PatreonInteractive:SetCallback("OnLeave", function() PatreonInteractive:SetText("|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Support\\Patreon.png:21:21|t |cFF8080FFPatreon|r") end)
+            SupportMeContainer:AddChild(PatreonInteractive)
+
+            local GithubInteractive = AG:Create("InteractiveLabel")
+            GithubInteractive:SetText("|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Support\\Github.png:21:21|t |cFF8080FFGithub|r")
+            GithubInteractive:SetFont("Fonts\\FRIZQT__.TTF", 13, "OUTLINE")
+            GithubInteractive:SetJustifyV("MIDDLE")
+            GithubInteractive:SetRelativeWidth(0.33)
+            GithubInteractive:SetCallback("OnClick", function() UUF:OpenURL("Support Me on Github", "https://github.com/dalehuntgb/UnhaltedUnitFrames") end)
+            GithubInteractive:SetCallback("OnEnter", function() GithubInteractive:SetText("|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Support\\Github.png:21:21|t |cFFFFFFFFGithub|r") end)
+            GithubInteractive:SetCallback("OnLeave", function() GithubInteractive:SetText("|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Support\\Github.png:21:21|t |cFF8080FFGithub|r") end)
+            SupportMeContainer:AddChild(GithubInteractive)
 
             ScrollFrame:DoLayout()
         elseif MainTab == "Global" then
@@ -2502,7 +2576,7 @@ function UUF:CreateGUI()
             CreateUnitSettings(ScrollFrame, "focus")
 
             ScrollFrame:DoLayout()
-        elseif MainTab == "focustarget" then
+        elseif MainTab == "FocusTarget" then
             local ScrollFrame = UUFG.CreateScrollFrame(Wrapper)
 
             CreateUnitSettings(ScrollFrame, "focustarget")
@@ -2526,6 +2600,7 @@ function UUF:CreateGUI()
             ScrollFrame:DoLayout()
         end
         if MainTab == "Boss" then EnableBossFramesTestMode() else DisableBossFramesTestMode() end
+        GenerateSupportText(Container)
     end
 
     local ContainerTabGroup = AG:Create("TabGroup")
@@ -2539,7 +2614,7 @@ function UUF:CreateGUI()
         { text = "Target of Target", value = "TargetTarget"},
         { text = "Pet", value = "Pet"},
         { text = "Focus", value = "Focus"},
-        { text = "Focus Target", value = "focustarget"},
+        { text = "Focus Target", value = "FocusTarget"},
         { text = "Boss", value = "Boss"},
         { text = "Tags", value = "Tags"},
         { text = "Profiles", value = "Profiles"},
