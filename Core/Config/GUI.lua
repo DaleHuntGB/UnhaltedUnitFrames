@@ -1121,8 +1121,15 @@ local function CreateAlternativePowerBarSettings(containerParent, unit, updateCa
     Toggle:SetLabel("Enable |cFF8080FFAlternative Power Bar|r")
     Toggle:SetValue(AlternativePowerBarDB.Enabled)
     Toggle:SetCallback("OnValueChanged", function(_, _, value) AlternativePowerBarDB.Enabled = value updateCallback() RefreshAlternativePowerBarGUI() end)
-    Toggle:SetRelativeWidth(0.33)
+    Toggle:SetRelativeWidth(0.5)
     AlternativePowerBarSettings:AddChild(Toggle)
+
+    local InverseGrowthDirectionToggle = AG:Create("CheckBox")
+    InverseGrowthDirectionToggle:SetLabel("Inverse Growth Direction")
+    InverseGrowthDirectionToggle:SetValue(AlternativePowerBarDB.Inverse)
+    InverseGrowthDirectionToggle:SetCallback("OnValueChanged", function(_, _, value) AlternativePowerBarDB.Inverse = value updateCallback() end)
+    InverseGrowthDirectionToggle:SetRelativeWidth(0.5)
+    AlternativePowerBarSettings:AddChild(InverseGrowthDirectionToggle)
 
     local LayoutContainer = UUFG.CreateInlineGroup(containerParent, "Layout & Positioning")
 

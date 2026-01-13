@@ -110,6 +110,7 @@ local Defaults = {
                     Foreground = {8/255, 8/255, 8/255},
                     Background = {34/255, 34/255, 34/255},
                     ColourByType = true,
+                    Inverse = false,
                     Layout = {"LEFT", "BOTTOMLEFT", 3, 1},
                 },
                 CastBar = {

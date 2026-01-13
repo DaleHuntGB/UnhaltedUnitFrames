@@ -43,6 +43,12 @@ function UUF:CreateUnitAlternativePowerBar(unitFrame, unit)
     end
     AlternativePowerBar.unit = unit
 
+    if AlternativePowerBarDB.Inverse then
+        AlternativePowerBar.Status:SetReverseFill(true)
+    else
+        AlternativePowerBar.Status:SetReverseFill(false)
+    end
+
     if AlternativePowerBarDB.Enabled and UUF:RequiresAlternativePowerBar() then
         AlternativePowerBar:Show()
         AlternativePowerBar:RegisterEvent("PLAYER_ENTERING_WORLD")
@@ -80,6 +86,12 @@ function UUF:UpdateUnitAlternativePowerBar(unitFrame, unit)
         if powerColour then AlternativePowerBar.Status:SetStatusBarColor(powerColour[1], powerColour[2], powerColour[3], powerColour[4]) end
     else
         AlternativePowerBar.Status:SetStatusBarColor(AlternativePowerBarDB.Foreground[1], AlternativePowerBarDB.Foreground[2], AlternativePowerBarDB.Foreground[3], AlternativePowerBarDB.Foreground[4])
+    end
+
+    if AlternativePowerBarDB.Inverse then
+        AlternativePowerBar.Status:SetReverseFill(true)
+    else
+        AlternativePowerBar.Status:SetReverseFill(false)
     end
 
     if AlternativePowerBarDB.Enabled and UUF:RequiresAlternativePowerBar() then
