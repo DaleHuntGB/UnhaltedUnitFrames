@@ -1222,6 +1222,7 @@ local function CreateAlternativePowerBarSettings(containerParent, unit, updateCa
             UUFG.DeepDisable(LayoutContainer, true, Toggle)
             UUFG.DeepDisable(ColourContainer, true, Toggle)
         end
+        InverseGrowthDirectionToggle:SetDisabled(not AlternativePowerBarDB.Enabled)
     end
 
     RefreshAlternativePowerBarGUI()
