@@ -241,6 +241,7 @@ local HealthTags = {
     {
         ["curhp"] = "Current Health",
         ["curhp:abbr"] = "Current Health with Abbreviation",
+        ["perhp"] = "Percentage Health",
         ["curhpperhp"] = "Current Health and Percentage",
         ["curhpperhp:abbr"] = "Current Health and Percentage with Abbreviation",
         ["absorbs"] = "Total Absorbs",
@@ -250,6 +251,7 @@ local HealthTags = {
     {
         "curhp",
         "curhp:abbr",
+        "perhp",
         "curhpperhp",
         "curhpperhp:abbr",
         "absorbs",
@@ -261,12 +263,16 @@ local HealthTags = {
 
 local PowerTags = {
     {
+        ["perpp"] = "Percentage Power",
+        ["currpp"] = "Current Power",
         ["curpp:colour"] = "Current Power with Colour",
         ["curpp:abbr"] = "Current Power with Abbreviation",
         ["curpp:abbr:colour"] = "Current Power with Abbreviation and Colour",
         ["missingpp"] = "Missing Power",
     },
     {
+        "perpp",
+        "currpp",
         "curpp:colour",
         "curpp:abbr",
         "curpp:abbr:colour",
@@ -276,6 +282,7 @@ local PowerTags = {
 
 local NameTags = {
     {
+        ["name"] = "Unit Name",
         ["name:colour"] = "Unit Name with Colour",
         ["name:tot"] = "Target of Target Name",
         ["name:tot:colour"] = "Target of Target Name with Colour",
@@ -286,6 +293,7 @@ local NameTags = {
         ["name:short:3"] = "Unit Name Shortened to 3 Characters",
     },
     {
+        "name",
         "name:colour",
         "name:tot",
         "name:tot:colour",
