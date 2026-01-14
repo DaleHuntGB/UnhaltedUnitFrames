@@ -2423,8 +2423,6 @@ local function CreateProfileSettings(containerParent)
     UseDualSpecializationToggle:SetDisabled(UUF.db.global.UseGlobalProfile)
     SpecProfileContainer:AddChild(UseDualSpecializationToggle)
 
-    RefreshProfiles()
-
     for i = 1, numSpecs do
         local _, specName = GetSpecializationInfo(i)
         specProfilesList[i] = AG:Create("Dropdown")
