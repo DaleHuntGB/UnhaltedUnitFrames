@@ -2306,7 +2306,7 @@ local function CreateProfileSettings(containerParent)
     ActiveProfileHeading:SetFullWidth(true)
     ProfileContainer:AddChild(ActiveProfileHeading)
 
-    local function RefreshProfiles()
+    function RefreshUUFProfiles()
         wipe(profileKeys)
         local tmp = {}
         for _, name in ipairs(UUF.db:GetProfiles(tmp, true)) do profileKeys[name] = name end
@@ -2328,32 +2328,47 @@ local function CreateProfileSettings(containerParent)
         ResetProfileButton:SetText("Reset |cFF8080FF" .. UUF.db:GetCurrentProfile() .. "|r Profile")
         local isUsingGlobal = UUF.db.global.UseGlobalProfile
         ActiveProfileHeading:SetText( "Active Profile: |cFFFFFFFF" .. UUF.db:GetCurrentProfile() .. (isUsingGlobal and " (|cFFFFCC00Global|r)" or "") .. "|r" )
+        if UUF.db:IsDualSpecEnabled() then
+            SelectProfileDropdown:SetDisabled(true)
+            CopyFromProfileDropdown:SetDisabled(true)
+            GlobalProfileDropdown:SetDisabled(true)
+            DeleteProfileDropdown:SetDisabled(true)
+            UseGlobalProfileToggle:SetDisabled(true)
+            GlobalProfileDropdown:SetDisabled(true)
+        else
+            SelectProfileDropdown:SetDisabled(isUsingGlobal)
+            CopyFromProfileDropdown:SetDisabled(isUsingGlobal)
+            GlobalProfileDropdown:SetDisabled(not isUsingGlobal)
+            DeleteProfileDropdown:SetDisabled(isUsingGlobal or not next(profilesToDelete))
+            UseGlobalProfileToggle:SetDisabled(false)
+            GlobalProfileDropdown:SetDisabled(not isUsingGlobal)
+        end
     end
 
-    UUFG.RefreshProfiles = RefreshProfiles -- Exposed for Share.lua
+    UUFG.RefreshProfiles = RefreshUUFProfiles -- Exposed for Share.lua
 
     SelectProfileDropdown = AG:Create("Dropdown")
     SelectProfileDropdown:SetLabel("Select...")
     SelectProfileDropdown:SetRelativeWidth(0.25)
-    SelectProfileDropdown:SetCallback("OnValueChanged", function(_, _, value) UUF.db:SetProfile(value) UUF:SetUIScale() UUF:UpdateAllUnitFrames() RefreshProfiles() end)
+    SelectProfileDropdown:SetCallback("OnValueChanged", function(_, _, value) UUF.db:SetProfile(value) UUF:SetUIScale() UUF:UpdateAllUnitFrames() RefreshUUFProfiles() end)
     ProfileContainer:AddChild(SelectProfileDropdown)
 
     CopyFromProfileDropdown = AG:Create("Dropdown")
     CopyFromProfileDropdown:SetLabel("Copy From...")
     CopyFromProfileDropdown:SetRelativeWidth(0.25)
-    CopyFromProfileDropdown:SetCallback("OnValueChanged", function(_, _, value) UUF:CreatePrompt("Copy Profile", "Are you sure you want to copy from |cFF8080FF" .. value .. "|r?\nThis will |cFFFF4040overwrite|r your current profile settings.", function() UUF.db:CopyProfile(value) UUF:SetUIScale() UUF:UpdateAllUnitFrames() RefreshProfiles() end) end)
+    CopyFromProfileDropdown:SetCallback("OnValueChanged", function(_, _, value) UUF:CreatePrompt("Copy Profile", "Are you sure you want to copy from |cFF8080FF" .. value .. "|r?\nThis will |cFFFF4040overwrite|r your current profile settings.", function() UUF.db:CopyProfile(value) UUF:SetUIScale() UUF:UpdateAllUnitFrames() RefreshUUFProfiles() end) end)
     ProfileContainer:AddChild(CopyFromProfileDropdown)
 
     DeleteProfileDropdown = AG:Create("Dropdown")
     DeleteProfileDropdown:SetLabel("Delete...")
     DeleteProfileDropdown:SetRelativeWidth(0.25)
-    DeleteProfileDropdown:SetCallback("OnValueChanged", function(_, _, value) if value ~= UUF.db:GetCurrentProfile() then UUF:CreatePrompt("Delete Profile", "Are you sure you want to delete |cFF8080FF" .. value .. "|r?", function() UUF.db:DeleteProfile(value) UUF:UpdateAllUnitFrames() RefreshProfiles() end) end end)
+    DeleteProfileDropdown:SetCallback("OnValueChanged", function(_, _, value) if value ~= UUF.db:GetCurrentProfile() then UUF:CreatePrompt("Delete Profile", "Are you sure you want to delete |cFF8080FF" .. value .. "|r?", function() UUF.db:DeleteProfile(value) UUF:UpdateAllUnitFrames() RefreshUUFProfiles() end) end end)
     ProfileContainer:AddChild(DeleteProfileDropdown)
 
     ResetProfileButton = AG:Create("Button")
     ResetProfileButton:SetText("Reset |cFF8080FF" .. UUF.db:GetCurrentProfile() .. "|r Profile")
     ResetProfileButton:SetRelativeWidth(0.25)
-    ResetProfileButton:SetCallback("OnClick", function() UUF.db:ResetProfile() UUF:ResolveLSM() UUF:SetUIScale() UUF:UpdateAllUnitFrames() RefreshProfiles() end)
+    ResetProfileButton:SetCallback("OnClick", function() UUF.db:ResetProfile() UUF:ResolveLSM() UUF:SetUIScale() UUF:UpdateAllUnitFrames() RefreshUUFProfiles() end)
     ProfileContainer:AddChild(ResetProfileButton)
 
     local CreateProfileEditBox = AG:Create("EditBox")
@@ -2367,7 +2382,7 @@ local function CreateProfileSettings(containerParent)
     local CreateProfileButton = AG:Create("Button")
     CreateProfileButton:SetText("Create Profile")
     CreateProfileButton:SetRelativeWidth(0.5)
-    CreateProfileButton:SetCallback("OnClick", function() local profileName = strtrim(CreateProfileEditBox:GetText() or "") if profileName ~= "" then UUF.db:SetProfile(profileName) UUF:SetUIScale() UUF:UpdateAllUnitFrames() RefreshProfiles() CreateProfileEditBox:SetText("") end end)
+    CreateProfileButton:SetCallback("OnClick", function() local profileName = strtrim(CreateProfileEditBox:GetText() or "") if profileName ~= "" then UUF.db:SetProfile(profileName) UUF:SetUIScale() UUF:UpdateAllUnitFrames() RefreshUUFProfiles() CreateProfileEditBox:SetText("") end end)
     ProfileContainer:AddChild(CreateProfileButton)
 
     local GlobalProfileHeading = AG:Create("Heading")
@@ -2381,19 +2396,45 @@ local function CreateProfileSettings(containerParent)
     UseGlobalProfileToggle:SetLabel("Use Global Profile Settings")
     UseGlobalProfileToggle:SetValue(UUF.db.global.UseGlobalProfile)
     UseGlobalProfileToggle:SetRelativeWidth(0.5)
-    UseGlobalProfileToggle:SetCallback("OnValueChanged", function(_, _, value) RefreshProfiles() UUF.db.global.UseGlobalProfile = value if value and UUF.db.global.GlobalProfile and UUF.db.global.GlobalProfile ~= "" then UUF.db:SetProfile(UUF.db.global.GlobalProfile) UUF:SetUIScale() end GlobalProfileDropdown:SetDisabled(not value) for _, child in ipairs(ProfileContainer.children) do if child ~= UseGlobalProfileToggle and child ~= GlobalProfileDropdown then UUFG.DeepDisable(child, value) end end UUF:UpdateAllUnitFrames() RefreshProfiles() end)
+    UseGlobalProfileToggle:SetCallback("OnValueChanged", function(_, _, value) RefreshUUFProfiles() UUF.db.global.UseGlobalProfile = value if value and UUF.db.global.GlobalProfile and UUF.db.global.GlobalProfile ~= "" then UUF.db:SetProfile(UUF.db.global.GlobalProfile) UUF:SetUIScale() end GlobalProfileDropdown:SetDisabled(not value) for _, child in ipairs(ProfileContainer.children) do if child ~= UseGlobalProfileToggle and child ~= GlobalProfileDropdown then UUFG.DeepDisable(child, value) end end UUF:UpdateAllUnitFrames() RefreshUUFProfiles() end)
     ProfileContainer:AddChild(UseGlobalProfileToggle)
-
 
     GlobalProfileDropdown = AG:Create("Dropdown")
     GlobalProfileDropdown:SetLabel("Global Profile...")
     GlobalProfileDropdown:SetRelativeWidth(0.5)
     GlobalProfileDropdown:SetList(profileKeys)
     GlobalProfileDropdown:SetValue(UUF.db.global.GlobalProfile)
-    GlobalProfileDropdown:SetCallback("OnValueChanged", function(_, _, value) UUF.db:SetProfile(value) UUF.db.global.GlobalProfile = value UUF:SetUIScale() UUF:UpdateAllUnitFrames() RefreshProfiles() end)
+    GlobalProfileDropdown:SetCallback("OnValueChanged", function(_, _, value) UUF.db:SetProfile(value) UUF.db.global.GlobalProfile = value UUF:SetUIScale() UUF:UpdateAllUnitFrames() RefreshUUFProfiles() end)
     ProfileContainer:AddChild(GlobalProfileDropdown)
 
-    RefreshProfiles()
+    local SpecProfileContainer = UUFG.CreateInlineGroup(ProfileContainer, "Specialization Profiles")
+
+    local specProfilesList = {}
+    local numSpecs = GetNumSpecializations()
+
+    local UseDualSpecializationToggle = AG:Create("CheckBox")
+    UseDualSpecializationToggle:SetLabel("Enable Specialization Profiles")
+    UseDualSpecializationToggle:SetValue(UUF.db:IsDualSpecEnabled())
+    UseDualSpecializationToggle:SetRelativeWidth(1)
+    UseDualSpecializationToggle:SetCallback("OnValueChanged", function(_, _, value) UUF.db:SetDualSpecEnabled(value) for i = 1, numSpecs do specProfilesList[i]:SetDisabled(not value) end UUF:UpdateAllUnitFrames() RefreshUUFProfiles() end)
+    UseDualSpecializationToggle:SetDisabled(UUF.db.global.UseGlobalProfile)
+    SpecProfileContainer:AddChild(UseDualSpecializationToggle)
+
+    RefreshUUFProfiles()
+
+    for i = 1, numSpecs do
+        local _, specName = GetSpecializationInfo(i)
+        specProfilesList[i] = AG:Create("Dropdown")
+        specProfilesList[i]:SetLabel(string.format("%s", specName or ("Spec %d"):format(i)))
+        specProfilesList[i]:SetList(profileKeys)
+        specProfilesList[i]:SetValue(UUF.db:GetDualSpecProfile(i))
+        specProfilesList[i]:SetCallback("OnValueChanged", function(widget, event, value) UUF.db:SetDualSpecProfile(value, i) end)
+        specProfilesList[i]:SetRelativeWidth(numSpecs == 2 and 0.5 or numSpecs == 3 and 0.33 or 0.25)
+        specProfilesList[i]:SetDisabled(not UUF.db:IsDualSpecEnabled() or UUF.db.global.UseGlobalProfile)
+        SpecProfileContainer:AddChild(specProfilesList[i])
+    end
+
+    RefreshUUFProfiles()
 
     local SharingContainer = UUFG.CreateInlineGroup(containerParent, "Profile Sharing")
 
