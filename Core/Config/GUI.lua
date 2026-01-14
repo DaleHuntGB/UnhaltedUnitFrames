@@ -2299,6 +2299,8 @@ end
 
 local function CreateProfileSettings(containerParent)
     local profileKeys = {}
+    local specProfilesList = {}
+    local numSpecs = GetNumSpecializations()
 
     local ProfileContainer = UUFG.CreateInlineGroup(containerParent, "Profile Management")
 
@@ -2317,6 +2319,10 @@ local function CreateProfileSettings(containerParent)
         CopyFromProfileDropdown:SetList(profileKeys)
         GlobalProfileDropdown:SetList(profileKeys)
         DeleteProfileDropdown:SetList(profilesToDelete)
+        for i = 1, numSpecs do
+            specProfilesList[i]:SetList(profileKeys)
+            specProfilesList[i]:SetValue(UUF.db:GetDualSpecProfile(i))
+        end
         SelectProfileDropdown:SetValue(UUF.db:GetCurrentProfile())
         CopyFromProfileDropdown:SetValue(nil)
         DeleteProfileDropdown:SetValue(nil)
@@ -2409,9 +2415,6 @@ local function CreateProfileSettings(containerParent)
 
     local SpecProfileContainer = UUFG.CreateInlineGroup(ProfileContainer, "Specialization Profiles")
 
-    local specProfilesList = {}
-    local numSpecs = GetNumSpecializations()
-
     local UseDualSpecializationToggle = AG:Create("CheckBox")
     UseDualSpecializationToggle:SetLabel("Enable Specialization Profiles")
     UseDualSpecializationToggle:SetValue(UUF.db:IsDualSpecEnabled())
@@ -2427,7 +2430,6 @@ local function CreateProfileSettings(containerParent)
         specProfilesList[i] = AG:Create("Dropdown")
         specProfilesList[i]:SetLabel(string.format("%s", specName or ("Spec %d"):format(i)))
         specProfilesList[i]:SetList(profileKeys)
-        specProfilesList[i]:SetValue(UUF.db:GetDualSpecProfile(i))
         specProfilesList[i]:SetCallback("OnValueChanged", function(widget, event, value) UUF.db:SetDualSpecProfile(value, i) end)
         specProfilesList[i]:SetRelativeWidth(numSpecs == 2 and 0.5 or numSpecs == 3 and 0.33 or 0.25)
         specProfilesList[i]:SetDisabled(not UUF.db:IsDualSpecEnabled() or UUF.db.global.UseGlobalProfile)
