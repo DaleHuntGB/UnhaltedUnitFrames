@@ -14,9 +14,9 @@ externals:
     Libraries/CallbackHandler-1.0: https://repos.curseforge.com/wow/callbackhandler/trunk/CallbackHandler-1.0
     Libraries/LibStub: https://repos.curseforge.com/wow/libstub/trunk
     Libraries/LibSharedMedia-3.0: https://repos.curseforge.com/wow/libsharedmedia-3-0/trunk/LibSharedMedia-3.0
-    Libraries/LibRangeCheck-3.0:
-        url: https://github.com/WeakAuras/LibRangeCheck-3.0.git
-        branch: main
+    # Libraries/LibRangeCheck-3.0:
+    #     url: https://github.com/WeakAuras/LibRangeCheck-3.0.git
+    #     branch: main
     Libraries/LibDeflate:
         url: https://github.com/SafeteeWoW/LibDeflate.git
         tag: latest
@@ -26,6 +26,8 @@ externals:
     Libraries/oUF:
         url: https://github.com/oUF-wow/oUF.git
         branch: midnight
+    Libraries/LibSpecialization:
+        url: https://github.com/BigWigsMods/LibSpecialization.git
 
 ignore:
     - README.md
