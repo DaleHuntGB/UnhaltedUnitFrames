@@ -5,6 +5,8 @@ local function ApplyScripts(unitFrame)
     unitFrame:RegisterForClicks("AnyUp")
     unitFrame:SetAttribute("*type1", "target")
     unitFrame:SetAttribute("*type2", "togglemenu")
+    unitFrame:HookScript("OnEnter", UnitFrame_OnEnter)
+    unitFrame:HookScript("OnLeave", UnitFrame_OnLeave)
 end
 
 function UUF:CreateUnitFrame(unitFrame, unit)
