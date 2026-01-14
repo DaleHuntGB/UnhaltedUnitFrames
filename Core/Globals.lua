@@ -154,8 +154,9 @@ local function AddAnchorsToBCDM()
     local UUF_Anchors = {
         ["UUF_Player"] = "|cFF8080FFUnhalted|rUnitFrames: Player Frame",
         ["UUF_Target"] = "|cFF8080FFUnhalted|rUnitFrames: Target Frame",
+        ["UUF_Pet"] = "|cFF8080FFUnhalted|rUnitFrames: Pet Frame",
     }
-    BCDMG.AddAnchors("UnhaltedUnitFrames", {"Utility", "Custom"}, UUF_Anchors)
+    BCDMG.AddAnchors("UnhaltedUnitFrames", {"Utility", "Custom", "Item"}, UUF_Anchors)
 end
 
 function UUF:Init()
