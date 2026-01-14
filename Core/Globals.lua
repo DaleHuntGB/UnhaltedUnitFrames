@@ -8,6 +8,7 @@ UUF.BOSS_FRAMES = {}
 UUF.MAX_BOSS_FRAMES = 10
 
 UUF.LSM = LibStub("LibSharedMedia-3.0")
+UUF.LDS = LibStub("LibDualSpec-1.0")
 UUF.AG = LibStub("AceGUI-3.0")
 UUF.BACKDROP = { bgFile = "Interface\\Buttons\\WHITE8X8", edgeFile = "Interface\\Buttons\\WHITE8X8", edgeSize = 1, insets = {left = 0, right = 0, top = 0, bottom = 0} }
 UUF.INFOBUTTON = "|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\InfoButton.png:16:16|t "

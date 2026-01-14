@@ -26,8 +26,9 @@ externals:
     Libraries/oUF:
         url: https://github.com/oUF-wow/oUF.git
         branch: midnight
-    Libraries/LibSpecialization:
-        url: https://github.com/BigWigsMods/LibSpecialization.git
+    Libraries/LibDualSpec-1.0:
+        url: https://github.com/AdiAddons/LibDualSpec-1.0.git
+        branch: master
 
 ignore:
     - README.md
