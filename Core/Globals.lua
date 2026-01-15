@@ -111,7 +111,7 @@ function UUF:SetUIScale()
     if GeneralDB.UIScale.Enabled then
         UIParent:SetScale(GeneralDB.UIScale.Scale or 0.5333333333333)
     else
-        UIParent:SetScale(0.64)
+        return
     end
 end
 
