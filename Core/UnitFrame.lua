@@ -47,7 +47,7 @@ function UUF:LayoutBossFrames()
     AnchorUtil.VerticalLayout(bossFrames, initialAnchor, Frame.Layout[5])
 end
 
-local function SpawnBossUnitFrames()
+function UUF:SpawnBossUnitFrames()
     for i = 1, UUF.MAX_BOSS_FRAMES do
         local BossFrame = oUF:Spawn("boss" .. i, UUF:FetchFrameName("boss" .. i))
         BossFrame:SetSize(UUF.db.profile.Units.boss.Frame.Width, UUF.db.profile.Units.boss.Frame.Height)
@@ -65,7 +65,17 @@ function UUF:SpawnUnitFrame(unit)
     oUF:RegisterStyle(UUF:FetchFrameName(unit), function(unitFrame) UUF:CreateUnitFrame(unitFrame, unit) end)
     oUF:SetActiveStyle(UUF:FetchFrameName(unit))
 
-    UUF[unit:upper()] = oUF:Spawn(unit, UUF:FetchFrameName(unit))
+    if unit == "boss" then
+        for i = 1, UUF.MAX_BOSS_FRAMES do
+            UUF[unit:upper() .. i] = oUF:Spawn(unit .. i, UUF:FetchFrameName(unit .. i))
+            UUF[unit:upper() .. i]:SetSize(FrameDB.Width, FrameDB.Height)
+            UUF.BOSS_FRAMES[i] = UUF[unit:upper() .. i]
+        end
+        UUF:LayoutBossFrames()
+    else
+        UUF[unit:upper()] = oUF:Spawn(unit, UUF:FetchFrameName(unit))
+        UUF:RegisterTargetGlowIndicatorFrame(UUF:FetchFrameName(unit), unit)
+    end
 
     if unit == "player" or unit == "target" then
         local parentFrame = UUF.db.profile.Units[unit].HealthBar.AnchorToCooldownViewer and _G["UUF_CDMAnchor"] or UIParent
@@ -75,19 +85,27 @@ function UUF:SpawnUnitFrame(unit)
         local parentFrame = _G[UUF.db.profile.Units[unit].Frame.AnchorParent] or UIParent
         UUF[unit:upper()]:SetPoint(FrameDB.Layout[1], parentFrame, FrameDB.Layout[2], FrameDB.Layout[3], FrameDB.Layout[4])
         UUF[unit:upper()]:SetSize(FrameDB.Width, FrameDB.Height)
-    elseif unit == "boss" then
-        SpawnBossUnitFrames()
     end
-
-    UUF:RegisterTargetGlowIndicatorFrame(UUF:FetchFrameName(unit), unit)
     -- UUF:RegisterRangeFrame(UUF:FetchFrameName(unit), unit)
 
     if UnitDB.Enabled then
         RegisterUnitWatch(UUF[unit:upper()])
-        UUF[unit:upper()]:Show()
+        if unit == "boss" then
+            for i = 1, UUF.MAX_BOSS_FRAMES do
+                UUF[unit:upper() .. i]:Show()
+            end
+        else
+            UUF[unit:upper()]:Show()
+        end
     else
         UnregisterUnitWatch(UUF[unit:upper()])
-        UUF[unit:upper()]:Hide()
+        if unit == "boss" then
+            for i = 1, UUF.MAX_BOSS_FRAMES do
+                UUF[unit:upper() .. i]:Hide()
+            end
+        else
+            UUF[unit:upper()]:Hide()
+        end
     end
 
     return UUF[unit:upper()]
