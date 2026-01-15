@@ -134,16 +134,20 @@ function UUF:UpdateUnitCastBar(unitFrame, unit)
     local GeneralDB = UUF.db.profile.General
     local FrameDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Frame
     local CastBarDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].CastBar
-    local CastBarContainer = unitFrame.Castbar and unitFrame.Castbar:GetParent()
 
     if CastBarDB.Enabled then
         unitFrame.Castbar = unitFrame.Castbar or UUF:CreateUnitCastBar(unitFrame, unit)
+
+        local CastBarContainer = unitFrame.Castbar and unitFrame.Castbar:GetParent()
 
         if not unitFrame:IsElementEnabled("Castbar") then unitFrame:EnableElement("Castbar") end
 
         if unitFrame.Castbar then
             if CastBarContainer then CastBarContainer:ClearAllPoints() end
             if CastBarContainer then CastBarContainer:SetPoint(CastBarDB.Layout[1], unitFrame, CastBarDB.Layout[2], CastBarDB.Layout[3], CastBarDB.Layout[4]) end
+            unitFrame.Castbar:ClearAllPoints()
+            unitFrame.Castbar:SetPoint("TOPLEFT", CastBarContainer, "TOPLEFT", 1, -1)
+            unitFrame.Castbar:SetPoint("BOTTOMRIGHT", CastBarContainer, "BOTTOMRIGHT", -1, 1)
             if CastBarDB.MatchParentWidth then if CastBarContainer then CastBarContainer:SetWidth(FrameDB.Width) end else if CastBarContainer then CastBarContainer:SetWidth(CastBarDB.Width) end end
             if CastBarContainer then CastBarContainer:SetHeight(CastBarDB.Height) end
             unitFrame.Castbar:SetStatusBarTexture(UUF.Media.Foreground)
