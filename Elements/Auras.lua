@@ -2,9 +2,8 @@ local _, UUF = ...
 
 local function FetchAuraDurationRegion(cooldown)
     if not cooldown then return end
-    if cooldown.UUFAuraDuration then return cooldown.UUFAuraDuration end
     for _, region in ipairs({ cooldown:GetRegions() }) do
-        if region:GetObjectType() == "FontString" then cooldown.UUFAuraDuration = region return region end
+        if region:GetObjectType() == "FontString" then return region end
     end
 end
 
@@ -100,6 +99,11 @@ local function StyleAuras(_, button, unit, auraType)
         auraOverlay:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", -1, 1)
         auraOverlay:SetTexCoord(0, 1, 0, 1)
     end
+
+    DevTool:AddData(button)
+
+    -- local auraInstanceID = button.auraInstanceID
+    -- local hasExpiration = C_UnitAuras.DoesAuraHaveExpirationTime(unit, auraInstanceID)
 end
 
 local function RestyleAuras(_, button, unit, auraType)
