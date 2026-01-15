@@ -16,6 +16,7 @@ function UUF:CreateUnitCastBar(unitFrame, unit)
     CastBarContainer:SetPoint(CastBarDB.Layout[1], unitFrame, CastBarDB.Layout[2], CastBarDB.Layout[3], CastBarDB.Layout[4])
     if CastBarDB.MatchParentWidth then CastBarContainer:SetWidth(FrameDB.Width) else CastBarContainer:SetWidth(CastBarDB.Width) end
     CastBarContainer:SetHeight(CastBarDB.Height)
+    CastBarContainer:SetFrameStrata("MEDIUM")
 
     local CastBar = CreateFrame("StatusBar", UUF:FetchFrameName(unit) .. "_CastBar", CastBarContainer)
     CastBar:SetStatusBarTexture(UUF.Media.Foreground)
