@@ -1,0 +1,20 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlGUIS:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
+	<Script file="AlternativePower.lua"/>
+	<Script file="Auras.lua"/>
+	<Script file="Container.lua"/>
+	<Script file="CastBar.lua"/>
+	<Script file="HealPrediction.lua"/>
+	<Script file="HealthBar.lua"/>
+	<Script file="Portrait.lua"/>
+	<Script file="Positioner.lua"/>
+	<Script file="PowerBar.lua"/>
+	<!-- <Script file="Range.lua"/> -->
+	<Script file="Tags.lua"/>
+
+	<Script file="Indicators/LeaderAssistant.lua"/>
+	<Script file="Indicators/Mouseover.lua"/>
+	<Script file="Indicators/RaidTargetMarker.lua"/>
+	<Script file="Indicators/Resting.lua"/>
+	<Script file="Indicators/Combat.lua"/>
+	<Script file="Indicators/TargetGlow.lua"/>
+</Ui>

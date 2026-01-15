@@ -1,0 +1,39 @@
+package-as: UnhaltedUnitFrames
+enable-nolib-creation: no
+
+curse-id: 1235670
+wago-id: 96do35NO
+
+externals:
+    Libraries/Ace3/AceAddon-3.0: https://repos.curseforge.com/wow/ace3/trunk/AceAddon-3.0
+    Libraries/Ace3/AceGUI-3.0: https://repos.curseforge.com/wow/ace3/trunk/AceGUI-3.0
+    Libraries/Ace3/AceDB-3.0: https://repos.curseforge.com/wow/ace3/trunk/AceDB-3.0
+    Libraries/Ace3/AceDBOptions-3.0: https://repos.curseforge.com/wow/ace3/trunk/AceDBOptions-3.0
+    Libraries/Ace3/AceSerializer-3.0: https://repos.curseforge.com/wow/ace3/trunk/AceSerializer-3.0
+    Libraries/Ace3/AceGUI-3.0-SharedMediaWidgets: https://repos.curseforge.com/wow/ace-gui-3-0-shared-media-widgets/trunk/AceGUI-3.0-SharedMediaWidgets
+    Libraries/CallbackHandler-1.0: https://repos.curseforge.com/wow/callbackhandler/trunk/CallbackHandler-1.0
+    Libraries/LibStub: https://repos.curseforge.com/wow/libstub/trunk
+    Libraries/LibSharedMedia-3.0: https://repos.curseforge.com/wow/libsharedmedia-3-0/trunk/LibSharedMedia-3.0
+    # Libraries/LibRangeCheck-3.0:
+    #     url: https://github.com/WeakAuras/LibRangeCheck-3.0.git
+    #     branch: main
+    Libraries/LibDeflate:
+        url: https://github.com/SafeteeWoW/LibDeflate.git
+        tag: latest
+    Libraries/TaintLess:
+        url: https://www.townlong-yak.com/addons.git/taintless
+        commit: default
+    Libraries/oUF:
+        url: https://github.com/oUF-wow/oUF.git
+        branch: midnight
+    Libraries/LibDualSpec-1.0:
+        url: https://github.com/AdiAddons/LibDualSpec-1.0.git
+        branch: master
+
+ignore:
+    - README.md
+    - .git/
+    - .github/
+    - .vscode/
+    - .pkgmeta
+    - release.sh

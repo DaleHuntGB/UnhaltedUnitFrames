@@ -1,0 +1,32 @@
+## Interface: 11508, 11507, 20504, 30405, 38000, 40402, 50503, 50502, 110205, 110207, 120000
+## Version: v11.2.5
+## Title: Lib: Specialization
+## Notes: A library for transmitting your talent string and specialization to other players, that developers can embed in their addons.
+# Notes-deDE: A library for transmitting your talent string and specialization to other players, that developers can embed in their addons.
+# Notes-esES: A library for transmitting your talent string and specialization to other players, that developers can embed in their addons.
+# Notes-esMX: A library for transmitting your talent string and specialization to other players, that developers can embed in their addons.
+# Notes-frFR: A library for transmitting your talent string and specialization to other players, that developers can embed in their addons.
+# Notes-itIT: A library for transmitting your talent string and specialization to other players, that developers can embed in their addons.
+# Notes-koKR: A library for transmitting your talent string and specialization to other players, that developers can embed in their addons.
+# Notes-ptBR: A library for transmitting your talent string and specialization to other players, that developers can embed in their addons.
+# Notes-ruRU: A library for transmitting your talent string and specialization to other players, that developers can embed in their addons.
+# Notes-zhCN: A library for transmitting your talent string and specialization to other players, that developers can embed in their addons.
+# Notes-zhTW: A library for transmitting your talent string and specialization to other players, that developers can embed in their addons.
+## Category: Libraries
+## Category-deDE: Bibliotheken
+## Category-esES: Bibliotecas
+## Category-esMX: Bibliotecas
+## Category-frFR: Bibliothèques
+## Category-itIT: Bibliotecas
+# Category-koKR: Libraries
+## Category-ptBR: Bibliotecas
+## Category-ruRU: Библиотеки
+## Category-zhCN: 函数库
+## Category-zhTW: 函式庫
+## Author: Funkeh
+## OptionalDeps: LibStub
+## AllowLoadGameType: mainline, mists, cata
+## X-Curse-Project-ID: 615588
+
+LibStub\LibStub.lua
+LibSpecialization\LibSpecialization.lua
