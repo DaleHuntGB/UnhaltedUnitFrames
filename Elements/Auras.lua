@@ -223,9 +223,10 @@ function UUF:UpdateUnitAuras(unitFrame, unit)
     local BuffsDB = AurasDB.Buffs
     local DebuffsDB = AurasDB.Debuffs
 
+    local shouldEnableAuras = BuffsDB.Enabled or DebuffsDB.Enabled
+
     if BuffsDB.Enabled then
         unitFrame.Buffs = unitFrame.BuffContainer
-        if not unitFrame:IsElementEnabled("Auras") then unitFrame:EnableElement("Auras") end
         local buffPerRow = BuffsDB.Wrap or 4
         local buffRows = math.ceil(BuffsDB.Num / buffPerRow)
         local buffContainerWidth = (BuffsDB.Size + BuffsDB.Layout[5]) * buffPerRow - BuffsDB.Layout[5]
@@ -247,16 +248,13 @@ function UUF:UpdateUnitAuras(unitFrame, unit)
         unitFrame.BuffContainer.showType = BuffsDB.ShowType
         unitFrame.BuffContainer.showBuffType = BuffsDB.ShowType
         unitFrame.BuffContainer:Show()
-        if unitFrame.BuffContainer and unitFrame.BuffContainer.ForceUpdate then unitFrame.BuffContainer:ForceUpdate() end
     else
-        if unitFrame:IsElementEnabled("Auras") then unitFrame:DisableElement("Auras") end
         unitFrame.BuffContainer:Hide()
         unitFrame.Buffs = nil
     end
 
     if DebuffsDB.Enabled then
         unitFrame.Debuffs = unitFrame.DebuffContainer
-        if not unitFrame:IsElementEnabled("Auras") then unitFrame:EnableElement("Auras") end
         local debuffPerRow = DebuffsDB.Wrap or 4
         local debuffRows = math.ceil(DebuffsDB.Num / debuffPerRow)
         local debuffContainerWidth = (DebuffsDB.Size + DebuffsDB.Layout[5]) * debuffPerRow - DebuffsDB.Layout[5]
@@ -278,17 +276,19 @@ function UUF:UpdateUnitAuras(unitFrame, unit)
         unitFrame.DebuffContainer.showType = DebuffsDB.ShowType
         unitFrame.DebuffContainer.showDebuffType = DebuffsDB.ShowType
         unitFrame.DebuffContainer:Show()
-        if unitFrame.DebuffContainer and unitFrame.DebuffContainer.ForceUpdate then unitFrame.DebuffContainer:ForceUpdate() end
     else
-        if unitFrame:IsElementEnabled("Auras") then unitFrame:DisableElement("Auras") end
         unitFrame.DebuffContainer:Hide()
         unitFrame.Debuffs = nil
     end
 
-    if BuffsDB.Enabled or DebuffsDB.Enabled then
+    if shouldEnableAuras then
         if not unitFrame:IsElementEnabled("Auras") then unitFrame:EnableElement("Auras") end
+        if unitFrame.BuffContainer and unitFrame.BuffContainer.ForceUpdate then unitFrame.BuffContainer:ForceUpdate() end
+        if unitFrame.DebuffContainer and unitFrame.DebuffContainer.ForceUpdate then unitFrame.DebuffContainer:ForceUpdate() end
     else
-        if unitFrame:IsElementEnabled("Auras") then unitFrame:DisableElement("Auras") end
+        if unitFrame:IsElementEnabled("Auras") then
+            unitFrame:DisableElement("Auras")
+        end
     end
 
     for _, button in ipairs(unitFrame.BuffContainer) do
