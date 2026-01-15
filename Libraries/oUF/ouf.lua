@@ -1,6 +1,6 @@
 local parent, ns = ...
 local global = C_AddOns.GetAddOnMetadata(parent, 'X-oUF')
-local _VERSION = 'e5895e1'
+local _VERSION = '32c10b0'
 if(_VERSION:find('project%-version')) then
 	_VERSION = 'devel'
 end
@@ -903,6 +903,7 @@ do
 					nameplate.unitFrame.WidgetContainer = nameplate.UnitFrame.WidgetContainer
 				end
 				if(nameplate.UnitFrame.SoftTargetFrame) then
+					-- we keep this to render soft target interaction icons above the "target"
 					nameplate.UnitFrame.SoftTargetFrame:SetParent(nameplate.unitFrame)
 					nameplate.UnitFrame.SoftTargetFrame:SetIgnoreParentAlpha(true)
 					nameplate.unitFrame.SoftTargetFrame = nameplate.UnitFrame.SoftTargetFrame
