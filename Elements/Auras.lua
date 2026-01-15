@@ -100,8 +100,6 @@ local function StyleAuras(_, button, unit, auraType)
         auraOverlay:SetTexCoord(0, 1, 0, 1)
     end
 
-    DevTool:AddData(button)
-
     -- local auraInstanceID = button.auraInstanceID
     -- local hasExpiration = C_UnitAuras.DoesAuraHaveExpirationTime(unit, auraInstanceID)
 end
