@@ -264,7 +264,7 @@ local HealthTags = {
 local PowerTags = {
     {
         ["perpp"] = "Percentage Power",
-        ["currpp"] = "Current Power",
+        ["curpp"] = "Current Power",
         ["curpp:colour"] = "Current Power with Colour",
         ["curpp:abbr"] = "Current Power with Abbreviation",
         ["curpp:abbr:colour"] = "Current Power with Abbreviation and Colour",
@@ -272,7 +272,7 @@ local PowerTags = {
     },
     {
         "perpp",
-        "currpp",
+        "curpp",
         "curpp:colour",
         "curpp:abbr",
         "curpp:abbr:colour",
