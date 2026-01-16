@@ -18,10 +18,10 @@ local Tags = {
     ["curpp:abbr:colour"] = "UNIT_POWER_UPDATE UNIT_MAXPOWER",
 
     ["name:colour"] = "UNIT_CLASSIFICATION_CHANGED UNIT_FACTION UNIT_NAME_UPDATE",
-    ["name:tot"] = "UNIT_NAME_UPDATE",
-    ["name:tot:colour"] = "UNIT_NAME_UPDATE",
-    ["name:tot:clean"] = "UNIT_NAME_UPDATE",
-    ["name:tot:colour:clean"] = "UNIT_NAME_UPDATE",
+    -- ["name:tot"] = "UNIT_NAME_UPDATE",
+    -- ["name:tot:colour"] = "UNIT_NAME_UPDATE",
+    -- ["name:tot:clean"] = "UNIT_NAME_UPDATE",
+    -- ["name:tot:colour:clean"] = "UNIT_NAME_UPDATE",
     ["name:short:10"] = "UNIT_NAME_UPDATE",
     ["name:short:5"] = "UNIT_NAME_UPDATE",
     ["name:short:3"] = "UNIT_NAME_UPDATE",
@@ -188,39 +188,39 @@ oUF.Tags.Methods["name:colour"] = function(unit)
     return string.format("|cff%02x%02x%02x%s|r", classColourR * 255, classColourG * 255, classColourB * 255, unitName)
 end
 
-oUF.Tags.Methods["name:tot"] = function(unit)
-    if not unit or not UnitExists(unit) then return "" end
-    local targetOfTarget = unit .. "target"
-    local targetOfTargetName = UnitName(targetOfTarget) or ""
-    if not targetOfTargetName or targetOfTargetName == "" then return "" end
-    return string.format(" %s %s", UUF.TOT_SEPARATOR, targetOfTargetName)
-end
+-- oUF.Tags.Methods["name:tot"] = function(unit)
+--     if not unit or not UnitExists(unit) then return "" end
+--     local targetOfTarget = unit .. "target"
+--     local targetOfTargetName = UnitName(targetOfTarget) or ""
+--     if not targetOfTargetName or targetOfTargetName == "" then return "" end
+--     return string.format(" %s %s", UUF.TOT_SEPARATOR, targetOfTargetName)
+-- end
 
-oUF.Tags.Methods["name:tot:colour"] = function(unit)
-    if not unit or not UnitExists(unit) then return "" end
-    local targetOfTarget = unit .. "target"
-    local classColourR, classColourG, classColourB = FetchUnitColour(targetOfTarget)
-    local targetOfTargetName = UnitName(targetOfTarget) or ""
-    if not targetOfTargetName or targetOfTargetName == "" then return "" end
-    return string.format(" %s |cff%02x%02x%02x%s|r", UUF.TOT_SEPARATOR, classColourR * 255, classColourG * 255, classColourB * 255, targetOfTargetName)
-end
+-- oUF.Tags.Methods["name:tot:colour"] = function(unit)
+--     if not unit or not UnitExists(unit) then return "" end
+--     local targetOfTarget = unit .. "target"
+--     local classColourR, classColourG, classColourB = FetchUnitColour(targetOfTarget)
+--     local targetOfTargetName = UnitName(targetOfTarget) or ""
+--     if not targetOfTargetName or targetOfTargetName == "" then return "" end
+--     return string.format(" %s |cff%02x%02x%02x%s|r", UUF.TOT_SEPARATOR, classColourR * 255, classColourG * 255, classColourB * 255, targetOfTargetName)
+-- end
 
-oUF.Tags.Methods["name:tot:clean"] = function(unit)
-    if not unit or not UnitExists(unit) then return "" end
-    local targetOfTarget = unit .. "target"
-    local targetOfTargetName = UnitName(targetOfTarget) or ""
-    if not targetOfTargetName or targetOfTargetName == "" then return "" end
-    return string.format("%s", targetOfTargetName)
-end
+-- oUF.Tags.Methods["name:tot:clean"] = function(unit)
+--     if not unit or not UnitExists(unit) then return "" end
+--     local targetOfTarget = unit .. "target"
+--     local targetOfTargetName = UnitName(targetOfTarget) or ""
+--     if not targetOfTargetName or targetOfTargetName == "" then return "" end
+--     return string.format("%s", targetOfTargetName)
+-- end
 
-oUF.Tags.Methods["name:tot:colour:clean"] = function(unit)
-    if not unit or not UnitExists(unit) then return "" end
-    local targetOfTarget = unit .. "target"
-    local classColourR, classColourG, classColourB = FetchUnitColour(targetOfTarget)
-    local targetOfTargetName = UnitName(targetOfTarget) or ""
-    if not targetOfTargetName or targetOfTargetName == "" then return "" end
-    return string.format("|cff%02x%02x%02x%s|r", classColourR * 255, classColourG * 255, classColourB * 255, targetOfTargetName)
-end
+-- oUF.Tags.Methods["name:tot:colour:clean"] = function(unit)
+--     if not unit or not UnitExists(unit) then return "" end
+--     local targetOfTarget = unit .. "target"
+--     local classColourR, classColourG, classColourB = FetchUnitColour(targetOfTarget)
+--     local targetOfTargetName = UnitName(targetOfTarget) or ""
+--     if not targetOfTargetName or targetOfTargetName == "" then return "" end
+--     return string.format("|cff%02x%02x%02x%s|r", classColourR * 255, classColourG * 255, classColourB * 255, targetOfTargetName)
+-- end
 
 oUF.Tags.Methods["name:short:10"] = function(unit)
     local unitName = UnitName(unit) or ""
@@ -284,10 +284,10 @@ local NameTags = {
     {
         ["name"] = "Unit Name",
         ["name:colour"] = "Unit Name with Colour",
-        ["name:tot"] = "Target of Target Name",
-        ["name:tot:colour"] = "Target of Target Name with Colour",
-        ["name:tot:clean"] = "Target of Target Name without Arrow Separator",
-        ["name:tot:colour:clean"] = "Target of Target Name with Colour without Arrow Separator",
+        -- ["name:tot"] = "Target of Target Name",
+        -- ["name:tot:colour"] = "Target of Target Name with Colour",
+        -- ["name:tot:clean"] = "Target of Target Name without Arrow Separator",
+        -- ["name:tot:colour:clean"] = "Target of Target Name with Colour without Arrow Separator",
         ["name:short:10"] = "Unit Name Shortened to 10 Characters",
         ["name:short:5"] = "Unit Name Shortened to 5 Characters",
         ["name:short:3"] = "Unit Name Shortened to 3 Characters",
@@ -295,10 +295,10 @@ local NameTags = {
     {
         "name",
         "name:colour",
-        "name:tot",
-        "name:tot:colour",
-        "name:tot:clean",
-        "name:tot:colour:clean",
+        -- "name:tot",
+        -- "name:tot:colour",
+        -- "name:tot:clean",
+        -- "name:tot:colour:clean",
         "name:short:10",
         "name:short:5",
         "name:short:3",
