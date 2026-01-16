@@ -32,7 +32,7 @@ function UUF:ImportSavedVariables(EncodedInfo, profileName)
         UIParent:SetScale(UUF.db.profile.General.UIScale or 1)
     else
         StaticPopupDialogs["UUF_IMPORT_NEW_PROFILE"] = {
-            text = UUF.AddOnName.." - ".."Profile Name?",
+            text = UUF.ADDON_NAME.." - ".."Profile Name?",
             button1 = "Import",
             button2 = "Cancel",
             hasEditBox = true,
