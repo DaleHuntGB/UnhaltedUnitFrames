@@ -41,7 +41,7 @@ function UUF:ImportSavedVariables(EncodedInfo, profileName)
             hideOnEscape = true,
             preferredIndex = 3,
             OnAccept = function(self)
-                local editBox = self.editBox or self.EditBox
+                local editBox = self.EditBox
                 local newProfileName = editBox:GetText() or string.format("Imported_%s-%s-%s", date("%d"), date("%m"), date("%Y"))
                 if not newProfileName or newProfileName == "" then UUF:Print("Please enter a valid profile name.") return end
 
