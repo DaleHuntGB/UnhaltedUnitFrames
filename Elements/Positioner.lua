@@ -3,7 +3,7 @@ local _, UUF = ...
 function UUF:CreatePositionController()
     local ECDM = _G["EssentialCooldownViewer"]
     if ECDM and ECDM:IsShown() then
-        local CDMAnchor = CreateFrame("Frame", "UUF_CDMAnchor", UIParent, "SecureFrameTemplate, BackdropTemplate")
+        local CDMAnchor = CreateFrame("Frame", "UUF_CDMAnchor", UIParent)
         CDMAnchor:SetAllPoints(ECDM)
         CDMAnchor:SetSize(ECDM:GetWidth() or 300, ECDM:GetHeight() or 48)
     else
