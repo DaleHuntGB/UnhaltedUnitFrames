@@ -1,7 +1,7 @@
 local _, UUF = ...
 local LSM = UUF.LSM
 local AG = UUF.AG
-local UUFG = UUF.GUIWidgets
+local GUIWidgets = UUF.GUIWidgets
 local UUFGUI = {}
 local isGUIOpen = false
 
@@ -130,14 +130,14 @@ local function GenerateSupportText(parentFrame)
 end
 
 local function CreateUIScaleSettings(containerParent)
-    local Container = UUFG.CreateInlineGroup(containerParent, "UI Scale")
-    UUFG.CreateInformationTag(Container,"These options allow you to adjust the UI Scale beyond the means that |cFF00B0F7Blizzard|r provides. If you encounter issues, please |cFFFF4040disable|r this feature.")
+    local Container = GUIWidgets.CreateInlineGroup(containerParent, "UI Scale")
+    GUIWidgets.CreateInformationTag(Container,"These options allow you to adjust the UI Scale beyond the means that |cFF00B0F7Blizzard|r provides. If you encounter issues, please |cFFFF4040disable|r this feature.")
 
     local Toggle = AG:Create("CheckBox")
     Toggle:SetLabel("Enable UI Scale")
     Toggle:SetValue(UUF.db.profile.General.UIScale.Enabled)
     Toggle:SetFullWidth(true)
-    Toggle:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.General.UIScale.Enabled = value UUF:SetUIScale() UUFG.DeepDisable(Container, not value, Toggle) end)
+    Toggle:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.General.UIScale.Enabled = value UUF:SetUIScale() GUIWidgets.DeepDisable(Container, not value, Toggle) end)
     Toggle:SetRelativeWidth(0.5)
     Container:AddChild(Toggle)
 
@@ -150,7 +150,7 @@ local function CreateUIScaleSettings(containerParent)
     Slider:SetRelativeWidth(0.5)
     Container:AddChild(Slider)
 
-    UUFG.CreateHeader(Container, "Presets")
+    GUIWidgets.CreateHeader(Container, "Presets")
 
     local PixelPerfectButton = AG:Create("Button")
     PixelPerfectButton:SetText("Pixel Perfect Scale")
@@ -176,13 +176,13 @@ local function CreateUIScaleSettings(containerParent)
     FourteenFortyPButton:SetCallback("OnLeave", function() GameTooltip:Hide() end)
     Container:AddChild(FourteenFortyPButton)
 
-    UUFG.DeepDisable(Container, not UUF.db.profile.General.UIScale.Enabled, Toggle)
+    GUIWidgets.DeepDisable(Container, not UUF.db.profile.General.UIScale.Enabled, Toggle)
 end
 
 local function CreateFontSettings(containerParent)
-    local Container = UUFG.CreateInlineGroup(containerParent, "Fonts")
+    local Container = GUIWidgets.CreateInlineGroup(containerParent, "Fonts")
 
-    UUFG.CreateInformationTag(Container,"Fonts are applied to all Unit Frames & Elements where appropriate. More fonts can be added via |cFFFFCC00SharedMedia|r.")
+    GUIWidgets.CreateInformationTag(Container,"Fonts are applied to all Unit Frames & Elements where appropriate. More fonts can be added via |cFFFFCC00SharedMedia|r.")
 
     local FontDropdown = AG:Create("LSM30_Font")
     FontDropdown:SetList(LSM:HashTable("font"))
@@ -205,13 +205,13 @@ local function CreateFontSettings(containerParent)
     SimpleGroup:SetLayout("Flow")
     Container:AddChild(SimpleGroup)
 
-    UUFG.CreateHeader(SimpleGroup, "Font Shadows")
+    GUIWidgets.CreateHeader(SimpleGroup, "Font Shadows")
 
     local Toggle = AG:Create("CheckBox")
     Toggle:SetLabel("Enable Font Shadows")
     Toggle:SetValue(UUF.db.profile.General.Fonts.Shadow.Enabled)
     Toggle:SetFullWidth(true)
-    Toggle:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.General.Fonts.Shadow.Enabled = value UUF:ResolveLSM() UUFG.DeepDisable(SimpleGroup, not UUF.db.profile.General.Fonts.Shadow.Enabled, Toggle) UUF:UpdateAllUnitFrames() end)
+    Toggle:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.General.Fonts.Shadow.Enabled = value UUF:ResolveLSM() GUIWidgets.DeepDisable(SimpleGroup, not UUF.db.profile.General.Fonts.Shadow.Enabled, Toggle) UUF:UpdateAllUnitFrames() end)
     Toggle:SetRelativeWidth(0.5)
     SimpleGroup:AddChild(Toggle)
 
@@ -241,13 +241,13 @@ local function CreateFontSettings(containerParent)
     YSlider:SetRelativeWidth(0.5)
     SimpleGroup:AddChild(YSlider)
 
-    UUFG.DeepDisable(SimpleGroup, not UUF.db.profile.General.Fonts.Shadow.Enabled, Toggle)
+    GUIWidgets.DeepDisable(SimpleGroup, not UUF.db.profile.General.Fonts.Shadow.Enabled, Toggle)
 end
 
 local function CreateTextureSettings(containerParent)
-    local Container = UUFG.CreateInlineGroup(containerParent, "Textures")
+    local Container = GUIWidgets.CreateInlineGroup(containerParent, "Textures")
 
-    UUFG.CreateInformationTag(Container,"Textures are applied to all Unit Frames & Elements where appropriate. More textures can be added via |cFFFFCC00SharedMedia|r.")
+    GUIWidgets.CreateInformationTag(Container,"Textures are applied to all Unit Frames & Elements where appropriate. More textures can be added via |cFFFFCC00SharedMedia|r.")
 
     local ForegroundTextureDropdown = AG:Create("LSM30_Statusbar")
     ForegroundTextureDropdown:SetList(LSM:HashTable("statusbar"))
@@ -287,13 +287,13 @@ end
 
 local function CreateRangeSettings(containerParent)
     local RangeDB = UUF.db.profile.General.Range
-    local Container = UUFG.CreateInlineGroup(containerParent, "Range")
+    local Container = GUIWidgets.CreateInlineGroup(containerParent, "Range")
 
     local Toggle = AG:Create("CheckBox")
     Toggle:SetLabel("Enable Range Fading")
     Toggle:SetValue(RangeDB.Enabled)
     Toggle:SetFullWidth(true)
-    Toggle:SetCallback("OnValueChanged", function(_, _, value) RangeDB.Enabled = value UUF:UpdateAllUnitFrames() UUFG.DeepDisable(Container, not value, Toggle) end)
+    Toggle:SetCallback("OnValueChanged", function(_, _, value) RangeDB.Enabled = value UUF:UpdateAllUnitFrames() GUIWidgets.DeepDisable(Container, not value, Toggle) end)
     Toggle:SetRelativeWidth(0.33)
     Container:AddChild(Toggle)
 
@@ -317,13 +317,13 @@ local function CreateRangeSettings(containerParent)
     OutAlphaSlider:SetIsPercent(true)
     Container:AddChild(OutAlphaSlider)
 
-    UUFG.DeepDisable(Container, not RangeDB.Enabled, Toggle)
+    GUIWidgets.DeepDisable(Container, not RangeDB.Enabled, Toggle)
 end
 
 local function CreateColourSettings(containerParent)
-    local Container = UUFG.CreateInlineGroup(containerParent, "Colours")
+    local Container = GUIWidgets.CreateInlineGroup(containerParent, "Colours")
 
-    UUFG.CreateInformationTag(Container,"Buttons below will reset the colours to their default values as defined by " .. UUF.PRETTY_ADDON_NAME .. ".")
+    GUIWidgets.CreateInformationTag(Container,"Buttons below will reset the colours to their default values as defined by " .. UUF.PRETTY_ADDON_NAME .. ".")
 
     local ResetAllColoursButton = AG:Create("Button")
     ResetAllColoursButton:SetText("All Colours")
@@ -343,7 +343,7 @@ local function CreateColourSettings(containerParent)
     ResetReactionColoursButton:SetRelativeWidth(0.33)
     Container:AddChild(ResetReactionColoursButton)
 
-    UUFG.CreateHeader(Container, "Power")
+    GUIWidgets.CreateHeader(Container, "Power")
 
     local PowerOrder = {0, 1, 2, 3, 6, 8, 11, 13, 17, 18}
 
@@ -359,7 +359,7 @@ local function CreateColourSettings(containerParent)
         Container:AddChild(PowerColourPicker)
     end
 
-    UUFG.CreateHeader(Container, "Reaction")
+    GUIWidgets.CreateHeader(Container, "Reaction")
 
     local ReactionOrder = {1, 2, 3, 4, 5, 6, 7, 8}
 
@@ -379,7 +379,7 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
     local FrameDB = UUF.db.profile.Units[unit].Frame
     local HealthBarDB = UUF.db.profile.Units[unit].HealthBar
 
-    local LayoutContainer = UUFG.CreateInlineGroup(containerParent, "Layout & Positioning")
+    local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
 
     local WidthSlider = AG:Create("Slider")
     WidthSlider:SetLabel("Width")
@@ -449,7 +449,7 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
     YPosSlider:SetCallback("OnValueChanged", function(_, _, value) FrameDB.Layout[4] = value updateCallback() end)
     LayoutContainer:AddChild(YPosSlider)
 
-    local ColourContainer = UUFG.CreateInlineGroup(containerParent, "Colours & Toggles")
+    local ColourContainer = GUIWidgets.CreateInlineGroup(containerParent, "Colours & Toggles")
 
     local ColourByClassToggle = AG:Create("CheckBox")
     ColourByClassToggle:SetLabel("Colour By Class")
@@ -524,7 +524,7 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
         ColourContainer:AddChild(AnchorToCooldownViewerToggle)
     end
 
-    UUFG.CreateInformationTag(ColourContainer, "Foreground & Background Opacity can be set using the sliders.")
+    GUIWidgets.CreateInformationTag(ColourContainer, "Foreground & Background Opacity can be set using the sliders.")
 
     local ForegroundColourPicker = AG:Create("ColorPicker")
     ForegroundColourPicker:SetLabel("Foreground Colour")
@@ -568,7 +568,7 @@ end
 local function CreateHealPredictionSettings(containerParent, unit, updateCallback)
     local HealPredictionDB = UUF.db.profile.Units[unit].HealPrediction
 
-    local AbsorbSettings = UUFG.CreateInlineGroup(containerParent, "Absorb Settings")
+    local AbsorbSettings = GUIWidgets.CreateInlineGroup(containerParent, "Absorb Settings")
 
     local ShowAbsorbToggle = AG:Create("CheckBox")
     ShowAbsorbToggle:SetLabel("Show Absorbs")
@@ -601,7 +601,7 @@ local function CreateHealPredictionSettings(containerParent, unit, updateCallbac
     AbsorbPositionDropdown:SetCallback("OnValueChanged", function(_, _, value) HealPredictionDB.Absorbs.Position = value updateCallback() end)
     AbsorbSettings:AddChild(AbsorbPositionDropdown)
 
-    local HealAbsorbSettings = UUFG.CreateInlineGroup(containerParent, "Heal Absorb Settings")
+    local HealAbsorbSettings = GUIWidgets.CreateInlineGroup(containerParent, "Heal Absorb Settings")
     local ShowHealAbsorbToggle = AG:Create("CheckBox")
     ShowHealAbsorbToggle:SetLabel("Show Heal Absorbs")
     ShowHealAbsorbToggle:SetValue(HealPredictionDB.HealAbsorbs.Enabled)
@@ -634,8 +634,8 @@ local function CreateHealPredictionSettings(containerParent, unit, updateCallbac
     HealAbsorbSettings:AddChild(HealAbsorbPositionDropdown)
 
     function RefreshHealPredictionSettings()
-        UUFG.DeepDisable(AbsorbSettings, not HealPredictionDB.Absorbs.Enabled, ShowAbsorbToggle)
-        UUFG.DeepDisable(HealAbsorbSettings, not HealPredictionDB.HealAbsorbs.Enabled, ShowHealAbsorbToggle)
+        GUIWidgets.DeepDisable(AbsorbSettings, not HealPredictionDB.Absorbs.Enabled, ShowAbsorbToggle)
+        GUIWidgets.DeepDisable(HealAbsorbSettings, not HealPredictionDB.HealAbsorbs.Enabled, ShowHealAbsorbToggle)
     end
 
     RefreshHealPredictionSettings()
@@ -645,7 +645,7 @@ local function CreateCastBarBarSettings(containerParent, unit, updateCallback)
     local FrameDB = UUF.db.profile.Units[unit].Frame
     local CastBarDB = UUF.db.profile.Units[unit].CastBar
 
-    local LayoutContainer = UUFG.CreateInlineGroup(containerParent, "Cast Bar Settings")
+    local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Cast Bar Settings")
 
     local Toggle = AG:Create("CheckBox")
     Toggle:SetLabel("Enable |cFF8080FFCast Bar|r")
@@ -716,7 +716,7 @@ local function CreateCastBarBarSettings(containerParent, unit, updateCallback)
     YPosSlider:SetCallback("OnValueChanged", function(_, _, value) CastBarDB.Layout[4] = value updateCallback() end)
     LayoutContainer:AddChild(YPosSlider)
 
-    local ColourContainer = UUFG.CreateInlineGroup(containerParent, "Colours & Toggles")
+    local ColourContainer = GUIWidgets.CreateInlineGroup(containerParent, "Colours & Toggles")
 
     local ColourByClassToggle = AG:Create("CheckBox")
     ColourByClassToggle:SetLabel("Colour By Class")
@@ -786,7 +786,7 @@ end
 local function CreateCastBarIconSettings(containerParent, unit, updateCallback)
     local CastBarIconDB = UUF.db.profile.Units[unit].CastBar.Icon
 
-    local LayoutContainer = UUFG.CreateInlineGroup(containerParent, "Icon Settings")
+    local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Icon Settings")
     local Toggle = AG:Create("CheckBox")
     Toggle:SetLabel("Enable |cFF8080FFCast Bar Icon|r")
     Toggle:SetValue(CastBarIconDB.Enabled)
@@ -817,7 +817,7 @@ local function CreateCastBarSpellNameTextSettings(containerParent, unit, updateC
     local CastBarTextDB = UUF.db.profile.Units[unit].CastBar.Text
     local SpellNameTextDB = CastBarTextDB.SpellName
 
-    local SpellNameContainer = UUFG.CreateInlineGroup(containerParent, "Spell Name Settings")
+    local SpellNameContainer = GUIWidgets.CreateInlineGroup(containerParent, "Spell Name Settings")
 
     local SpellNameToggle = AG:Create("CheckBox")
     SpellNameToggle:SetLabel("Enable |cFF8080FFSpell Name Text|r")
@@ -835,7 +835,7 @@ local function CreateCastBarSpellNameTextSettings(containerParent, unit, updateC
     SpellNameColourPicker:SetRelativeWidth(0.5)
     SpellNameContainer:AddChild(SpellNameColourPicker)
 
-    local SpellNameLayoutContainer = UUFG.CreateInlineGroup(SpellNameContainer, "Layout")
+    local SpellNameLayoutContainer = GUIWidgets.CreateInlineGroup(SpellNameContainer, "Layout")
     local SpellNameAnchorFromDropdown = AG:Create("Dropdown")
     SpellNameAnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
     SpellNameAnchorFromDropdown:SetLabel("Anchor From")
@@ -901,7 +901,7 @@ local function CreateCastBarDurationTextSettings(containerParent, unit, updateCa
     local CastBarTextDB = UUF.db.profile.Units[unit].CastBar.Text
     local DurationTextDB = CastBarTextDB.Duration
 
-     local DurationContainer = UUFG.CreateInlineGroup(containerParent, "Duration Settings")
+     local DurationContainer = GUIWidgets.CreateInlineGroup(containerParent, "Duration Settings")
 
     local DurationToggle = AG:Create("CheckBox")
     DurationToggle:SetLabel("Enable |cFF8080FFDuration Text|r")
@@ -919,7 +919,7 @@ local function CreateCastBarDurationTextSettings(containerParent, unit, updateCa
     DurationColourPicker:SetRelativeWidth(0.5)
     DurationContainer:AddChild(DurationColourPicker)
 
-    local DurationLayoutContainer = UUFG.CreateInlineGroup(DurationContainer, "Layout")
+    local DurationLayoutContainer = GUIWidgets.CreateInlineGroup(DurationContainer, "Layout")
     local DurationAnchorFromDropdown = AG:Create("Dropdown")
     DurationAnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
     DurationAnchorFromDropdown:SetLabel("Anchor From")
@@ -1014,7 +1014,7 @@ local function CreatePowerBarSettings(containerParent, unit, updateCallback)
     local FrameDB = UUF.db.profile.Units[unit].Frame
     local PowerBarDB = UUF.db.profile.Units[unit].PowerBar
 
-    local LayoutContainer = UUFG.CreateInlineGroup(containerParent, "Power Bar Settings")
+    local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Power Bar Settings")
 
     local Toggle = AG:Create("CheckBox")
     Toggle:SetLabel("Enable |cFF8080FFPower Bar|r")
@@ -1038,7 +1038,7 @@ local function CreatePowerBarSettings(containerParent, unit, updateCallback)
     HeightSlider:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.Height = value updateCallback() end)
     LayoutContainer:AddChild(HeightSlider)
 
-    local ColourContainer = UUFG.CreateInlineGroup(containerParent, "Colours & Toggles")
+    local ColourContainer = GUIWidgets.CreateInlineGroup(containerParent, "Colours & Toggles")
 
     local SmoothUpdatesToggle = AG:Create("CheckBox")
     SmoothUpdatesToggle:SetLabel("Smooth Updates")
@@ -1101,8 +1101,8 @@ local function CreatePowerBarSettings(containerParent, unit, updateCallback)
 
     function RefreshPowerBarGUI()
         if PowerBarDB.Enabled then
-            UUFG.DeepDisable(LayoutContainer, false, Toggle)
-            UUFG.DeepDisable(ColourContainer, false, Toggle)
+            GUIWidgets.DeepDisable(LayoutContainer, false, Toggle)
+            GUIWidgets.DeepDisable(ColourContainer, false, Toggle)
             if PowerBarDB.ColourByClass or PowerBarDB.ColourByType then
                 ForegroundColourPicker:SetDisabled(true)
             else
@@ -1111,8 +1111,8 @@ local function CreatePowerBarSettings(containerParent, unit, updateCallback)
             -- BackgroundMultiplierSlider:SetDisabled(true)
             -- ColourBackgroundByTypeToggle:SetDisabled(true)
         else
-            UUFG.DeepDisable(LayoutContainer, true, Toggle)
-            UUFG.DeepDisable(ColourContainer, true, Toggle)
+            GUIWidgets.DeepDisable(LayoutContainer, true, Toggle)
+            GUIWidgets.DeepDisable(ColourContainer, true, Toggle)
         end
     end
 
@@ -1122,9 +1122,9 @@ end
 local function CreateAlternativePowerBarSettings(containerParent, unit, updateCallback)
     local AlternativePowerBarDB = UUF.db.profile.Units[unit].AlternativePowerBar
 
-    UUFG.CreateInformationTag(containerParent, "The |cFF8080FFAlternative Power Bar|r will display |cFF4080FFMana|r for classes that have an alternative resource.")
+    GUIWidgets.CreateInformationTag(containerParent, "The |cFF8080FFAlternative Power Bar|r will display |cFF4080FFMana|r for classes that have an alternative resource.")
 
-    local AlternativePowerBarSettings = UUFG.CreateInlineGroup(containerParent, "Alternative Power Bar Settings")
+    local AlternativePowerBarSettings = GUIWidgets.CreateInlineGroup(containerParent, "Alternative Power Bar Settings")
 
     local Toggle = AG:Create("CheckBox")
     Toggle:SetLabel("Enable |cFF8080FFAlternative Power Bar|r")
@@ -1140,7 +1140,7 @@ local function CreateAlternativePowerBarSettings(containerParent, unit, updateCa
     InverseGrowthDirectionToggle:SetRelativeWidth(0.5)
     AlternativePowerBarSettings:AddChild(InverseGrowthDirectionToggle)
 
-    local LayoutContainer = UUFG.CreateInlineGroup(containerParent, "Layout & Positioning")
+    local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
 
     local WidthSlider = AG:Create("Slider")
     WidthSlider:SetLabel("Width")
@@ -1190,7 +1190,7 @@ local function CreateAlternativePowerBarSettings(containerParent, unit, updateCa
     YPosSlider:SetCallback("OnValueChanged", function(_, _, value) AlternativePowerBarDB.Layout[4] = value updateCallback() end)
     LayoutContainer:AddChild(YPosSlider)
 
-    local ColourContainer = UUFG.CreateInlineGroup(containerParent, "Colours & Toggles")
+    local ColourContainer = GUIWidgets.CreateInlineGroup(containerParent, "Colours & Toggles")
 
     local ColourByTypeToggle = AG:Create("CheckBox")
     ColourByTypeToggle:SetLabel("Colour By Type")
@@ -1220,16 +1220,16 @@ local function CreateAlternativePowerBarSettings(containerParent, unit, updateCa
 
     function RefreshAlternativePowerBarGUI()
         if AlternativePowerBarDB.Enabled then
-            UUFG.DeepDisable(LayoutContainer, false, Toggle)
-            UUFG.DeepDisable(ColourContainer, false, Toggle)
+            GUIWidgets.DeepDisable(LayoutContainer, false, Toggle)
+            GUIWidgets.DeepDisable(ColourContainer, false, Toggle)
             if AlternativePowerBarDB.ColourByType then
                 ForegroundColourPicker:SetDisabled(true)
             else
                 ForegroundColourPicker:SetDisabled(false)
             end
         else
-            UUFG.DeepDisable(LayoutContainer, true, Toggle)
-            UUFG.DeepDisable(ColourContainer, true, Toggle)
+            GUIWidgets.DeepDisable(LayoutContainer, true, Toggle)
+            GUIWidgets.DeepDisable(ColourContainer, true, Toggle)
         end
         InverseGrowthDirectionToggle:SetDisabled(not AlternativePowerBarDB.Enabled)
     end
@@ -1240,7 +1240,7 @@ end
 local function CreatePortraitSettings(containerParent, unit, updateCallback)
     local PortraitDB = UUF.db.profile.Units[unit].Portrait
 
-    local ToggleContainer = UUFG.CreateInlineGroup(containerParent, "Portrait Settings")
+    local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Portrait Settings")
     local Toggle = AG:Create("CheckBox")
     Toggle:SetLabel("Enable |cFF8080FFPortrait|r")
     Toggle:SetValue(PortraitDB.Enabled)
@@ -1255,7 +1255,7 @@ local function CreatePortraitSettings(containerParent, unit, updateCallback)
     UseClassPortraitToggle:SetRelativeWidth(0.5)
     ToggleContainer:AddChild(UseClassPortraitToggle)
 
-    local LayoutContainer = UUFG.CreateInlineGroup(containerParent, "Layout & Positioning")
+    local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
 
     local AnchorFromDropdown = AG:Create("Dropdown")
     AnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
@@ -1308,11 +1308,11 @@ local function CreatePortraitSettings(containerParent, unit, updateCallback)
 
     function RefreshPortraitGUI()
         if PortraitDB.Enabled then
-            UUFG.DeepDisable(ToggleContainer, false, Toggle)
-            UUFG.DeepDisable(LayoutContainer, false, Toggle)
+            GUIWidgets.DeepDisable(ToggleContainer, false, Toggle)
+            GUIWidgets.DeepDisable(LayoutContainer, false, Toggle)
         else
-            UUFG.DeepDisable(ToggleContainer, true, Toggle)
-            UUFG.DeepDisable(LayoutContainer, true, Toggle)
+            GUIWidgets.DeepDisable(ToggleContainer, true, Toggle)
+            GUIWidgets.DeepDisable(LayoutContainer, true, Toggle)
         end
     end
 
@@ -1322,7 +1322,7 @@ end
 local function CreateRaidTargetMarkerSettings(containerParent, unit, updateCallback)
     local RaidTargetMarkerDB = UUF.db.profile.Units[unit].Indicators.RaidTargetMarker
 
-    local ToggleContainer = UUFG.CreateInlineGroup(containerParent, "Raid Target Marker Settings")
+    local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Raid Target Marker Settings")
 
     local Toggle = AG:Create("CheckBox")
     Toggle:SetLabel("Enable |cFF8080FFRaid Target Marker|r Indicator")
@@ -1331,7 +1331,7 @@ local function CreateRaidTargetMarkerSettings(containerParent, unit, updateCallb
     Toggle:SetRelativeWidth(1)
     ToggleContainer:AddChild(Toggle)
 
-    local LayoutContainer = UUFG.CreateInlineGroup(containerParent, "Layout & Positioning")
+    local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
 
     local AnchorFromDropdown = AG:Create("Dropdown")
     AnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
@@ -1375,11 +1375,11 @@ local function CreateRaidTargetMarkerSettings(containerParent, unit, updateCallb
 
     function RefreshStatusGUI()
         if RaidTargetMarkerDB.Enabled then
-            UUFG.DeepDisable(ToggleContainer, false, Toggle)
-            UUFG.DeepDisable(LayoutContainer, false, Toggle)
+            GUIWidgets.DeepDisable(ToggleContainer, false, Toggle)
+            GUIWidgets.DeepDisable(LayoutContainer, false, Toggle)
         else
-            UUFG.DeepDisable(ToggleContainer, true, Toggle)
-            UUFG.DeepDisable(LayoutContainer, true, Toggle)
+            GUIWidgets.DeepDisable(ToggleContainer, true, Toggle)
+            GUIWidgets.DeepDisable(LayoutContainer, true, Toggle)
         end
     end
 
@@ -1389,7 +1389,7 @@ end
 local function CreateLeaderAssistaintSettings(containerParent, unit, updateCallback)
     local LeaderAssistantDB = UUF.db.profile.Units[unit].Indicators.LeaderAssistantIndicator
 
-    local ToggleContainer = UUFG.CreateInlineGroup(containerParent, "Leader & Assistant Settings")
+    local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Leader & Assistant Settings")
 
     local Toggle = AG:Create("CheckBox")
     Toggle:SetLabel("Enable |cFF8080FFLeader|r & |cFF8080FFAssistant|r Indicator")
@@ -1398,7 +1398,7 @@ local function CreateLeaderAssistaintSettings(containerParent, unit, updateCallb
     Toggle:SetRelativeWidth(1)
     ToggleContainer:AddChild(Toggle)
 
-    local LayoutContainer = UUFG.CreateInlineGroup(containerParent, "Layout & Positioning")
+    local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
 
     local AnchorFromDropdown = AG:Create("Dropdown")
     AnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
@@ -1442,11 +1442,11 @@ local function CreateLeaderAssistaintSettings(containerParent, unit, updateCallb
 
     function RefreshStatusGUI()
         if LeaderAssistantDB.Enabled then
-            UUFG.DeepDisable(ToggleContainer, false, Toggle)
-            UUFG.DeepDisable(LayoutContainer, false, Toggle)
+            GUIWidgets.DeepDisable(ToggleContainer, false, Toggle)
+            GUIWidgets.DeepDisable(LayoutContainer, false, Toggle)
         else
-            UUFG.DeepDisable(ToggleContainer, true, Toggle)
-            UUFG.DeepDisable(LayoutContainer, true, Toggle)
+            GUIWidgets.DeepDisable(ToggleContainer, true, Toggle)
+            GUIWidgets.DeepDisable(LayoutContainer, true, Toggle)
         end
     end
 
@@ -1456,7 +1456,7 @@ end
 local function CreateStatusSettings(containerParent, unit, statusDB, updateCallback)
     local StatusDB = UUF.db.profile.Units[unit].Indicators[statusDB]
 
-    local ToggleContainer = UUFG.CreateInlineGroup(containerParent, statusDB .. " Settings")
+    local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, statusDB .. " Settings")
 
     local StatusTextureList = {}
     for key, texture in pairs(StatusTextures[statusDB]) do
@@ -1478,7 +1478,7 @@ local function CreateStatusSettings(containerParent, unit, statusDB, updateCallb
     StatusTextureDropdown:SetCallback("OnValueChanged", function(_, _, value) StatusDB.Texture = value updateCallback() end)
     ToggleContainer:AddChild(StatusTextureDropdown)
 
-    local LayoutContainer = UUFG.CreateInlineGroup(containerParent, "Layout & Positioning")
+    local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
 
     local AnchorFromDropdown = AG:Create("Dropdown")
     AnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
@@ -1522,11 +1522,11 @@ local function CreateStatusSettings(containerParent, unit, statusDB, updateCallb
 
     function RefreshStatusGUI()
         if StatusDB.Enabled then
-            UUFG.DeepDisable(ToggleContainer, false, Toggle)
-            UUFG.DeepDisable(LayoutContainer, false, Toggle)
+            GUIWidgets.DeepDisable(ToggleContainer, false, Toggle)
+            GUIWidgets.DeepDisable(LayoutContainer, false, Toggle)
         else
-            UUFG.DeepDisable(ToggleContainer, true, Toggle)
-            UUFG.DeepDisable(LayoutContainer, true, Toggle)
+            GUIWidgets.DeepDisable(ToggleContainer, true, Toggle)
+            GUIWidgets.DeepDisable(LayoutContainer, true, Toggle)
         end
     end
 
@@ -1536,7 +1536,7 @@ end
 local function CreateMouseoverSettings(containerParent, unit, updateCallback)
     local MouseoverDB = UUF.db.profile.Units[unit].Indicators.Mouseover
 
-    local ToggleContainer = UUFG.CreateInlineGroup(containerParent, "Mouseover Settings")
+    local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Mouseover Settings")
 
     local Toggle = AG:Create("CheckBox")
     Toggle:SetLabel("Enable |cFF8080FFMouseover|r Highlight")
@@ -1572,9 +1572,9 @@ local function CreateMouseoverSettings(containerParent, unit, updateCallback)
 
     function RefreshMouseoverGUI()
         if MouseoverDB.Enabled then
-            UUFG.DeepDisable(ToggleContainer, false, Toggle)
+            GUIWidgets.DeepDisable(ToggleContainer, false, Toggle)
         else
-            UUFG.DeepDisable(ToggleContainer, true, Toggle)
+            GUIWidgets.DeepDisable(ToggleContainer, true, Toggle)
         end
     end
 
@@ -1584,7 +1584,7 @@ end
 local function CreateTargetIndicatorSettings(containerParent, unit, updateCallback)
     local TargetIndicatorDB = UUF.db.profile.Units[unit].Indicators.Target
 
-    local ToggleContainer = UUFG.CreateInlineGroup(containerParent, "Target Indicator Settings")
+    local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Target Indicator Settings")
 
     local Toggle = AG:Create("CheckBox")
     Toggle:SetLabel("Enable |cFF8080FFTarget Indicator|r")
@@ -1603,9 +1603,9 @@ local function CreateTargetIndicatorSettings(containerParent, unit, updateCallba
 
     function RefreshTargetIndicatorGUI()
         if TargetIndicatorDB.Enabled then
-            UUFG.DeepDisable(ToggleContainer, false, Toggle)
+            GUIWidgets.DeepDisable(ToggleContainer, false, Toggle)
         else
-            UUFG.DeepDisable(ToggleContainer, true, Toggle)
+            GUIWidgets.DeepDisable(ToggleContainer, true, Toggle)
         end
     end
 
@@ -1663,7 +1663,7 @@ end
 local function CreateTagSetting(containerParent, unit, tagDB)
     local TagDB = UUF.db.profile.Units[unit].Tags[tagDB]
 
-    local TagContainer = UUFG.CreateInlineGroup(containerParent, "Tag Settings")
+    local TagContainer = GUIWidgets.CreateInlineGroup(containerParent, "Tag Settings")
 
     local EditBox = AG:Create("EditBox")
     EditBox:SetLabel("Tag")
@@ -1682,7 +1682,7 @@ local function CreateTagSetting(containerParent, unit, tagDB)
     ColourPicker:SetRelativeWidth(0.5)
     TagContainer:AddChild(ColourPicker)
 
-    local LayoutContainer = UUFG.CreateInlineGroup(containerParent, "Layout & Positioning")
+    local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
 
     local AnchorFromDropdown = AG:Create("Dropdown")
     AnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
@@ -1724,8 +1724,8 @@ local function CreateTagSetting(containerParent, unit, tagDB)
     FontSizeSlider:SetCallback("OnValueChanged", function(_, _, value) TagDB.FontSize = value if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitTag(UUF[unit:upper()], unit, tagDB) end end)
     LayoutContainer:AddChild(FontSizeSlider)
 
-    local TagSelectionContainer = UUFG.CreateInlineGroup(containerParent, "Tag Selection")
-    UUFG.CreateInformationTag(TagSelectionContainer, "You can use the dropdowns below to quickly add tags.")
+    local TagSelectionContainer = GUIWidgets.CreateInlineGroup(containerParent, "Tag Selection")
+    GUIWidgets.CreateInformationTag(TagSelectionContainer, "You can use the dropdowns below to quickly add tags.")
 
     local HealthTagDropdown = AG:Create("Dropdown")
     HealthTagDropdown:SetList(UUF:FetchTagData("Health")[1], UUF:FetchTagData("Health")[2])
@@ -1791,7 +1791,7 @@ end
 local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
     local AuraDB = UUF.db.profile.Units[unit].Auras[auraDB]
 
-    local AuraContainer = UUFG.CreateInlineGroup(containerParent, auraDB .. " Settings")
+    local AuraContainer = GUIWidgets.CreateInlineGroup(containerParent, auraDB .. " Settings")
 
     local Toggle = AG:Create("CheckBox")
     Toggle:SetLabel("Enable |cFF8080FF"..auraDB.."|r")
@@ -1814,7 +1814,7 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
     ShowTypeCheckbox:SetRelativeWidth(0.33)
     AuraContainer:AddChild(ShowTypeCheckbox)
 
-    local LayoutContainer = UUFG.CreateInlineGroup(containerParent, "Layout & Positioning")
+    local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
 
     local AnchorFromDropdown = AG:Create("Dropdown")
     AnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
@@ -1864,7 +1864,7 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
     SpacingSlider:SetCallback("OnValueChanged", function(_, _, value) AuraDB.Layout[5] = value if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end end)
     LayoutContainer:AddChild(SpacingSlider)
 
-    UUFG.CreateHeader(LayoutContainer, "Layout")
+    GUIWidgets.CreateHeader(LayoutContainer, "Layout")
 
     local NumAurasSlider = AG:Create("Slider")
     NumAurasSlider:SetLabel(auraDB .. " To Display")
@@ -1898,7 +1898,7 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
     WrapDirectionDropdown:SetCallback("OnValueChanged", function(_, _, value) AuraDB.WrapDirection = value if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end end)
     LayoutContainer:AddChild(WrapDirectionDropdown)
 
-    local CountContainer = UUFG.CreateInlineGroup(containerParent, "Count Settings")
+    local CountContainer = GUIWidgets.CreateInlineGroup(containerParent, "Count Settings")
 
     local CountAnchorFromDropdown = AG:Create("Dropdown")
     CountAnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
@@ -1950,13 +1950,13 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
 
     function RefreshAuraGUI()
         if AuraDB.Enabled then
-            UUFG.DeepDisable(AuraContainer, false, Toggle)
-            UUFG.DeepDisable(LayoutContainer, false, Toggle)
-            UUFG.DeepDisable(CountContainer, false, Toggle)
+            GUIWidgets.DeepDisable(AuraContainer, false, Toggle)
+            GUIWidgets.DeepDisable(LayoutContainer, false, Toggle)
+            GUIWidgets.DeepDisable(CountContainer, false, Toggle)
         else
-            UUFG.DeepDisable(AuraContainer, true, Toggle)
-            UUFG.DeepDisable(LayoutContainer, true, Toggle)
-            UUFG.DeepDisable(CountContainer, true, Toggle)
+            GUIWidgets.DeepDisable(AuraContainer, true, Toggle)
+            GUIWidgets.DeepDisable(LayoutContainer, true, Toggle)
+            GUIWidgets.DeepDisable(CountContainer, true, Toggle)
         end
     end
 
@@ -1966,7 +1966,7 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
 end
 
 local function CreateAuraSettings(containerParent, unit)
-    local AuraDurationContainer = UUFG.CreateInlineGroup(containerParent, "Aura Duration Settings")
+    local AuraDurationContainer = GUIWidgets.CreateInlineGroup(containerParent, "Aura Duration Settings")
 
     local ColourPicker = AG:Create("ColorPicker")
     ColourPicker:SetLabel("Cooldown Text Colour")
@@ -2055,7 +2055,7 @@ local function CreateAuraSettings(containerParent, unit)
 end
 
 local function CreateAuraDurationSettings(containerParent)
-    local AuraDurationContainer = UUFG.CreateInlineGroup(containerParent, "Aura Duration Settings")
+    local AuraDurationContainer = GUIWidgets.CreateInlineGroup(containerParent, "Aura Duration Settings")
 
     local ColourPicker = AG:Create("ColorPicker")
     ColourPicker:SetLabel("Cooldown Text Colour")
@@ -2116,11 +2116,11 @@ end
 
 local function CreateGlobalSettings(containerParent)
 
-    local GlobalContainer = UUFG.CreateInlineGroup(containerParent, "Global Settings")
+    local GlobalContainer = GUIWidgets.CreateInlineGroup(containerParent, "Global Settings")
 
-    UUFG.CreateInformationTag(GlobalContainer, "The settings below will apply to all unit frames within" .. UUF.PRETTY_ADDON_NAME .. ".\nOptions are not dynamic. They are static but will apply to all unit frames when changed.")
+    GUIWidgets.CreateInformationTag(GlobalContainer, "The settings below will apply to all unit frames within" .. UUF.PRETTY_ADDON_NAME .. ".\nOptions are not dynamic. They are static but will apply to all unit frames when changed.")
 
-    local ToggleContainer = UUFG.CreateInlineGroup(GlobalContainer, "Toggles")
+    local ToggleContainer = GUIWidgets.CreateInlineGroup(GlobalContainer, "Toggles")
 
     local function ConvertBoolToTexture(value)
         if value == true then
@@ -2192,7 +2192,7 @@ local function CreateGlobalSettings(containerParent)
     -- CreateRangeSettings(GlobalContainer)
     CreateAuraDurationSettings(GlobalContainer)
 
-    local TagContainer = UUFG.CreateInlineGroup(GlobalContainer, "Tag Settings")
+    local TagContainer = GUIWidgets.CreateInlineGroup(GlobalContainer, "Tag Settings")
 
     local TagIntervalSlider = AG:Create("Slider")
     TagIntervalSlider:SetLabel("Tag Updates Per Second")
@@ -2363,7 +2363,7 @@ local function CreateProfileSettings(containerParent)
     local specProfilesList = {}
     local numSpecs = GetNumSpecializations()
 
-    local ProfileContainer = UUFG.CreateInlineGroup(containerParent, "Profile Management")
+    local ProfileContainer = GUIWidgets.CreateInlineGroup(containerParent, "Profile Management")
 
     local ActiveProfileHeading = AG:Create("Heading")
     ActiveProfileHeading:SetFullWidth(true)
@@ -2457,13 +2457,13 @@ local function CreateProfileSettings(containerParent)
     GlobalProfileHeading:SetFullWidth(true)
     ProfileContainer:AddChild(GlobalProfileHeading)
 
-    UUFG.CreateInformationTag(ProfileContainer, "If |cFF8080FFUse Global Profile Settings|r is enabled, the profile selected below will be used as your active profile.\nThis is useful if you want to use the same profile across multiple characters.")
+    GUIWidgets.CreateInformationTag(ProfileContainer, "If |cFF8080FFUse Global Profile Settings|r is enabled, the profile selected below will be used as your active profile.\nThis is useful if you want to use the same profile across multiple characters.")
 
     UseGlobalProfileToggle = AG:Create("CheckBox")
     UseGlobalProfileToggle:SetLabel("Use Global Profile Settings")
     UseGlobalProfileToggle:SetValue(UUF.db.global.UseGlobalProfile)
     UseGlobalProfileToggle:SetRelativeWidth(0.5)
-    UseGlobalProfileToggle:SetCallback("OnValueChanged", function(_, _, value) RefreshProfiles() UUF.db.global.UseGlobalProfile = value if value and UUF.db.global.GlobalProfile and UUF.db.global.GlobalProfile ~= "" then UUF.db:SetProfile(UUF.db.global.GlobalProfile) UUF:SetUIScale() end GlobalProfileDropdown:SetDisabled(not value) for _, child in ipairs(ProfileContainer.children) do if child ~= UseGlobalProfileToggle and child ~= GlobalProfileDropdown then UUFG.DeepDisable(child, value) end end UUF:UpdateAllUnitFrames() RefreshProfiles() end)
+    UseGlobalProfileToggle:SetCallback("OnValueChanged", function(_, _, value) RefreshProfiles() UUF.db.global.UseGlobalProfile = value if value and UUF.db.global.GlobalProfile and UUF.db.global.GlobalProfile ~= "" then UUF.db:SetProfile(UUF.db.global.GlobalProfile) UUF:SetUIScale() end GlobalProfileDropdown:SetDisabled(not value) for _, child in ipairs(ProfileContainer.children) do if child ~= UseGlobalProfileToggle and child ~= GlobalProfileDropdown then GUIWidgets.DeepDisable(child, value) end end UUF:UpdateAllUnitFrames() RefreshProfiles() end)
     ProfileContainer:AddChild(UseGlobalProfileToggle)
 
     GlobalProfileDropdown = AG:Create("Dropdown")
@@ -2474,7 +2474,7 @@ local function CreateProfileSettings(containerParent)
     GlobalProfileDropdown:SetCallback("OnValueChanged", function(_, _, value) UUF.db:SetProfile(value) UUF.db.global.GlobalProfile = value UUF:SetUIScale() UUF:UpdateAllUnitFrames() RefreshProfiles() end)
     ProfileContainer:AddChild(GlobalProfileDropdown)
 
-    local SpecProfileContainer = UUFG.CreateInlineGroup(ProfileContainer, "Specialization Profiles")
+    local SpecProfileContainer = GUIWidgets.CreateInlineGroup(ProfileContainer, "Specialization Profiles")
 
     local UseDualSpecializationToggle = AG:Create("CheckBox")
     UseDualSpecializationToggle:SetLabel("Enable Specialization Profiles")
@@ -2497,14 +2497,14 @@ local function CreateProfileSettings(containerParent)
 
     RefreshProfiles()
 
-    local SharingContainer = UUFG.CreateInlineGroup(containerParent, "Profile Sharing")
+    local SharingContainer = GUIWidgets.CreateInlineGroup(containerParent, "Profile Sharing")
 
     local ExportingHeading = AG:Create("Heading")
     ExportingHeading:SetText("Exporting")
     ExportingHeading:SetFullWidth(true)
     SharingContainer:AddChild(ExportingHeading)
 
-    UUFG.CreateInformationTag(SharingContainer, "You can export your profile by pressing |cFF8080FFExport Profile|r button below & share the string with other |cFF8080FFUnhalted|r Unit Frame users.")
+    GUIWidgets.CreateInformationTag(SharingContainer, "You can export your profile by pressing |cFF8080FFExport Profile|r button below & share the string with other |cFF8080FFUnhalted|r Unit Frame users.")
 
     local ExportingEditBox = AG:Create("EditBox")
     ExportingEditBox:SetLabel("Export String...")
@@ -2526,7 +2526,7 @@ local function CreateProfileSettings(containerParent)
     ImportingHeading:SetFullWidth(true)
     SharingContainer:AddChild(ImportingHeading)
 
-    UUFG.CreateInformationTag(SharingContainer, "If you have an exported string, paste it in the |cFF8080FFImport String|r box below & press |cFF8080FFImport Profile|r.")
+    GUIWidgets.CreateInformationTag(SharingContainer, "If you have an exported string, paste it in the |cFF8080FFImport String|r box below & press |cFF8080FFImport Profile|r.")
 
     local ImportingEditBox = AG:Create("EditBox")
     ImportingEditBox:SetLabel("Import String...")
@@ -2543,7 +2543,7 @@ local function CreateProfileSettings(containerParent)
     ImportProfileButton:SetCallback("OnClick", function() if ImportingEditBox:GetText() ~= "" then UUF:ImportSavedVariables(ImportingEditBox:GetText()) ImportingEditBox:SetText("") end end)
     SharingContainer:AddChild(ImportProfileButton)
     GlobalProfileDropdown:SetDisabled(not UUF.db.global.UseGlobalProfile)
-    if UUF.db.global.UseGlobalProfile then for _, child in ipairs(ProfileContainer.children) do if child ~= UseGlobalProfileToggle and child ~= GlobalProfileDropdown then UUFG.DeepDisable(child, true) end end end
+    if UUF.db.global.UseGlobalProfile then for _, child in ipairs(ProfileContainer.children) do if child ~= UseGlobalProfileToggle and child ~= GlobalProfileDropdown then GUIWidgets.DeepDisable(child, true) end end end
 end
 
 function UUF:CreateGUI()
@@ -2570,7 +2570,7 @@ function UUF:CreateGUI()
         GUIContainer:AddChild(Wrapper)
 
         if MainTab == "General" then
-            local ScrollFrame = UUFG.CreateScrollFrame(Wrapper)
+            local ScrollFrame = GUIWidgets.CreateScrollFrame(Wrapper)
 
             CreateUIScaleSettings(ScrollFrame)
             CreateColourSettings(ScrollFrame)
@@ -2643,59 +2643,59 @@ function UUF:CreateGUI()
 
             ScrollFrame:DoLayout()
         elseif MainTab == "Global" then
-            local ScrollFrame = UUFG.CreateScrollFrame(Wrapper)
+            local ScrollFrame = GUIWidgets.CreateScrollFrame(Wrapper)
 
             CreateGlobalSettings(ScrollFrame)
 
             ScrollFrame:DoLayout()
         elseif MainTab == "Player" then
-            local ScrollFrame = UUFG.CreateScrollFrame(Wrapper)
+            local ScrollFrame = GUIWidgets.CreateScrollFrame(Wrapper)
 
             CreateUnitSettings(ScrollFrame, "player")
 
             ScrollFrame:DoLayout()
         elseif MainTab == "Target" then
-            local ScrollFrame = UUFG.CreateScrollFrame(Wrapper)
+            local ScrollFrame = GUIWidgets.CreateScrollFrame(Wrapper)
 
             CreateUnitSettings(ScrollFrame, "target")
 
             ScrollFrame:DoLayout()
         elseif MainTab == "TargetTarget" then
-            local ScrollFrame = UUFG.CreateScrollFrame(Wrapper)
+            local ScrollFrame = GUIWidgets.CreateScrollFrame(Wrapper)
 
             CreateUnitSettings(ScrollFrame, "targettarget")
 
             ScrollFrame:DoLayout()
         elseif MainTab == "Pet" then
-            local ScrollFrame = UUFG.CreateScrollFrame(Wrapper)
+            local ScrollFrame = GUIWidgets.CreateScrollFrame(Wrapper)
 
             CreateUnitSettings(ScrollFrame, "pet")
 
             ScrollFrame:DoLayout()
         elseif MainTab == "Focus" then
-            local ScrollFrame = UUFG.CreateScrollFrame(Wrapper)
+            local ScrollFrame = GUIWidgets.CreateScrollFrame(Wrapper)
 
             CreateUnitSettings(ScrollFrame, "focus")
 
             ScrollFrame:DoLayout()
         elseif MainTab == "FocusTarget" then
-            local ScrollFrame = UUFG.CreateScrollFrame(Wrapper)
+            local ScrollFrame = GUIWidgets.CreateScrollFrame(Wrapper)
 
             CreateUnitSettings(ScrollFrame, "focustarget")
 
             ScrollFrame:DoLayout()
         elseif MainTab == "Boss" then
-            local ScrollFrame = UUFG.CreateScrollFrame(Wrapper)
+            local ScrollFrame = GUIWidgets.CreateScrollFrame(Wrapper)
 
             CreateUnitSettings(ScrollFrame, "boss")
 
             ScrollFrame:DoLayout()
         elseif MainTab == "Tags" then
-            local ScrollFrame = UUFG.CreateScrollFrame(Wrapper)
+            local ScrollFrame = GUIWidgets.CreateScrollFrame(Wrapper)
             CreateTagSettings(ScrollFrame)
             ScrollFrame:DoLayout()
         elseif MainTab == "Profiles" then
-            local ScrollFrame = UUFG.CreateScrollFrame(Wrapper)
+            local ScrollFrame = GUIWidgets.CreateScrollFrame(Wrapper)
 
             CreateProfileSettings(ScrollFrame)
 

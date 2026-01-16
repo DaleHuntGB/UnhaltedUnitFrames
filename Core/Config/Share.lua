@@ -56,7 +56,7 @@ function UUF:ImportSavedVariables(EncodedInfo, profileName)
 
                 UUFG.RefreshProfiles()
 
-                UIParent:SetScale(UUF.db.profile.General.UIScale or 1)
+                UIParent:SetScale(UUF.db.profile.General.UIScale.Scale or 1)
 
             end,
         }
