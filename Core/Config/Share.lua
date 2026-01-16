@@ -15,7 +15,7 @@ function UUF:ImportSavedVariables(EncodedInfo, profileName)
     local DecodedInfo = Compress:DecodeForPrint(EncodedInfo:sub(6))
     local DecompressedInfo = Compress:DecompressDeflate(DecodedInfo)
     local success, data = Serialize:Deserialize(DecompressedInfo)
-    if not success or type(data) ~= "table" or EncodedInfo:sub(1, 5) ~= "!UUF_" then print("|cFF8080FFUnhalted|r Unit Frames: Invalid Import String.") return end
+    if not success or type(data) ~= "table" or EncodedInfo:sub(1, 5) ~= "!UUF_" then UUF:PrettyPrint("Invalid Import String.") return end
 
     if profileName then
         UUF.db:SetProfile(profileName)
@@ -43,7 +43,7 @@ function UUF:ImportSavedVariables(EncodedInfo, profileName)
             OnAccept = function(self)
                 local editBox = self.EditBox
                 local newProfileName = editBox:GetText() or string.format("Imported_%s-%s-%s", date("%d"), date("%m"), date("%Y"))
-                if not newProfileName or newProfileName == "" then UUF:Print("Please enter a valid profile name.") return end
+                if not newProfileName or newProfileName == "" then UUF:PrettyPrint("Please enter a valid profile name.") return end
 
                 UUF.db:SetProfile(newProfileName)
                 wipe(UUF.db.profile)
