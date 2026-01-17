@@ -13,16 +13,14 @@ local function ApplyAuraDuration(icon, unit)
     local AurasDB = UUFDB.Units[UUF:GetNormalizedUnit(unit)].Auras
     local AuraDurationDB = AurasDB.AuraDuration
     if not icon then return end
-    C_Timer.After(0.5, function()
-        local textRegion = FetchAuraDurationRegion(icon)
-        if textRegion then
-            if AuraDurationDB.ScaleByIconSize then
-                local iconWidth = icon:GetWidth()
-                local scaleFactor = iconWidth / 36
-                textRegion:SetFont(UUF.Media.Font, AuraDurationDB.FontSize * scaleFactor, FontsDB.FontFlag)
-            else
-                textRegion:SetFont(UUF.Media.Font, AuraDurationDB.FontSize, FontsDB.FontFlag)
-            end
+    local textRegion = FetchAuraDurationRegion(icon)
+    if textRegion then
+        if AuraDurationDB.ScaleByIconSize then
+            local iconWidth = icon:GetWidth()
+            local scaleFactor = iconWidth / 36
+            textRegion:SetFont(UUF.Media.Font, AuraDurationDB.FontSize * scaleFactor, FontsDB.FontFlag)
+        else
+            textRegion:SetFont(UUF.Media.Font, AuraDurationDB.FontSize, FontsDB.FontFlag)
         end
         textRegion:SetTextColor(AuraDurationDB.Colour[1], AuraDurationDB.Colour[2], AuraDurationDB.Colour[3], 1)
         textRegion:ClearAllPoints()
@@ -34,7 +32,7 @@ local function ApplyAuraDuration(icon, unit)
             textRegion:SetShadowColor(0, 0, 0, 0)
             textRegion:SetShadowOffset(0, 0)
         end
-    end)
+    end
 end
 
 local function StyleAuras(_, button, unit, auraType)
