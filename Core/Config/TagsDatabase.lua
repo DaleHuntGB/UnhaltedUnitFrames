@@ -47,17 +47,96 @@ UUF.SEPARATOR_TAGS = {
 }
 
 UUF.TOT_SEPARATOR_TAGS = {
-{
-    ["»"] = "»",
-    ["-"] = "-",
-    [">"] = ">",
-},
-{
-    "»",
-    "-",
-    ">",
+    {
+        ["»"] = "»",
+        ["-"] = "-",
+        [">"] = ">",
+    },
+    {
+        "»",
+        "-",
+        ">",
+    }
 }
+
+-- Thank you to m33shoq for this abbreviation function and data!
+
+local abbrevData = {
+   breakpointData = {
+      {
+         breakpoint = 1e12,
+         abbreviation = "B",
+         significandDivisor = 1e10,
+         fractionDivisor = 100,
+         abbreviationIsGlobal = false,
+      },
+      {
+         breakpoint = 1e11,
+         abbreviation = "B",
+         significandDivisor = 1e9,
+         fractionDivisor = 1,
+         abbreviationIsGlobal = false,
+      },
+      {
+         breakpoint = 1e10,
+         abbreviation = "B",
+         significandDivisor = 1e8,
+         fractionDivisor = 10,
+         abbreviationIsGlobal = false,
+      },
+      {
+         breakpoint = 1e9,
+         abbreviation = "B",
+         significandDivisor = 1e7,
+         fractionDivisor = 100,
+         abbreviationIsGlobal = false,
+      },
+      {
+         breakpoint = 1e8,
+         abbreviation = "M",
+         significandDivisor = 1e6,
+         fractionDivisor = 1,
+         abbreviationIsGlobal = false,
+      },
+      {
+         breakpoint = 1e7,
+         abbreviation = "M",
+         significandDivisor = 1e5,
+         fractionDivisor = 10,
+        abbreviationIsGlobal = false,
+      },
+      {
+         breakpoint = 1e6,
+         abbreviation = "M",
+         significandDivisor = 1e4,
+         fractionDivisor = 100,
+         abbreviationIsGlobal = false,
+      },
+      {
+         breakpoint = 1e5,
+         abbreviation = "K",
+         significandDivisor = 1000,
+         fractionDivisor = 1,
+         abbreviationIsGlobal = false,
+      },
+      {
+         breakpoint = 1e4,
+         abbreviation = "K",
+         significandDivisor = 100,
+         fractionDivisor = 10,
+         abbreviationIsGlobal = false,
+      },
+   },
 }
+
+local function AbbreviateValue(value)
+    local useCustomAbbreviations = UUF.db.profile.General.UseCustomAbbreviations
+    if useCustomAbbreviations then
+        return AbbreviateNumbers(value, abbrevData)
+    else
+        return AbbreviateLargeNumbers(value)
+    end
+end
 
 for tagString, tagEvents in pairs(Tags) do
     oUF.Tags.Events[tagString] = (oUF.Tags.Events[tagString] and (oUF.Tags.Events[tagString] .. " ") or "") .. tagEvents
@@ -94,7 +173,7 @@ oUF.Tags.Methods["curhp:abbr"] = function(unit)
     if unitStatus then
         return unitStatus
     else
-        return string.format("%s", AbbreviateLargeNumbers(unitHealth))
+        return string.format("%s", AbbreviateValue(unitHealth))
     end
 end
 
@@ -129,13 +208,13 @@ oUF.Tags.Methods["curhpperhp:abbr"] = function(unit)
         return unitStatus
     else
         if UUF.SEPARATOR == "[]" then
-            return string.format("%s [%.0f%%]", AbbreviateLargeNumbers(unitHealth), unitHealthPercent)
+            return string.format("%s [%.0f%%]", AbbreviateValue(unitHealth), unitHealthPercent)
         elseif UUF.SEPARATOR == "()" then
-            return string.format("%s (%.0f%%)", AbbreviateLargeNumbers(unitHealth), unitHealthPercent)
+            return string.format("%s (%.0f%%)", AbbreviateValue(unitHealth), unitHealthPercent)
         elseif UUF.SEPARATOR == " " then
-            return string.format("%s %.0f%%", AbbreviateLargeNumbers(unitHealth), unitHealthPercent)
+            return string.format("%s %.0f%%", AbbreviateValue(unitHealth), unitHealthPercent)
         else
-            return string.format("%s %s %.0f%%", AbbreviateLargeNumbers(unitHealth), UUF.SEPARATOR, unitHealthPercent)
+            return string.format("%s %s %.0f%%", AbbreviateValue(unitHealth), UUF.SEPARATOR, unitHealthPercent)
         end
     end
 end
@@ -152,7 +231,7 @@ oUF.Tags.Methods["absorbs:abbr"] = function(unit)
     if not unit or not UnitExists(unit) then return "" end
     local absorbAmount = UnitGetTotalAbsorbs(unit) or 0
     if absorbAmount then
-        return string.format("%s", AbbreviateLargeNumbers(absorbAmount))
+        return string.format("%s", AbbreviateValue(absorbAmount))
     end
 end
 
@@ -169,7 +248,7 @@ oUF.Tags.Methods["curpp:abbr"] = function(unit)
     if not unit or not UnitExists(unit) then return "" end
     local unitPower = UnitPower(unit)
     if unitPower then
-        return string.format("%s", AbbreviateLargeNumbers(unitPower))
+        return string.format("%s", AbbreviateValue(unitPower))
     end
 end
 
@@ -178,7 +257,7 @@ oUF.Tags.Methods["curpp:abbr:colour"] = function(unit)
     local powerColourR, powerColourG, powerColourB = FetchUnitPowerColour(unit)
     local unitPower = UnitPower(unit)
     if unitPower then
-        return string.format("|cff%02x%02x%02x%s|r", powerColourR * 255, powerColourG * 255, powerColourB * 255, AbbreviateLargeNumbers(unitPower))
+        return string.format("|cff%02x%02x%02x%s|r", powerColourR * 255, powerColourG * 255, powerColourB * 255, AbbreviateValue(unitPower))
     end
 end
 

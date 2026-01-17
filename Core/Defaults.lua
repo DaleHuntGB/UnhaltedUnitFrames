@@ -10,6 +10,7 @@ local Defaults = {
             TagUpdateInterval = 0.25,
             Separator = "||",
             ToTSeparator = "»",
+            UseCustomAbbreviations = false,
             UIScale = {
                 Enabled = false,
                 Scale = 1.0,
