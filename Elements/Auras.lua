@@ -13,26 +13,28 @@ local function ApplyAuraDuration(icon, unit)
     local AurasDB = UUFDB.Units[UUF:GetNormalizedUnit(unit)].Auras
     local AuraDurationDB = AurasDB.AuraDuration
     if not icon then return end
-    local textRegion = FetchAuraDurationRegion(icon)
-    if textRegion then
-        if AuraDurationDB.ScaleByIconSize then
-            local iconWidth = icon:GetWidth()
-            local scaleFactor = iconWidth / 36
-            textRegion:SetFont(UUF.Media.Font, AuraDurationDB.FontSize * scaleFactor, FontsDB.FontFlag)
-        else
-            textRegion:SetFont(UUF.Media.Font, AuraDurationDB.FontSize, FontsDB.FontFlag)
+    C_Timer.After(0.001, function()
+        local textRegion = FetchAuraDurationRegion(icon)
+        if textRegion then
+            if AuraDurationDB.ScaleByIconSize then
+                local iconWidth = icon:GetWidth()
+                local scaleFactor = iconWidth / 36
+                textRegion:SetFont(UUF.Media.Font, AuraDurationDB.FontSize * scaleFactor, FontsDB.FontFlag)
+            else
+                textRegion:SetFont(UUF.Media.Font, AuraDurationDB.FontSize, FontsDB.FontFlag)
+            end
+            textRegion:SetTextColor(AuraDurationDB.Colour[1], AuraDurationDB.Colour[2], AuraDurationDB.Colour[3], 1)
+            textRegion:ClearAllPoints()
+            textRegion:SetPoint(AuraDurationDB.Layout[1], icon, AuraDurationDB.Layout[2], AuraDurationDB.Layout[3], AuraDurationDB.Layout[4])
+            if UUF.db.profile.General.Fonts.Shadow.Enabled then
+                textRegion:SetShadowColor(FontsDB.Shadow.Colour[1], FontsDB.Shadow.Colour[2], FontsDB.Shadow.Colour[3], FontsDB.Shadow.Colour[4])
+                textRegion:SetShadowOffset(FontsDB.Shadow.XPos, FontsDB.Shadow.YPos)
+            else
+                textRegion:SetShadowColor(0, 0, 0, 0)
+                textRegion:SetShadowOffset(0, 0)
+            end
         end
-        textRegion:SetTextColor(AuraDurationDB.Colour[1], AuraDurationDB.Colour[2], AuraDurationDB.Colour[3], 1)
-        textRegion:ClearAllPoints()
-        textRegion:SetPoint(AuraDurationDB.Layout[1], icon, AuraDurationDB.Layout[2], AuraDurationDB.Layout[3], AuraDurationDB.Layout[4])
-        if UUF.db.profile.General.Fonts.Shadow.Enabled then
-            textRegion:SetShadowColor(FontsDB.Shadow.Colour[1], FontsDB.Shadow.Colour[2], FontsDB.Shadow.Colour[3], FontsDB.Shadow.Colour[4])
-            textRegion:SetShadowOffset(FontsDB.Shadow.XPos, FontsDB.Shadow.YPos)
-        else
-            textRegion:SetShadowColor(0, 0, 0, 0)
-            textRegion:SetShadowOffset(0, 0)
-        end
-    end
+    end)
 end
 
 local function StyleAuras(_, button, unit, auraType)
