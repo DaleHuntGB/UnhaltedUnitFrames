@@ -4,6 +4,22 @@ local AG = UUF.AG
 local GUIWidgets = UUF.GUIWidgets
 local UUFGUI = {}
 local isGUIOpen = false
+-- Stores last selected tabs: [unit] = { mainTab = "CastBar", subTabs = { CastBar = "Bar" } }
+local lastSelectedUnitTabs = {}
+
+local function SaveSubTab(unit, tabName, subTabValue)
+    if not lastSelectedUnitTabs[unit] then lastSelectedUnitTabs[unit] = {} end
+    if not lastSelectedUnitTabs[unit].subTabs then lastSelectedUnitTabs[unit].subTabs = {} end
+    lastSelectedUnitTabs[unit].subTabs[tabName] = subTabValue
+end
+
+local function GetSavedSubTab(unit, tabName, defaultValue)
+    return lastSelectedUnitTabs[unit] and lastSelectedUnitTabs[unit].subTabs and lastSelectedUnitTabs[unit].subTabs[tabName] or defaultValue
+end
+
+local function GetSavedMainTab(unit, defaultValue)
+    return lastSelectedUnitTabs[unit] and lastSelectedUnitTabs[unit].mainTab or defaultValue
+end
 
 local UnitDBToUnitPrettyName = {
     player = "Player",
@@ -984,6 +1000,7 @@ end
 local function CreateCastBarSettings(containerParent, unit)
 
     local function SelectCastBarTab(CastBarContainer, _, CastBarTab)
+        SaveSubTab(unit, "CastBar", CastBarTab)
         CastBarContainer:ReleaseChildren()
         if CastBarTab == "Bar" then
             CreateCastBarBarSettings(CastBarContainer, unit, function() if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitCastBar(UUF[unit:upper()], unit) end end)
@@ -1006,7 +1023,7 @@ local function CreateCastBarSettings(containerParent, unit)
         {text = "Text: |cFFFFFFFFDuration|r", value = "Duration"},
     })
     CastBarTabGroup:SetCallback("OnGroupSelected", SelectCastBarTab)
-    CastBarTabGroup:SelectTab("Bar")
+    CastBarTabGroup:SelectTab(GetSavedSubTab(unit, "CastBar", "Bar"))
     containerParent:AddChild(CastBarTabGroup)
 end
 
@@ -1614,6 +1631,7 @@ end
 
 local function CreateIndicatorSettings(containerParent, unit)
     local function SelectIndicatorTab(IndicatorContainer, _, IndicatorTab)
+        SaveSubTab(unit, "Indicators", IndicatorTab)
         IndicatorContainer:ReleaseChildren()
         if IndicatorTab == "RaidTargetMarker" then
             CreateRaidTargetMarkerSettings(IndicatorContainer, unit, function() if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitRaidTargetMarker(UUF[unit:upper()], unit) end end)
@@ -1656,7 +1674,7 @@ local function CreateIndicatorSettings(containerParent, unit)
         })
     end
     IndicatorContainerTabGroup:SetCallback("OnGroupSelected", SelectIndicatorTab)
-    IndicatorContainerTabGroup:SelectTab("RaidTargetMarker")
+    IndicatorContainerTabGroup:SelectTab(GetSavedSubTab(unit, "Indicators", "RaidTargetMarker"))
     containerParent:AddChild(IndicatorContainerTabGroup)
 end
 
@@ -1766,6 +1784,7 @@ end
 local function CreateTagsSettings(containerParent, unit)
 
     local function SelectTagTab(TagContainer, _, TagTab)
+        SaveSubTab(unit, "Tags", TagTab)
         TagContainer:ReleaseChildren()
         CreateTagSetting(TagContainer, unit, TagTab)
         containerParent:DoLayout()
@@ -1782,7 +1801,7 @@ local function CreateTagsSettings(containerParent, unit)
         { text = "Tag Five", value = "TagFive"},
     })
     TagContainerTabGroup:SetCallback("OnGroupSelected", SelectTagTab)
-    TagContainerTabGroup:SelectTab("TagOne")
+    TagContainerTabGroup:SelectTab(GetSavedSubTab(unit, "Tags", "TagOne"))
     containerParent:AddChild(TagContainerTabGroup)
 
     containerParent:DoLayout()
@@ -2033,6 +2052,7 @@ local function CreateAuraSettings(containerParent, unit)
     end
 
     local function SelectAuraTab(AuraContainer, _, AuraTab)
+        SaveSubTab(unit, "Auras", AuraTab)
         AuraContainer:ReleaseChildren()
         if AuraTab == "Buffs" then
             CreateSpecificAuraSettings(AuraContainer, unit, "Buffs")
@@ -2048,7 +2068,7 @@ local function CreateAuraSettings(containerParent, unit)
     AuraContainerTabGroup:SetFullWidth(true)
     AuraContainerTabGroup:SetTabs({ { text = "Buffs", value = "Buffs"}, { text = "Debuffs", value = "Debuffs"}, })
     AuraContainerTabGroup:SetCallback("OnGroupSelected", SelectAuraTab)
-    AuraContainerTabGroup:SelectTab("Buffs")
+    AuraContainerTabGroup:SelectTab(GetSavedSubTab(unit, "Auras", "Buffs"))
     containerParent:AddChild(AuraContainerTabGroup)
 
     containerParent:DoLayout()
@@ -2232,6 +2252,8 @@ local function CreateUnitSettings(containerParent, unit)
     containerParent:AddChild(EnableUnitFrameToggle)
 
     local function SelectUnitTab(SubContainer, _, UnitTab)
+        if not lastSelectedUnitTabs[unit] then lastSelectedUnitTabs[unit] = {} end
+        lastSelectedUnitTabs[unit].mainTab = UnitTab
         SubContainer:ReleaseChildren()
         if UnitTab == "Frame" then
             CreateFrameSettings(SubContainer, unit, UUF.db.profile.Units[unit].Frame.AnchorParent and true or false, function() if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitFrame(UUF[unit:upper()], unit) end end)
@@ -2295,7 +2317,7 @@ local function CreateUnitSettings(containerParent, unit)
         })
     end
     SubContainerTabGroup:SetCallback("OnGroupSelected", SelectUnitTab)
-    SubContainerTabGroup:SelectTab("Frame")
+    SubContainerTabGroup:SelectTab(GetSavedMainTab(unit, "Frame"))
     containerParent:AddChild(SubContainerTabGroup)
 
     containerParent:DoLayout()
