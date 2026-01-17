@@ -30,6 +30,8 @@ function UUF:ImportSavedVariables(EncodedInfo, profileName)
         UUFG.RefreshProfiles()
 
         UIParent:SetScale(UUF.db.profile.General.UIScale or 1)
+
+        UUF:UpdateAllUnitFrames()
     else
         StaticPopupDialogs["UUF_IMPORT_NEW_PROFILE"] = {
             text = UUF.ADDON_NAME.." - ".."Profile Name?",
@@ -57,6 +59,8 @@ function UUF:ImportSavedVariables(EncodedInfo, profileName)
                 UUFG.RefreshProfiles()
 
                 UIParent:SetScale(UUF.db.profile.General.UIScale.Scale or 1)
+
+                UUF:UpdateAllUnitFrames()
 
             end,
         }
