@@ -109,17 +109,19 @@ function UUF:CreateUnitCastBar(unitFrame, unit)
         unitFrame.Castbar:HookScript("OnValueChanged", function(self, value) if self.Castbar then self.Castbar:SetValue(value) end end)
         unitFrame.Castbar:HookScript("OnHide", function() CastBarContainer:Hide() end)
         unitFrame.Castbar.PostCastStart = function(frameCastBar)
-            CastBarContainer:Show()
             local spellName = C_Spell.GetSpellInfo(frameCastBar.spellID).name
             if spellName then frameCastBar.Text:SetText(spellName) else frameCastBar.Text:SetText("") end
-            -- Look at this in the future
+
+            local currentCastBarDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].CastBar
+
             if not issecretvalue and issecretvalue(frameCastBar.notInterruptible) then
-                frameCastBar:SetVertexColorFromBoolean(frameCastBar.notInterruptible, CastBarDB.NotInterruptibleColour, CastBarDB.Foreground)
-                -- frameCastBar:SetStatusBarColor(CastBarDB.NotInterruptibleColour[1], CastBarDB.NotInterruptibleColour[2], CastBarDB.NotInterruptibleColour[3], CastBarDB.NotInterruptibleColour[4])
+                local color = currentCastBarDB.NotInterruptibleColour
+                frameCastBar:SetStatusBarColor(color[1], color[2], color[3], color[4])
             else
-                local castBarColour = CastBarDB.Foreground
-                frameCastBar:SetStatusBarColor(castBarColour[1], castBarColour[2], castBarColour[3], castBarColour[4])
+                local color = currentCastBarDB.Foreground
+                frameCastBar:SetStatusBarColor(color[1], color[2], color[3], color[4])
             end
+            CastBarContainer:Show()
         end
     else
         CastBarContainer:Hide()
