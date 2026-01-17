@@ -52,6 +52,7 @@ function UUF:CreateTestBossFrames()
     local AuraDurationDB = UUF.db.profile.Units.boss.Auras.AuraDuration
     local BuffsDB = UUF.db.profile.Units.boss.Auras.Buffs
     local DebuffsDB = UUF.db.profile.Units.boss.Auras.Debuffs
+    local TagsDB = UUF.db.profile.Units.boss.Tags
     UUF:ResolveLSM()
     local BossDB = UUF.db.profile.Units.boss
     if UUF.BOSS_TEST_MODE then
@@ -313,6 +314,54 @@ function UUF:CreateTestBossFrames()
                     BossFrame.TargetIndicator:Hide()
                 end
             end
+
+            if BossFrame.Tags.TagOne then
+                local TagOneDB = TagsDB.TagOne
+                BossFrame.Tags.TagOne:ClearAllPoints()
+                BossFrame.Tags.TagOne:SetPoint(TagOneDB.Layout[1], BossFrame, TagOneDB.Layout[2], TagOneDB.Layout[3], TagOneDB.Layout[4])
+                BossFrame.Tags.TagOne:SetFont(UUF.Media.Font, TagOneDB.FontSize, General.Fonts.FontFlag)
+                if General.Fonts.Shadow.Enabled then
+                    BossFrame.Tags.TagOne:SetShadowColor(unpack(General.Fonts.Shadow.Colour))
+                    BossFrame.Tags.TagOne:SetShadowOffset(General.Fonts.Shadow.XPos, General.Fonts.Shadow.YPos)
+                else
+                    BossFrame.Tags.TagOne:SetShadowColor(0, 0, 0, 0)
+                    BossFrame.Tags.TagOne:SetShadowOffset(0, 0)
+                end
+                BossFrame.Tags.TagOne:SetTextColor(unpack(TagOneDB.Colour))
+                BossFrame.Tags.TagOne:SetText(EnvironmenTestData[i].name)
+            end
+
+            if BossFrame.Tags.TagTwo then
+                local TagTwoDB = TagsDB.TagTwo
+                BossFrame.Tags.TagTwo:ClearAllPoints()
+                BossFrame.Tags.TagTwo:SetPoint(TagTwoDB.Layout[1], BossFrame, TagTwoDB.Layout[2], TagTwoDB.Layout[3], TagTwoDB.Layout[4])
+                BossFrame.Tags.TagTwo:SetFont(UUF.Media.Font, TagTwoDB.FontSize, General.Fonts.FontFlag)
+                if General.Fonts.Shadow.Enabled then
+                    BossFrame.Tags.TagTwo:SetShadowColor(unpack(General.Fonts.Shadow.Colour))
+                    BossFrame.Tags.TagTwo:SetShadowOffset(General.Fonts.Shadow.XPos, General.Fonts.Shadow.YPos)
+                else
+                    BossFrame.Tags.TagTwo:SetShadowColor(0, 0, 0, 0)
+                    BossFrame.Tags.TagTwo:SetShadowOffset(0, 0)
+                end
+                BossFrame.Tags.TagTwo:SetTextColor(unpack(TagTwoDB.Colour))
+                BossFrame.Tags.TagTwo:SetText(string.format("%.1f%%", EnvironmenTestData[i].percent))
+            end
+
+            if BossFrame.Tags.TagThree then
+                local TagThreeDB = TagsDB.TagThree
+                BossFrame.Tags.TagThree:ClearAllPoints()
+                BossFrame.Tags.TagThree:SetPoint(TagThreeDB.Layout[1], BossFrame, TagThreeDB.Layout[2], TagThreeDB.Layout[3], TagThreeDB.Layout[4])
+                BossFrame.Tags.TagThree:SetFont(UUF.Media.Font, TagThreeDB.FontSize, General.Fonts.FontFlag)
+                if General.Fonts.Shadow.Enabled then
+                    BossFrame.Tags.TagThree:SetShadowColor(unpack(General.Fonts.Shadow.Colour))
+                    BossFrame.Tags.TagThree:SetShadowOffset(General.Fonts.Shadow.XPos, General.Fonts.Shadow.YPos)
+                else
+                    BossFrame.Tags.TagThree:SetShadowColor(0, 0, 0, 0)
+                    BossFrame.Tags.TagThree:SetShadowOffset(0, 0)
+                end
+                BossFrame.Tags.TagThree:SetTextColor(unpack(TagThreeDB.Colour))
+                BossFrame.Tags.TagThree:SetText(EnvironmenTestData[i].power)
+            end
         end
     else
         for i, BossFrame in ipairs(UUF.BOSS_FRAMES) do
@@ -327,7 +376,6 @@ function UUF:CreateTestBossFrames()
                 if button then button:Hide() end
             end
             BossFrame:Hide()
-
         end
     end
 end
