@@ -24,7 +24,7 @@ function UUF:CreateUnitCastBar(unitFrame, unit)
     CastBar:SetPoint("TOPLEFT", CastBarContainer, "TOPLEFT", 1, -1)
     CastBar:SetPoint("BOTTOMRIGHT", CastBarContainer, "BOTTOMRIGHT", -1, 1)
     CastBar:SetFrameLevel(CastBarContainer:GetFrameLevel() + 1)
-    if CastBarDB.ColourByClass then CastBar:SetStatusBarColor(unpack(UUF:GetClassColour(unitFrame))) else CastBar:SetStatusBarColor(unpack(CastBarDB.Foreground)) end
+    CastBar:SetStatusBarColor(unpack(CastBarDB.Foreground))
 
     CastBar.Background = CastBar:CreateTexture(nil, "BACKGROUND")
     CastBar.Background:SetAllPoints(CastBar)
@@ -117,7 +117,7 @@ function UUF:CreateUnitCastBar(unitFrame, unit)
                 frameCastBar:SetVertexColorFromBoolean(frameCastBar.notInterruptible, CastBarDB.NotInterruptibleColour, CastBarDB.Foreground)
                 -- frameCastBar:SetStatusBarColor(CastBarDB.NotInterruptibleColour[1], CastBarDB.NotInterruptibleColour[2], CastBarDB.NotInterruptibleColour[3], CastBarDB.NotInterruptibleColour[4])
             else
-                local castBarColour = (CastBarDB.ColourByClass and UUF:GetClassColour(unitFrame)) or CastBarDB.Foreground
+                local castBarColour = CastBarDB.Foreground
                 frameCastBar:SetStatusBarColor(castBarColour[1], castBarColour[2], castBarColour[3], castBarColour[4])
             end
         end
@@ -251,7 +251,7 @@ function UUF:CreateTestCastBar(unitFrame, unit)
             unitFrame.Castbar.Time:SetText("0.0")
             unitFrame.Castbar:SetMinMaxValues(0, 1000)
             unitFrame.Castbar:SetScript("OnUpdate", function() local currentValue = unitFrame.Castbar:GetValue() currentValue = currentValue + 1 if currentValue >= 1000 then currentValue = 0 end unitFrame.Castbar:SetValue(currentValue) unitFrame.Castbar.Time:SetText(string.format("%.1f", (currentValue / 1000) * 5)) end)
-            local castBarColour = (false and CastBarDB.NotInterruptibleColour) or (CastBarDB.ColourByClass and UUF:GetClassColour(unitFrame)) or CastBarDB.Foreground
+            local castBarColour = (false and CastBarDB.NotInterruptibleColour) or CastBarDB.Foreground
             unitFrame.Castbar:SetStatusBarColor(castBarColour[1], castBarColour[2], castBarColour[3], castBarColour[4])
             if CastBarDB.Icon.Enabled and unitFrame.Castbar.Icon then unitFrame.Castbar.Icon:SetTexture("Interface\\Icons\\ability_mage_netherwindpresence") unitFrame.Castbar.Icon:Show() end
         else
