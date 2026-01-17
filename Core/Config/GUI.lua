@@ -4,7 +4,7 @@ local AG = UUF.AG
 local GUIWidgets = UUF.GUIWidgets
 local UUFGUI = {}
 local isGUIOpen = false
--- Stores last selected tabs: [unit] = { mainTab = "CastBar", subTabs = { CastBar = "Bar", Indicators = "RaidTargetMarker", etc } }
+-- Stores last selected tabs: [unit] = { mainTab = "CastBar", subTabs = { CastBar = "Bar" } }
 local lastSelectedUnitTabs = {}
 
 local function SaveSubTab(unit, tabName, subTabValue)
