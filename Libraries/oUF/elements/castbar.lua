@@ -35,6 +35,7 @@ A default texture will be applied to the StatusBar and Texture widgets if they d
 .empowering       - Indicates whether the current spell is an empowering cast (boolean)
 .notInterruptible - Indicates whether the current spell is interruptible (boolean)
 .spellID          - The spell identifier of the currently cast/channeled/empowering spell (number)
+.spellName        - The name of the spell currently being cast/channeled/empowered (string)
 
 ## Examples
 
@@ -96,6 +97,7 @@ local function resetAttributes(self)
 	self.empowering = nil
 	self.notInterruptible = nil
 	self.spellID = nil
+	self.spellName = nil
 
 	for _, pip in next, self.Pips do
 		pip:Hide()
@@ -222,6 +224,7 @@ local function CastStart(self, event, unit)
 	element.holdTime = 0
 	element.castID = castID
 	element.spellID = spellID
+	element.spellName = text
 
 	if(unit == 'player') then
 		-- we can only read these variables for players
@@ -482,18 +485,30 @@ local function onUpdate(self, elapsed)
 		if(self.Time) then
 			local durationObject = self:GetTimerDuration() -- can be nil
 			if durationObject then
-				local duration = durationObject:GetRemainingDuration()
 				if(self.delay ~= 0) then
+					--[[ Override: Castbar:CustomDelayText(duration)
+					Used to completely override the updating of the .Time sub-widget when there is a delay to adjust for.
+
+					* self     - the Castbar widget
+					* duration - a [Duration](https://warcraft.wiki.gg/wiki/ScriptObject_DurationObject) object for the Castbar
+					--]]
 					if(self.CustomDelayText) then
-						self:CustomDelayText(duration)
+						self:CustomDelayText(durationObject)
 					else
+						local duration = durationObject:GetRemainingDuration()
 						self.Time:SetFormattedText('%.1f|cffff0000%s%.2f|r', duration, self.channeling and '-' or '+', self.delay)
 					end
 				else
+					--[[ Override: Castbar:CustomTimeText(duration)
+					Used to completely override the updating of the .Time sub-widget.
+
+					* self     - the Castbar widget
+					* duration - a [Duration](https://warcraft.wiki.gg/wiki/ScriptObject_DurationObject) object for the Castbar
+					--]]
 					if(self.CustomTimeText) then
-						self:CustomTimeText(duration)
+						self:CustomTimeText(durationObject)
 					else
-						self.Time:SetFormattedText('%.1f', duration)
+						self.Time:SetFormattedText('%.1f', durationObject:GetRemainingDuration())
 					end
 				end
 			end
