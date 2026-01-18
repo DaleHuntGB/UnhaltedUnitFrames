@@ -470,16 +470,9 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
     local ColourByClassToggle = AG:Create("CheckBox")
     ColourByClassToggle:SetLabel("Colour By Class / Reaction")
     ColourByClassToggle:SetValue(HealthBarDB.ColourByClass)
-    ColourByClassToggle:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.ColourByClass = value UUFGUI.FrameFGColourPicker:SetDisabled(HealthBarDB.ColourByClass or HealthBarDB.ColourByReaction) updateCallback() end)
+    ColourByClassToggle:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.ColourByClass = value UUFGUI.FrameFGColourPicker:SetDisabled(HealthBarDB.ColourByClass) updateCallback() end)
     ColourByClassToggle:SetRelativeWidth((unit == "player" or unit == "target") and 0.5 or 0.33)
     ColourContainer:AddChild(ColourByClassToggle)
-
-    -- local ColourByReactionToggle = AG:Create("CheckBox")
-    -- ColourByReactionToggle:SetLabel("Colour By Reaction")
-    -- ColourByReactionToggle:SetValue(HealthBarDB.ColourByReaction)
-    -- ColourByReactionToggle:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.ColourByReaction = value UUFGUI.FrameFGColourPicker:SetDisabled(HealthBarDB.ColourByClass or HealthBarDB.ColourByReaction) updateCallback() end)
-    -- ColourByReactionToggle:SetRelativeWidth((unit == "player" or unit == "target") and 0.33 or 0.25)
-    -- ColourContainer:AddChild(ColourByReactionToggle)
 
     local ColourWhenTappedToggle = AG:Create("CheckBox")
     ColourWhenTappedToggle:SetLabel("Colour When Tapped")
@@ -549,7 +542,7 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
     ForegroundColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) HealthBarDB.Foreground = {r, g, b} updateCallback() end)
     ForegroundColourPicker:SetHasAlpha(false)
     ForegroundColourPicker:SetRelativeWidth(0.5)
-    ForegroundColourPicker:SetDisabled(HealthBarDB.ColourByClass or HealthBarDB.ColourByReaction)
+    ForegroundColourPicker:SetDisabled(HealthBarDB.ColourByClass)
     ColourContainer:AddChild(ForegroundColourPicker)
     UUFGUI.FrameFGColourPicker = ForegroundColourPicker
 
