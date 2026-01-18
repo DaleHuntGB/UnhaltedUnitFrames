@@ -156,6 +156,8 @@ function UUF:UpdateUnitCastBar(unitFrame, unit)
             if CastBarContainer then CastBarContainer:SetHeight(CastBarDB.Height) end
             unitFrame.Castbar:SetStatusBarTexture(UUF.Media.Foreground)
             unitFrame.Castbar.Background:SetTexture(UUF.Media.Background)
+            unitFrame.Castbar:SetStatusBarColor(unpack(CastBarDB.Foreground))
+            unitFrame.Castbar.Background:SetVertexColor(unpack(CastBarDB.Background))
 
             if CastBarDB.Inverse then
                 unitFrame.Castbar:SetReverseFill(true)

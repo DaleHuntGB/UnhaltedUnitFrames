@@ -9,7 +9,7 @@ function UUF:CreateUnitPowerBar(unitFrame, unit)
     PowerBar:SetPoint("BOTTOMLEFT", unitContainer, "BOTTOMLEFT", 1, 1)
     PowerBar:SetSize(FrameDB.Width - 2, PowerBarDB.Height)
     PowerBar:SetStatusBarTexture(UUF.Media.Foreground)
-    PowerBar:SetStatusBarColor(PowerBarDB.Foreground[1], PowerBarDB.Foreground[2], PowerBarDB.Foreground[3], 1)
+    PowerBar:SetStatusBarColor(PowerBarDB.Foreground[1], PowerBarDB.Foreground[2], PowerBarDB.Foreground[3], PowerBarDB.Foreground[4] or 1)
     PowerBar:SetFrameLevel(unitContainer:GetFrameLevel() + 2)
     PowerBar.colorPower = PowerBarDB.ColourByType
     PowerBar.colorClass = PowerBarDB.ColourByClass
@@ -25,7 +25,7 @@ function UUF:CreateUnitPowerBar(unitFrame, unit)
     PowerBar.Background:SetPoint("BOTTOMLEFT", unitContainer, "BOTTOMLEFT", 1, 1)
     PowerBar.Background:SetSize(FrameDB.Width - 2, PowerBarDB.Height)
     PowerBar.Background:SetTexture(UUF.Media.Background)
-    PowerBar.Background:SetVertexColor(PowerBarDB.Background[1], PowerBarDB.Background[2], PowerBarDB.Background[3], 1)
+    PowerBar.Background:SetVertexColor(PowerBarDB.Background[1], PowerBarDB.Background[2], PowerBarDB.Background[3], PowerBarDB.Background[4] or 1)
 
     if not PowerBar.PowerBarBorder then
         PowerBar.PowerBarBorder = PowerBar:CreateTexture(nil, "OVERLAY")
@@ -66,7 +66,7 @@ function UUF:UpdateUnitPowerBar(unitFrame, unit)
             unitFrame.Power:ClearAllPoints()
             unitFrame.Power:SetPoint("BOTTOMLEFT", unitFrame.Container, "BOTTOMLEFT", 1, 1)
             unitFrame.Power:SetSize(unitFrame:GetWidth() - 2, PowerBarDB.Height)
-            unitFrame.Power:SetStatusBarColor(PowerBarDB.Foreground[1], PowerBarDB.Foreground[2], PowerBarDB.Foreground[3], 1)
+            unitFrame.Power:SetStatusBarColor(PowerBarDB.Foreground[1], PowerBarDB.Foreground[2], PowerBarDB.Foreground[3], PowerBarDB.Foreground[4] or 1)
             unitFrame.Power:SetStatusBarTexture(UUF.Media.Foreground)
             unitFrame.Power.colorPower = PowerBarDB.ColourByType
             unitFrame.Power.colorClass = PowerBarDB.ColourByClass
@@ -80,7 +80,7 @@ function UUF:UpdateUnitPowerBar(unitFrame, unit)
 
         if unitFrame.Power.Background then
             unitFrame.Power.Background:SetSize(unitFrame:GetWidth() - 2, PowerBarDB.Height)
-            unitFrame.Power.Background:SetVertexColor(PowerBarDB.Background[1], PowerBarDB.Background[2], PowerBarDB.Background[3], 1)
+            unitFrame.Power.Background:SetVertexColor(PowerBarDB.Background[1], PowerBarDB.Background[2], PowerBarDB.Background[3], PowerBarDB.Background[4] or 1)
             unitFrame.Power.Background:SetTexture(UUF.Media.Background)
         end
 
