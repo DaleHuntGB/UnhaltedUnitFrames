@@ -118,6 +118,24 @@ end
 function UUF:LoadCustomColours()
     local General = UUF.db.profile.General
 
+    local PowerTypesToString = {
+        [0] = "MANA",
+        [1] = "RAGE",
+        [2] = "FOCUS",
+        [3] = "ENERGY",
+        [6] = "RUNIC_POWER",
+        [8] = "LUNAR_POWER",
+        [11] = "MAELSTROM",
+        [13] = "INSANITY",
+        [17] = "FURY",
+        [18] = "PAIN"
+    }
+
+    for powerType, color in pairs(General.Colours.Power) do
+        local powerTypeString = PowerTypesToString[powerType]
+        if powerTypeString then oUF.colors.power[powerTypeString] = oUF:CreateColor(color[1], color[2], color[3]) end
+    end
+
     for powerType, color in pairs(General.Colours.Power) do
         if powerType then oUF.colors.power[powerType] = oUF:CreateColor(color[1], color[2], color[3]) end
     end
