@@ -11,6 +11,8 @@ function UUFG:AddTag(tagString, tagEvents, tagMethod, tagType, tagDescription)
     -- tagType, tagDescription are used for the configuration UI. Please provide them. Prefix of your AddOn Name is also advised.
     -- EG: UUFG:AddTag("BCDM: Health", "UNIT_HEALTH UNIT_MAXHEALTH", function(unit) return UnitHealth(unit) or 0 end, "Health", "Show Health")
 
+    if not tagString or not tagEvents or not tagMethod or not tagType or not tagDescription then return end
+
     oUF.Tags.Methods[tagString] = tagMethod
     oUF.Tags.Events[tagString] = (oUF.Tags.Events[tagString] and (oUF.Tags.Events[tagString] .. " ") or "") .. tagEvents
 
