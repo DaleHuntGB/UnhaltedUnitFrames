@@ -13,13 +13,15 @@ local function ApplyAuraDuration(icon, unit)
     local AurasDB = UUFDB.Units[UUF:GetNormalizedUnit(unit)].Auras
     local AuraDurationDB = AurasDB.AuraDuration
     if not icon then return end
-    C_Timer.After(0.001, function()
+    C_Timer.After(0.01, function()
         local textRegion = FetchAuraDurationRegion(icon)
         if textRegion then
             if AuraDurationDB.ScaleByIconSize then
                 local iconWidth = icon:GetWidth()
-                local scaleFactor = iconWidth / 36
-                textRegion:SetFont(UUF.Media.Font, AuraDurationDB.FontSize * scaleFactor, FontsDB.FontFlag)
+                local scaleFactor = iconWidth > 0 and iconWidth / 36 or 1
+                local fontSize = AuraDurationDB.FontSize * scaleFactor
+                if fontSize < 1 then fontSize = 12 end
+                textRegion:SetFont(UUF.Media.Font, fontSize, FontsDB.FontFlag)
             else
                 textRegion:SetFont(UUF.Media.Font, AuraDurationDB.FontSize, FontsDB.FontFlag)
             end
