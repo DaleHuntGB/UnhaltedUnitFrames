@@ -1,4 +1,5 @@
 local _, UUF = ...
+local oUF = UUF.oUF
 
 local function FetchAuraDurationRegion(cooldown)
     if not cooldown then return end
@@ -180,6 +181,13 @@ local function CreateUnitBuffs(unitFrame, unit)
         unitFrame.BuffContainer.tooltipAnchor = "ANCHOR_CURSOR"
         unitFrame.BuffContainer.showType = BuffsDB.ShowType
         unitFrame.BuffContainer.showBuffType = BuffsDB.ShowType
+        unitFrame.BuffContainer.dispelColorCurve = C_CurveUtil.CreateColorCurve()
+        unitFrame.BuffContainer.dispelColorCurve:SetType(Enum.LuaCurveType.Step)
+        for _, dispelIndex in next, oUF.Enum.DispelType do
+            if(oUF.colors.dispel[dispelIndex]) then
+                unitFrame.BuffContainer.dispelColorCurve:AddPoint(dispelIndex, oUF.colors.dispel[dispelIndex])
+            end
+        end
 
         if BuffsDB.Enabled then
             unitFrame.Buffs = unitFrame.BuffContainer
@@ -213,6 +221,13 @@ local function CreateUnitDebuffs(unitFrame, unit)
         unitFrame.DebuffContainer.tooltipAnchor = "ANCHOR_CURSOR"
         unitFrame.DebuffContainer.showType = DebuffsDB.ShowType
         unitFrame.DebuffContainer.showDebuffType = DebuffsDB.ShowType
+        unitFrame.DebuffContainer.dispelColorCurve = C_CurveUtil.CreateColorCurve()
+        unitFrame.DebuffContainer.dispelColorCurve:SetType(Enum.LuaCurveType.Step)
+        for _, dispelIndex in next, oUF.Enum.DispelType do
+            if(oUF.colors.dispel[dispelIndex]) then
+                unitFrame.DebuffContainer.dispelColorCurve:AddPoint(dispelIndex, oUF.colors.dispel[dispelIndex])
+            end
+        end
 
         if DebuffsDB.Enabled then
             unitFrame.Debuffs = unitFrame.DebuffContainer
