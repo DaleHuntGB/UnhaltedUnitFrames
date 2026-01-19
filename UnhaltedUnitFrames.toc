@@ -1,5 +1,6 @@
 ## Title: |cFF8080FFUnhalted|rUnitFrames
 ## Interface: 120000, 120001
+## Version: @project-version@
 ## Author: |cFF8080FFUnhalted|r
 ## Notes: Replacement Unit Frames for Blizzard. Focused on performance, customization & a complete out of the box experience.
 ## SavedVariables: UUFDB
