@@ -299,6 +299,40 @@ local function CreateTextureSettings(containerParent)
     MouseoverHighlightSlider:SetIsPercent(true)
     MouseoverHighlightSlider:SetCallback("OnValueChanged", function(_, _, value) for _, unitDB in pairs(UUF.db.profile.Units) do if unitDB.Indicators.Mouseover and unitDB.Indicators.Mouseover.Enabled then unitDB.Indicators.Mouseover.HighlightOpacity = value end end UUF:UpdateAllUnitFrames() end)
     Container:AddChild(MouseoverHighlightSlider)
+
+    local ForegroundColourPicker = AG:Create("ColorPicker")
+    ForegroundColourPicker:SetLabel("Foreground Colour")
+    local R, G, B = 8/255, 8/255, 8/255
+    ForegroundColourPicker:SetColor(R, G, B)
+    ForegroundColourPicker:SetRelativeWidth(0.5)
+    ForegroundColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) for _, unitDB in pairs(UUF.db.profile.Units) do unitDB.HealthBar.ForegroundColour = {r, g, b} end UUF:UpdateAllUnitFrames() end)
+    Container:AddChild(ForegroundColourPicker)
+
+    local ForegroundOpacitySlider = AG:Create("Slider")
+    ForegroundOpacitySlider:SetLabel("Foreground Opacity")
+    ForegroundOpacitySlider:SetValue(0.8)
+    ForegroundOpacitySlider:SetSliderValues(0.0, 1.0, 0.01)
+    ForegroundOpacitySlider:SetRelativeWidth(0.5)
+    ForegroundOpacitySlider:SetIsPercent(true)
+    ForegroundOpacitySlider:SetCallback("OnValueChanged", function(_, _, value) for _, unitDB in pairs(UUF.db.profile.Units) do unitDB.HealthBar.ForegroundOpacity = value end UUF:UpdateAllUnitFrames() end)
+    Container:AddChild(ForegroundOpacitySlider)
+
+    local BackgroundColourPicker = AG:Create("ColorPicker")
+    BackgroundColourPicker:SetLabel("Background Colour")
+    local R2, G2, B2 = 8/255, 8/255, 8/255
+    BackgroundColourPicker:SetColor(R2, G2, B2)
+    BackgroundColourPicker:SetRelativeWidth(0.5)
+    BackgroundColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) for _, unitDB in pairs(UUF.db.profile.Units) do unitDB.HealthBar.BackgroundColour = {r, g, b} end UUF:UpdateAllUnitFrames() end)
+    Container:AddChild(BackgroundColourPicker)
+
+    local BackgroundOpacitySlider = AG:Create("Slider")
+    BackgroundOpacitySlider:SetLabel("Background Opacity")
+    BackgroundOpacitySlider:SetValue(0.8)
+    BackgroundOpacitySlider:SetSliderValues(0.0, 1.0, 0.01)
+    BackgroundOpacitySlider:SetRelativeWidth(0.5)
+    BackgroundOpacitySlider:SetIsPercent(true)
+    BackgroundOpacitySlider:SetCallback("OnValueChanged", function(_, _, value) for _, unitDB in pairs(UUF.db.profile.Units) do unitDB.HealthBar.BackgroundOpacity = value end UUF:UpdateAllUnitFrames() end)
+    Container:AddChild(BackgroundOpacitySlider)
 end
 
 local function CreateRangeSettings(containerParent)
