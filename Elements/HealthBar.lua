@@ -44,6 +44,11 @@ function UUF:CreateUnitHealthBar(unitFrame, unit)
             curHP = curHP or 0
             unitHP:SetMinMaxValues(0, maxHP)
             unitHP:SetValue(UnitHealthMissing(unitFrame.unit, true))
+            if HealthBarDB.ColourBackgroundByClass then
+                local unitToColour = unitFrame.unit ~= "pet" and unitFrame.unit or "player"
+                local r, g, b = UUF:GetUnitColour(unitToColour)
+                unitFrame.HealthBackground:SetStatusBarColor(r, g, b, HealthBarDB.BackgroundOpacity)
+            end
         end
 
         if HealthBarDB.Inverse then

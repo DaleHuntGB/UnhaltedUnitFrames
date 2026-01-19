@@ -69,6 +69,7 @@ local Defaults = {
                 },
                 HealthBar = {
                     ColourByClass = true,
+                    ColourBackgroundByClass = false,
                     ColourByReaction = true,
                     ColourWhenTapped = true,
                     AnchorToCooldownViewer = false,
@@ -261,6 +262,7 @@ local Defaults = {
                 },
                 HealthBar = {
                     ColourByClass = true,
+                    ColourBackgroundByClass = false,
                     ColourByReaction = true,
                     ColourWhenTapped = true,
                     AnchorToCooldownViewer = false,
@@ -441,6 +443,7 @@ local Defaults = {
                 },
                 HealthBar = {
                     ColourByClass = true,
+                    ColourBackgroundByClass = false,
                     ColourByReaction = true,
                     ColourWhenTapped = true,
                     AnchorToCooldownViewer = false,
@@ -610,6 +613,7 @@ local Defaults = {
                 },
                 HealthBar = {
                     ColourByClass = true,
+                    ColourBackgroundByClass = false,
                     ColourByReaction = true,
                     ColourWhenTapped = true,
                     AnchorToCooldownViewer = false,
@@ -780,6 +784,7 @@ local Defaults = {
                 },
                 HealthBar = {
                     ColourByClass = true,
+                    ColourBackgroundByClass = false,
                     ColourByReaction = true,
                     ColourWhenTapped = true,
                     AnchorToCooldownViewer = false,
@@ -949,6 +954,7 @@ local Defaults = {
                 },
                 HealthBar = {
                     ColourByClass = true,
+                    ColourBackgroundByClass = false,
                     ColourByReaction = true,
                     ColourWhenTapped = true,
                     AnchorToCooldownViewer = false,
@@ -1119,6 +1125,7 @@ local Defaults = {
                 },
                 HealthBar = {
                     ColourByClass = true,
+                    ColourBackgroundByClass = false,
                     ColourByReaction = true,
                     ColourWhenTapped = true,
                     AnchorToCooldownViewer = false,

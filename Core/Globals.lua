@@ -191,6 +191,20 @@ function UUF:SetJustification(anchorFrom)
     end
 end
 
+function UUF:GetUnitColour(unit)
+    if UnitIsPlayer(unit) or UnitInPartyIsAI(unit) then
+        local _, class = UnitClass(unit)
+        local classColour = class and RAID_CLASS_COLORS[class]
+        if classColour then return classColour.r, classColour.g, classColour.b end
+    end
+    local reaction = UnitReaction(unit, "player")
+    if reaction and UUF.db.profile.General.Colours.Reaction[reaction] then
+        local r, g, b = unpack(UUF.db.profile.General.Colours.Reaction[reaction])
+        return r, g, b
+    end
+    return 1, 1, 1
+end
+
 function UUF:GetClassColour(unitFrame)
     local _, class = UnitClass(unitFrame.unit)
     local classColour = RAID_CLASS_COLORS[class]

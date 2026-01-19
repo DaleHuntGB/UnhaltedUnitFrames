@@ -47,6 +47,22 @@ for i = 1, 10 do
     }
 end
 
+local function GetTestUnitColour(id, defaultColour, colourByClass, opacity)
+    if colourByClass then
+        if id <= 5 then
+            local temporaryClass = EnvironmenTestData[id].class
+            local classColour = RAID_CLASS_COLORS[temporaryClass]
+            return classColour.r, classColour.g, classColour.b, opacity
+        else
+            local temporaryReaction = EnvironmenTestData[id].reaction
+            local reactionColour = oUF.colors.reaction[temporaryReaction]
+            return reactionColour.r, reactionColour.g, reactionColour.b, opacity
+        end
+    else
+        return defaultColour[1], defaultColour[2], defaultColour[3], opacity
+    end
+end
+
 function UUF:CreateTestBossFrames()
     local General = UUF.db.profile.General
     local AuraDurationDB = UUF.db.profile.Units.boss.Auras.AuraDuration
@@ -68,24 +84,8 @@ function UUF:CreateTestBossFrames()
                 BossFrame.HealthBackground:SetMinMaxValues(0, EnvironmenTestData[i].maxHealth)
                 BossFrame.HealthBackground:SetValue(EnvironmenTestData[i].missingHealth)
                 BossFrame.HealthBackground:SetStatusBarColor(HealthBarDB.Background[1], HealthBarDB.Background[2], HealthBarDB.Background[3], HealthBarDB.BackgroundOpacity)
-                if HealthBarDB.ColourByClass and HealthBarDB.ColourByReaction then
-                    if i <= 5 then
-                        local temporaryClass = EnvironmenTestData[i].class
-                        local classColour = RAID_CLASS_COLORS[temporaryClass]
-                        BossFrame.Health:SetStatusBarColor(classColour.r, classColour.g, classColour.b, HealthBarDB.ForegroundOpacity)
-                    else
-                        local temporaryReaction = EnvironmenTestData[i].reaction
-                        local reactionColour = oUF.colors.reaction[temporaryReaction]
-                        BossFrame.Health:SetStatusBarColor(reactionColour.r, reactionColour.g, reactionColour.b, HealthBarDB.ForegroundOpacity)
-                    end
-                elseif HealthBarDB.ColourByClass then
-                    local temporaryClass = EnvironmenTestData[i].class
-                    local classColour = RAID_CLASS_COLORS[temporaryClass]
-                    BossFrame.Health:SetStatusBarColor(classColour.r, classColour.g, classColour.b, HealthBarDB.ForegroundOpacity)
-                else
-                    local healthColour = HealthBarDB.Foreground
-                    BossFrame.Health:SetStatusBarColor(healthColour[1], healthColour[2], healthColour[3], HealthBarDB.ForegroundOpacity)
-                end
+                BossFrame.HealthBackground:SetStatusBarColor(GetTestUnitColour(i, HealthBarDB.Background, HealthBarDB.ColourBackgroundByClass, HealthBarDB.BackgroundOpacity))
+                BossFrame.Health:SetStatusBarColor(GetTestUnitColour(i, HealthBarDB.Foreground, HealthBarDB.ColourByClass, HealthBarDB.ForegroundOpacity))
             end
 
             if BossFrame.Portrait then
