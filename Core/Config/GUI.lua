@@ -2731,3 +2731,13 @@ function UUF:CreateGUI()
     ContainerTabGroup:SelectTab("General")
     Container:AddChild(ContainerTabGroup)
 end
+
+function UUFG:OpenUUFGUI()
+    UUF:CreateGUI()
+end
+
+function UUFG:CloseUUFGUI()
+    if isGUIOpen and Container then
+        Container:Hide()
+    end
+end
