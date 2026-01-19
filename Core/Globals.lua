@@ -121,7 +121,6 @@ function UUF:LoadCustomColours()
     for powerType, color in pairs(General.Colours.Power) do
         if powerType then oUF.colors.power[powerType] = oUF:CreateColor(color[1], color[2], color[3]) end
     end
-    DevTool:AddData(oUF.colors.power)
 
     for reaction, color in pairs(General.Colours.Reaction) do
         oUF.colors.reaction[reaction] = oUF:CreateColor(color[1], color[2], color[3])
