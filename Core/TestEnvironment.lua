@@ -78,10 +78,6 @@ function UUF:CreateTestBossFrames()
                         local reactionColour = oUF.colors.reaction[temporaryReaction]
                         BossFrame.Health:SetStatusBarColor(reactionColour.r, reactionColour.g, reactionColour.b, HealthBarDB.ForegroundOpacity)
                     end
-                elseif HealthBarDB.ColourByReaction then
-                    local temporaryReaction = EnvironmenTestData[i].reaction
-                    local reactionColour = oUF.colors.reaction[temporaryReaction]
-                    BossFrame.Health:SetStatusBarColor(reactionColour.r, reactionColour.g, reactionColour.b, HealthBarDB.ForegroundOpacity)
                 elseif HealthBarDB.ColourByClass then
                     local temporaryClass = EnvironmenTestData[i].class
                     local classColour = RAID_CLASS_COLORS[temporaryClass]
