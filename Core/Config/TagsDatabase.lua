@@ -164,20 +164,6 @@ for tagString, tagEvents in pairs(Tags) do
     oUF.Tags.Events[tagString] = (oUF.Tags.Events[tagString] and (oUF.Tags.Events[tagString] .. " ") or "") .. tagEvents
 end
 
-local function FetchUnitColour(unit)
-    if UnitIsPlayer(unit) then
-        local _, class = UnitClass(unit)
-        local classColour = class and RAID_CLASS_COLORS[class]
-        if classColour then return classColour.r, classColour.g, classColour.b end
-    end
-    local reaction = UnitReaction(unit, "player")
-    if reaction and UUF.db.profile.General.Colours.Reaction[reaction] then
-        local r, g, b = unpack(UUF.db.profile.General.Colours.Reaction[reaction])
-        return r, g, b
-    end
-    return 1, 1, 1
-end
-
 local function FetchUnitPowerColour(unit)
     local powerType = UnitPowerType(unit)
     local powerColour = powerType and UUF.db.profile.General.Colours.Power[powerType]
@@ -284,7 +270,7 @@ oUF.Tags.Methods["curpp:abbr:colour"] = function(unit)
 end
 
 oUF.Tags.Methods["name:colour"] = function(unit)
-    local classColourR, classColourG, classColourB = FetchUnitColour(unit)
+    local classColourR, classColourG, classColourB = UUF:GetUnitColour(unit)
     local unitName = UnitName(unit) or ""
     return string.format("|cff%02x%02x%02x%s|r", classColourR * 255, classColourG * 255, classColourB * 255, unitName)
 end
