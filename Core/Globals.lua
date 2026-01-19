@@ -299,3 +299,11 @@ function UUF:CreatePrompt(title, text, onAccept, onCancel, acceptText, cancelTex
     end
     return promptDialog
 end
+
+function UUFG:UpdateAllTags()
+    for _, obj in next, oUF.objects do
+        if obj.UpdateTags then
+            obj:UpdateTags()
+        end
+    end
+end
