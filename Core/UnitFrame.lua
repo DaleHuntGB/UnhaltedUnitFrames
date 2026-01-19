@@ -126,13 +126,6 @@ function UUF:UpdateUnitFrame(unitFrame, unit)
     UUF:UpdateUnitMouseoverIndicator(unitFrame, unit)
     UUF:UpdateUnitAuras(unitFrame, unit)
     UUF:UpdateUnitTags()
-    if UnitDB.Enabled then
-        RegisterUnitWatch(unitFrame)
-        unitFrame:Show()
-    else
-        UnregisterUnitWatch(unitFrame)
-        unitFrame:Hide()
-    end
 end
 
 function UUF:UpdateBossFrames()
@@ -150,4 +143,24 @@ function UUF:UpdateAllUnitFrames()
             UUF:UpdateUnitFrame(UUF[unit:upper()], unit)
         end
     end
+end
+
+function UUF:ToggleUnitFrameVisibility(unit)
+    if not unit then return end
+    local UnitKey = unit:upper()
+    local UnitDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)]
+    if not UnitDB then return end
+
+    if unit == "boss" then
+        for i = 1, UUF.MAX_BOSS_FRAMES do
+            local unitFrame = UUF["BOSS"..i]
+            if unitFrame then (UnitDB.Enabled and RegisterUnitWatch or UnregisterUnitWatch)(unitFrame) unitFrame:SetShown(UnitDB.Enabled) end
+        end
+        return
+    end
+
+    local unitFrame = UUF[UnitKey]
+    if not unitFrame then return end
+    (UnitDB.Enabled and RegisterUnitWatch or UnregisterUnitWatch)(unitFrame)
+    unitFrame:SetShown(UnitDB.Enabled)
 end

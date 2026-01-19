@@ -2231,7 +2231,7 @@ local function CreateUnitSettings(containerParent, unit)
     EnableUnitFrameToggle = AG:Create("CheckBox")
     EnableUnitFrameToggle:SetLabel("Enable |cFFFFCC00"..(UnitDBToUnitPrettyName[unit] or unit) .."|r")
     EnableUnitFrameToggle:SetValue(UUF.db.profile.Units[unit].Enabled)
-    EnableUnitFrameToggle:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.Units[unit].Enabled = value if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitFrame(UUF[unit:upper()], unit) end end)
+    EnableUnitFrameToggle:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.Units[unit].Enabled = value UUF:ToggleUnitFrameVisibility(unit) end)
     EnableUnitFrameToggle:SetFullWidth(true)
     containerParent:AddChild(EnableUnitFrameToggle)
 
