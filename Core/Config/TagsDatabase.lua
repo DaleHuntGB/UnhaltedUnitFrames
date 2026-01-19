@@ -10,6 +10,7 @@ UUFG.Tags = oUF.Tags
 local Tags = {
     ["curhp:abbr"] = "UNIT_HEALTH UNIT_MAXHEALTH",
     ["curhpperhp"] = "UNIT_HEALTH UNIT_MAXHEALTH",
+    ["curhpperhp:abbr"] = "UNIT_HEALTH UNIT_MAXHEALTH",
     ["absorbs"] = "UNIT_ABSORB_AMOUNT_CHANGED",
     ["absorbs:abbr"] = "UNIT_ABSORB_AMOUNT_CHANGED",
 
