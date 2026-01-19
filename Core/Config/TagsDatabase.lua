@@ -1,11 +1,30 @@
 local _, UUF = ...
 local oUF = UUF.oUF
 oUF.Tags = oUF.Tags or {}
--- AddOn Developers: You can push into this table to add your own custom tags.
--- Example:
--- UUFG.Tags.Methods["mytag"] = function(unit) return "myvalue" end
--- UUFG.Tags.Events["mytag"] = "UNIT_HEALTH"
-UUFG.Tags = oUF.Tags
+
+function UUFG:AddTag(tagString, tagEvents, tagMethod, tagType, tagDescription)
+    -- tagString: The string used to call the tag, e.g., "curhp:abbr"
+    -- tagEvents: A space-separated string of events that will trigger an update of the tag
+    -- tagMethod: A function that takes a unit as an argument and returns the tag's value
+    -- tagType: "Health", "Power", "Name", "Misc"
+    -- tagDescription: A short description of what the tag does.
+    -- tagType, tagDescription are used for the configuration UI. Please provide them. Prefix of your AddOn Name is also advised.
+    -- EG: UUFG:AddTag("BCDM: Health", "UNIT_HEALTH UNIT_MAXHEALTH", function(unit) return UnitHealth(unit) or 0 end, "Health", "Show Health")
+
+    oUF.Tags.Methods[tagString] = tagMethod
+    oUF.Tags.Events[tagString] = (oUF.Tags.Events[tagString] and (oUF.Tags.Events[tagString] .. " ") or "") .. tagEvents
+
+    local tagDatabase = UUF:FetchTagData(tagType)
+    if not tagDatabase then return end
+
+    tagDatabase[1][tagString] = tagDescription
+
+    for _, existing in ipairs(tagDatabase[2]) do
+        if existing == tagString then return end
+    end
+
+    table.insert(tagDatabase[2], tagString)
+end
 
 local Tags = {
     ["curhp:abbr"] = "UNIT_HEALTH UNIT_MAXHEALTH",
