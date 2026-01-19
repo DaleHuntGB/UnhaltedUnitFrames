@@ -501,13 +501,6 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
 
     local ColourContainer = GUIWidgets.CreateInlineGroup(containerParent, "Colours & Toggles")
 
-    local ColourByClassToggle = AG:Create("CheckBox")
-    ColourByClassToggle:SetLabel("Colour By Class / Reaction")
-    ColourByClassToggle:SetValue(HealthBarDB.ColourByClass)
-    ColourByClassToggle:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.ColourByClass = value UUFGUI.FrameFGColourPicker:SetDisabled(HealthBarDB.ColourByClass) updateCallback() end)
-    ColourByClassToggle:SetRelativeWidth((unit == "player" or unit == "target") and 0.5 or 0.33)
-    ColourContainer:AddChild(ColourByClassToggle)
-
     local ColourWhenTappedToggle = AG:Create("CheckBox")
     ColourWhenTappedToggle:SetLabel("Colour When Tapped")
     ColourWhenTappedToggle:SetValue(HealthBarDB.ColourWhenTapped)
@@ -575,10 +568,17 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
     ForegroundColourPicker:SetColor(R, G, B)
     ForegroundColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) HealthBarDB.Foreground = {r, g, b} updateCallback() end)
     ForegroundColourPicker:SetHasAlpha(false)
-    ForegroundColourPicker:SetRelativeWidth(0.5)
+    ForegroundColourPicker:SetRelativeWidth(0.25)
     ForegroundColourPicker:SetDisabled(HealthBarDB.ColourByClass)
     ColourContainer:AddChild(ForegroundColourPicker)
     UUFGUI.FrameFGColourPicker = ForegroundColourPicker
+
+    local ForegroundColourByClassToggle = AG:Create("CheckBox")
+    ForegroundColourByClassToggle:SetLabel("Colour by Class / Reaction")
+    ForegroundColourByClassToggle:SetValue(HealthBarDB.ColourByClass)
+    ForegroundColourByClassToggle:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.ColourByClass = value UUFGUI.FrameFGColourPicker:SetDisabled(HealthBarDB.ColourByClass) updateCallback() end)
+    ForegroundColourByClassToggle:SetRelativeWidth(0.25)
+    ColourContainer:AddChild(ForegroundColourByClassToggle)
 
     local ForegroundOpacitySlider = AG:Create("Slider")
     ForegroundOpacitySlider:SetLabel("Foreground Opacity")
@@ -595,8 +595,17 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
     BackgroundColourPicker:SetColor(R2, G2, B2)
     BackgroundColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) HealthBarDB.Background = {r, g, b} updateCallback() end)
     BackgroundColourPicker:SetHasAlpha(false)
-    BackgroundColourPicker:SetRelativeWidth(0.5)
+    BackgroundColourPicker:SetRelativeWidth(0.25)
+    BackgroundColourPicker:SetDisabled(HealthBarDB.ColourBackgroundByClass)
     ColourContainer:AddChild(BackgroundColourPicker)
+    UUFGUI.FrameBGColourPicker = BackgroundColourPicker
+    
+    local BackgroundColourByClassToggle = AG:Create("CheckBox")
+    BackgroundColourByClassToggle:SetLabel("Colour by Class / Reaction")
+    BackgroundColourByClassToggle:SetValue(HealthBarDB.ColourBackgroundByClass)
+    BackgroundColourByClassToggle:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.ColourBackgroundByClass = value UUFGUI.FrameBGColourPicker:SetDisabled(HealthBarDB.ColourBackgroundByClass) updateCallback() end)
+    BackgroundColourByClassToggle:SetRelativeWidth(0.25)
+    ColourContainer:AddChild(BackgroundColourByClassToggle)
 
     local BackgroundOpacitySlider = AG:Create("Slider")
     BackgroundOpacitySlider:SetLabel("Background Opacity")
@@ -2167,6 +2176,7 @@ local function CreateGlobalSettings(containerParent)
         for _, unitDB in pairs(UUF.db.profile.Units) do
             unitDB.HealthBar.ColourByClass = true
             unitDB.HealthBar.ColourWhenTapped = true
+            unitDB.HealthBar.ColourBackgroundByClass = false
         end
         UUF:UpdateAllUnitFrames()
     end)
@@ -2179,6 +2189,7 @@ local function CreateGlobalSettings(containerParent)
         for _, unitDB in pairs(UUF.db.profile.Units) do
             unitDB.HealthBar.ColourByClass = false
             unitDB.HealthBar.ColourWhenTapped = false
+            unitDB.HealthBar.ColourBackgroundByClass = false
         end
         UUF:UpdateAllUnitFrames()
     end)
