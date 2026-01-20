@@ -487,7 +487,7 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
     XPosSlider:SetLabel("X Position")
     XPosSlider:SetValue(FrameDB.Layout[3])
     XPosSlider:SetSliderValues(-1000, 1000, 0.1)
-    XPosSlider:SetRelativeWidth(0.5)
+    XPosSlider:SetRelativeWidth(unit == "boss" and 0.33 or 0.5)
     XPosSlider:SetCallback("OnValueChanged", function(_, _, value) FrameDB.Layout[3] = value updateCallback() end)
     LayoutContainer:AddChild(XPosSlider)
 
@@ -495,9 +495,19 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
     YPosSlider:SetLabel("Y Position")
     YPosSlider:SetValue(FrameDB.Layout[4])
     YPosSlider:SetSliderValues(-1000, 1000, 0.1)
-    YPosSlider:SetRelativeWidth(0.5)
+    YPosSlider:SetRelativeWidth(unit == "boss" and 0.33 or 0.5)
     YPosSlider:SetCallback("OnValueChanged", function(_, _, value) FrameDB.Layout[4] = value updateCallback() end)
     LayoutContainer:AddChild(YPosSlider)
+
+    if unit == "boss" then
+        local SpacingSlider = AG:Create("Slider")
+        SpacingSlider:SetLabel("Frame Spacing")
+        SpacingSlider:SetValue(FrameDB.Layout[5])
+        SpacingSlider:SetSliderValues(-1, 100, 0.1)
+        SpacingSlider:SetRelativeWidth(0.33)
+        SpacingSlider:SetCallback("OnValueChanged", function(_, _, value) FrameDB.Layout[5] = value updateCallback() end)
+        LayoutContainer:AddChild(SpacingSlider)
+    end
 
     local ColourContainer = GUIWidgets.CreateInlineGroup(containerParent, "Colours & Toggles")
 
