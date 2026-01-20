@@ -45,11 +45,11 @@ local Tags = {
     -- ["name:tot:colour"] = "UNIT_NAME_UPDATE",
     -- ["name:tot:clean"] = "UNIT_NAME_UPDATE",
     -- ["name:tot:colour:clean"] = "UNIT_NAME_UPDATE",
-    ["name:short:10"] = "UNIT_NAME_UPDATE",
-    ["name:short:7"] = "UNIT_NAME_UPDATE",
-    ["name:short:5"] = "UNIT_NAME_UPDATE",
-    ["name:short:3"] = "UNIT_NAME_UPDATE",
 }
+
+for i = 1, 25 do
+    Tags["name:short:" .. i] = "UNIT_NAME_UPDATE"
+end
 
 UUF.SEPARATOR_TAGS = {
 {
@@ -312,8 +312,7 @@ local function ShortenUnitName(unit, maxChars)
     return CleanTruncateUTF8String(unitName)
 end
 
-local shortNameLengths = {10, 7, 5, 3}
-    for _, i in ipairs(shortNameLengths) do
+    for i = 1, 25 do
         oUF.Tags.Methods["name:short:" .. i] = function(unit)
         return ShortenUnitName(unit, i)
     end
@@ -403,10 +402,7 @@ local NameTags = {
     {
         ["name"] = "Unit Name",
         ["name:colour"] = "Unit Name with Colour",
-        ["name:short:10"] = "Unit Name Shortened (10 Chars)",
-        ["name:short:7"] = "Unit Name Shortened (7 Chars)",
-        ["name:short:5"] = "Unit Name Shortened (5 Chars)",
-        ["name:short:3"] = "Unit Name Shortened (3 Chars)",
+        ["name:short:10"] = "Unit Name Shortened (1 - 25 Chars)",
         -- ["name:tot"] = "Target of Target Name",
         -- ["name:tot:colour"] = "Target of Target Name with Colour",
         -- ["name:tot:clean"] = "Target of Target Name without Arrow Separator",
@@ -416,9 +412,6 @@ local NameTags = {
         "name",
         "name:colour",
         "name:short:10",
-        "name:short:7",
-        "name:short:5",
-        "name:short:3"
         -- "name:tot",
         -- "name:tot:colour",
         -- "name:tot:clean",
