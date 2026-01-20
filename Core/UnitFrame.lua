@@ -60,7 +60,11 @@ end
 
 function UUF:SpawnUnitFrame(unit)
     local UnitDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)]
-    local FrameDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Frame
+    if not UnitDB or not UnitDB.Enabled then
+        if UnitDB and UnitDB.ForceHideBlizzard then oUF:DisableBlizzard(unit) end
+        return
+    end
+    local FrameDB = UnitDB.Frame
 
     oUF:RegisterStyle(UUF:FetchFrameName(unit), function(unitFrame) UUF:CreateUnitFrame(unitFrame, unit) end)
     oUF:SetActiveStyle(UUF:FetchFrameName(unit))
@@ -150,6 +154,15 @@ function UUF:ToggleUnitFrameVisibility(unit)
     local UnitKey = unit:upper()
     local UnitDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)]
     if not UnitDB then return end
+    if UnitDB.Enabled then
+        if unit == "boss" then
+            if not UUF["BOSS1"] then UUF:SpawnUnitFrame(unit) end
+        elseif not UUF[UnitKey] then
+            UUF:SpawnUnitFrame(unit)
+        end
+    elseif UnitDB.ForceHideBlizzard then
+        oUF:DisableBlizzard(unit)
+    end
 
     if unit == "boss" then
         for i = 1, UUF.MAX_BOSS_FRAMES do

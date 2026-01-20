@@ -2253,8 +2253,42 @@ local function CreateUnitSettings(containerParent, unit)
     EnableUnitFrameToggle = AG:Create("CheckBox")
     EnableUnitFrameToggle:SetLabel("Enable |cFFFFCC00"..(UnitDBToUnitPrettyName[unit] or unit) .."|r")
     EnableUnitFrameToggle:SetValue(UUF.db.profile.Units[unit].Enabled)
-    EnableUnitFrameToggle:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.Units[unit].Enabled = value UUF:ToggleUnitFrameVisibility(unit) end)
-    EnableUnitFrameToggle:SetFullWidth(true)
+    EnableUnitFrameToggle:SetCallback("OnValueChanged", function(_, _, value)
+        StaticPopupDialogs["UUF_RELOAD_UI"] = {
+            text = "You must reload to apply this change, do you want to reload now?",
+            button1 = "Reload Now",
+            button2 = "Later",
+            showAlert = true,
+            OnAccept = function() UUF.db.profile.Units[unit].Enabled= value ReloadUI() end,
+            OnCancel = function() EnableUnitFrameToggle:SetValue(UUF.db.profile.Units[unit].Enabled) containerParent:DoLayout() end,
+            timeout = 0,
+            whileDead = true,
+            hideOnEscape = true,
+        }
+        StaticPopup_Show("UUF_RELOAD_UI")
+    end)
+    EnableUnitFrameToggle:SetRelativeWidth(0.5)
+    containerParent:AddChild(EnableUnitFrameToggle)
+
+    EnableUnitFrameToggle = AG:Create("CheckBox")
+    EnableUnitFrameToggle:SetLabel("Hide Blizzard |cFFFFCC00"..(UnitDBToUnitPrettyName[unit] or unit) .."|r")
+    EnableUnitFrameToggle:SetValue(UUF.db.profile.Units[unit].ForceHideBlizzard)
+    EnableUnitFrameToggle:SetCallback("OnValueChanged", function(_, _, value)
+            StaticPopupDialogs["UUF_RELOAD_UI"] = {
+            text = "You must reload to apply this change, do you want to reload now?",
+            button1 = "Reload Now",
+            button2 = "Later",
+            showAlert = true,
+            OnAccept = function() UUF.db.profile.Units[unit].ForceHideBlizzard = value ReloadUI() end,
+            OnCancel = function() EnableUnitFrameToggle:SetValue(UUF.db.profile.Units[unit].ForceHideBlizzard) containerParent:DoLayout() end,
+            timeout = 0,
+            whileDead = true,
+            hideOnEscape = true,
+        }
+        StaticPopup_Show("UUF_RELOAD_UI")
+    end)
+    EnableUnitFrameToggle:SetRelativeWidth(0.5)
+    EnableUnitFrameToggle:SetDisabled(UUF.db.profile.Units[unit].Enabled)
     containerParent:AddChild(EnableUnitFrameToggle)
 
     local function SelectUnitTab(SubContainer, _, UnitTab)
