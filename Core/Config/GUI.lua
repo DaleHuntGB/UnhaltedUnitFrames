@@ -1690,6 +1690,7 @@ local function CreateIndicatorSettings(containerParent, unit)
         IndicatorContainerTabGroup:SetTabs({
             { text = "Raid Target Marker", value = "RaidTargetMarker" },
             { text = "Leader & Assistant", value = "LeaderAssistant" },
+            { text = "Combat", value = "Combat" },
             { text = "Mouseover", value = "Mouseover" },
             { text = "Target Indicator", value = "TargetIndicator" },
         })

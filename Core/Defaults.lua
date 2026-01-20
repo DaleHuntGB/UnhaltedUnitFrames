@@ -346,6 +346,12 @@ local Defaults = {
                         Size = 16,
                         Layout = {"TOPRIGHT", "TOPRIGHT", -3, -3},
                     },
+                    Combat = {
+                        Enabled = true,
+                        Size = 16,
+                        Layout = {"CENTER", "TOP", 0, 0},
+                        Texture = "COMBAT0"
+                    },
                     Mouseover = {
                         Enabled = true,
                         Colour = {1, 1, 1},
