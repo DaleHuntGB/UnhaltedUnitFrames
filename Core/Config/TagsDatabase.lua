@@ -46,6 +46,7 @@ local Tags = {
     -- ["name:tot:clean"] = "UNIT_NAME_UPDATE",
     -- ["name:tot:colour:clean"] = "UNIT_NAME_UPDATE",
     ["name:short:10"] = "UNIT_NAME_UPDATE",
+    ["name:short:7"] = "UNIT_NAME_UPDATE",
     ["name:short:5"] = "UNIT_NAME_UPDATE",
     ["name:short:3"] = "UNIT_NAME_UPDATE",
 }
@@ -293,6 +294,32 @@ oUF.Tags.Methods["name:colour"] = function(unit)
     return string.format("|cff%02x%02x%02x%s|r", classColourR * 255, classColourG * 255, classColourB * 255, unitName)
 end
 
+-- Thanks Details / Plater for this.
+local function CleanTruncateUTF8String(text)
+    local DetailsFramework = _G.DF
+    if DetailsFramework and DetailsFramework.CleanTruncateUTF8String then
+        return DetailsFramework:CleanTruncateUTF8String(text)
+    end
+    return text
+end
+
+local function ShortenUnitName(unit, maxChars)
+    if not unit or not UnitExists(unit) then return "" end
+    local unitName = UnitName(unit) or ""
+    if maxChars and maxChars > 0 then
+        unitName = string.format("%." .. maxChars .. "s", unitName)
+    end
+    return CleanTruncateUTF8String(unitName)
+end
+
+local shortNameLengths = {10, 7, 5, 3}
+    for _, i in ipairs(shortNameLengths) do
+        oUF.Tags.Methods["name:short:" .. i] = function(unit)
+        return ShortenUnitName(unit, i)
+    end
+end
+
+
 -- oUF.Tags.Methods["name:tot"] = function(unit)
 --     if not unit or not UnitExists(unit) then return "" end
 --     local targetOfTarget = unit .. "target"
@@ -376,6 +403,10 @@ local NameTags = {
     {
         ["name"] = "Unit Name",
         ["name:colour"] = "Unit Name with Colour",
+        ["name:short:10"] = "Unit Name Shortened (10 Chars)",
+        ["name:short:7"] = "Unit Name Shortened (7 Chars)",
+        ["name:short:5"] = "Unit Name Shortened (5 Chars)",
+        ["name:short:3"] = "Unit Name Shortened (3 Chars)",
         -- ["name:tot"] = "Target of Target Name",
         -- ["name:tot:colour"] = "Target of Target Name with Colour",
         -- ["name:tot:clean"] = "Target of Target Name without Arrow Separator",
@@ -384,6 +415,10 @@ local NameTags = {
     {
         "name",
         "name:colour",
+        "name:short:10",
+        "name:short:7",
+        "name:short:5",
+        "name:short:3"
         -- "name:tot",
         -- "name:tot:colour",
         -- "name:tot:clean",
