@@ -34,6 +34,7 @@ local Tags = {
     ["curhpperhp:abbr"] = "UNIT_HEALTH UNIT_MAXHEALTH",
     ["absorbs"] = "UNIT_ABSORB_AMOUNT_CHANGED",
     ["absorbs:abbr"] = "UNIT_ABSORB_AMOUNT_CHANGED",
+    ["maxhp:abbr"] = "UNIT_HEALTH UNIT_MAXHEALTH",
 
     ["curpp:colour"] = "UNIT_POWER_UPDATE UNIT_MAXPOWER",
     ["curpp:abbr"] = "UNIT_POWER_UPDATE UNIT_MAXPOWER",
@@ -269,6 +270,23 @@ oUF.Tags.Methods["curpp:abbr:colour"] = function(unit)
     end
 end
 
+oUF.Tags.Methods["maxhp:abbr"] = function(unit)
+    if not unit or not UnitExists(unit) then return "" end
+    local unitMaxHealth = UnitHealthMax(unit)
+    if unitMaxHealth then
+        return string.format("%s", AbbreviateValue(unitMaxHealth))
+    end
+end
+
+oUF.Tags.Methods["maxhp:abbr:colour"] = function(unit)
+    if not unit or not UnitExists(unit) then return "" end
+    local classColourR, classColourG, classColourB = UUF:GetUnitColour(unit)
+    local unitMaxHealth = UnitHealthMax(unit)
+    if unitMaxHealth then
+        return string.format("|cff%02x%02x%02x%s|r", classColourR * 255, classColourG * 255, classColourB * 255, AbbreviateValue(unitMaxHealth))
+    end
+end
+
 oUF.Tags.Methods["name:colour"] = function(unit)
     local classColourR, classColourG, classColourB = UUF:GetUnitColour(unit)
     local unitName = UnitName(unit) or ""
@@ -316,6 +334,7 @@ local HealthTags = {
         ["perhp"] = "Percentage Health",
         ["curhpperhp"] = "Current Health and Percentage",
         ["curhpperhp:abbr"] = "Current Health and Percentage with Abbreviation",
+        ["maxhp:abbr"] = "Maximum Health with Abbreviation",
         ["absorbs"] = "Total Absorbs",
         ["absorbs:abbr"] = "Total Absorbs with Abbreviation",
         ["missinghp"] = "Missing Health",
@@ -326,6 +345,7 @@ local HealthTags = {
         "perhp",
         "curhpperhp",
         "curhpperhp:abbr",
+        "maxhp:abbr",
         "absorbs",
         "absorbs:abbr",
         "missinghp",
