@@ -40,6 +40,10 @@ local Tags = {
     ["curpp:abbr"] = "UNIT_POWER_UPDATE UNIT_MAXPOWER",
     ["curpp:abbr:colour"] = "UNIT_POWER_UPDATE UNIT_MAXPOWER",
 
+    ["maxpp:abbr"] = "UNIT_POWER_UPDATE UNIT_MAXPOWER",
+    ["maxpp:colour"] = "UNIT_POWER_UPDATE UNIT_MAXPOWER",
+    ["maxpp:abbr:colour"] = "UNIT_POWER_UPDATE UNIT_MAXPOWER",
+
     ["name:colour"] = "UNIT_CLASSIFICATION_CHANGED UNIT_FACTION UNIT_NAME_UPDATE",
 }
 
@@ -254,11 +258,28 @@ oUF.Tags.Methods["curpp:colour"] = function(unit)
     end
 end
 
+oUF.Tags.Methods["maxpp:colour"] = function(unit)
+    if not unit or not UnitExists(unit) then return "" end
+    local powerColourR, powerColourG, powerColourB = FetchUnitPowerColour(unit)
+    local unitPowerMax = UnitPowerMax(unit)
+    if unitPowerMax then
+        return string.format("|cff%02x%02x%02x%s|r", powerColourR * 255, powerColourG * 255, powerColourB * 255, unitPowerMax)
+    end
+end
+
 oUF.Tags.Methods["curpp:abbr"] = function(unit)
     if not unit or not UnitExists(unit) then return "" end
     local unitPower = UnitPower(unit)
     if unitPower then
         return string.format("%s", AbbreviateValue(unitPower))
+    end
+end
+
+oUF.Tags.Methods["maxpp:abbr"] = function(unit)
+    if not unit or not UnitExists(unit) then return "" end
+    local unitPowerMax = UnitPowerMax(unit)
+    if unitPowerMax then
+        return string.format("%s", AbbreviateValue(unitPowerMax))
     end
 end
 
@@ -268,6 +289,15 @@ oUF.Tags.Methods["curpp:abbr:colour"] = function(unit)
     local unitPower = UnitPower(unit)
     if unitPower then
         return string.format("|cff%02x%02x%02x%s|r", powerColourR * 255, powerColourG * 255, powerColourB * 255, AbbreviateValue(unitPower))
+    end
+end
+
+oUF.Tags.Methods["maxpp:abbr:colour"] = function(unit)
+    if not unit or not UnitExists(unit) then return "" end
+    local powerColourR, powerColourG, powerColourB = FetchUnitPowerColour(unit)
+    local unitPowerMax = UnitPowerMax(unit)
+    if unitPowerMax then
+        return string.format("|cff%02x%02x%02x%s|r", powerColourR * 255, powerColourG * 255, powerColourB * 255, AbbreviateValue(unitPowerMax))
     end
 end
 
@@ -347,6 +377,10 @@ local PowerTags = {
         ["curpp:colour"] = "Current Power with Colour",
         ["curpp:abbr"] = "Current Power with Abbreviation",
         ["curpp:abbr:colour"] = "Current Power with Abbreviation and Colour",
+        ["maxpp"] = "Maximum Power",
+        ["maxpp:abbr"] = "Maximum Power with Abbreviation",
+        ["maxpp:colour"] = "Maximum Power with Colour",
+        ["maxpp:abbr:colour"] = "Maximum Power with Abbreviation and Colour",
         ["missingpp"] = "Missing Power",
     },
     {
@@ -355,6 +389,10 @@ local PowerTags = {
         "curpp:colour",
         "curpp:abbr",
         "curpp:abbr:colour",
+        "maxpp",
+        "maxpp:abbr",
+        "maxpp:colour",
+        "maxpp:abbr:colour",
         "missingpp",
     }
 }
