@@ -167,6 +167,7 @@ local function CreateUnitBuffs(unitFrame, unit)
         local buffContainerHeight = (BuffsDB.Size + BuffsDB.Layout[5]) * buffRows - BuffsDB.Layout[5]
         unitFrame.BuffContainer:SetSize(buffContainerWidth, buffContainerHeight)
         unitFrame.BuffContainer:SetPoint(BuffsDB.Layout[1], unitFrame, BuffsDB.Layout[2], BuffsDB.Layout[3], BuffsDB.Layout[4])
+        unitFrame.BuffContainer:SetFrameStrata("MEDIUM")
         unitFrame.BuffContainer.size = BuffsDB.Size
         unitFrame.BuffContainer.spacing = BuffsDB.Layout[5]
         unitFrame.BuffContainer.num = BuffsDB.Num
@@ -207,6 +208,7 @@ local function CreateUnitDebuffs(unitFrame, unit)
         local debuffContainerHeight = (DebuffsDB.Size + DebuffsDB.Layout[5]) * debuffRows - DebuffsDB.Layout[5]
         unitFrame.DebuffContainer:SetSize(debuffContainerWidth, debuffContainerHeight)
         unitFrame.DebuffContainer:SetPoint(DebuffsDB.Layout[1], unitFrame, DebuffsDB.Layout[2], DebuffsDB.Layout[3], DebuffsDB.Layout[4])
+        unitFrame.DebuffContainer:SetFrameStrata("MEDIUM")
         unitFrame.DebuffContainer.size = DebuffsDB.Size
         unitFrame.DebuffContainer.spacing = DebuffsDB.Layout[5]
         unitFrame.DebuffContainer.num = DebuffsDB.Num
@@ -255,6 +257,7 @@ function UUF:UpdateUnitAuras(unitFrame, unit)
         unitFrame.BuffContainer:ClearAllPoints()
         unitFrame.BuffContainer:SetSize(buffContainerWidth, buffContainerHeight)
         unitFrame.BuffContainer:SetPoint(BuffsDB.Layout[1], unitFrame, BuffsDB.Layout[2], BuffsDB.Layout[3], BuffsDB.Layout[4])
+        unitFrame.BuffContainer:SetFrameStrata("MEDIUM")
         unitFrame.BuffContainer.size = BuffsDB.Size
         unitFrame.BuffContainer.spacing = BuffsDB.Layout[5]
         unitFrame.BuffContainer.num = BuffsDB.Num
@@ -282,6 +285,7 @@ function UUF:UpdateUnitAuras(unitFrame, unit)
         local debuffContainerHeight = (DebuffsDB.Size + DebuffsDB.Layout[5]) * debuffRows - DebuffsDB.Layout[5]
         unitFrame.DebuffContainer:ClearAllPoints()
         unitFrame.DebuffContainer:SetSize(debuffContainerWidth, debuffContainerHeight)
+        unitFrame.DebuffContainer:SetFrameStrata("MEDIUM")
         unitFrame.DebuffContainer:SetPoint(DebuffsDB.Layout[1], unitFrame, DebuffsDB.Layout[2], DebuffsDB.Layout[3], DebuffsDB.Layout[4])
         unitFrame.DebuffContainer.size = DebuffsDB.Size
         unitFrame.DebuffContainer.spacing = DebuffsDB.Layout[5]
@@ -351,7 +355,7 @@ function UUF:CreateTestAuras(unitFrame, unit)
                         button:SetBackdrop(UUF.BACKDROP)
                         button:SetBackdropColor(0, 0, 0, 0)
                         button:SetBackdropBorderColor(0, 0, 0, 1)
-                        button:SetFrameStrata("MEDIUM")
+                        button:SetFrameStrata("HIGH")
 
                         button.Icon = button:CreateTexture(nil, "BORDER")
                         button.Icon:SetAllPoints()
