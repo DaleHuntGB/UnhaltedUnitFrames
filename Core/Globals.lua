@@ -321,3 +321,12 @@ function UUFG:UpdateAllTags()
         end
     end
 end
+
+-- Thanks Details / Plater for this.
+function UUF:CleanTruncateUTF8String(text)
+    local DetailsFramework = _G.DF
+    if DetailsFramework and DetailsFramework.CleanTruncateUTF8String then
+        return DetailsFramework:CleanTruncateUTF8String(text)
+    end
+    return text
+end

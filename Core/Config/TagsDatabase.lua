@@ -294,22 +294,13 @@ oUF.Tags.Methods["name:colour"] = function(unit)
     return string.format("|cff%02x%02x%02x%s|r", classColourR * 255, classColourG * 255, classColourB * 255, unitName)
 end
 
--- Thanks Details / Plater for this.
-local function CleanTruncateUTF8String(text)
-    local DetailsFramework = _G.DF
-    if DetailsFramework and DetailsFramework.CleanTruncateUTF8String then
-        return DetailsFramework:CleanTruncateUTF8String(text)
-    end
-    return text
-end
-
 local function ShortenUnitName(unit, maxChars)
     if not unit or not UnitExists(unit) then return "" end
     local unitName = UnitName(unit) or ""
     if maxChars and maxChars > 0 then
         unitName = string.format("%." .. maxChars .. "s", unitName)
     end
-    return CleanTruncateUTF8String(unitName)
+    return UUF:CleanTruncateUTF8String(unitName)
 end
 
     for i = 1, 25 do
