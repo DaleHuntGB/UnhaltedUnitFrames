@@ -328,7 +328,7 @@ local function ShortenUnitName(unit, maxChars)
     if not unit or not UnitExists(unit) then return "" end
     local unitName = UnitName(unit) or ""
     if maxChars and maxChars > 0 then
-        unitName = string.format("%." .. maxChars .. "s", unitName)
+        unitName = string.utf8sub(unitName, 1, maxChars)
     end
     return UUF:CleanTruncateUTF8String(unitName)
 end
