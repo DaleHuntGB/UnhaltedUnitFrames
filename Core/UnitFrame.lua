@@ -122,7 +122,7 @@ function UUF:UpdateUnitFrame(unitFrame, unit)
     UUF:UpdateUnitHealPrediction(unitFrame, unit)
     UUF:UpdateUnitPortrait(unitFrame, unit)
     UUF:UpdateUnitPowerBar(unitFrame, unit)
-    if unit == "player" and UUF:RequiresAlternativePowerBar() then UUF:UpdateUnitAlternativePowerBar(unitFrame, unit) end
+    if unit == "player" then UUF:UpdateUnitAlternativePowerBar(unitFrame, unit) end
     UUF:UpdateUnitRaidTargetMarker(unitFrame, unit)
     if unit == "player" or unit == "target" then UUF:UpdateUnitLeaderAssistantIndicator(unitFrame, unit) end
     if unit == "player" or unit == "target" then UUF:UpdateUnitCombatIndicator(unitFrame, unit) end

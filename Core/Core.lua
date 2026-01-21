@@ -14,6 +14,12 @@ function UnhaltedUnitFrames:OnInitialize()
     UUF.TOT_SEPARATOR = UUF.db.profile.General.ToTSeparator or "»"
     if UUF.db.global.UseGlobalProfile then UUF.db:SetProfile(UUF.db.global.GlobalProfile or "Default") end
     UUF.db.RegisterCallback(UUF, "OnProfileChanged", function() UUF:UpdateAllUnitFrames() end)
+    UUF.db.RegisterCallback(UUF, "OnProfileCopied", function() UUF:UpdateAllUnitFrames() end)
+    UUF.db.RegisterCallback(UUF, "OnProfileReset", function() UUF:UpdateAllUnitFrames() end)
+
+    local playerSpecalizationChangedEventFrame = CreateFrame("Frame")
+    playerSpecalizationChangedEventFrame:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
+    playerSpecalizationChangedEventFrame:SetScript("OnEvent", function(_, event, ...) if event == "PLAYER_SPECIALIZATION_CHANGED" then local unit = ... print(unit) if unit == "player" then UUF:UpdateAllUnitFrames() end end end)
 end
 
 function UnhaltedUnitFrames:OnEnable()
