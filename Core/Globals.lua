@@ -228,7 +228,7 @@ end
 function UUF:RequiresAlternativePowerBar()
     local SpecsNeedingAltPower = {
         PRIEST = { 258 },           -- Shadow
-        MAGE   = { 63, 64 },        -- Fire, Frost
+        MAGE   = { 62, 63, 64 },        -- Fire, Frost
         PALADIN = { 70 },           -- Ret
         SHAMAN  = { 262, 263 },     -- Ele, Enh
         EVOKER  = { 1467, 1473 },   -- Dev, Aug
