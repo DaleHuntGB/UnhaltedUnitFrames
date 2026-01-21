@@ -24,7 +24,7 @@ function UUF:CreateUnitCastBar(unitFrame, unit)
     CastBarContainer:SetPoint(CastBarDB.Layout[1], unitFrame, CastBarDB.Layout[2], CastBarDB.Layout[3], CastBarDB.Layout[4])
     if CastBarDB.MatchParentWidth then CastBarContainer:SetWidth(FrameDB.Width) else CastBarContainer:SetWidth(CastBarDB.Width) end
     CastBarContainer:SetHeight(CastBarDB.Height)
-    CastBarContainer:SetFrameStrata("MEDIUM")
+    CastBarContainer:SetFrameStrata(CastBarDB.FrameStrata)
 
     local CastBar = CreateFrame("StatusBar", UUF:FetchFrameName(unit) .. "_CastBar", CastBarContainer)
     CastBar:SetStatusBarTexture(UUF.Media.Foreground)
@@ -159,6 +159,7 @@ function UUF:UpdateUnitCastBar(unitFrame, unit)
         if unitFrame.Castbar then
             if CastBarContainer then CastBarContainer:ClearAllPoints() end
             if CastBarContainer then CastBarContainer:SetPoint(CastBarDB.Layout[1], unitFrame, CastBarDB.Layout[2], CastBarDB.Layout[3], CastBarDB.Layout[4]) end
+            if CastBarContainer then CastBarContainer:SetFrameStrata(CastBarDB.FrameStrata) end
             unitFrame.Castbar:ClearAllPoints()
             unitFrame.Castbar:SetPoint("TOPLEFT", CastBarContainer, "TOPLEFT", 1, -1)
             unitFrame.Castbar:SetPoint("BOTTOMRIGHT", CastBarContainer, "BOTTOMRIGHT", -1, 1)
@@ -259,6 +260,7 @@ function UUF:CreateTestCastBar(unitFrame, unit)
         if unitFrame.Castbar and CastBarDB.Enabled then
             unitFrame:DisableElement("Castbar")
             CastBarContainer:Show()
+            CastBarContainer:SetFrameStrata(CastBarDB.FrameStrata)
             unitFrame.Castbar:Show()
             unitFrame.Castbar.Background:Show()
             unitFrame.Castbar.Text:SetText(ShortenCastName("Ethereal Portal", UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].CastBar.Text.SpellName.MaxChars))

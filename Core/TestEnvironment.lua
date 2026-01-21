@@ -77,6 +77,8 @@ function UUF:CreateTestBossFrames()
             UnregisterUnitWatch(BossFrame)
             if BossDB.Enabled then BossFrame:Show() else BossFrame:Hide() end
 
+            BossFrame:SetFrameStrata(BossDB.Frame.FrameStrata)
+
             if BossFrame.Health then
                 local HealthBarDB = UUF.db.profile.Units.boss.HealthBar
                 BossFrame.Health:SetMinMaxValues(0, EnvironmenTestData[i].maxHealth)

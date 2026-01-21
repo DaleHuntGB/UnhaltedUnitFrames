@@ -66,7 +66,8 @@ local Defaults = {
                 Frame = {
                     Width = 244,
                     Height = 42,
-                    Layout = {"CENTER", "CENTER", -425.1, -275.1}
+                    Layout = {"CENTER", "CENTER", -425.1, -275.1},
+                    FrameStrata = "LOW",
                 },
                 HealthBar = {
                     ColourByClass = true,
@@ -127,6 +128,7 @@ local Defaults = {
                     MatchParentWidth = true,
                     ColourByClass = false,
                     Inverse = false,
+                    FrameStrata = "MEDIUM",
                     Icon = {
                         Enabled = true,
                         Position = "LEFT",
@@ -185,6 +187,7 @@ local Defaults = {
                     },
                 },
                 Auras = {
+                    FrameStrata = "LOW",
                     AuraDuration = {
                         Layout = {"CENTER", "CENTER", 0, 0},
                         FontSize = 12,
@@ -261,7 +264,8 @@ local Defaults = {
                 Frame = {
                     Width = 244,
                     Height = 42,
-                    Layout = {"CENTER", "CENTER", 425.1, -275.1}
+                    Layout = {"CENTER", "CENTER", 425.1, -275.1},
+                    FrameStrata = "LOW",
                 },
                 HealthBar = {
                     ColourByClass = true,
@@ -312,6 +316,7 @@ local Defaults = {
                     MatchParentWidth = true,
                     ColourByClass = false,
                     Inverse = false,
+                    FrameStrata = "MEDIUM",
                     Icon = {
                         Enabled = true,
                         Position = "LEFT",
@@ -373,6 +378,7 @@ local Defaults = {
                     OutOfRange = 0.5,
                 },
                 Auras = {
+                    FrameStrata = "LOW",
                     AuraDuration = {
                         Layout = {"CENTER", "CENTER", 0, 0},
                         FontSize = 12,
@@ -450,7 +456,8 @@ local Defaults = {
                     Width = 122,
                     Height = 22,
                     AnchorParent = "UUF_Target",
-                    Layout = {"TOPRIGHT", "BOTTOMRIGHT", 0, -26.1}
+                    Layout = {"TOPRIGHT", "BOTTOMRIGHT", 0, -26.1},
+                    FrameStrata = "LOW",
                 },
                 HealthBar = {
                     ColourByClass = true,
@@ -500,6 +507,7 @@ local Defaults = {
                 --     NotInterruptibleColour = {255/255, 64/255, 64/255},
                 --     MatchParentWidth = true,
                 --     ColourByClass = false,
+                --     FrameStrata = "MEDIUM",
                 --     Icon = {
                 --         Enabled = true,
                 --         Position = "LEFT",
@@ -545,6 +553,7 @@ local Defaults = {
                     }
                 },
                 Auras = {
+                    FrameStrata = "LOW",
                     AuraDuration = {
                         Layout = {"CENTER", "CENTER", 0, 0},
                         FontSize = 12,
@@ -622,7 +631,8 @@ local Defaults = {
                     Width = 122,
                     Height = 22,
                     AnchorParent = "UUF_Player",
-                    Layout = {"BOTTOMLEFT", "TOPLEFT", 0, 36.1}
+                    Layout = {"BOTTOMLEFT", "TOPLEFT", 0, 36.1},
+                    FrameStrata = "LOW",
                 },
                 HealthBar = {
                     ColourByClass = true,
@@ -673,6 +683,7 @@ local Defaults = {
                     MatchParentWidth = true,
                     ColourByClass = false,
                     Inverse = false,
+                    FrameStrata = "MEDIUM",
                     Icon = {
                         Enabled = false,
                         Position = "LEFT",
@@ -718,6 +729,7 @@ local Defaults = {
                     }
                 },
                 Auras = {
+                    FrameStrata = "LOW",
                     AuraDuration = {
                         Layout = {"CENTER", "CENTER", 0, 0},
                         FontSize = 12,
@@ -795,7 +807,8 @@ local Defaults = {
                     Width = 122,
                     Height = 22,
                     AnchorParent = "UUF_Focus",
-                    Layout = {"LEFT", "RIGHT", 1, 0}
+                    Layout = {"LEFT", "RIGHT", 1, 0},
+                    FrameStrata = "LOW",
                 },
                 HealthBar = {
                     ColourByClass = true,
@@ -845,6 +858,7 @@ local Defaults = {
                 --     NotInterruptibleColour = {255/255, 64/255, 64/255},
                 --     MatchParentWidth = true,
                 --     ColourByClass = false,
+                --     FrameStrata = "MEDIUM",
                 --     Icon = {
                 --         Enabled = true,
                 --         Position = "LEFT",
@@ -890,6 +904,7 @@ local Defaults = {
                     }
                 },
                 Auras = {
+                    FrameStrata = "LOW",
                     AuraDuration = {
                         Layout = {"CENTER", "CENTER", 0, 0},
                         FontSize = 12,
@@ -967,7 +982,8 @@ local Defaults = {
                     Width = 122,
                     Height = 22,
                     AnchorParent = "UUF_Player",
-                    Layout = {"TOPLEFT", "BOTTOMLEFT", 0, -26.1}
+                    Layout = {"TOPLEFT", "BOTTOMLEFT", 0, -26.1},
+                    FrameStrata = "LOW",
                 },
                 HealthBar = {
                     ColourByClass = true,
@@ -1018,6 +1034,7 @@ local Defaults = {
                     MatchParentWidth = true,
                     ColourByClass = false,
                     Inverse = false,
+                    FrameStrata = "MEDIUM",
                     Icon = {
                         Enabled = false,
                         Position = "LEFT",
@@ -1063,6 +1080,7 @@ local Defaults = {
                     }
                 },
                 Auras = {
+                    FrameStrata = "LOW",
                     AuraDuration = {
                         Layout = {"CENTER", "CENTER", 0, 0},
                         FontSize = 12,
@@ -1141,6 +1159,7 @@ local Defaults = {
                     Height = 42,
                     Layout = {"CENTER", "CENTER", 550.1, -0.1, 26},
                     GrowthDirection = "DOWN",
+                    FrameStrata = "LOW",
                 },
                 HealthBar = {
                     ColourByClass = true,
@@ -1191,6 +1210,7 @@ local Defaults = {
                     MatchParentWidth = true,
                     ColourByClass = false,
                     Inverse = false,
+                    FrameStrata = "MEDIUM",
                     Icon = {
                         Enabled = true,
                         Position = "LEFT",
@@ -1236,6 +1256,7 @@ local Defaults = {
                     }
                 },
                 Auras = {
+                    FrameStrata = "LOW",
                     AuraDuration = {
                         Layout = {"CENTER", "CENTER", 0, 0},
                         FontSize = 12,

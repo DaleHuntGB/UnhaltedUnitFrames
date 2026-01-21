@@ -74,11 +74,13 @@ function UUF:SpawnUnitFrame(unit)
             UUF[unit:upper() .. i] = oUF:Spawn(unit .. i, UUF:FetchFrameName(unit .. i))
             UUF[unit:upper() .. i]:SetSize(FrameDB.Width, FrameDB.Height)
             UUF.BOSS_FRAMES[i] = UUF[unit:upper() .. i]
+            UUF[unit:upper() .. i]:SetFrameStrata(FrameDB.FrameStrata)
         end
         UUF:LayoutBossFrames()
     else
         UUF[unit:upper()] = oUF:Spawn(unit, UUF:FetchFrameName(unit))
         UUF:RegisterTargetGlowIndicatorFrame(UUF:FetchFrameName(unit), unit)
+        UUF[unit:upper()]:SetFrameStrata(FrameDB.FrameStrata)
     end
 
     if unit == "player" or unit == "target" then
@@ -130,6 +132,7 @@ function UUF:UpdateUnitFrame(unitFrame, unit)
     UUF:UpdateUnitMouseoverIndicator(unitFrame, unit)
     UUF:UpdateUnitAuras(unitFrame, unit)
     UUF:UpdateUnitTags()
+    unitFrame:SetFrameStrata(UnitDB.Frame.FrameStrata)
 end
 
 function UUF:UpdateBossFrames()
