@@ -909,7 +909,7 @@ local function CreateCastBarSpellNameTextSettings(containerParent, unit, updateC
     SpellNameXPosSlider:SetLabel("X Position")
     SpellNameXPosSlider:SetValue(SpellNameTextDB.Layout[3])
     SpellNameXPosSlider:SetSliderValues(-1000, 1000, 0.1)
-    SpellNameXPosSlider:SetRelativeWidth(0.33)
+    SpellNameXPosSlider:SetRelativeWidth(0.25)
     SpellNameXPosSlider:SetCallback("OnValueChanged", function(_, _, value) SpellNameTextDB.Layout[3] = value updateCallback() end)
     SpellNameLayoutContainer:AddChild(SpellNameXPosSlider)
 
@@ -917,7 +917,7 @@ local function CreateCastBarSpellNameTextSettings(containerParent, unit, updateC
     SpellNameYPosSlider:SetLabel("Y Position")
     SpellNameYPosSlider:SetValue(SpellNameTextDB.Layout[4])
     SpellNameYPosSlider:SetSliderValues(-1000, 1000, 0.1)
-    SpellNameYPosSlider:SetRelativeWidth(0.33)
+    SpellNameYPosSlider:SetRelativeWidth(0.25)
     SpellNameYPosSlider:SetCallback("OnValueChanged", function(_, _, value) SpellNameTextDB.Layout[4] = value updateCallback() end)
     SpellNameLayoutContainer:AddChild(SpellNameYPosSlider)
 
@@ -925,9 +925,17 @@ local function CreateCastBarSpellNameTextSettings(containerParent, unit, updateC
     SpellNameFontSizeSlider:SetLabel("Font Size")
     SpellNameFontSizeSlider:SetValue(SpellNameTextDB.FontSize)
     SpellNameFontSizeSlider:SetSliderValues(8, 64, 1)
-    SpellNameFontSizeSlider:SetRelativeWidth(0.33)
+    SpellNameFontSizeSlider:SetRelativeWidth(0.25)
     SpellNameFontSizeSlider:SetCallback("OnValueChanged", function(_, _, value) SpellNameTextDB.FontSize = value updateCallback() end)
     SpellNameLayoutContainer:AddChild(SpellNameFontSizeSlider)
+
+    local MaxCharsSlider = AG:Create("Slider")
+    MaxCharsSlider:SetLabel("Max Characters")
+    MaxCharsSlider:SetValue(SpellNameTextDB.MaxChars)
+    MaxCharsSlider:SetSliderValues(1, 64, 1)
+    MaxCharsSlider:SetRelativeWidth(0.25)
+    MaxCharsSlider:SetCallback("OnValueChanged", function(_, _, value) SpellNameTextDB.MaxChars = value updateCallback() end)
+    SpellNameLayoutContainer:AddChild(MaxCharsSlider)
 
     function RefreshCastBarSpellNameSettings()
         if SpellNameTextDB.Enabled then
@@ -937,6 +945,7 @@ local function CreateCastBarSpellNameTextSettings(containerParent, unit, updateC
             SpellNameYPosSlider:SetDisabled(false)
             SpellNameFontSizeSlider:SetDisabled(false)
             SpellNameColourPicker:SetDisabled(false)
+            MaxCharsSlider:SetDisabled(false)
         else
             SpellNameAnchorFromDropdown:SetDisabled(true)
             SpellNameAnchorToDropdown:SetDisabled(true)
@@ -944,6 +953,7 @@ local function CreateCastBarSpellNameTextSettings(containerParent, unit, updateC
             SpellNameYPosSlider:SetDisabled(true)
             SpellNameFontSizeSlider:SetDisabled(true)
             SpellNameColourPicker:SetDisabled(true)
+            MaxCharsSlider:SetDisabled(true)
         end
     end
 

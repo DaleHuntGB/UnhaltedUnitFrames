@@ -1,5 +1,13 @@
 local _, UUF = ...
 
+local function ShortenCastName(text, maxChars)
+    if not text then return "" end
+    if maxChars and maxChars > 0 then
+        text = string.format("%." .. maxChars .. "s", text)
+    end
+    return UUF:CleanTruncateUTF8String(text)
+end
+
 function UUF:CreateUnitCastBar(unitFrame, unit)
     local FontDB = UUF.db.profile.General.Fonts
     local GeneralDB = UUF.db.profile.General
@@ -110,7 +118,9 @@ function UUF:CreateUnitCastBar(unitFrame, unit)
         unitFrame.Castbar:HookScript("OnHide", function() CastBarContainer:Hide() end)
         unitFrame.Castbar.PostCastStart = function(frameCastBar)
             local spellName = C_Spell.GetSpellInfo(frameCastBar.spellID).name
-            if spellName then frameCastBar.Text:SetText(spellName) else frameCastBar.Text:SetText("") end
+            if spellName then
+                frameCastBar.Text:SetText(ShortenCastName(spellName, SpellNameDB.MaxChars))
+            else frameCastBar.Text:SetText("") end
 
             local currentCastBarDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].CastBar
 
@@ -251,7 +261,7 @@ function UUF:CreateTestCastBar(unitFrame, unit)
             CastBarContainer:Show()
             unitFrame.Castbar:Show()
             unitFrame.Castbar.Background:Show()
-            unitFrame.Castbar.Text:SetText("Ethereal Portal")
+            unitFrame.Castbar.Text:SetText(ShortenCastName("Ethereal Portal", UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].CastBar.Text.SpellName.MaxChars))
             unitFrame.Castbar.Time:SetText("0.0")
             unitFrame.Castbar:SetMinMaxValues(0, 1000)
             unitFrame.Castbar:SetScript("OnUpdate", function() local currentValue = unitFrame.Castbar:GetValue() currentValue = currentValue + 1 if currentValue >= 1000 then currentValue = 0 end unitFrame.Castbar:SetValue(currentValue) unitFrame.Castbar.Time:SetText(string.format("%.1f", (currentValue / 1000) * 5)) end)

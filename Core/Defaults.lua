@@ -137,6 +137,7 @@ local Defaults = {
                             FontSize = 12,
                             Layout = {"LEFT", "LEFT", 3, 0},
                             Colour = {1, 1, 1},
+                            MaxChars = 15,
                         },
                         Duration = {
                             Enabled = true,
@@ -321,6 +322,7 @@ local Defaults = {
                             FontSize = 12,
                             Layout = {"LEFT", "LEFT", 3, 0},
                             Colour = {1, 1, 1},
+                            MaxChars = 15,
                         },
                         Duration = {
                             Enabled = true,
@@ -508,6 +510,7 @@ local Defaults = {
                 --             FontSize = 12,
                 --             Layout = {"LEFT", "LEFT", 3, 0},
                 --             Colour = {1, 1, 1},
+                --             MaxChars = 15,
                 --         },
                 --         Duration = {
                 --             Enabled = true,
@@ -680,6 +683,7 @@ local Defaults = {
                             FontSize = 12,
                             Layout = {"LEFT", "LEFT", 3, 0},
                             Colour = {1, 1, 1},
+                            MaxChars = 15,
                         },
                         Duration = {
                             Enabled = true,
@@ -851,6 +855,7 @@ local Defaults = {
                 --             FontSize = 12,
                 --             Layout = {"LEFT", "LEFT", 3, 0},
                 --             Colour = {1, 1, 1},
+                --             MaxChars = 15,
                 --         },
                 --         Duration = {
                 --             Enabled = true,
@@ -1023,6 +1028,7 @@ local Defaults = {
                             FontSize = 12,
                             Layout = {"LEFT", "LEFT", 3, 0},
                             Colour = {1, 1, 1},
+                            MaxChars = 15,
                         },
                         Duration = {
                             Enabled = true,
@@ -1195,6 +1201,7 @@ local Defaults = {
                             FontSize = 12,
                             Layout = {"LEFT", "LEFT", 3, 0},
                             Colour = {1, 1, 1},
+                            MaxChars = 15,
                         },
                         Duration = {
                             Enabled = true,
