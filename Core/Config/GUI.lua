@@ -2114,7 +2114,7 @@ local function CreateAuraSettings(containerParent, unit)
     FrameStrataDropdown:SetLabel("Frame Strata")
     FrameStrataDropdown:SetValue(AurasDB.FrameStrata)
     FrameStrataDropdown:SetRelativeWidth(1)
-    FrameStrataDropdown:SetCallback("OnValueChanged", function(_, _, value) AurasDB.FrameStrata = value updateCallback() end)
+    FrameStrataDropdown:SetCallback("OnValueChanged", function(_, _, value) AurasDB.FrameStrata = value UUF:UpdateUnitAurasStrata(unit) end)
     containerParent:AddChild(FrameStrataDropdown)
 
     function RefreshFontSizeSlider()
