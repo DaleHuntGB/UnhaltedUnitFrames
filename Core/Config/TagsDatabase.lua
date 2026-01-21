@@ -47,6 +47,10 @@ for i = 1, 25 do
     Tags["name:short:" .. i] = "UNIT_NAME_UPDATE"
 end
 
+for i = 1, 25 do
+    Tags["name:short:" .. i .. ":colour"] = "UNIT_NAME_UPDATE"
+end
+
 UUF.SEPARATOR_TAGS = {
 {
     ["||"] = "|",
@@ -299,9 +303,14 @@ local function ShortenUnitName(unit, maxChars)
     return UUF:CleanTruncateUTF8String(unitName)
 end
 
-    for i = 1, 25 do
-        oUF.Tags.Methods["name:short:" .. i] = function(unit)
-        return ShortenUnitName(unit, i)
+for i = 1, 25 do
+    oUF.Tags.Methods["name:short:" .. i] = function(unit) return ShortenUnitName(unit, i) end
+end
+for i = 1, 25 do
+    oUF.Tags.Methods["name:short:" .. i .. ":colour"] = function(unit)
+        local classColourR, classColourG, classColourB = UUF:GetUnitColour(unit)
+        local shortenedName = ShortenUnitName(unit, i)
+        return string.format("|cff%02x%02x%02x%s|r", classColourR * 255, classColourG * 255, classColourB * 255, shortenedName)
     end
 end
 
@@ -355,11 +364,13 @@ local NameTags = {
         ["name"] = "Unit Name",
         ["name:colour"] = "Unit Name with Colour",
         ["name:short:10"] = "Unit Name Shortened (1 - 25 Chars)",
+        ["name:short:10:colour"] = "Unit Name Shortened (1 - 25 Chars) with Colour",
     },
     {
         "name",
         "name:colour",
         "name:short:10",
+        "name:short:10:colour",
     }
 }
 
