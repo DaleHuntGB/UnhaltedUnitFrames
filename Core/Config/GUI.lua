@@ -2248,14 +2248,6 @@ local function CreateGlobalSettings(containerParent)
     SeparatorDropdown:SetCallback("OnLeave", function() GameTooltip:Hide() end)
     TagContainer:AddChild(SeparatorDropdown)
 
-    -- local ToTSeparatorDropdown = AG:Create("Dropdown")
-    -- ToTSeparatorDropdown:SetList(UUF.TOT_SEPARATOR_TAGS[1], UUF.TOT_SEPARATOR_TAGS[2])
-    -- ToTSeparatorDropdown:SetLabel("Target of Target Separator")
-    -- ToTSeparatorDropdown:SetValue(UUF.db.profile.General.ToTSeparator)
-    -- ToTSeparatorDropdown:SetRelativeWidth(0.25)
-    -- ToTSeparatorDropdown:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.General.ToTSeparator = value UUF:UpdateUnitTags() end)
-    -- TagContainer:AddChild(ToTSeparatorDropdown)
-
     containerParent:DoLayout()
 end
 
