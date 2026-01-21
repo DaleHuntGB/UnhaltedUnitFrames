@@ -417,7 +417,8 @@ local MiscTags = {
         ["creature"] = "Creature Type",
         ["group"] = "Group Number",
         ["level"] = "Unit Level",
-        ["powercolor"] = "Unit Power Colour",
+        ["powercolor"] = "Unit Power Colour - Prefix",
+        ["raidcolor"] = "Unit Class Colour - Prefix",
     },
     {
         "classification",
@@ -426,6 +427,7 @@ local MiscTags = {
         "group",
         "level",
         "powercolor",
+        "raidcolor",
     }
 }
 
