@@ -407,9 +407,24 @@ local tagStrings = {
 	end]],
 
 	['soulshards'] = [[function()
-		local num = UnitPower('player', Enum.PowerType.SoulShards)
-		if(num > 0) then
-			return num
+		local exactPower = UnitPower('player', Enum.PowerType.SoulShards, true)
+		local mod = UnitPowerDisplayMod(Enum.PowerType.SoulShards)
+		if(mod and mod > 0 and exactPower > 0) then
+			local num = exactPower / mod
+			return math.floor(num)
+		elseif(exactPower > 0) then
+			return exactPower
+		end
+	end]],
+
+	['soulshards_frac'] = [[function()
+		local exactPower = UnitPower('player', Enum.PowerType.SoulShards, true)
+		local mod = UnitPowerDisplayMod(Enum.PowerType.SoulShards)
+		if(mod and mod > 0 and exactPower > 0) then
+			local num = exactPower / mod
+			return string.format('%.1f', num)
+		elseif(exactPower > 0) then
+			return exactPower
 		end
 	end]],
 
