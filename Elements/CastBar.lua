@@ -133,6 +133,8 @@ function UUF:CreateUnitCastBar(unitFrame, unit)
             end
             CastBarContainer:Show()
         end
+        if SpellNameDB.Enabled then unitFrame.Castbar.Text:SetAlpha(1) else unitFrame.Castbar.Text:SetAlpha(0) end
+        if DurationDB.Enabled then unitFrame.Castbar.Time:SetAlpha(1) else unitFrame.Castbar.Time:SetAlpha(0) end
     else
         CastBarContainer:Hide()
         if not unitFrame.Castbar then return end
@@ -220,7 +222,7 @@ function UUF:UpdateUnitCastBar(unitFrame, unit)
                 end
                 unitFrame.Castbar.Text:SetTextColor(unpack(SpellNameDB.Colour))
                 unitFrame.Castbar.Text:SetJustifyH(UUF:SetJustification(SpellNameDB.Layout[1]))
-                if SpellNameDB.Enabled then unitFrame.Castbar.Text:Show() else unitFrame.Castbar.Text:Hide() end
+                if SpellNameDB.Enabled then unitFrame.Castbar.Text:SetAlpha(1) else unitFrame.Castbar.Text:SetAlpha(0) end
             end
 
             if unitFrame.Castbar.Time then
@@ -237,7 +239,7 @@ function UUF:UpdateUnitCastBar(unitFrame, unit)
                 end
                 unitFrame.Castbar.Time:SetTextColor(unpack(DurationDB.Colour))
                 unitFrame.Castbar.Time:SetJustifyH(UUF:SetJustification(DurationDB.Layout[1]))
-                if DurationDB.Enabled then unitFrame.Castbar.Time:Show() else unitFrame.Castbar.Time:Hide() end
+                if DurationDB.Enabled then unitFrame.Castbar.Time:SetAlpha(1) else unitFrame.Castbar.Time:SetAlpha(0) end
             end
         end
     else
