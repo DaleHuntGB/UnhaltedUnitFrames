@@ -4,7 +4,7 @@ function UUF:CreateUnitPortrait(unitFrame, unit)
     local PortraitDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Portrait
 
     local PortraitTexture = unitFrame.HighLevelContainer:CreateTexture(UUF:FetchFrameName(unit) .. "_PortraitTexture", "BACKGROUND")
-    PortraitTexture:SetSize(PortraitDB.Size, PortraitDB.Size)
+    PortraitTexture:SetSize(PortraitDB.Width, PortraitDB.Height)
     PortraitTexture:SetPoint(PortraitDB.Layout[1], unitFrame.HighLevelContainer, PortraitDB.Layout[2], PortraitDB.Layout[3], PortraitDB.Layout[4])
     PortraitTexture:SetTexCoord((PortraitDB.Zoom or 0) * 0.5, 1 - (PortraitDB.Zoom or 0) * 0.5, (PortraitDB.Zoom or 0) * 0.5, 1 - (PortraitDB.Zoom or 0) * 0.5)
     PortraitTexture.showClass = PortraitDB.UseClassPortrait
@@ -37,7 +37,7 @@ function UUF:UpdateUnitPortrait(unitFrame, unit)
 
         if unitFrame.Portrait then
             unitFrame.Portrait:ClearAllPoints()
-            unitFrame.Portrait:SetSize(PortraitDB.Size, PortraitDB.Size)
+            unitFrame.Portrait:SetSize(PortraitDB.Width, PortraitDB.Height)
             unitFrame.Portrait:SetPoint(PortraitDB.Layout[1], unitFrame.HighLevelContainer, PortraitDB.Layout[2], PortraitDB.Layout[3], PortraitDB.Layout[4])
             unitFrame.Portrait:SetTexCoord((PortraitDB.Zoom or 0) * 0.5, 1 - (PortraitDB.Zoom or 0) * 0.5, (PortraitDB.Zoom or 0) * 0.5, 1 - (PortraitDB.Zoom or 0) * 0.5)
             unitFrame.Portrait.showClass = PortraitDB.UseClassPortrait

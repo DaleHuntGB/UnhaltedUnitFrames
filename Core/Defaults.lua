@@ -151,7 +151,8 @@ local Defaults = {
                 },
                 Portrait = {
                     Enabled = false,
-                    Size = 42,
+                    Width = 42,
+                    Height = 42,
                     Layout = {"RIGHT", "LEFT", -1, 0},
                     Zoom = 0.3,
                     UseClassPortrait = false,
@@ -339,7 +340,8 @@ local Defaults = {
                 },
                 Portrait = {
                     Enabled = false,
-                    Size = 42,
+                    Width = 42,
+                    Height = 42,
                     Layout = {"LEFT", "RIGHT", 1, 0},
                     Zoom = 0.3,
                     UseClassPortrait = false,
@@ -530,7 +532,8 @@ local Defaults = {
                 -- },
                 Portrait = {
                     Enabled = false,
-                    Size = 22,
+                    Width = 22,
+                    Height = 22,
                     Layout = {"RIGHT", "LEFT", -1, 0},
                     Zoom = 0.3,
                     UseClassPortrait = false,
@@ -706,7 +709,8 @@ local Defaults = {
                 },
                 Portrait = {
                     Enabled = false,
-                    Size = 22,
+                    Width = 22,
+                    Height = 22,
                     Layout = {"LEFT", "RIGHT", 1, 0},
                     Zoom = 0.3,
                     UseClassPortrait = false,
@@ -881,7 +885,8 @@ local Defaults = {
                 -- },
                 Portrait = {
                     Enabled = false,
-                    Size = 22,
+                    Width = 22,
+                    Height = 22,
                     Layout = {"RIGHT", "LEFT", -1, 0},
                     Zoom = 0.3,
                     UseClassPortrait = false,
@@ -1057,7 +1062,8 @@ local Defaults = {
                 },
                 Portrait = {
                     Enabled = false,
-                    Size = 22,
+                    Width = 22,
+                    Height = 22,
                     Layout = {"LEFT", "RIGHT", 1, 0},
                     Zoom = 0.3,
                     UseClassPortrait = false,
@@ -1233,7 +1239,8 @@ local Defaults = {
                 },
                 Portrait = {
                     Enabled = true,
-                    Size = 42,
+                    Width = 42,
+                    Height = 42,
                     Layout = {"RIGHT", "LEFT", -1, 0},
                     Zoom = 0.3,
                     UseClassPortrait = false,
