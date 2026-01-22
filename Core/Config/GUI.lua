@@ -595,9 +595,38 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
     local ForegroundColourByClassToggle = AG:Create("CheckBox")
     ForegroundColourByClassToggle:SetLabel("Colour by Class / Reaction")
     ForegroundColourByClassToggle:SetValue(HealthBarDB.ColourByClass)
-    ForegroundColourByClassToggle:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.ColourByClass = value UUFGUI.FrameFGColourPicker:SetDisabled(HealthBarDB.ColourByClass) updateCallback() end)
+    ForegroundColourByClassToggle:SetCallback("OnValueChanged", function(_, _, value)
+        HealthBarDB.ColourByClass = value
+        UUFGUI.FrameFGColourPicker:SetDisabled(HealthBarDB.ColourByClass)
+        
+        -- CUSTOM: If enabling ColourByClass, disable ColourByHealthPercent for this unit
+        if value and HealthBarDB.ColourByHealthPercent then
+            HealthBarDB.ColourByHealthPercent = false
+            if UUFGUI.ColourByHealthPercentToggles and UUFGUI.ColourByHealthPercentToggles[unit] then
+                UUFGUI.ColourByHealthPercentToggles[unit]:SetValue(false)
+            end
+        end
+        
+        -- CUSTOM: Update health percent colors state for current unit
+        if UUFGUI.HealthPercentGroups and UUFGUI.HealthPercentGroups[unit] and UUFGUI.ColourByHealthPercentToggles and UUFGUI.ColourByHealthPercentToggles[unit] then
+            -- Disable the toggle when class coloring is active
+            UUFGUI.ColourByHealthPercentToggles[unit]:SetDisabled(value)
+            -- Disable all widgets (toggle + children)
+            GUIWidgets.DeepDisable(UUFGUI.HealthPercentGroups[unit], value or not HealthBarDB.ColourByHealthPercent, UUFGUI.ColourByHealthPercentToggles[unit])
+        end
+        
+        -- Only update the health bar, not the entire frame (to avoid CastBar errors)
+        local unitFrame = UUF[unit:upper()]
+        if unitFrame then
+            UUF:UpdateUnitHealthBar(unitFrame, unit)
+        end
+    end)
     ForegroundColourByClassToggle:SetRelativeWidth(0.25)
     ColourContainer:AddChild(ForegroundColourByClassToggle)
+    
+    -- CUSTOM: Store reference to ColourByClass toggle
+    if not UUFGUI.FrameFGColourByClassToggle then UUFGUI.FrameFGColourByClassToggle = {} end
+    UUFGUI.FrameFGColourByClassToggle[unit] = ForegroundColourByClassToggle
 
     local ForegroundOpacitySlider = AG:Create("Slider")
     ForegroundOpacitySlider:SetLabel("Foreground Opacity")
@@ -634,6 +663,70 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
     BackgroundOpacitySlider:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.BackgroundOpacity = value updateCallback() end)
     BackgroundOpacitySlider:SetIsPercent(true)
     ColourContainer:AddChild(BackgroundOpacitySlider)
+    
+    -- CUSTOM: Custom health percentage color system
+    -- Available for all units except boss
+    if unit ~= "boss" then
+        local HealthPercentGroup = GUIWidgets.CreateInlineGroup(containerParent, "Health Percentage Colors")
+        
+        -- Store references per unit
+        if not UUFGUI.HealthPercentGroups then UUFGUI.HealthPercentGroups = {} end
+        if not UUFGUI.ColourByHealthPercentToggles then UUFGUI.ColourByHealthPercentToggles = {} end
+        if not UUFGUI.FrameFGColourByClassToggle then UUFGUI.FrameFGColourByClassToggle = {} end
+        
+        UUFGUI.HealthPercentGroups[unit] = HealthPercentGroup
+        
+        -- CUSTOM: Add toggle to enable/disable health percent coloring
+        local ColourByHealthPercentToggle = AG:Create("CheckBox")
+        ColourByHealthPercentToggle:SetLabel("Colour by Health Percent")
+        ColourByHealthPercentToggle:SetValue(HealthBarDB.ColourByHealthPercent or false)
+        ColourByHealthPercentToggle:SetFullWidth(true)
+        -- Disable toggle if ColourByClass is active
+        ColourByHealthPercentToggle:SetDisabled(HealthBarDB.ColourByClass)
+        
+        ColourByHealthPercentToggle:SetCallback("OnValueChanged", function(_, _, value)
+            HealthBarDB.ColourByHealthPercent = value
+            
+            -- If enabling health percent colors, disable ColourByClass for this unit
+            if value then
+                HealthBarDB.ColourByClass = false
+                -- Update the ColourByClass toggle if it exists
+                if UUFGUI.FrameFGColourByClassToggle and UUFGUI.FrameFGColourByClassToggle[unit] then
+                    UUFGUI.FrameFGColourByClassToggle[unit]:SetValue(false)
+                end
+            end
+            
+            -- Only update the health bar, not the entire frame (to avoid CastBar errors)
+            local unitFrame = UUF[unit:upper()]
+            if unitFrame then
+                UUF:UpdateUnitHealthBar(unitFrame, unit)
+            end
+            
+            -- Disable widgets if ColourByHealthPercent is false
+            GUIWidgets.DeepDisable(HealthPercentGroup, not value, ColourByHealthPercentToggle)
+        end)
+        HealthPercentGroup:AddChild(ColourByHealthPercentToggle)
+        UUFGUI.ColourByHealthPercentToggles[unit] = ColourByHealthPercentToggle
+        
+        -- CUSTOM: Use custom module to create widgets
+        if UUF.CustomHealthColors then
+            UUF.CustomHealthColors:CreateGUIWidgets(HealthPercentGroup, HealthBarDB, unit, updateCallback)
+        else
+            local ErrorLabel = AG:Create("Label")
+            ErrorLabel:SetText("|cFFFF0000Error: CustomHealthColors module not loaded|r")
+            ErrorLabel:SetFullWidth(true)
+            HealthPercentGroup:AddChild(ErrorLabel)
+        end
+        
+        -- CUSTOM: Set initial state based on current settings
+        -- Use C_Timer to ensure widgets are fully rendered before applying state
+        C_Timer.After(0.05, function()
+            if UUFGUI.HealthPercentGroups and UUFGUI.HealthPercentGroups[unit] and UUFGUI.ColourByHealthPercentToggles and UUFGUI.ColourByHealthPercentToggles[unit] then
+                local shouldDisable = HealthBarDB.ColourByClass or not HealthBarDB.ColourByHealthPercent
+                GUIWidgets.DeepDisable(UUFGUI.HealthPercentGroups[unit], shouldDisable, UUFGUI.ColourByHealthPercentToggles[unit])
+            end
+        end)
+    end
 end
 
 local function CreateHealPredictionSettings(containerParent, unit, updateCallback)

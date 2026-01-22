@@ -2,6 +2,8 @@
 	<Script file="Core.lua"/>
     <Script file="Defaults.lua"/>
     <Script file="Globals.lua"/>
+    <!-- CUSTOM: Custom health color system -->
+    <Script file="CustomHealthColors.lua"/>
     <Script file="TestEnvironment.lua"/>
     <Script file="UnitFrame.lua"/>
 

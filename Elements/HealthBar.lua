@@ -24,6 +24,20 @@ function UUF:CreateUnitHealthBar(unitFrame, unit)
         HealthBar.colorClass = HealthBarDB.ColourByClass
         HealthBar.colorReaction = HealthBarDB.ColourByClass
         HealthBar.colorTapped = HealthBarDB.ColourWhenTapped
+        HealthBar.colorSmooth = HealthBarDB.ColourByHealthPercent
+        
+        -- CUSTOM: Configure color curve for colorSmooth using custom module
+        if UUF.CustomHealthColors then
+            UUF.CustomHealthColors:ApplyColorCurve(unitFrame, HealthBarDB)
+        else
+            -- Fallback: Original logic if module is not loaded
+            if HealthBarDB.ColourByHealthPercent then
+                if not unitFrame.colors then unitFrame.colors = {} end
+                if not unitFrame.colors.health then
+                    unitFrame.colors.health = UUF.oUF:CreateColor(0, 1, 0)
+                end
+            end
+        end
 
         if unit == "pet" and HealthBarDB.ColourByClass then
             HealthBar.colorClass = false
@@ -58,6 +72,19 @@ function UUF:CreateUnitHealthBar(unitFrame, unit)
             unitFrame.Health:SetReverseFill(false)
             unitFrame.HealthBackground:SetReverseFill(true)
         end
+        
+        -- CUSTOM: Configure color curve for colorSmooth using custom module
+        if UUF.CustomHealthColors then
+            UUF.CustomHealthColors:ApplyColorCurve(unitFrame, HealthBarDB)
+        else
+            -- Fallback: Original logic if module is not loaded
+            if HealthBarDB.ColourByHealthPercent then
+                if not unitFrame.colors then unitFrame.colors = {} end
+                if not unitFrame.colors.health then
+                    unitFrame.colors.health = UUF.oUF:CreateColor(0, 1, 0)
+                end
+            end
+        end
 
     end
 end
@@ -86,6 +113,27 @@ function UUF:UpdateUnitHealthBar(unitFrame, unit)
         unitFrame.Health.colorClass = HealthBarDB.ColourByClass
         unitFrame.Health.colorReaction = HealthBarDB.ColourByClass
         unitFrame.Health.colorTapped = HealthBarDB.ColourWhenTapped
+        unitFrame.Health.colorSmooth = HealthBarDB.ColourByHealthPercent
+        
+        -- CUSTOM: Recreate color curve when health percent coloring is enabled
+        if HealthBarDB.ColourByHealthPercent then
+            if UUF.CustomHealthColors then
+                UUF.CustomHealthColors:ApplyColorCurve(unitFrame, HealthBarDB)
+            end
+            -- Force color update
+            if unitFrame.Health then
+                unitFrame.Health:ForceUpdate()
+            end
+        else
+            -- CUSTOM: Clear the color curve if health percent coloring is disabled
+            if UUF.CustomHealthColors then
+                UUF.CustomHealthColors:ClearColorCurve(unitFrame)
+            end
+            if unitFrame.Health then
+                unitFrame.Health:ForceUpdate()
+            end
+        end
+        
         unitFrame.Health:SetStatusBarTexture(UUF.Media.Foreground)
         if unit == "pet" and HealthBarDB.ColourByClass then
             unitFrame.Health.colorClass = false
@@ -112,5 +160,22 @@ function UUF:UpdateUnitHealthBar(unitFrame, unit)
         unitFrame.Health:SetReverseFill(false)
         unitFrame.HealthBackground:SetReverseFill(true)
     end
-    unitFrame.Health:ForceUpdate()
+    
+    -- CUSTOM: Recreate color curve when health percent coloring is enabled
+    if HealthBarDB.ColourByHealthPercent then
+        if UUF.CustomHealthColors then
+            UUF.CustomHealthColors:ApplyColorCurve(unitFrame, HealthBarDB)
+        end
+        if unitFrame.Health then
+            unitFrame.Health:ForceUpdate()
+        end
+    else
+        -- CUSTOM: Clear the color curve if health percent coloring is disabled
+        if UUF.CustomHealthColors then
+            UUF.CustomHealthColors:ClearColorCurve(unitFrame)
+        end
+        if unitFrame.Health then
+            unitFrame.Health:ForceUpdate()
+        end
+    end
 end
