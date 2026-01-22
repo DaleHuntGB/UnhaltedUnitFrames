@@ -421,6 +421,7 @@ local MiscTags = {
         ["level"] = "Unit Level",
         ["powercolor"] = "Unit Power Colour - Prefix",
         ["raidcolor"] = "Unit Class Colour - Prefix",
+        ["class"] = "Unit Class",
     },
     {
         "classification",
@@ -430,6 +431,7 @@ local MiscTags = {
         "level",
         "powercolor",
         "raidcolor",
+        "class",
     }
 }
 
