@@ -124,7 +124,7 @@ function UUF:CreateUnitCastBar(unitFrame, unit)
 
             local currentCastBarDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].CastBar
 
-            if not issecretvalue and issecretvalue(frameCastBar.notInterruptible) then
+            if issecretvalue(frameCastBar.notInterruptible) then
                 local color = currentCastBarDB.NotInterruptibleColour
                 frameCastBar:SetStatusBarColor(color[1], color[2], color[3], color[4])
             else
