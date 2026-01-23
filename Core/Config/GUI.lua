@@ -2387,7 +2387,6 @@ local function CreateUnitSettings(containerParent, unit)
             { text = "Heal Prediction", value = "HealPrediction"},
             { text = "Auras", value = "Auras"},
             { text = "Power Bar", value = "PowerBar"},
-            { text = "Portrait", value = "Portrait"},
             { text = "Indicators", value = "Indicators"},
             { text = "Tags", value = "Tags"},
         })
