@@ -31,7 +31,7 @@ function UUF:CreateUnitPowerBar(unitFrame, unit)
         PowerBar.PowerBarBorder = PowerBar:CreateTexture(nil, "OVERLAY")
         PowerBar.PowerBarBorder:SetHeight(1)
         PowerBar.PowerBarBorder:SetTexture("Interface\\Buttons\\WHITE8x8")
-        PowerBar.PowerBarBorder:SetVertexColor(0, 0, 0, 1)
+        PowerBar.PowerBarBorder:SetVertexColor(PowerBarDB.BorderColor[1], PowerBarDB.BorderColor[2], PowerBarDB.BorderColor[3], PowerBarDB.ShowBorder and 1 or 0)
         PowerBar.PowerBarBorder:SetPoint("TOPLEFT", PowerBar, "TOPLEFT", 0, 1)
         PowerBar.PowerBarBorder:SetPoint("TOPRIGHT", PowerBar, "TOPRIGHT", 0, 1)
     end
@@ -74,6 +74,7 @@ function UUF:UpdateUnitPowerBar(unitFrame, unit)
             else
                 unitFrame.Power:SetReverseFill(false)
             end
+
         end
 
         if unitFrame.Power.Background then
@@ -88,6 +89,7 @@ function UUF:UpdateUnitPowerBar(unitFrame, unit)
             unitFrame.Power.PowerBarBorder:ClearAllPoints()
             unitFrame.Power.PowerBarBorder:SetPoint("TOPLEFT", unitFrame.Power, "TOPLEFT", 0, 1)
             unitFrame.Power.PowerBarBorder:SetPoint("TOPRIGHT", unitFrame.Power, "TOPRIGHT", 0, 1)
+            unitFrame.Power.PowerBarBorder:SetVertexColor(PowerBarDB.BorderColor[1], PowerBarDB.BorderColor[2], PowerBarDB.BorderColor[3], PowerBarDB.ShowBorder and 1 or 0)
         end
 
         unitFrame.Power:Show()
