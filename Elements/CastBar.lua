@@ -1,5 +1,48 @@
 local _, UUF = ...
 
+--Creating a frame and listeners for casting events
+local interFrame = CreateFrame("Frame")
+
+interFrame:RegisterEvent("UNIT_SPELLCAST_START")
+interFrame:RegisterEvent("UNIT_SPELLCAST_CHANNEL_START")
+interFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
+
+--Used to determine whether a spell can be interrupted
+local interStatus
+
+local function CheckTargetCast(unit)
+    if unit ~= "target" then return end
+    if not UnitExists("target") then return end
+	--for Casts
+    local name, _, _, _, _, _, _, notInterruptible = UnitCastingInfo("target")
+    if name then
+        if notInterruptible then
+            interStatus = false
+        else
+            interStatus = true
+        end
+        return
+    end
+	--for Channels
+    name, _, _, _, _, _, notInterruptible = UnitChannelInfo("target")
+    if name then
+        if notInterruptible then
+            interStatus = false
+        else
+            interStatus = true
+        end
+    end
+end
+
+--Will determine interrupt on events
+interFrame:SetScript("OnEvent", function(_, event, unit)
+    if event == "PLAYER_TARGET_CHANGED" then
+        CheckTargetCast("target")
+    else
+        CheckTargetCast(unit)
+    end
+end)
+
 local function ShortenCastName(text, maxChars)
     if not text then return "" end
     if maxChars and maxChars > 0 then
@@ -124,7 +167,8 @@ function UUF:CreateUnitCastBar(unitFrame, unit)
 
             local currentCastBarDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].CastBar
 
-            if not issecretvalue and issecretvalue(frameCastBar.notInterruptible) then
+			--new listener for interrupt Status - Assumes spells are not interruptable unless they are marked as interruptable
+            if not interStatus or interStatus == nil then
                 local color = currentCastBarDB.NotInterruptibleColour
                 frameCastBar:SetStatusBarColor(color[1], color[2], color[3], color[4])
             else
