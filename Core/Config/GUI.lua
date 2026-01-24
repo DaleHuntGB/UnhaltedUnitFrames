@@ -655,6 +655,24 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
     BackgroundOpacitySlider:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.BackgroundOpacity = value updateCallback() end)
     BackgroundOpacitySlider:SetIsPercent(true)
     ColourContainer:AddChild(BackgroundOpacitySlider)
+
+    local BorderColorPicker = AG:Create("ColorPicker")
+    BorderColorPicker:SetLabel("Border Colour")
+    local R3, G3, B3 = unpack(HealthBarDB.BorderColor)
+    BorderColorPicker:SetColor(R3, G3, B3)
+    BorderColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) HealthBarDB.BorderColor = {r, g, b} updateCallback() end)
+    BorderColorPicker:SetHasAlpha(false)
+    BorderColorPicker:SetRelativeWidth(0.25)
+    BorderColorPicker:SetDisabled(not HealthBarDB.ShowBorder)
+    ColourContainer:AddChild(BorderColorPicker)
+    UUFGUI.FrameBorderColourPicker = BorderColorPicker
+
+    local ShowBorderToggle = AG:Create("CheckBox")
+    ShowBorderToggle:SetLabel("Show Border")
+    ShowBorderToggle:SetValue(HealthBarDB.ShowBorder)
+    ShowBorderToggle:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.ShowBorder = value UUFGUI.FrameBorderColourPicker:SetDisabled(not HealthBarDB.ShowBorder) updateCallback() end)
+    ShowBorderToggle:SetRelativeWidth(0.25)
+    ColourContainer:AddChild(ShowBorderToggle)
 end
 
 local function CreateHealPredictionSettings(containerParent, unit, updateCallback)
@@ -861,6 +879,24 @@ local function CreateCastBarBarSettings(containerParent, unit, updateCallback)
     NotInterruptibleColourPicker:SetHasAlpha(true)
     NotInterruptibleColourPicker:SetRelativeWidth(0.33)
     ColourContainer:AddChild(NotInterruptibleColourPicker)
+
+    local BorderColorPicker = AG:Create("ColorPicker")
+    BorderColorPicker:SetLabel("Border Colour")
+    local R4, G4, B4 = unpack(CastBarDB.BorderColor)
+    BorderColorPicker:SetColor(R4, G4, B4)
+    BorderColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) CastBarDB.BorderColor = {r, g, b} updateCallback() end)
+    BorderColorPicker:SetHasAlpha(false)
+    BorderColorPicker:SetRelativeWidth(0.25)
+    BorderColorPicker:SetDisabled(not CastBarDB.ShowBorder)
+    ColourContainer:AddChild(BorderColorPicker)
+    UUFGUI.FrameBorderColourPicker = BorderColorPicker
+
+    local ShowBorderToggle = AG:Create("CheckBox")
+    ShowBorderToggle:SetLabel("Show Border")
+    ShowBorderToggle:SetValue(CastBarDB.ShowBorder)
+    ShowBorderToggle:SetCallback("OnValueChanged", function(_, _, value) CastBarDB.ShowBorder = value UUFGUI.FrameBorderColourPicker:SetDisabled(not CastBarDB.ShowBorder) updateCallback() end)
+    ShowBorderToggle:SetRelativeWidth(0.25)
+    ColourContainer:AddChild(ShowBorderToggle)
 
     function RefreshCastBarBarSettings()
         if CastBarDB.Enabled then
@@ -1217,6 +1253,24 @@ local function CreatePowerBarSettings(containerParent, unit, updateCallback)
     -- BackgroundMultiplierSlider:SetIsPercent(true)
     -- BackgroundMultiplierSlider:SetDisabled(true)
     -- ColourContainer:AddChild(BackgroundMultiplierSlider)
+
+    local BorderColorPicker = AG:Create("ColorPicker")
+    BorderColorPicker:SetLabel("Divider Colour")
+    local R3, G3, B3 = unpack(PowerBarDB.BorderColor)
+    BorderColorPicker:SetColor(R3, G3, B3)
+    BorderColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) PowerBarDB.BorderColor = {r, g, b} updateCallback() end)
+    BorderColorPicker:SetHasAlpha(false)
+    BorderColorPicker:SetRelativeWidth(0.25)
+    BorderColorPicker:SetDisabled(not PowerBarDB.ShowBorder)
+    ColourContainer:AddChild(BorderColorPicker)
+    UUFGUI.FrameBorderColourPicker = BorderColorPicker
+
+    local ShowBorderToggle = AG:Create("CheckBox")
+    ShowBorderToggle:SetLabel("Show Divider")
+    ShowBorderToggle:SetValue(PowerBarDB.ShowBorder)
+    ShowBorderToggle:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.ShowBorder = value UUFGUI.FrameBorderColourPicker:SetDisabled(not PowerBarDB.ShowBorder) updateCallback() end)
+    ShowBorderToggle:SetRelativeWidth(0.25)
+    ColourContainer:AddChild(ShowBorderToggle)
 
     function RefreshPowerBarGUI()
         if PowerBarDB.Enabled then
@@ -2137,6 +2191,13 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
     WrapDirectionDropdown:SetRelativeWidth(0.5)
     WrapDirectionDropdown:SetCallback("OnValueChanged", function(_, _, value) AuraDB.WrapDirection = value if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end end)
     LayoutContainer:AddChild(WrapDirectionDropdown)
+
+    local ShowBorderToggle = AG:Create("CheckBox")
+    ShowBorderToggle:SetLabel("Show Borders")
+    ShowBorderToggle:SetValue(AuraDB.ShowBorder)
+    ShowBorderToggle:SetCallback("OnValueChanged", function(_, _, value) AuraDB.ShowBorder = value if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end end)
+    ShowBorderToggle:SetRelativeWidth(0.25)
+    LayoutContainer:AddChild(ShowBorderToggle)
 
     local CountContainer = GUIWidgets.CreateInlineGroup(containerParent, "Count Settings")
 

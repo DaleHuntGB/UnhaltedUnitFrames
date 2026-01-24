@@ -56,7 +56,12 @@ local function StyleAuras(_, button, unit, auraType)
     local buttonBorder = CreateFrame("Frame", nil, button, "BackdropTemplate")
     buttonBorder:SetAllPoints()
     buttonBorder:SetBackdrop({ edgeFile = "Interface\\Buttons\\WHITE8X8", edgeSize = 1, insets = {left = 0, right = 0, top = 0, bottom = 0} })
-    buttonBorder:SetBackdropBorderColor(0, 0, 0, 1)
+    if auraType == "HELPFUL" then
+        buttonBorder:SetBackdropBorderColor(0, 0, 0, Buffs.ShowBorder and 1 or 0)
+    elseif auraType == "HARMFUL" then
+        buttonBorder:SetBackdropBorderColor(0, 0, 0, Debuffs.ShowBorder and 1 or 0)
+    end
+    button.Border = buttonBorder
 
     local auraCooldown = button.Cooldown
     if auraCooldown then
@@ -118,6 +123,14 @@ local function RestyleAuras(_, button, unit, auraType)
     local auraIcon = button.Icon
     if auraIcon then
         auraIcon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
+    end
+
+    if button.Border then
+        if auraType == "HELPFUL" then
+            button.Border:SetBackdropBorderColor(0, 0, 0, Buffs.ShowBorder and 1 or 0)
+        elseif auraType == "HARMFUL" then
+            button.Border:SetBackdropBorderColor(0, 0, 0, Debuffs.ShowBorder and 1 or 0)
+        end
     end
 
     local auraCooldown = button.Cooldown
@@ -366,7 +379,7 @@ function UUF:CreateTestAuras(unitFrame, unit)
                         button = CreateFrame("Button", nil, unitFrame.BuffContainer, "BackdropTemplate")
                         button:SetBackdrop(UUF.BACKDROP)
                         button:SetBackdropColor(0, 0, 0, 0)
-                        button:SetBackdropBorderColor(0, 0, 0, 1)
+                        button:SetBackdropBorderColor(0, 0, 0, BuffsDB.ShowBorder and 1 or 0)
                         button:SetFrameStrata(UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Auras.FrameStrata)
 
                         button.Icon = button:CreateTexture(nil, "BORDER")
@@ -450,7 +463,7 @@ function UUF:CreateTestAuras(unitFrame, unit)
                         button = CreateFrame("Button", nil, unitFrame.DebuffContainer, "BackdropTemplate")
                         button:SetBackdrop(UUF.BACKDROP)
                         button:SetBackdropColor(0, 0, 0, 0)
-                        button:SetBackdropBorderColor(0, 0, 0, 1)
+                        button:SetBackdropBorderColor(0, 0, 0, DebuffsDB.ShowBorder and 1 or 0)
                         button:SetFrameStrata(UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Auras.FrameStrata)
                         button.Icon = button:CreateTexture(nil, "BORDER")
                         button.Icon:SetAllPoints()
