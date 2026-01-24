@@ -53,12 +53,26 @@ end
 function UUF:UpdateUnitTags()
     UUF.SEPARATOR = UUF.db.profile.General.Separator or "||"
     UUF.TOT_SEPARATOR = UUF.db.profile.General.ToTSeparator or "»"
-    for unit, _ in pairs(UUF.db.profile.Units) do
-        for tagName, _ in pairs(UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Tags) do
-            if UUF[unit:upper()] then
-                UUF:UpdateUnitTag(UUF[unit:upper()], unit, tagName)
+    for unit in pairs(UUF.db.profile.Units) do
+        local UnitDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)]
+        if unit == "boss" then
+            for i = 1, UUF.MAX_BOSS_FRAMES do
+                local bossFrame = UUF["BOSS"..i]
+                if bossFrame then
+                    for tagName in pairs(UnitDB.Tags) do
+                        UUF:UpdateUnitTag(bossFrame, "boss"..i, tagName)
+                    end
+                end
+            end
+        else
+            local frame = UUF[unit:upper()]
+            if frame then
+                for tagName in pairs(UnitDB.Tags) do
+                    UUF:UpdateUnitTag(frame, unit, tagName)
+                end
             end
         end
     end
 end
+
 
