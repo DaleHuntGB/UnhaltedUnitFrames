@@ -74,7 +74,6 @@ function UUF:UpdateUnitPowerBar(unitFrame, unit)
             else
                 unitFrame.Power:SetReverseFill(false)
             end
-
         end
 
         if unitFrame.Power.Background then
