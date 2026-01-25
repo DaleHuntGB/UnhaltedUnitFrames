@@ -31,7 +31,7 @@ function UUF:CreateUnitPowerBar(unitFrame, unit)
         PowerBar.PowerBarBorder = PowerBar:CreateTexture(nil, "OVERLAY")
         PowerBar.PowerBarBorder:SetHeight(1)
         PowerBar.PowerBarBorder:SetTexture("Interface\\Buttons\\WHITE8x8")
-        PowerBar.PowerBarBorder:SetVertexColor(0,0,0,1)
+        PowerBar.PowerBarBorder:SetVertexColor(0, 0, 0, 1)
         PowerBar.PowerBarBorder:SetPoint("TOPLEFT", PowerBar, "TOPLEFT", 0, 1)
         PowerBar.PowerBarBorder:SetPoint("TOPRIGHT", PowerBar, "TOPRIGHT", 0, 1)
     end
@@ -40,15 +40,13 @@ function UUF:CreateUnitPowerBar(unitFrame, unit)
         unitFrame.Power = PowerBar
         PowerBar:Show()
         if unitFrame.PowerBackground then unitFrame.PowerBackground:Show() end
-        unitFrame.HealthBackground:SetHeight(FrameDB.Height - PowerBarDB.Height - 3)
-        unitFrame.Health:SetHeight(FrameDB.Height - PowerBarDB.Height - 3)
     else
         if unitFrame:IsElementEnabled("Power") then unitFrame:DisableElement("Power") end
         PowerBar:Hide()
         if unitFrame.PowerBackground then unitFrame.PowerBackground:Hide() end
-        unitFrame.HealthBackground:SetHeight(FrameDB.Height - 2)
-        unitFrame.Health:SetHeight(FrameDB.Height - 2)
     end
+
+    UUF:UpdateHealthBarLayout(unitFrame, unit)
 
     return PowerBar
 end
@@ -79,13 +77,18 @@ function UUF:UpdateUnitPowerBar(unitFrame, unit)
         end
 
         if unitFrame.Power.Background then
+            unitFrame.Power.Background:ClearAllPoints()
+            unitFrame.Power.Background:SetPoint("BOTTOMLEFT", unitFrame.Container, "BOTTOMLEFT", 1, 1)
             unitFrame.Power.Background:SetSize(unitFrame:GetWidth() - 2, PowerBarDB.Height)
             unitFrame.Power.Background:SetVertexColor(PowerBarDB.Background[1], PowerBarDB.Background[2], PowerBarDB.Background[3], PowerBarDB.Background[4] or 1)
             unitFrame.Power.Background:SetTexture(UUF.Media.Background)
         end
 
-        unitFrame.HealthBackground:SetHeight(FrameDB.Height - PowerBarDB.Height - 3)
-        unitFrame.Health:SetHeight(FrameDB.Height - PowerBarDB.Height - 3)
+        if unitFrame.Power.PowerBarBorder then
+            unitFrame.Power.PowerBarBorder:ClearAllPoints()
+            unitFrame.Power.PowerBarBorder:SetPoint("TOPLEFT", unitFrame.Power, "TOPLEFT", 0, 1)
+            unitFrame.Power.PowerBarBorder:SetPoint("TOPRIGHT", unitFrame.Power, "TOPRIGHT", 0, 1)
+        end
 
         unitFrame.Power:Show()
         unitFrame.Power:ForceUpdate()
@@ -94,7 +97,7 @@ function UUF:UpdateUnitPowerBar(unitFrame, unit)
         if unitFrame:IsElementEnabled("Power") then unitFrame:DisableElement("Power") end
         unitFrame.Power:Hide()
         unitFrame.Power = nil
-        unitFrame.HealthBackground:SetHeight(FrameDB.Height - 2)
-        unitFrame.Health:SetHeight(FrameDB.Height - 2)
     end
+
+    UUF:UpdateHealthBarLayout(unitFrame, unit)
 end

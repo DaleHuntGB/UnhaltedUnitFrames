@@ -1247,24 +1247,16 @@ local function CreateSecondaryPowerBarSettings(containerParent, unit, updateCall
     Toggle:SetLabel("Enable |cFF8080FFSecondary Power Bar|r")
     Toggle:SetValue(SecondaryPowerBarDB.Enabled)
     Toggle:SetCallback("OnValueChanged", function(_, _, value) SecondaryPowerBarDB.Enabled = value updateCallback() RefreshSecondaryPowerBarGUI() end)
-    Toggle:SetRelativeWidth(0.33)
+    Toggle:SetRelativeWidth(0.5)
     LayoutContainer:AddChild(Toggle)
 
     local HeightSlider = AG:Create("Slider")
     HeightSlider:SetLabel("Height")
     HeightSlider:SetValue(SecondaryPowerBarDB.Height)
     HeightSlider:SetSliderValues(1, FrameDB.Height - 2, 0.1)
-    HeightSlider:SetRelativeWidth(0.33)
+    HeightSlider:SetRelativeWidth(0.5)
     HeightSlider:SetCallback("OnValueChanged", function(_, _, value) SecondaryPowerBarDB.Height = value updateCallback() end)
     LayoutContainer:AddChild(HeightSlider)
-
-    local PositionDropdown = AG:Create("Dropdown")
-    PositionDropdown:SetList({["TOP"] = "Top", ["BOTTOM"] = "Bottom"})
-    PositionDropdown:SetLabel("Position")
-    PositionDropdown:SetValue(SecondaryPowerBarDB.Position)
-    PositionDropdown:SetRelativeWidth(0.33)
-    PositionDropdown:SetCallback("OnValueChanged", function(_, _, value) SecondaryPowerBarDB.Position = value updateCallback() end)
-    LayoutContainer:AddChild(PositionDropdown)
 
     local ColourContainer = GUIWidgets.CreateInlineGroup(containerParent, "Colours & Toggles")
 

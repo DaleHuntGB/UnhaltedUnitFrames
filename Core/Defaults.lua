@@ -121,7 +121,6 @@ local Defaults = {
                 SecondaryPowerBar = {
                     Enabled = true,
                     Height = 3,
-                    Position = "TOP",
                     ColourByType = true,
                     Foreground = {8/255, 8/255, 8/255},
                     Background = {128/255, 128/255, 128/255},
