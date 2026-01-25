@@ -63,10 +63,7 @@ function UUF:CreateUnitSecondaryPowerBar(unitFrame, unit)
         ClassPower.PowerBarBorder:SetPoint("TOPRIGHT", container, "TOPLEFT", 1 + totalWidth, -1 - DB.Height)
     end
 
-    ClassPower.colorPower = DB.ColourByType
-
     ClassPower.PostUpdateColor = function(element, color)
-        local DB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].SecondaryPowerBar
         if not DB.ColourByType then
             for i = 1, #element do
                 element[i]:SetStatusBarColor( DB.Foreground[1], DB.Foreground[2], DB.Foreground[3], DB.Foreground[4] or 1 )
