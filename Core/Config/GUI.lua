@@ -658,6 +658,7 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
 end
 
 local function CreateHealPredictionSettings(containerParent, unit, updateCallback)
+    local FrameDB = UUF.db.profile.Units[unit].Frame
     local HealPredictionDB = UUF.db.profile.Units[unit].HealPrediction
 
     local AbsorbSettings = GUIWidgets.CreateInlineGroup(containerParent, "Absorb Settings")
@@ -688,7 +689,7 @@ local function CreateHealPredictionSettings(containerParent, unit, updateCallbac
     local AbsorbHeightSlider = AG:Create("Slider")
     AbsorbHeightSlider:SetLabel("Height")
     AbsorbHeightSlider:SetValue(HealPredictionDB.Absorbs.Height)
-    AbsorbHeightSlider:SetSliderValues(1, 1000, 0.1)
+    AbsorbHeightSlider:SetSliderValues(1, FrameDB.Height - 2, 0.1)
     AbsorbHeightSlider:SetRelativeWidth(0.33)
     AbsorbHeightSlider:SetCallback("OnValueChanged", function(_, _, value) HealPredictionDB.Absorbs.Height = value updateCallback() end)
     AbsorbSettings:AddChild(AbsorbHeightSlider)
@@ -728,7 +729,7 @@ local function CreateHealPredictionSettings(containerParent, unit, updateCallbac
     local HealAbsorbHeightSlider = AG:Create("Slider")
     HealAbsorbHeightSlider:SetLabel("Height")
     HealAbsorbHeightSlider:SetValue(HealPredictionDB.HealAbsorbs.Height)
-    HealAbsorbHeightSlider:SetSliderValues(1, 1000, 0.1)
+    HealAbsorbHeightSlider:SetSliderValues(1, FrameDB.Height - 2, 0.1)
     HealAbsorbHeightSlider:SetRelativeWidth(0.33)
     HealAbsorbHeightSlider:SetCallback("OnValueChanged", function(_, _, value) HealPredictionDB.HealAbsorbs.Height = value updateCallback() end)
     HealAbsorbSettings:AddChild(HealAbsorbHeightSlider)
