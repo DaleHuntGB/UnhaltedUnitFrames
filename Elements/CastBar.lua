@@ -39,6 +39,16 @@ function UUF:CreateUnitCastBar(unitFrame, unit)
     CastBar.Background:SetTexture(UUF.Media.Background)
     CastBar.Background:SetVertexColor(unpack(CastBarDB.Background))
 
+    -- Overlay texture for non-interruptible casts
+    -- This is anchored to the status bar fill texture so it tracks the fill progress
+    -- We use SetAlphaFromBoolean to show/hide it based on the secret notInterruptible value
+    CastBar.NotInterruptibleOverlay = CastBar:CreateTexture(nil, "ARTWORK", nil, 1)
+    CastBar.NotInterruptibleOverlay:SetPoint("TOPLEFT", CastBar:GetStatusBarTexture(), "TOPLEFT")
+    CastBar.NotInterruptibleOverlay:SetPoint("BOTTOMRIGHT", CastBar:GetStatusBarTexture(), "BOTTOMRIGHT")
+    CastBar.NotInterruptibleOverlay:SetTexture(UUF.Media.Foreground)
+    CastBar.NotInterruptibleOverlay:SetVertexColor(unpack(CastBarDB.NotInterruptibleColour))
+    CastBar.NotInterruptibleOverlay:SetAlpha(0) -- Hidden by default
+
     CastBar.Icon = CastBar:CreateTexture(UUF:FetchFrameName(unit) .. "_CastBarIcon", "ARTWORK")
     CastBar.Icon:SetSize(CastBarDB.Height - 2, CastBarDB.Height - 2)
     CastBar.Icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
@@ -116,22 +126,30 @@ function UUF:CreateUnitCastBar(unitFrame, unit)
         if CastBarDB.Icon.Enabled then unitFrame.Castbar.Icon = CastBar.Icon else unitFrame.Castbar.Icon = nil end
         unitFrame.Castbar:HookScript("OnValueChanged", function(self, value) if self.Castbar then self.Castbar:SetValue(value) end end)
         unitFrame.Castbar:HookScript("OnHide", function() CastBarContainer:Hide() end)
+
+        -- Helper to update the non-interruptible overlay visibility
+        -- Uses SetAlphaFromBoolean which can handle secret values from the WoW API
+        local function UpdateNotInterruptibleOverlay(frameCastBar)
+            if frameCastBar.NotInterruptibleOverlay and frameCastBar.notInterruptible ~= nil then
+                frameCastBar.NotInterruptibleOverlay:SetAlphaFromBoolean(frameCastBar.notInterruptible, 1, 0)
+            end
+        end
+
         unitFrame.Castbar.PostCastStart = function(frameCastBar)
-            local spellName = C_Spell.GetSpellInfo(frameCastBar.spellID).name
+            local spellInfo = C_Spell.GetSpellInfo(frameCastBar.spellID)
+            local spellName = spellInfo and spellInfo.name
             if spellName then
                 frameCastBar.Text:SetText(ShortenCastName(spellName, SpellNameDB.MaxChars))
-            else frameCastBar.Text:SetText("") end
-
-            local currentCastBarDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].CastBar
-
-            if not issecretvalue and issecretvalue(frameCastBar.notInterruptible) then
-                local color = currentCastBarDB.NotInterruptibleColour
-                frameCastBar:SetStatusBarColor(color[1], color[2], color[3], color[4])
             else
-                local color = currentCastBarDB.Foreground
-                frameCastBar:SetStatusBarColor(color[1], color[2], color[3], color[4])
+                frameCastBar.Text:SetText("")
             end
+
+            UpdateNotInterruptibleOverlay(frameCastBar)
             CastBarContainer:Show()
+        end
+
+        unitFrame.Castbar.PostCastInterruptible = function(frameCastBar)
+            UpdateNotInterruptibleOverlay(frameCastBar)
         end
         if SpellNameDB.Enabled then unitFrame.Castbar.Text:SetAlpha(1) else unitFrame.Castbar.Text:SetAlpha(0) end
         if DurationDB.Enabled then unitFrame.Castbar.Time:SetAlpha(1) else unitFrame.Castbar.Time:SetAlpha(0) end
@@ -171,6 +189,12 @@ function UUF:UpdateUnitCastBar(unitFrame, unit)
             unitFrame.Castbar.Background:SetTexture(UUF.Media.Background)
             unitFrame.Castbar:SetStatusBarColor(unpack(CastBarDB.Foreground))
             unitFrame.Castbar.Background:SetVertexColor(unpack(CastBarDB.Background))
+
+            -- Update the non-interruptible overlay texture and color
+            if unitFrame.Castbar.NotInterruptibleOverlay then
+                unitFrame.Castbar.NotInterruptibleOverlay:SetTexture(UUF.Media.Foreground)
+                unitFrame.Castbar.NotInterruptibleOverlay:SetVertexColor(unpack(CastBarDB.NotInterruptibleColour))
+            end
 
             if CastBarDB.Inverse then
                 unitFrame.Castbar:SetReverseFill(true)
@@ -268,9 +292,18 @@ function UUF:CreateTestCastBar(unitFrame, unit)
             unitFrame.Castbar.Text:SetText(ShortenCastName("Ethereal Portal", UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].CastBar.Text.SpellName.MaxChars))
             unitFrame.Castbar.Time:SetText("0.0")
             unitFrame.Castbar:SetMinMaxValues(0, 1000)
-            unitFrame.Castbar:SetScript("OnUpdate", function() local currentValue = unitFrame.Castbar:GetValue() currentValue = currentValue + 1 if currentValue >= 1000 then currentValue = 0 end unitFrame.Castbar:SetValue(currentValue) unitFrame.Castbar.Time:SetText(string.format("%.1f", (currentValue / 1000) * 5)) end)
-            local castBarColour = (false and CastBarDB.NotInterruptibleColour) or CastBarDB.Foreground
-            unitFrame.Castbar:SetStatusBarColor(castBarColour[1], castBarColour[2], castBarColour[3], castBarColour[4])
+            unitFrame.Castbar.testValue = 0 -- Track value ourselves since GetValue() returns a secret
+            unitFrame.Castbar:SetScript("OnUpdate", function(self)
+                self.testValue = (self.testValue or 0) + 1
+                if self.testValue >= 1000 then self.testValue = 0 end
+                self:SetValue(self.testValue)
+                unitFrame.Castbar.Time:SetText(string.format("%.1f", (self.testValue / 1000) * 5))
+            end)
+            unitFrame.Castbar:SetStatusBarColor(unpack(CastBarDB.Foreground))
+            -- Hide the non-interruptible overlay in test mode (test shows interruptible cast)
+            if unitFrame.Castbar.NotInterruptibleOverlay then
+                unitFrame.Castbar.NotInterruptibleOverlay:SetAlpha(0)
+            end
             if CastBarDB.Icon.Enabled and unitFrame.Castbar.Icon then unitFrame.Castbar.Icon:SetTexture("Interface\\Icons\\ability_mage_netherwindpresence") unitFrame.Castbar.Icon:Show() end
         else
             if CastBarContainer then CastBarContainer:Hide() end
