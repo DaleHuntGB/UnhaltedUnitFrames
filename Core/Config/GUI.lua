@@ -1424,7 +1424,6 @@ local function CreateAlternativePowerBarSettings(containerParent, unit, updateCa
     RefreshAlternativePowerBarGUI()
 end
 
-
 local function CreatePortraitSettings(containerParent, unit, updateCallback)
     local PortraitDB = UUF.db.profile.Units[unit].Portrait
 
@@ -2025,6 +2024,35 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
     ShowTypeCheckbox:SetCallback("OnValueChanged", function(_, _, value) AuraDB.ShowType = value if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end end)
     ShowTypeCheckbox:SetRelativeWidth(0.33)
     AuraContainer:AddChild(ShowTypeCheckbox)
+
+    local FilterDropdown = AG:Create("Dropdown")
+    if auraDB == "Buffs" then
+        FilterDropdown:SetList({
+            ["HELPFUL"] = "All",
+            ["HELPFUL|PLAYER"] = "Player",
+            ["HELPFUL|RAID"] = "Raid",
+            ["HELPFUL|PLAYER|INCLUDE_NAME_PLATE_ONLY"] = "Player (Nameplate Only)",
+        })
+    else
+        FilterDropdown:SetList({
+            ["HARMFUL"] = "All",
+            ["HARMFUL|PLAYER"] = "Player",
+            ["HARMFUL|RAID"] = "Raid",
+            ["HARMFUL|PLAYER|INCLUDE_NAME_PLATE_ONLY"] = "Player (Nameplate Only)",
+        })
+    end
+    FilterDropdown:SetLabel("Aura Filter")
+    FilterDropdown:SetValue(AuraDB.Filter or (auraDB == "Buffs" and "HELPFUL" or "HARMFUL"))
+    FilterDropdown:SetRelativeWidth(1.0)
+    FilterDropdown:SetCallback("OnValueChanged", function(_, _, value)
+        AuraDB.Filter = value
+        if unit == "boss" then
+            UUF:UpdateBossFrames()
+        else
+            UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB)
+        end
+    end)
+    AuraContainer:AddChild(FilterDropdown)
 
     local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
 
