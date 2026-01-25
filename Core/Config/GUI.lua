@@ -4,6 +4,15 @@ local AG = UUF.AG
 local GUIWidgets = UUF.GUIWidgets
 local UUFGUI = {}
 local isGUIOpen = false
+
+-- Frame to handle unit change events for test mode
+local TestModeEventFrame = CreateFrame("Frame")
+local testModeUnit = nil
+TestModeEventFrame:SetScript("OnEvent", function(self, event)
+    if UUF.CASTBAR_TEST_MODE and testModeUnit then
+        UUF:CreateTestCastBar(UUF[testModeUnit:upper()], testModeUnit)
+    end
+end)
 -- Stores last selected tabs: [unit] = { mainTab = "CastBar", subTabs = { CastBar = "Bar" } }
 local lastSelectedUnitTabs = {}
 
@@ -105,11 +114,19 @@ end
 
 local function EnableCastBarTestMode(unit)
     UUF.CASTBAR_TEST_MODE = true
+    testModeUnit = unit
+    if unit == "target" then
+        TestModeEventFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
+    elseif unit == "focus" then
+        TestModeEventFrame:RegisterEvent("PLAYER_FOCUS_CHANGED")
+    end
     UUF:CreateTestCastBar(UUF[unit:upper()], unit)
 end
 
 local function DisableCastBarTestMode(unit)
     UUF.CASTBAR_TEST_MODE = false
+    testModeUnit = nil
+    TestModeEventFrame:UnregisterAllEvents()
     UUF:CreateTestCastBar(UUF[unit:upper()], unit)
 end
 
@@ -127,6 +144,8 @@ local function DisableAllTestModes()
     UUF.AURA_TEST_MODE = false
     UUF.CASTBAR_TEST_MODE = false
     UUF.BOSS_TEST_MODE = false
+    testModeUnit = nil
+    TestModeEventFrame:UnregisterAllEvents()
     for unit, _ in pairs(UUF.db.profile.Units) do
         if UUF[unit:upper()] then
             UUF:CreateTestAuras(UUF[unit:upper()], unit)
