@@ -10,7 +10,7 @@ UUF.MAX_BOSS_FRAMES = 10
 UUF.LSM = LibStub("LibSharedMedia-3.0")
 UUF.LDS = LibStub("LibDualSpec-1.0")
 UUF.AG = LibStub("AceGUI-3.0")
-UUF.BACKDROP = { bgFile = "Interface\\Buttons\\WHITE8X8", edgeFile = "Interface\\Buttons\\WHITE8X8", edgeSize = 1, insets = {left = 0, right = 0, top = 0, bottom = 0} }
+UUF.BACKDROP = { bgFile = "Interface\\Buttons\\WHITE8X8", edgeFile = "Interface\\Buttons\\WHITE8X8", edgeSize = 1, insets = { left = 0, right = 0, top = 0, bottom = 0 } }
 UUF.INFOBUTTON = "|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\InfoButton.png:16:16|t "
 UUF.ADDON_NAME = C_AddOns.GetAddOnMetadata("UnhaltedUnitFrames", "Title")
 UUF.ADDON_VERSION = C_AddOns.GetAddOnMetadata("UnhaltedUnitFrames", "Version")
@@ -18,20 +18,24 @@ UUF.ADDON_AUTHOR = C_AddOns.GetAddOnMetadata("UnhaltedUnitFrames", "Author")
 UUF.ADDON_LOGO = "|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Logo:11:12|t"
 UUF.PRETTY_ADDON_NAME = UUF.ADDON_LOGO .. " " .. UUF.ADDON_NAME
 
-UUF.LSM:Register("statusbar", "Better Blizzard", "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\BetterBlizzard.blp")
+UUF.LSM:Register("statusbar", "Better Blizzard",
+    "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\BetterBlizzard.blp")
 UUF.LSM:Register("statusbar", "Dragonflight", "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Dragonflight.tga")
 UUF.LSM:Register("statusbar", "Skyline", "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Skyline.tga")
 UUF.LSM:Register("statusbar", "Stripes", "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Stripes.png")
 UUF.LSM:Register("statusbar", "Thin Stripes", "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\ThinStripes.png")
 
-UUF.LSM:Register("background", "Dragonflight", "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Backgrounds\\Dragonflight_BG.tga")
+UUF.LSM:Register("background", "Dragonflight",
+    "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Backgrounds\\Dragonflight_BG.tga")
 
 UUF.LSM:Register("font", "Expressway", "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Fonts\\Expressway.ttf")
 UUF.LSM:Register("font", "Avante", "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Fonts\\Avante.ttf")
 UUF.LSM:Register("font", "Avantgarde (Book)", "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Fonts\\AvantGarde\\Book.ttf")
-UUF.LSM:Register("font", "Avantgarde (Book Oblique)", "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Fonts\\AvantGarde\\BookOblique.ttf")
+UUF.LSM:Register("font", "Avantgarde (Book Oblique)",
+    "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Fonts\\AvantGarde\\BookOblique.ttf")
 UUF.LSM:Register("font", "Avantgarde (Demi)", "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Fonts\\AvantGarde\\Demi.ttf")
-UUF.LSM:Register("font", "Avantgarde (Regular)", "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Fonts\\AvantGarde\\Regular.ttf")
+UUF.LSM:Register("font", "Avantgarde (Regular)",
+    "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Fonts\\AvantGarde\\Regular.ttf")
 
 UUF.StatusTextures = {
     Combat = {
@@ -71,7 +75,10 @@ function UUF:FetchFrameName(unit)
         ["boss"] = "UUF_Boss",
     }
     if not unit then return end
-    if unit:match("^boss(%d+)$") then local unitID = unit:match("^boss(%d+)$") return "UUF_Boss" .. unitID end
+    if unit:match("^boss(%d+)$") then
+        local unitID = unit:match("^boss(%d+)$")
+        return "UUF_Boss" .. unitID
+    end
     return UnitToFrame[unit]
 end
 
@@ -80,7 +87,8 @@ function UUF:ResolveLSM()
     local General = UUF.db.profile.General
     UUF.Media = UUF.Media or {}
     UUF.Media.Font = LSM:Fetch("font", General.Fonts.Font) or STANDARD_TEXT_FONT
-    UUF.Media.Foreground = LSM:Fetch("statusbar", General.Textures.Foreground) or "Interface\\RaidFrame\\Raid-Bar-Hp-Fill"
+    UUF.Media.Foreground = LSM:Fetch("statusbar", General.Textures.Foreground) or
+        "Interface\\RaidFrame\\Raid-Bar-Hp-Fill"
     UUF.Media.Background = LSM:Fetch("statusbar", General.Textures.Background) or "Interface\\Buttons\\WHITE8X8"
 end
 
@@ -158,7 +166,8 @@ local function AddAnchorsToBCDM()
         ["UUF_Target"] = "|cFF8080FFUnhalted|rUnitFrames: Target Frame",
         ["UUF_Pet"] = "|cFF8080FFUnhalted|rUnitFrames: Pet Frame",
     }
-    BCDMG.AddAnchors("UnhaltedUnitFrames", {"Utility", "Custom", "AdditionalCustom", "Item", "ItemSpell", "Trinket"}, UUF_Anchors)
+    BCDMG.AddAnchors("UnhaltedUnitFrames", { "Utility", "Custom", "AdditionalCustom", "Item", "ItemSpell", "Trinket" },
+        UUF_Anchors)
 end
 
 function UUF:Init()
@@ -209,14 +218,14 @@ function UUF:GetClassColour(unitFrame)
     local _, class = UnitClass(unitFrame.unit)
     local classColour = RAID_CLASS_COLORS[class]
     if classColour then
-        return {classColour.r, classColour.g, classColour.b, 1}
+        return { classColour.r, classColour.g, classColour.b, 1 }
     end
 end
 
 function UUF:GetReactionColour(reaction)
     local reactionColour = oUF.colors.reaction[reaction]
     if reactionColour then
-        return {reactionColour.r, reactionColour.g, reactionColour.b, 1}
+        return { reactionColour.r, reactionColour.g, reactionColour.b, 1 }
     end
 end
 
@@ -227,12 +236,12 @@ end
 
 function UUF:RequiresAlternativePowerBar()
     local SpecsNeedingAltPower = {
-        PRIEST = { 258 },           -- Shadow
-        MAGE   = { 62, 63, 64 },        -- Fire, Frost
-        PALADIN = { 70 },           -- Ret
-        SHAMAN  = { 262, 263 },     -- Ele, Enh
-        EVOKER  = { 1467, 1473 },   -- Dev, Aug
-        DRUID = { 102, 103, 104 },    -- Balance, Feral, Guardian
+        PRIEST  = { 258 },           -- Shadow
+        MAGE    = { 62, 63, 64 },    -- Fire, Frost
+        PALADIN = { 70 },            -- Ret
+        SHAMAN  = { 262, 263 },      -- Ele, Enh
+        EVOKER  = { 1467, 1473 },    -- Dev, Aug
+        DRUID   = { 102, 103, 104 }, -- Balance, Feral, Guardian
     }
     local class = select(2, UnitClass("player"))
     local specIndex = GetSpecialization()
@@ -245,15 +254,15 @@ function UUF:RequiresAlternativePowerBar()
 end
 
 UUF.LayoutConfig = {
-    TOPLEFT     = { anchor="TOPLEFT",   offsetMultiplier=0   },
-    TOP         = { anchor="TOP",       offsetMultiplier=0   },
-    TOPRIGHT    = { anchor="TOPRIGHT",  offsetMultiplier=0   },
-    BOTTOMLEFT  = { anchor="TOPLEFT",   offsetMultiplier=1   },
-    BOTTOM      = { anchor="TOP",       offsetMultiplier=1   },
-    BOTTOMRIGHT = { anchor="TOPRIGHT",  offsetMultiplier=1   },
-    CENTER      = { anchor="CENTER",    offsetMultiplier=0.5, isCenter=true },
-    LEFT        = { anchor="LEFT",      offsetMultiplier=0.5, isCenter=true },
-    RIGHT       = { anchor="RIGHT",     offsetMultiplier=0.5, isCenter=true },
+    TOPLEFT     = { anchor = "TOPLEFT", offsetMultiplier = 0 },
+    TOP         = { anchor = "TOP", offsetMultiplier = 0 },
+    TOPRIGHT    = { anchor = "TOPRIGHT", offsetMultiplier = 0 },
+    BOTTOMLEFT  = { anchor = "TOPLEFT", offsetMultiplier = 1 },
+    BOTTOM      = { anchor = "TOP", offsetMultiplier = 1 },
+    BOTTOMRIGHT = { anchor = "TOPRIGHT", offsetMultiplier = 1 },
+    CENTER      = { anchor = "CENTER", offsetMultiplier = 0.5, isCenter = true },
+    LEFT        = { anchor = "LEFT", offsetMultiplier = 0.5, isCenter = true },
+    RIGHT       = { anchor = "RIGHT", offsetMultiplier = 0.5, isCenter = true },
 }
 
 function UUF:SetTagUpdateInterval()
@@ -318,6 +327,92 @@ function UUFG:UpdateAllTags()
     for _, obj in next, oUF.objects do
         if obj.UpdateTags then
             obj:UpdateTags()
+        end
+    end
+end
+
+function UUF:UpdateOutOfCombatFade()
+    local inCombat = UnitAffectingCombat("player")
+    local hasTarget = UnitExists("target")
+    local fadeSettings = UUF.db.profile.General.OutOfCombatFade
+
+    -- List of units to update
+    local units = { "PLAYER", "TARGET", "TARGETTARGET", "FOCUS", "FOCUSTARGET", "PET" }
+
+    for _, unitKey in ipairs(units) do
+        local unitFrame = UUF[unitKey]
+        if unitFrame then
+            local unitName = unitKey:lower()
+            local unitDB = UUF.db.profile.Units[unitName]
+
+            if unitDB and unitDB.Frame then
+                local useGlobal = fadeSettings.UseGlobal
+                local fadeEnabled = false
+                local targetOpacity = 1.0
+                local fadeInWithTarget = false
+
+                if useGlobal then
+                    fadeEnabled = true
+                    targetOpacity = fadeSettings.GlobalOpacity or 0.5
+                    fadeInWithTarget = fadeSettings.FadeInWithTarget or false
+                else
+                    fadeEnabled = unitDB.Frame.OutOfCombatFade.Enabled
+                    targetOpacity = unitDB.Frame.OutOfCombatFade.Opacity or 0.5
+                    fadeInWithTarget = unitDB.Frame.OutOfCombatFade.FadeInWithTarget or false
+                end
+
+                -- Determine the target alpha:
+                -- - If in combat, always full opacity
+                -- - If out of combat and fade is enabled:
+                --   - If fadeInWithTarget is enabled and we have a target, full opacity
+                --   - Otherwise, use targetOpacity
+                local shouldFade = fadeEnabled and not inCombat
+                local shouldFadeInWithTarget = fadeInWithTarget and hasTarget
+
+                if shouldFade and not shouldFadeInWithTarget then
+                    unitFrame:SetAlpha(targetOpacity)
+                else
+                    unitFrame:SetAlpha(1.0)
+                end
+            end
+        end
+    end
+
+    -- Update boss frames
+    for i = 1, UUF.MAX_BOSS_FRAMES do
+        local bossFrame = UUF["BOSS" .. i]
+        if bossFrame then
+            local bossDB = UUF.db.profile.Units.boss
+            if bossDB and bossDB.Frame then
+                local useGlobal = fadeSettings.UseGlobal
+                local fadeEnabled = false
+                local targetOpacity = 1.0
+                local fadeInWithTarget = false
+
+                if useGlobal then
+                    fadeEnabled = true
+                    targetOpacity = fadeSettings.GlobalOpacity or 0.5
+                    fadeInWithTarget = fadeSettings.FadeInWithTarget or false
+                else
+                    fadeEnabled = bossDB.Frame.OutOfCombatFade.Enabled
+                    targetOpacity = bossDB.Frame.OutOfCombatFade.Opacity or 0.5
+                    fadeInWithTarget = bossDB.Frame.OutOfCombatFade.FadeInWithTarget or false
+                end
+
+                -- Determine the target alpha:
+                -- - If in combat, always full opacity
+                -- - If out of combat and fade is enabled:
+                --   - If fadeInWithTarget is enabled and we have a target, full opacity
+                --   - Otherwise, use targetOpacity
+                local shouldFade = fadeEnabled and not inCombat
+                local shouldFadeInWithTarget = fadeInWithTarget and hasTarget
+
+                if shouldFade and not shouldFadeInWithTarget then
+                    bossFrame:SetAlpha(targetOpacity)
+                else
+                    bossFrame:SetAlpha(1.0)
+                end
+            end
         end
     end
 end
