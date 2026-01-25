@@ -87,12 +87,14 @@ local Defaults = {
                         UseStripedTexture = true,
                         Colour = {255/255, 204/255, 0/255, 1.0},
                         Position = "LEFT",
+                        Height = 42,
                     },
                     HealAbsorbs = {
                         Enabled = true,
                         UseStripedTexture = false,
                         Colour = {128/255, 64/255, 255/255, 1.0},
                         Position = "RIGHT",
+                        Height = 42,
                     },
                 },
                 PowerBar = {
@@ -286,12 +288,14 @@ local Defaults = {
                         UseStripedTexture = true,
                         Colour = {255/255, 204/255, 0/255, 1.0},
                         Position = "LEFT",
+                        Height = 42,
                     },
                     HealAbsorbs = {
                         Enabled = true,
                         UseStripedTexture = false,
                         Colour = {128/255, 64/255, 255/255, 1.0},
                         Position = "RIGHT",
+                        Height = 42,
                     },
                 },
                 PowerBar = {
@@ -479,12 +483,14 @@ local Defaults = {
                         UseStripedTexture = true,
                         Colour = {255/255, 204/255, 0/255, 1.0},
                         Position = "LEFT",
+                        Height = 42,
                     },
                     HealAbsorbs = {
                         Enabled = true,
                         UseStripedTexture = false,
                         Colour = {128/255, 64/255, 255/255, 1.0},
                         Position = "RIGHT",
+                        Height = 42,
                     },
                 },
                 PowerBar = {
@@ -655,12 +661,14 @@ local Defaults = {
                         UseStripedTexture = true,
                         Colour = {255/255, 204/255, 0/255, 1.0},
                         Position = "LEFT",
+                        Height = 42,
                     },
                     HealAbsorbs = {
                         Enabled = true,
                         UseStripedTexture = false,
                         Colour = {128/255, 64/255, 255/255, 1.0},
                         Position = "RIGHT",
+                        Height = 42,
                     },
                 },
                 PowerBar = {
@@ -832,12 +840,14 @@ local Defaults = {
                         UseStripedTexture = true,
                         Colour = {255/255, 204/255, 0/255, 1.0},
                         Position = "LEFT",
+                        Height = 42,
                     },
                     HealAbsorbs = {
                         Enabled = true,
                         UseStripedTexture = false,
                         Colour = {128/255, 64/255, 255/255, 1.0},
                         Position = "RIGHT",
+                        Height = 42,
                     },
                 },
                 PowerBar = {
@@ -1008,12 +1018,14 @@ local Defaults = {
                         UseStripedTexture = true,
                         Colour = {255/255, 204/255, 0/255, 1.0},
                         Position = "LEFT",
+                        Height = 42,
                     },
                     HealAbsorbs = {
                         Enabled = true,
                         UseStripedTexture = false,
                         Colour = {128/255, 64/255, 255/255, 1.0},
                         Position = "RIGHT",
+                        Height = 42,
                     },
                 },
                 PowerBar = {
@@ -1185,12 +1197,14 @@ local Defaults = {
                         UseStripedTexture = true,
                         Colour = {255/255, 204/255, 0/255, 1.0},
                         Position = "LEFT",
+                        Height = 42,
                     },
                     HealAbsorbs = {
                         Enabled = true,
                         UseStripedTexture = false,
                         Colour = {128/255, 64/255, 255/255, 1.0},
                         Position = "RIGHT",
+                        Height = 42,
                     },
                 },
                 PowerBar = {
