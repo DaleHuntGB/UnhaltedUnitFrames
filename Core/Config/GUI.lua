@@ -1424,22 +1424,33 @@ local function CreateAlternativePowerBarSettings(containerParent, unit, updateCa
     RefreshAlternativePowerBarGUI()
 end
 
+
 local function CreatePortraitSettings(containerParent, unit, updateCallback)
     local PortraitDB = UUF.db.profile.Units[unit].Portrait
 
     local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Portrait Settings")
+
     local Toggle = AG:Create("CheckBox")
     Toggle:SetLabel("Enable |cFF8080FFPortrait|r")
     Toggle:SetValue(PortraitDB.Enabled)
     Toggle:SetCallback("OnValueChanged", function(_, _, value) PortraitDB.Enabled = value updateCallback() RefreshPortraitGUI() end)
-    Toggle:SetRelativeWidth(0.5)
+    Toggle:SetRelativeWidth(0.33)
     ToggleContainer:AddChild(Toggle)
+
+    local PortraitStyleDropdown = AG:Create("Dropdown")
+    PortraitStyleDropdown:SetList({["2D"] = "2D", ["3D"] = "3D"})
+    PortraitStyleDropdown:SetLabel("Portrait Style")
+    PortraitStyleDropdown:SetValue(PortraitDB.Style)
+    PortraitStyleDropdown:SetRelativeWidth(0.33)
+    PortraitStyleDropdown:SetCallback("OnValueChanged", function(_, _, value) PortraitDB.Style = value updateCallback() RefreshPortraitGUI() end)
+    ToggleContainer:AddChild(PortraitStyleDropdown)
 
     local UseClassPortraitToggle = AG:Create("CheckBox")
     UseClassPortraitToggle:SetLabel("Use Class Portrait")
     UseClassPortraitToggle:SetValue(PortraitDB.UseClassPortrait)
     UseClassPortraitToggle:SetCallback("OnValueChanged", function(_, _, value) PortraitDB.UseClassPortrait = value updateCallback() end)
-    UseClassPortraitToggle:SetRelativeWidth(0.5)
+    UseClassPortraitToggle:SetRelativeWidth(0.33)
+    UseClassPortraitToggle:SetDisabled(PortraitDB.Style ~= "2D")
     ToggleContainer:AddChild(UseClassPortraitToggle)
 
     local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
@@ -1483,6 +1494,7 @@ local function CreatePortraitSettings(containerParent, unit, updateCallback)
     ZoomSlider:SetRelativeWidth(0.33)
     ZoomSlider:SetCallback("OnValueChanged", function(_, _, value) PortraitDB.Zoom = value updateCallback() end)
     ZoomSlider:SetIsPercent(true)
+    ZoomSlider:SetDisabled(PortraitDB.Style ~= "2D")
     LayoutContainer:AddChild(ZoomSlider)
 
     local WidthSlider = AG:Create("Slider")
@@ -1509,6 +1521,8 @@ local function CreatePortraitSettings(containerParent, unit, updateCallback)
             GUIWidgets.DeepDisable(ToggleContainer, true, Toggle)
             GUIWidgets.DeepDisable(LayoutContainer, true, Toggle)
         end
+        UseClassPortraitToggle:SetDisabled(PortraitDB.Style ~= "2D")
+        ZoomSlider:SetDisabled(PortraitDB.Style ~= "2D")
     end
 
     RefreshPortraitGUI()

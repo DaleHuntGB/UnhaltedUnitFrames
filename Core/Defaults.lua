@@ -174,6 +174,7 @@ local Defaults = {
                     Layout = {"RIGHT", "LEFT", -1, 0},
                     Zoom = 0.3,
                     UseClassPortrait = false,
+                    Style = "2D",
                 },
                 Indicators = {
                     RaidTargetMarker = {
@@ -365,6 +366,7 @@ local Defaults = {
                     Layout = {"LEFT", "RIGHT", 1, 0},
                     Zoom = 0.3,
                     UseClassPortrait = false,
+                    Style = "2D",
                 },
                 Indicators = {
                     RaidTargetMarker = {
@@ -559,6 +561,7 @@ local Defaults = {
                     Layout = {"RIGHT", "LEFT", -1, 0},
                     Zoom = 0.3,
                     UseClassPortrait = false,
+                    Style = "2D",
                 },
                 Indicators = {
                     RaidTargetMarker = {
@@ -738,6 +741,7 @@ local Defaults = {
                     Layout = {"LEFT", "RIGHT", 1, 0},
                     Zoom = 0.3,
                     UseClassPortrait = false,
+                    Style = "2D",
                 },
                 Indicators = {
                     RaidTargetMarker = {
@@ -916,6 +920,7 @@ local Defaults = {
                     Layout = {"RIGHT", "LEFT", -1, 0},
                     Zoom = 0.3,
                     UseClassPortrait = false,
+                    Style = "2D",
                 },
                 Indicators = {
                     RaidTargetMarker = {
@@ -1095,6 +1100,7 @@ local Defaults = {
                     Layout = {"LEFT", "RIGHT", 1, 0},
                     Zoom = 0.3,
                     UseClassPortrait = false,
+                    Style = "2D",
                 },
                 Indicators = {
                     RaidTargetMarker = {
@@ -1274,6 +1280,7 @@ local Defaults = {
                     Layout = {"RIGHT", "LEFT", -1, 0},
                     Zoom = 0.3,
                     UseClassPortrait = false,
+                    Style = "2D",
                 },
                 Indicators = {
                     RaidTargetMarker = {
