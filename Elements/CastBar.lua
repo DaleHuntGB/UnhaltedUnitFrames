@@ -292,7 +292,13 @@ function UUF:CreateTestCastBar(unitFrame, unit)
             unitFrame.Castbar.Text:SetText(ShortenCastName("Ethereal Portal", UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].CastBar.Text.SpellName.MaxChars))
             unitFrame.Castbar.Time:SetText("0.0")
             unitFrame.Castbar:SetMinMaxValues(0, 1000)
-            unitFrame.Castbar:SetScript("OnUpdate", function() local currentValue = unitFrame.Castbar:GetValue() currentValue = currentValue + 1 if currentValue >= 1000 then currentValue = 0 end unitFrame.Castbar:SetValue(currentValue) unitFrame.Castbar.Time:SetText(string.format("%.1f", (currentValue / 1000) * 5)) end)
+            unitFrame.Castbar.testValue = 0 -- Track value ourselves since GetValue() returns a secret
+            unitFrame.Castbar:SetScript("OnUpdate", function(self)
+                self.testValue = (self.testValue or 0) + 1
+                if self.testValue >= 1000 then self.testValue = 0 end
+                self:SetValue(self.testValue)
+                unitFrame.Castbar.Time:SetText(string.format("%.1f", (self.testValue / 1000) * 5))
+            end)
             unitFrame.Castbar:SetStatusBarColor(unpack(CastBarDB.Foreground))
             -- Hide the non-interruptible overlay in test mode (test shows interruptible cast)
             if unitFrame.Castbar.NotInterruptibleOverlay then
