@@ -324,6 +324,10 @@ oUF.Tags.Methods["name:colour"] = function(unit)
     return string.format("|cff%02x%02x%02x%s|r", classColourR * 255, classColourG * 255, classColourB * 255, unitName)
 end
 
+oUF.Tags.Methods["resetcolor"] = function(unit)
+    return "|r"
+end
+
 local function ShortenUnitName(unit, maxChars)
     if not unit or not UnitExists(unit) then return "" end
     local unitName = UnitName(unit) or ""
@@ -422,6 +426,7 @@ local MiscTags = {
         ["powercolor"] = "Unit Power Colour - Prefix",
         ["raidcolor"] = "Unit Class Colour - Prefix",
         ["class"] = "Unit Class",
+        ["resetcolor"] = "Resets the current Colour Prefix",
     },
     {
         "classification",
@@ -432,6 +437,7 @@ local MiscTags = {
         "powercolor",
         "raidcolor",
         "class",
+        "resetcolor",
     }
 }
 
