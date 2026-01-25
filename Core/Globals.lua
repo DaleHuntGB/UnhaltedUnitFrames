@@ -346,3 +346,33 @@ function UUF:CleanTruncateUTF8String(text)
     end
     return text
 end
+
+function UUF:UpdateHealthBarLayout(unitFrame, unit)
+    local FrameDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Frame
+    local PowerBarDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].PowerBar
+    local SecondaryPowerBarDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].SecondaryPowerBar
+
+    local topOffset = -1
+    local bottomOffset = 1
+    local heightReduction = 2
+
+    if SecondaryPowerBarDB and SecondaryPowerBarDB.Enabled then
+        topOffset = topOffset - SecondaryPowerBarDB.Height - 1
+        heightReduction = heightReduction + SecondaryPowerBarDB.Height + 1
+    end
+
+    if PowerBarDB and PowerBarDB.Enabled then
+        bottomOffset = bottomOffset + PowerBarDB.Height + 1
+        heightReduction = heightReduction + PowerBarDB.Height + 1
+    end
+
+    unitFrame.HealthBackground:ClearAllPoints()
+    unitFrame.HealthBackground:SetPoint("TOPLEFT", unitFrame.Container, "TOPLEFT", 1, topOffset)
+    unitFrame.HealthBackground:SetPoint("BOTTOMRIGHT", unitFrame.Container, "BOTTOMRIGHT", -1, bottomOffset)
+    unitFrame.HealthBackground:SetHeight(FrameDB.Height - heightReduction)
+
+    unitFrame.Health:ClearAllPoints()
+    unitFrame.Health:SetPoint("TOPLEFT", unitFrame.Container, "TOPLEFT", 1, topOffset)
+    unitFrame.Health:SetPoint("BOTTOMRIGHT", unitFrame.Container, "BOTTOMRIGHT", -1, bottomOffset)
+    unitFrame.Health:SetHeight(FrameDB.Height - heightReduction)
+end

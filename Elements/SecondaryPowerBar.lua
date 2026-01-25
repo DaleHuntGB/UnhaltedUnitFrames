@@ -1,17 +1,45 @@
 local _, UUF = ...
 
-local THEORETICAL_MAX = 6
+local function GetSecondaryPowerType()
+    local class = select(2, UnitClass("player"))
+    local spec = C_SpecializationInfo.GetSpecialization()
+
+    if class == "DEATHKNIGHT" then
+        return Enum.PowerType.Runes
+    elseif class == "ROGUE" then
+        return Enum.PowerType.ComboPoints
+    elseif class == "DRUID" then
+        local form = GetShapeshiftFormID()
+        if form == 1 then return Enum.PowerType.ComboPoints end
+    elseif class == "PALADIN" then
+        return Enum.PowerType.HolyPower
+    elseif class == "WARLOCK" then
+        return Enum.PowerType.SoulShards
+    elseif class == "MAGE" then
+        if spec == 1 then return Enum.PowerType.ArcaneCharges end
+    elseif class == "MONK" then
+        if spec == 3 then return Enum.PowerType.Chi end
+    elseif class == "EVOKER" then
+        return Enum.PowerType.Essence
+    end
+
+    return nil
+end
 
 function UUF:CreateUnitSecondaryPowerBar(unitFrame, unit)
     local FrameDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Frame
     local DB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].SecondaryPowerBar
     local container = unitFrame.Container
 
+    local powerType = GetSecondaryPowerType()
+    if not powerType then return nil end
+
     local ClassPower = {}
     ClassPower.Ticks = {}
 
+    local maxPower = UnitPowerMax("player", powerType) or 6
     local totalWidth = FrameDB.Width - 2
-    local unitFrameWidth = totalWidth / THEORETICAL_MAX
+    local unitFrameWidth = totalWidth / maxPower
 
     if not ClassPower.ContainerBackground then
         ClassPower.ContainerBackground = container:CreateTexture(nil, "BACKGROUND")
@@ -21,13 +49,14 @@ function UUF:CreateUnitSecondaryPowerBar(unitFrame, unit)
         ClassPower.ContainerBackground:SetVertexColor( DB.Background[1], DB.Background[2], DB.Background[3], DB.Background[4] or 1 )
     end
 
-    for i = 1, THEORETICAL_MAX do
+    for i = 1, maxPower do
         local secondaryPowerBar = CreateFrame("StatusBar", nil, container)
         secondaryPowerBar:SetSize(unitFrameWidth, DB.Height)
         secondaryPowerBar:SetPoint("TOPLEFT", container, "TOPLEFT", 1 + ((i - 1) * unitFrameWidth), -1)
         secondaryPowerBar:SetStatusBarTexture(UUF.Media.Foreground)
         secondaryPowerBar:SetStatusBarColor(DB.Foreground[1], DB.Foreground[2], DB.Foreground[3], DB.Foreground[4] or 1)
         secondaryPowerBar:SetMinMaxValues(0, 1)
+        secondaryPowerBar.frequentUpdates = DB.Smooth
         secondaryPowerBar:Hide()
 
         secondaryPowerBar.Background = secondaryPowerBar:CreateTexture(nil, "BACKGROUND")
@@ -42,7 +71,7 @@ function UUF:CreateUnitSecondaryPowerBar(unitFrame, unit)
     ClassPower.OverlayFrame:SetAllPoints(container)
     ClassPower.OverlayFrame:SetFrameLevel(container:GetFrameLevel() + 10)
 
-    for i = 1, THEORETICAL_MAX - 1 do
+    for i = 1, maxPower - 1 do
         local secondaryPowerTick = ClassPower.OverlayFrame:CreateTexture(nil, "OVERLAY")
         secondaryPowerTick:SetTexture("Interface\\Buttons\\WHITE8x8")
         secondaryPowerTick:SetVertexColor(0, 0, 0, 1)
@@ -62,6 +91,7 @@ function UUF:CreateUnitSecondaryPowerBar(unitFrame, unit)
         ClassPower.PowerBarBorder:SetPoint("TOPLEFT", container, "TOPLEFT", 1, -1 - DB.Height)
         ClassPower.PowerBarBorder:SetPoint("TOPRIGHT", container, "TOPLEFT", 1 + totalWidth, -1 - DB.Height)
     end
+
 
     ClassPower.PostUpdateColor = function(element, color)
         if not DB.ColourByType then
@@ -94,45 +124,118 @@ function UUF:UpdateUnitSecondaryPowerBar(unitFrame, unit)
     local FrameDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Frame
     local DB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].SecondaryPowerBar
 
-    if DB.Enabled then
-        unitFrame.ClassPower = unitFrame.ClassPower or UUF:CreateUnitSecondaryPowerBar(unitFrame, unit)
+    local powerType = GetSecondaryPowerType()
 
-        if not unitFrame:IsElementEnabled("ClassPower") then
+    if not powerType or not DB.Enabled then
+        if unitFrame.ClassPower then
+            if unitFrame:IsElementEnabled("ClassPower") then
+                unitFrame:DisableElement("ClassPower")
+            end
+
+            if unitFrame.ClassPower.ContainerBackground then
+                unitFrame.ClassPower.ContainerBackground:Hide()
+            end
+            if unitFrame.ClassPower.PowerBarBorder then
+                unitFrame.ClassPower.PowerBarBorder:Hide()
+            end
+            if unitFrame.ClassPower.OverlayFrame then
+                unitFrame.ClassPower.OverlayFrame:Hide()
+            end
+
+            unitFrame.ClassPower = nil
+        end
+
+        UUF:UpdateHealthBarLayout(unitFrame, unit)
+        return
+    end
+
+    local currentMaxPower = UnitPowerMax("player", powerType) or 6
+    local existingMaxPower = unitFrame.ClassPower and #unitFrame.ClassPower or 0
+
+    if not unitFrame.ClassPower or currentMaxPower ~= existingMaxPower then
+        if unitFrame.ClassPower then
+            if unitFrame:IsElementEnabled("ClassPower") then
+                unitFrame:DisableElement("ClassPower")
+            end
+
+            for i = 1, #unitFrame.ClassPower do
+                if unitFrame.ClassPower[i] then
+                    unitFrame.ClassPower[i]:Hide()
+                    unitFrame.ClassPower[i]:SetParent(nil)
+                end
+            end
+
+            for i = 1, #unitFrame.ClassPower.Ticks do
+                if unitFrame.ClassPower.Ticks[i] then
+                    unitFrame.ClassPower.Ticks[i]:Hide()
+                    unitFrame.ClassPower.Ticks[i]:SetParent(nil)
+                end
+            end
+
+            if unitFrame.ClassPower.ContainerBackground then
+                unitFrame.ClassPower.ContainerBackground:Hide()
+                unitFrame.ClassPower.ContainerBackground:SetParent(nil)
+            end
+            if unitFrame.ClassPower.PowerBarBorder then
+                unitFrame.ClassPower.PowerBarBorder:Hide()
+                unitFrame.ClassPower.PowerBarBorder:SetParent(nil)
+            end
+            if unitFrame.ClassPower.OverlayFrame then
+                unitFrame.ClassPower.OverlayFrame:Hide()
+                unitFrame.ClassPower.OverlayFrame:SetParent(nil)
+            end
+        end
+
+        unitFrame.ClassPower = UUF:CreateUnitSecondaryPowerBar(unitFrame, unit)
+
+        if unitFrame.ClassPower and not unitFrame:IsElementEnabled("ClassPower") then
             unitFrame:EnableElement("ClassPower")
         end
 
-        local totalWidth = FrameDB.Width - 2
-        local unitFrameWidth = totalWidth / THEORETICAL_MAX
+        UUF:UpdateHealthBarLayout(unitFrame, unit)
 
-        unitFrame.ClassPower.colorPower = DB.ColourByType
-
-        if unitFrame.ClassPower.OverlayFrame then
-            unitFrame.ClassPower.OverlayFrame:Show()
+        if unitFrame.ClassPower then
+            unitFrame.ClassPower:ForceUpdate()
         end
+        return
+    end
 
-        if unitFrame.ClassPower.ContainerBackground then
-            unitFrame.ClassPower.ContainerBackground:ClearAllPoints()
-            unitFrame.ClassPower.ContainerBackground:SetPoint("TOPLEFT", unitFrame.Container, "TOPLEFT", 1, -1)
-            unitFrame.ClassPower.ContainerBackground:SetSize(totalWidth, DB.Height)
-            unitFrame.ClassPower.ContainerBackground:SetTexture(UUF.Media.Background)
-            unitFrame.ClassPower.ContainerBackground:SetVertexColor( DB.Background[1], DB.Background[2], DB.Background[3], DB.Background[4] or 1 )
-            unitFrame.ClassPower.ContainerBackground:Show()
-        end
+    if not unitFrame:IsElementEnabled("ClassPower") then
+        unitFrame:EnableElement("ClassPower")
+    end
 
-        if unitFrame.ClassPower.PowerBarBorder then
-            unitFrame.ClassPower.PowerBarBorder:ClearAllPoints()
-            unitFrame.ClassPower.PowerBarBorder:SetHeight(1)
-            unitFrame.ClassPower.PowerBarBorder:SetTexture("Interface\\Buttons\\WHITE8x8")
-            unitFrame.ClassPower.PowerBarBorder:SetVertexColor(0, 0, 0, 1)
-            unitFrame.ClassPower.PowerBarBorder:SetDrawLayer("OVERLAY", 6)
-            unitFrame.ClassPower.PowerBarBorder:SetPoint("TOPLEFT", unitFrame.Container, "TOPLEFT", 1, -1 - DB.Height)
-            unitFrame.ClassPower.PowerBarBorder:SetPoint("TOPRIGHT", unitFrame.Container, "TOPLEFT", 1 + totalWidth, -1 - DB.Height)
-            unitFrame.ClassPower.PowerBarBorder:Show()
-        end
+    local totalWidth = FrameDB.Width - 2
+    local unitFrameWidth = totalWidth / currentMaxPower
 
-        for i = 1, THEORETICAL_MAX do
-            local secondaryPowerBar = unitFrame.ClassPower[i]
+    unitFrame.ClassPower.colorPower = DB.ColourByType
 
+    if unitFrame.ClassPower.OverlayFrame then
+        unitFrame.ClassPower.OverlayFrame:Show()
+    end
+
+    if unitFrame.ClassPower.ContainerBackground then
+        unitFrame.ClassPower.ContainerBackground:ClearAllPoints()
+        unitFrame.ClassPower.ContainerBackground:SetPoint("TOPLEFT", unitFrame.Container, "TOPLEFT", 1, -1)
+        unitFrame.ClassPower.ContainerBackground:SetSize(totalWidth, DB.Height)
+        unitFrame.ClassPower.ContainerBackground:SetTexture(UUF.Media.Background)
+        unitFrame.ClassPower.ContainerBackground:SetVertexColor( DB.Background[1], DB.Background[2], DB.Background[3], DB.Background[4] or 1 )
+        unitFrame.ClassPower.ContainerBackground:Show()
+    end
+
+    if unitFrame.ClassPower.PowerBarBorder then
+        unitFrame.ClassPower.PowerBarBorder:ClearAllPoints()
+        unitFrame.ClassPower.PowerBarBorder:SetHeight(1)
+        unitFrame.ClassPower.PowerBarBorder:SetTexture("Interface\\Buttons\\WHITE8x8")
+        unitFrame.ClassPower.PowerBarBorder:SetVertexColor(0, 0, 0, 1)
+        unitFrame.ClassPower.PowerBarBorder:SetDrawLayer("OVERLAY", 6)
+        unitFrame.ClassPower.PowerBarBorder:SetPoint("TOPLEFT", unitFrame.Container, "TOPLEFT", 1, -1 - DB.Height)
+        unitFrame.ClassPower.PowerBarBorder:SetPoint("TOPRIGHT", unitFrame.Container, "TOPLEFT", 1 + totalWidth, -1 - DB.Height)
+        unitFrame.ClassPower.PowerBarBorder:Show()
+    end
+
+    for i = 1, currentMaxPower do
+        local secondaryPowerBar = unitFrame.ClassPower[i]
+        if secondaryPowerBar then
             secondaryPowerBar:ClearAllPoints()
             secondaryPowerBar:SetPoint("TOPLEFT", unitFrame.Container, "TOPLEFT", 1 + ((i - 1) * unitFrameWidth), -1)
             secondaryPowerBar:SetSize(unitFrameWidth, DB.Height)
@@ -142,36 +245,28 @@ function UUF:UpdateUnitSecondaryPowerBar(unitFrame, unit)
                 secondaryPowerBar:SetStatusBarColor(DB.Foreground[1], DB.Foreground[2], DB.Foreground[3], DB.Foreground[4] or 1)
             end
 
+            secondaryPowerBar.frequentUpdates = DB.Smooth
+
             secondaryPowerBar.Background:SetAllPoints(secondaryPowerBar)
             secondaryPowerBar.Background:SetTexture(UUF.Media.Background)
             secondaryPowerBar.Background:SetVertexColor( DB.Background[1], DB.Background[2], DB.Background[3], DB.Background[4] or 1 )
         end
+    end
 
-        for i = 1, THEORETICAL_MAX - 1 do
-            local secondaryPowerBarTick = unitFrame.ClassPower.Ticks[i]
-            if secondaryPowerBarTick then
-                secondaryPowerBarTick:ClearAllPoints()
-                secondaryPowerBarTick:SetSize(1, DB.Height)
-                secondaryPowerBarTick:SetDrawLayer("OVERLAY", 7)
-                secondaryPowerBarTick:SetPoint("TOPLEFT", unitFrame.Container, "TOPLEFT", 1 + (i * unitFrameWidth) - 0.5, -1)
-                secondaryPowerBarTick:Show()
-            end
+    for i = 1, currentMaxPower - 1 do
+        local secondaryPowerBarTick = unitFrame.ClassPower.Ticks[i]
+        if secondaryPowerBarTick then
+            secondaryPowerBarTick:ClearAllPoints()
+            secondaryPowerBarTick:SetSize(1, DB.Height)
+            secondaryPowerBarTick:SetDrawLayer("OVERLAY", 7)
+            secondaryPowerBarTick:SetPoint("TOPLEFT", unitFrame.Container, "TOPLEFT", 1 + (i * unitFrameWidth) - 0.5, -1)
+            secondaryPowerBarTick:Show()
         end
-
-        unitFrame.ClassPower:ForceUpdate()
-    else
-        if not unitFrame.ClassPower then return end
-
-        if unitFrame:IsElementEnabled("ClassPower") then
-            unitFrame:DisableElement("ClassPower")
-        end
-
-        unitFrame.ClassPower.ContainerBackground:Hide()
-        unitFrame.ClassPower.PowerBarBorder:Hide()
-        unitFrame.ClassPower.OverlayFrame:Hide()
-
-        unitFrame.ClassPower = nil
     end
 
     UUF:UpdateHealthBarLayout(unitFrame, unit)
+
+    if unitFrame.ClassPower then
+        unitFrame.ClassPower:ForceUpdate()
+    end
 end
