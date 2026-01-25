@@ -119,7 +119,7 @@ local Defaults = {
                     BackgroundMultiplier = 0.75,
                 },
                 SecondaryPowerBar = {
-                    Enabled = true,
+                    Enabled = false,
                     Height = 3,
                     ColourByType = true,
                     Foreground = {8/255, 8/255, 8/255},
