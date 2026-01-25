@@ -118,26 +118,42 @@ end
 function UUF:LoadCustomColours()
     local General = UUF.db.profile.General
 
+    -- Map power type enums to their string names
     local PowerTypesToString = {
-        [0] = "MANA",
-        [1] = "RAGE",
-        [2] = "FOCUS",
-        [3] = "ENERGY",
-        [6] = "RUNIC_POWER",
-        [8] = "LUNAR_POWER",
-        [11] = "MAELSTROM",
-        [13] = "INSANITY",
-        [17] = "FURY",
-        [18] = "PAIN"
+        [Enum.PowerType.Mana or 0] = "MANA",
+        [Enum.PowerType.Rage or 1] = "RAGE",
+        [Enum.PowerType.Focus or 2] = "FOCUS",
+        [Enum.PowerType.Energy or 3] = "ENERGY",
+        [Enum.PowerType.ComboPoints or 4] = "COMBO_POINTS",
+        [Enum.PowerType.Runes or 5] = "RUNES",
+        [Enum.PowerType.RunicPower or 6] = "RUNIC_POWER",
+        [Enum.PowerType.SoulShards or 7] = "SOUL_SHARDS",
+        [Enum.PowerType.LunarPower or 8] = "LUNAR_POWER",
+        [Enum.PowerType.HolyPower or 9] = "HOLY_POWER",
+        [Enum.PowerType.Alternate or 10] = "ALTERNATE",
+        [Enum.PowerType.Maelstrom or 11] = "MAELSTROM",
+        [Enum.PowerType.Chi or 12] = "CHI",
+        [Enum.PowerType.Insanity or 13] = "INSANITY",
+        [Enum.PowerType.ArcaneCharges or 16] = "ARCANE_CHARGES",
+        [Enum.PowerType.Fury or 17] = "FURY",
+        [Enum.PowerType.Pain or 18] = "PAIN",
+        [Enum.PowerType.Essence or 19] = "ESSENCE",
     }
 
     for powerType, color in pairs(General.Colours.Power) do
         local powerTypeString = PowerTypesToString[powerType]
-        if powerTypeString then oUF.colors.power[powerTypeString] = oUF:CreateColor(color[1], color[2], color[3]) end
+        if powerTypeString then
+            oUF.colors.power[powerTypeString] = oUF:CreateColor(color[1], color[2], color[3])
+            oUF.colors.power[powerType] = oUF.colors.power[powerTypeString]
+        end
     end
 
-    for powerType, color in pairs(General.Colours.Power) do
-        if powerType then oUF.colors.power[powerType] = oUF:CreateColor(color[1], color[2], color[3]) end
+    for powerType, color in pairs(General.Colours.SecondaryPower) do
+        local powerTypeString = PowerTypesToString[powerType]
+        if powerTypeString then
+            oUF.colors.power[powerTypeString] = oUF:CreateColor(color[1], color[2], color[3])
+            oUF.colors.power[powerType] = oUF.colors.power[powerTypeString]
+        end
     end
 
     for reaction, color in pairs(General.Colours.Reaction) do

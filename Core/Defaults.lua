@@ -46,16 +46,25 @@ local Defaults = {
                     [8] = {64/255, 204/255, 64/255},            -- Exalted
                 },
                 Power = {
-                    [0] = {0, 0, 1},            -- Mana
-                    [1] = {1, 0, 0},            -- Rage
-                    [2] = {1, 0.5, 0.25},       -- Focus
-                    [3] = {1, 1, 0},            -- Energy
-                    [6] = {0, 0.82, 1},         -- Runic Power
-                    [8] = {0.75, 0.52, 0.9},    -- Astral Power
-                    [11] = {0, 0.5, 1},         -- Maelstrom
-                    [13] = {0.4, 0, 0.8},       -- Insanity
-                    [17] = {0.79, 0.26, 0.99},  -- Fury
-                    [18] = {1, 0.61, 0}         -- Pain
+                    [0] = {0, 0, 1},                    -- Mana
+                    [1] = {1, 0, 0},                    -- Rage
+                    [2] = {1, 0.5, 0.25},               -- Focus
+                    [3] = {1, 1, 0},                    -- Energy
+                    [6] = {0, 0.82, 1},                 -- Runic Power
+                    [8] = {0.75, 0.52, 0.9},            -- Lunar Power (Astral Power)
+                    [11] = {0, 0.5, 1},                 -- Maelstrom
+                    [13] = {0.4, 0, 0.8},               -- Insanity
+                    [17] = {0.79, 0.26, 0.99},          -- Fury
+                    [18] = {1, 0.61, 0},                -- Pain
+                },
+                SecondaryPower = {
+                    [4] = {1, 0.96, 0.41},              -- Combo Points
+                    [5] = {0.5, 0.5, 0.5},              -- Runes
+                    [7] = {0.58, 0.51, 0.79},           -- Soul Shards
+                    [9] = {0.95, 0.9, 0.6},             -- Holy Power
+                    [12] = {0.71, 1, 0.92},             -- Chi
+                    [16] = {0.41, 0.8, 0.94},           -- Arcane Charges
+                    [19] = {100/255, 173/255, 206/255}, -- Essence
                 },
             }
         },
@@ -108,6 +117,14 @@ local Defaults = {
                     Smooth = true,
                     Inverse = false,
                     BackgroundMultiplier = 0.75,
+                },
+                SecondaryPowerBar = {
+                    Enabled = true,
+                    Height = 3,
+                    Position = "TOP",
+                    ColourByType = true,
+                    Foreground = {8/255, 8/255, 8/255},
+                    Background = {128/255, 128/255, 128/255},
                 },
                 AlternativePowerBar = {
                     Enabled = true,

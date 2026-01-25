@@ -46,9 +46,12 @@ local Power = {
     [8] = "Astral Power",
     [9] = "Holy Power",
     [11] = "Maelstrom",
+    [12] = "Chi",
     [13] = "Insanity",
     [17] = "Fury",
-    [18] = "Pain"
+    [16] = "Arcange Charges",
+    [18] = "Pain",
+    [19] = "Essences",
 }
 
 local Reaction = {
@@ -408,6 +411,24 @@ local function CreateColourSettings(containerParent)
         PowerColourPicker:SetHasAlpha(false)
         PowerColourPicker:SetRelativeWidth(0.19)
         Container:AddChild(PowerColourPicker)
+    end
+
+    GUIWidgets.CreateHeader(Container, "Secondary Power")
+
+    local SecondaryPowerOrder = {4, 5, 7, 9, 12, 16, 19}
+
+    for _, secondaryPowerType in ipairs(SecondaryPowerOrder) do
+        local secondaryPowerColour = UUF.db.profile.General.Colours.SecondaryPower[secondaryPowerType]
+        if secondaryPowerColour then
+            local SecondaryPowerColourPicker = AG:Create("ColorPicker")
+            SecondaryPowerColourPicker:SetLabel(Power[secondaryPowerType])
+            local R, G, B = unpack(secondaryPowerColour)
+            SecondaryPowerColourPicker:SetColor(R, G, B)
+            SecondaryPowerColourPicker:SetCallback("OnValueChanged", function(widget, _, r, g, b) UUF.db.profile.General.Colours.SecondaryPower[secondaryPowerType] = {r, g, b} UUF:LoadCustomColours() UUF:UpdateAllUnitFrames() end)
+            SecondaryPowerColourPicker:SetHasAlpha(false)
+            SecondaryPowerColourPicker:SetRelativeWidth(0.2)
+            Container:AddChild(SecondaryPowerColourPicker)
+        end
     end
 
     GUIWidgets.CreateHeader(Container, "Reaction")
@@ -1214,6 +1235,82 @@ local function CreatePowerBarSettings(containerParent, unit, updateCallback)
     end
 
     RefreshPowerBarGUI()
+end
+
+local function CreateSecondaryPowerBarSettings(containerParent, unit, updateCallback)
+    local FrameDB = UUF.db.profile.Units[unit].Frame
+    local SecondaryPowerBarDB = UUF.db.profile.Units[unit].SecondaryPowerBar
+
+    local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Power Bar Settings")
+
+    local Toggle = AG:Create("CheckBox")
+    Toggle:SetLabel("Enable |cFF8080FFSecondary Power Bar|r")
+    Toggle:SetValue(SecondaryPowerBarDB.Enabled)
+    Toggle:SetCallback("OnValueChanged", function(_, _, value) SecondaryPowerBarDB.Enabled = value updateCallback() RefreshSecondaryPowerBarGUI() end)
+    Toggle:SetRelativeWidth(0.33)
+    LayoutContainer:AddChild(Toggle)
+
+    local HeightSlider = AG:Create("Slider")
+    HeightSlider:SetLabel("Height")
+    HeightSlider:SetValue(SecondaryPowerBarDB.Height)
+    HeightSlider:SetSliderValues(1, FrameDB.Height - 2, 0.1)
+    HeightSlider:SetRelativeWidth(0.33)
+    HeightSlider:SetCallback("OnValueChanged", function(_, _, value) SecondaryPowerBarDB.Height = value updateCallback() end)
+    LayoutContainer:AddChild(HeightSlider)
+
+    local PositionDropdown = AG:Create("Dropdown")
+    PositionDropdown:SetList({["TOP"] = "Top", ["BOTTOM"] = "Bottom"})
+    PositionDropdown:SetLabel("Position")
+    PositionDropdown:SetValue(SecondaryPowerBarDB.Position)
+    PositionDropdown:SetRelativeWidth(0.33)
+    PositionDropdown:SetCallback("OnValueChanged", function(_, _, value) SecondaryPowerBarDB.Position = value updateCallback() end)
+    LayoutContainer:AddChild(PositionDropdown)
+
+    local ColourContainer = GUIWidgets.CreateInlineGroup(containerParent, "Colours & Toggles")
+
+    local ColourByTypeToggle = AG:Create("CheckBox")
+    ColourByTypeToggle:SetLabel("Colour By Type")
+    ColourByTypeToggle:SetValue(SecondaryPowerBarDB.ColourByType)
+    ColourByTypeToggle:SetCallback("OnValueChanged", function(_, _, value) SecondaryPowerBarDB.ColourByType = value updateCallback() RefreshSecondaryPowerBarGUI() end)
+    ColourByTypeToggle:SetRelativeWidth(1)
+    ColourContainer:AddChild(ColourByTypeToggle)
+
+    local ForegroundColourPicker = AG:Create("ColorPicker")
+    ForegroundColourPicker:SetLabel("Foreground Colour")
+    local R, G, B, A = unpack(SecondaryPowerBarDB.Foreground)
+    ForegroundColourPicker:SetColor(R, G, B, A)
+    ForegroundColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) SecondaryPowerBarDB.Foreground = {r, g, b, a} updateCallback() end)
+    ForegroundColourPicker:SetHasAlpha(true)
+    ForegroundColourPicker:SetRelativeWidth(0.5)
+    ForegroundColourPicker:SetDisabled(SecondaryPowerBarDB.ColourByClass or SecondaryPowerBarDB.ColourByType)
+    ColourContainer:AddChild(ForegroundColourPicker)
+
+    local BackgroundColourPicker = AG:Create("ColorPicker")
+    BackgroundColourPicker:SetLabel("Background Colour")
+    local R2, G2, B2, A2 = unpack(SecondaryPowerBarDB.Background)
+    BackgroundColourPicker:SetColor(R2, G2, B2, A2)
+    BackgroundColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) SecondaryPowerBarDB.Background = {r, g, b, a} updateCallback() end)
+    BackgroundColourPicker:SetHasAlpha(true)
+    BackgroundColourPicker:SetRelativeWidth(0.5)
+    BackgroundColourPicker:SetDisabled(SecondaryPowerBarDB.ColourBackgroundByType)
+    ColourContainer:AddChild(BackgroundColourPicker)
+
+    function RefreshSecondaryPowerBarGUI()
+        if SecondaryPowerBarDB.Enabled then
+            GUIWidgets.DeepDisable(LayoutContainer, false, Toggle)
+            GUIWidgets.DeepDisable(ColourContainer, false, Toggle)
+            if SecondaryPowerBarDB.ColourByClass or SecondaryPowerBarDB.ColourByType then
+                ForegroundColourPicker:SetDisabled(true)
+            else
+                ForegroundColourPicker:SetDisabled(false)
+            end
+        else
+            GUIWidgets.DeepDisable(LayoutContainer, true, Toggle)
+            GUIWidgets.DeepDisable(ColourContainer, true, Toggle)
+        end
+    end
+
+    RefreshSecondaryPowerBarGUI()
 end
 
 local function CreateAlternativePowerBarSettings(containerParent, unit, updateCallback)
@@ -2355,6 +2452,8 @@ local function CreateUnitSettings(containerParent, unit)
             CreateAuraSettings(SubContainer, unit)
         elseif UnitTab == "PowerBar" then
             CreatePowerBarSettings(SubContainer, unit, function() if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitPowerBar(UUF[unit:upper()], unit) end end)
+        elseif UnitTab == "SecondaryPowerBar" then
+            CreateSecondaryPowerBarSettings(SubContainer, unit, function() UUF:UpdateUnitSecondaryPowerBar(UUF[unit:upper()], unit) end)
         elseif UnitTab == "AlternativePowerBar" then
             CreateAlternativePowerBarSettings(SubContainer, unit, function() if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAlternativePowerBar(UUF[unit:upper()], unit) end end)
         elseif UnitTab == "CastBar" then
@@ -2380,7 +2479,20 @@ local function CreateUnitSettings(containerParent, unit)
             { text = "Heal Prediction", value = "HealPrediction"},
             { text = "Auras", value = "Auras"},
             { text = "Power Bar", value = "PowerBar"},
+            { text = "Secondary Power Bar", value = "SecondaryPowerBar"},
             { text = "Alternative Power Bar", value = "AlternativePowerBar"},
+            { text = "Cast Bar", value = "CastBar"},
+            { text = "Portrait", value = "Portrait"},
+            { text = "Indicators", value = "Indicators"},
+            { text = "Tags", value = "Tags"},
+        })
+    elseif unit == "player" then
+        SubContainerTabGroup:SetTabs({
+            { text = "Frame", value = "Frame"},
+            { text = "Heal Prediction", value = "HealPrediction"},
+            { text = "Auras", value = "Auras"},
+            { text = "Power Bar", value = "PowerBar"},
+            { text = "Secondary Power Bar", value = "SecondaryPowerBar"},
             { text = "Cast Bar", value = "CastBar"},
             { text = "Portrait", value = "Portrait"},
             { text = "Indicators", value = "Indicators"},
