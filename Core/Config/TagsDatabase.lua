@@ -426,7 +426,7 @@ local MiscTags = {
         ["powercolor"] = "Unit Power Colour - Prefix",
         ["raidcolor"] = "Unit Class Colour - Prefix",
         ["class"] = "Unit Class",
-        ["resetcolor"] = "Resets the current Colour Prefix",
+        ["resetcolor"] = "Resets Colour Prefix",
     },
     {
         "classification",
