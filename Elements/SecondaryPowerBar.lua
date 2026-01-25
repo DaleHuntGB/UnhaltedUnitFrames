@@ -2,7 +2,10 @@ local _, UUF = ...
 
 local UpdateSecondaryPowerBarEventFrame = CreateFrame("Frame")
 UpdateSecondaryPowerBarEventFrame:RegisterEvent("TRAIT_CONFIG_UPDATED")
+UpdateSecondaryPowerBarEventFrame:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
+UpdateSecondaryPowerBarEventFrame:RegisterEvent("UPDATE_SHAPESHIFT_FORM")
 UpdateSecondaryPowerBarEventFrame:SetScript("OnEvent", function(self, event, ...)
+    if event == "PLAYER_SPECIALIZATION_CHANGED" then local unit = ... if unit ~= "player" then return end end
     C_Timer.After(0.1, function()
         if UUF["PLAYER"] then
             UUF:UpdateUnitSecondaryPowerBar(UUF["PLAYER"], "player")
@@ -10,38 +13,14 @@ UpdateSecondaryPowerBarEventFrame:SetScript("OnEvent", function(self, event, ...
     end)
 end)
 
-local function GetSecondaryPowerType()
-    local class = select(2, UnitClass("player"))
-    local spec = C_SpecializationInfo.GetSpecialization()
-
-    if class == "DEATHKNIGHT" then
-        return Enum.PowerType.Runes
-    elseif class == "ROGUE" then
-        return Enum.PowerType.ComboPoints
-    elseif class == "DRUID" then
-        local form = GetShapeshiftFormID()
-        if form == 1 then return Enum.PowerType.ComboPoints end
-    elseif class == "PALADIN" then
-        return Enum.PowerType.HolyPower
-    elseif class == "WARLOCK" then
-        return Enum.PowerType.SoulShards
-    elseif class == "MAGE" then
-        if spec == 1 then return Enum.PowerType.ArcaneCharges end
-    elseif class == "MONK" then
-        if spec == 3 then return Enum.PowerType.Chi end
-    elseif class == "EVOKER" then
-        return Enum.PowerType.Essence
-    end
-
-    return nil
-end
-
 function UUF:CreateUnitSecondaryPowerBar(unitFrame, unit)
     local FrameDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Frame
     local DB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].SecondaryPowerBar
     local container = unitFrame.Container
 
-    local powerType = GetSecondaryPowerType()
+    if not DB.Enabled then return nil end
+
+    local powerType = UUF:GetSecondaryPowerType()
     if not powerType then return nil end
 
     local ClassPower = {}
@@ -109,19 +88,10 @@ function UUF:CreateUnitSecondaryPowerBar(unitFrame, unit)
         end
     end
 
-    if DB.Enabled then
-        unitFrame.ClassPower = ClassPower
-        ClassPower.ContainerBackground:Show()
-        ClassPower.PowerBarBorder:Show()
-        ClassPower.OverlayFrame:Show()
-    else
-        if unitFrame:IsElementEnabled("ClassPower") then
-            unitFrame:DisableElement("ClassPower")
-        end
-        ClassPower.ContainerBackground:Hide()
-        ClassPower.PowerBarBorder:Hide()
-        ClassPower.OverlayFrame:Hide()
-    end
+    unitFrame.ClassPower = ClassPower
+    ClassPower.ContainerBackground:Show()
+    ClassPower.PowerBarBorder:Show()
+    ClassPower.OverlayFrame:Show()
 
     UUF:UpdateHealthBarLayout(unitFrame, unit)
 
@@ -134,9 +104,9 @@ function UUF:UpdateUnitSecondaryPowerBar(unitFrame, unit)
     local FrameDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Frame
     local DB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].SecondaryPowerBar
 
-    local powerType = GetSecondaryPowerType()
+    local powerType = UUF:GetSecondaryPowerType()
 
-    if not powerType or not DB.Enabled then
+    if not DB.Enabled or not powerType then
         if unitFrame.ClassPower then
             if unitFrame:IsElementEnabled("ClassPower") then
                 unitFrame:DisableElement("ClassPower")

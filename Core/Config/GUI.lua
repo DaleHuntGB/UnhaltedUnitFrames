@@ -415,7 +415,7 @@ local function CreateColourSettings(containerParent)
 
     GUIWidgets.CreateHeader(Container, "Secondary Power")
 
-    local SecondaryPowerOrder = {4, 5, 7, 9, 12, 16, 19}
+    local SecondaryPowerOrder = {4, 7, 9, 12, 16, 19}
 
     for _, secondaryPowerType in ipairs(SecondaryPowerOrder) do
         local secondaryPowerColour = UUF.db.profile.General.Colours.SecondaryPower[secondaryPowerType]

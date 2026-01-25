@@ -347,6 +347,30 @@ function UUF:CleanTruncateUTF8String(text)
     return text
 end
 
+function UUF:GetSecondaryPowerType()
+    local class = select(2, UnitClass("player"))
+    local spec = C_SpecializationInfo.GetSpecialization()
+
+    if class == "ROGUE" then
+        return Enum.PowerType.ComboPoints
+    elseif class == "DRUID" then
+        local form = GetShapeshiftFormID()
+        if form == 1 then return Enum.PowerType.ComboPoints end
+    elseif class == "PALADIN" then
+        return Enum.PowerType.HolyPower
+    elseif class == "WARLOCK" then
+        return Enum.PowerType.SoulShards
+    elseif class == "MAGE" then
+        if spec == 1 then return Enum.PowerType.ArcaneCharges end
+    elseif class == "MONK" then
+        if spec == 3 then return Enum.PowerType.Chi end
+    elseif class == "EVOKER" then
+        return Enum.PowerType.Essence
+    end
+
+    return nil
+end
+
 function UUF:UpdateHealthBarLayout(unitFrame, unit)
     local FrameDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Frame
     local PowerBarDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].PowerBar
@@ -356,7 +380,9 @@ function UUF:UpdateHealthBarLayout(unitFrame, unit)
     local bottomOffset = 1
     local heightReduction = 2
 
-    if SecondaryPowerBarDB and SecondaryPowerBarDB.Enabled then
+    local hasSecondaryPower = UUF:GetSecondaryPowerType() ~= nil
+
+    if SecondaryPowerBarDB and SecondaryPowerBarDB.Enabled and hasSecondaryPower then
         topOffset = topOffset - SecondaryPowerBarDB.Height - 1
         heightReduction = heightReduction + SecondaryPowerBarDB.Height + 1
     end
