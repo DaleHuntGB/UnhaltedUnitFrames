@@ -103,7 +103,7 @@ local function SetupSlashCommands()
 
     -- RL command
     SLASH_UUFRELOAD1 = "/rl"
-    SlashCmdList["UUFRELOAD"] = function() ReloadUI() end
+    SlashCmdList["UUFRELOAD"] = function() C_UI.Reload() end
 end
 
 function UUF:SetUIScale()
