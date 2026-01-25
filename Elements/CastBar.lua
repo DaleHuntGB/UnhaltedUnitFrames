@@ -273,36 +273,86 @@ end
 function UUF:CreateTestCastBar(unitFrame, unit)
     if not unit then return end
     if not unitFrame then return end
-    local GeneralDB = UUF.db.profile.General
-    local CastBarDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].CastBar
+
+    local normalizedUnit = UUF:GetNormalizedUnit(unit)
+    local unitConfig = UUF.db.profile.Units[normalizedUnit]
+    local CastBarDB = unitConfig and unitConfig.CastBar
     local CastBarContainer = unitFrame.Castbar and unitFrame.Castbar:GetParent()
-    if UUF.CASTBAR_TEST_MODE then
-        if unitFrame.Castbar and CastBarDB.Enabled then
-            unitFrame:DisableElement("Castbar")
-            CastBarContainer:Show()
-            CastBarContainer:SetFrameStrata(CastBarDB.FrameStrata)
-            unitFrame.Castbar:Show()
-            unitFrame.Castbar.Background:Show()
-            unitFrame.Castbar.Text:SetText(ShortenCastName("Ethereal Portal", UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].CastBar.Text.SpellName.MaxChars))
-            unitFrame.Castbar.Time:SetText("0.0")
-            unitFrame.Castbar:SetMinMaxValues(0, 1000)
-            unitFrame.Castbar.testValue = 0 -- Track value ourselves since GetValue() returns a secret
-            unitFrame.Castbar:SetScript("OnUpdate", function(self)
-                self.testValue = (self.testValue or 0) + 1
-                if self.testValue >= 1000 then self.testValue = 0 end
-                self:SetValue(self.testValue)
-                unitFrame.Castbar.Time:SetText(string.format("%.1f", (self.testValue / 1000) * 5))
-            end)
-            unitFrame.Castbar:SetStatusBarColor(unpack(CastBarDB.Foreground))
+
+    -- Handle cleanup when exiting test mode (must run even if config is invalid)
+    if not UUF.CASTBAR_TEST_MODE then
+        if unitFrame.Castbar then
+            unitFrame.Castbar:SetScript("OnUpdate", nil)
+            unitFrame.Castbar.testTime = nil
+            unitFrame.Castbar.testLoop = nil
+            unitFrame.Castbar:Hide()
             if unitFrame.Castbar.NotInterruptibleOverlay then
                 unitFrame.Castbar.NotInterruptibleOverlay:SetAlpha(0)
             end
-            if CastBarDB.Icon.Enabled and unitFrame.Castbar.Icon then unitFrame.Castbar.Icon:SetTexture("Interface\\Icons\\ability_mage_netherwindpresence") unitFrame.Castbar.Icon:Show() end
-        else
-            if CastBarContainer then CastBarContainer:Hide() end
-            if unitFrame.Castbar and unitFrame.Castbar.Icon then unitFrame.Castbar.Icon:Hide() end
         end
+        if CastBarContainer then CastBarContainer:Hide() end
+        if unitFrame.Castbar and CastBarDB and CastBarDB.Enabled then
+            unitFrame:EnableElement("Castbar")
+        end
+        return
+    end
+
+    -- Test mode setup requires valid config
+    if not CastBarDB then return end
+
+    local SpellNameDB = CastBarDB.Text and CastBarDB.Text.SpellName
+    local maxChars = SpellNameDB and SpellNameDB.MaxChars
+    local TEST_DURATION = 5
+
+    local function SetTestCastState(castbar, isNotInterruptible)
+        if isNotInterruptible then
+            castbar.Text:SetText(ShortenCastName("Non-interruptible Divine Shield", maxChars))
+            if CastBarDB.Icon.Enabled and castbar.Icon then
+                castbar.Icon:SetTexture("Interface\\Icons\\spell_holy_divineshield")
+            end
+            if castbar.NotInterruptibleOverlay then
+                castbar.NotInterruptibleOverlay:SetAlpha(1)
+            end
+        else
+            castbar.Text:SetText(ShortenCastName("Ethereal Portal", maxChars))
+            if CastBarDB.Icon.Enabled and castbar.Icon then
+                castbar.Icon:SetTexture("Interface\\Icons\\ability_mage_netherwindpresence")
+            end
+            if castbar.NotInterruptibleOverlay then
+                castbar.NotInterruptibleOverlay:SetAlpha(0)
+            end
+        end
+    end
+
+    if unitFrame.Castbar and CastBarDB.Enabled then
+        unitFrame:DisableElement("Castbar")
+        CastBarContainer:Show()
+        CastBarContainer:SetFrameStrata(CastBarDB.FrameStrata)
+        unitFrame.Castbar:Show()
+        unitFrame.Castbar.Background:Show()
+        unitFrame.Castbar:SetMinMaxValues(0, 1000)
+        unitFrame.Castbar.testTime = 0
+        unitFrame.Castbar.testLoop = unitFrame.Castbar.testLoop or 0
+
+        SetTestCastState(unitFrame.Castbar, (unitFrame.Castbar.testLoop % 2) == 1)
+        if CastBarDB.Icon.Enabled and unitFrame.Castbar.Icon then
+            unitFrame.Castbar.Icon:Show()
+        end
+
+        unitFrame.Castbar.Time:SetText(string.format("%.1f", TEST_DURATION))
+        unitFrame.Castbar:SetScript("OnUpdate", function(self, elapsed)
+            self.testTime = (self.testTime or 0) + elapsed
+            if self.testTime >= TEST_DURATION then
+                self.testTime = 0
+                self.testLoop = (self.testLoop or 0) + 1
+                SetTestCastState(self, (self.testLoop % 2) == 1)
+            end
+            self:SetValue((self.testTime / TEST_DURATION) * 1000)
+            unitFrame.Castbar.Time:SetText(string.format("%.1f", TEST_DURATION - self.testTime))
+        end)
+        unitFrame.Castbar:SetStatusBarColor(unpack(CastBarDB.Foreground))
     else
-        if unitFrame.Castbar and CastBarDB.Enabled then unitFrame:EnableElement("Castbar") end
+        if CastBarContainer then CastBarContainer:Hide() end
+        if unitFrame.Castbar and unitFrame.Castbar.Icon then unitFrame.Castbar.Icon:Hide() end
     end
 end
