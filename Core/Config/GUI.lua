@@ -2031,14 +2031,14 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
             ["HELPFUL"] = "All",
             ["HELPFUL|PLAYER"] = "Player",
             ["HELPFUL|RAID"] = "Raid",
-            ["HELPFUL|PLAYER|INCLUDE_NAME_PLATE_ONLY"] = "Player (Nameplate Only)",
+            ["INCLUDE_NAME_PLATE_ONLY"] = "Nameplate",
         })
     else
         FilterDropdown:SetList({
             ["HARMFUL"] = "All",
             ["HARMFUL|PLAYER"] = "Player",
             ["HARMFUL|RAID"] = "Raid",
-            ["HARMFUL|PLAYER|INCLUDE_NAME_PLATE_ONLY"] = "Player (Nameplate Only)",
+            ["INCLUDE_NAME_PLATE_ONLY"] = "Nameplate",
         })
     end
     FilterDropdown:SetLabel("Aura Filter")
