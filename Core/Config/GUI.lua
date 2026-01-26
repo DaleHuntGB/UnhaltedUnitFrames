@@ -445,6 +445,21 @@ local function CreateColourSettings(containerParent)
         ReactionColourPicker:SetRelativeWidth(0.25)
         Container:AddChild(ReactionColourPicker)
     end
+
+    GUIWidgets.CreateHeader(Container, "Dispel Types")
+
+    local DispelTypes = {"Magic", "Curse", "Disease", "Poison", "Bleed"}
+
+    for _, dispelType in ipairs(DispelTypes) do
+        local DispelColourPicker = AG:Create("ColorPicker")
+        DispelColourPicker:SetLabel(dispelType)
+        local R, G, B = unpack(UUF.db.profile.General.Colours.Dispel[dispelType])
+        DispelColourPicker:SetColor(R, G, B)
+        DispelColourPicker:SetCallback("OnValueChanged", function(widget, _, r, g, b) UUF.db.profile.General.Colours.Dispel[dispelType] = {r, g, b} UUF:LoadCustomColours() UUF:UpdateAllUnitFrames() end)
+        DispelColourPicker:SetHasAlpha(false)
+        DispelColourPicker:SetRelativeWidth(0.2)
+        Container:AddChild(DispelColourPicker)
+    end
 end
 
 local function CreateFrameSettings(containerParent, unit, unitHasParent, updateCallback)
@@ -545,14 +560,21 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
     ColourWhenTappedToggle:SetLabel("Colour When Tapped")
     ColourWhenTappedToggle:SetValue(HealthBarDB.ColourWhenTapped)
     ColourWhenTappedToggle:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.ColourWhenTapped = value updateCallback() end)
-    ColourWhenTappedToggle:SetRelativeWidth((unit == "player" or unit == "target") and 0.33 or 0.5)
+    ColourWhenTappedToggle:SetRelativeWidth((unit == "player" or unit == "target") and 0.25 or 0.33)
     ColourContainer:AddChild(ColourWhenTappedToggle)
+
+    local ColourByDispelTypeToggle = AG:Create("CheckBox")
+    ColourByDispelTypeToggle:SetLabel("Colour by Dispel Type")
+    ColourByDispelTypeToggle:SetValue(HealthBarDB.ColourByDispelType)
+    ColourByDispelTypeToggle:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.ColourByDispelType = value updateCallback() end)
+    ColourByDispelTypeToggle:SetRelativeWidth((unit == "player" or unit == "target") and 0.25 or 0.33)
+    ColourContainer:AddChild(ColourByDispelTypeToggle)
 
     local InverseGrowthDirectionToggle = AG:Create("CheckBox")
     InverseGrowthDirectionToggle:SetLabel("Inverse Growth Direction")
     InverseGrowthDirectionToggle:SetValue(HealthBarDB.Inverse)
     InverseGrowthDirectionToggle:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.Inverse = value updateCallback() end)
-    InverseGrowthDirectionToggle:SetRelativeWidth((unit == "player" or unit == "target") and 0.33 or 0.5)
+    InverseGrowthDirectionToggle:SetRelativeWidth((unit == "player" or unit == "target") and 0.25 or 0.33)
     ColourContainer:AddChild(InverseGrowthDirectionToggle)
 
     if unit == "player" or unit == "target" then
@@ -596,7 +618,7 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
         end)
         AnchorToCooldownViewerToggle:SetCallback("OnEnter", function() GameTooltip:SetOwner(AnchorToCooldownViewerToggle.frame, "ANCHOR_CURSOR") GameTooltip:AddLine("Anchor To |cFF8080FFEssential|r Cooldown Viewer. Toggling this will overwrite existing |cFF8080FFLayout|r Settings.", 1, 1, 1, false) GameTooltip:Show() end)
         AnchorToCooldownViewerToggle:SetCallback("OnLeave", function() GameTooltip:Hide() end)
-        AnchorToCooldownViewerToggle:SetRelativeWidth(0.33)
+        AnchorToCooldownViewerToggle:SetRelativeWidth(0.25)
         ColourContainer:AddChild(AnchorToCooldownViewerToggle)
     end
 
