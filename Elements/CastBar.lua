@@ -19,7 +19,11 @@ function UUF:CreateUnitCastBar(unitFrame, unit)
     local CastBarContainer = CreateFrame("Frame", UUF:FetchFrameName(unit) .. "_CastBarContainer", unitFrame, "BackdropTemplate")
     CastBarContainer:SetBackdrop(UUF.BACKDROP)
     CastBarContainer:SetBackdropColor(0, 0, 0, 0)
-    CastBarContainer:SetBackdropBorderColor(CastBarDB.BorderColor[1], CastBarDB.BorderColor[2], CastBarDB.BorderColor[3], CastBarDB.ShowBorder and 1 or 0)
+    if CastBarDB.ShowBorder then
+        CastBarContainer:SetBackdropBorderColor(unpack(CastBarDB.BorderColour))
+    else
+        CastBarContainer:SetBackdropBorderColor(0, 0, 0, 0)
+    end
     CastBarContainer:ClearAllPoints()
     CastBarContainer:SetPoint(CastBarDB.Layout[1], unitFrame, CastBarDB.Layout[2], CastBarDB.Layout[3], CastBarDB.Layout[4])
     if CastBarDB.MatchParentWidth then CastBarContainer:SetWidth(FrameDB.Width) else CastBarContainer:SetWidth(CastBarDB.Width) end
@@ -176,7 +180,11 @@ function UUF:UpdateUnitCastBar(unitFrame, unit)
                 CastBarContainer:ClearAllPoints()
                 CastBarContainer:SetPoint(CastBarDB.Layout[1], unitFrame, CastBarDB.Layout[2], CastBarDB.Layout[3], CastBarDB.Layout[4])
                 CastBarContainer:SetFrameStrata(CastBarDB.FrameStrata)
-                CastBarContainer:SetBackdropBorderColor(CastBarDB.BorderColor[1], CastBarDB.BorderColor[2], CastBarDB.BorderColor[3], CastBarDB.ShowBorder and 1 or 0)
+                if CastBarDB.ShowBorder then
+                    CastBarContainer:SetBackdropBorderColor(unpack(CastBarDB.BorderColour))
+                else
+                    CastBarContainer:SetBackdropBorderColor(0, 0, 0, 0)
+                end
             end
             unitFrame.Castbar:ClearAllPoints()
             unitFrame.Castbar:SetPoint("TOPLEFT", CastBarContainer, "TOPLEFT", 1, -1)
