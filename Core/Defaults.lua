@@ -83,12 +83,21 @@ local Defaults = {
                     ColourBackgroundByClass = false,
                     ColourByReaction = true,
                     ColourWhenTapped = true,
+                    ColourByHealthPercent = false,
                     AnchorToCooldownViewer = false,
                     Inverse = false,
                     Foreground = {8/255, 8/255, 8/255},
                     ForegroundOpacity = 0.8,
                     Background = {34/255, 34/255, 34/255},
                     BackgroundOpacity = 1.0,
+                    -- CUSTOM: New 5-point fixed structure with checkboxes
+                    HealthPercentColors = {
+                        {percent = 0,    color = {1, 0, 0},     enabled = true},   -- Red (0%)
+                        {percent = 0.25, color = {1, 0.5, 0},   enabled = false},  -- Orange (25%)
+                        {percent = 0.50, color = {1, 1, 0},     enabled = false},  -- Yellow (50%)
+                        {percent = 0.75, color = {0.5, 1, 0},   enabled = false},  -- Light Green (75%)
+                        {percent = 1.0,  color = {0, 1, 0},     enabled = true},   -- Green (100%)
+                    },
                 },
                 HealPrediction = {
                     Absorbs = {
@@ -308,12 +317,21 @@ local Defaults = {
                     ColourBackgroundByClass = false,
                     ColourByReaction = true,
                     ColourWhenTapped = true,
+                    ColourByHealthPercent = false,
                     AnchorToCooldownViewer = false,
                     Inverse = false,
                     Foreground = {8/255, 8/255, 8/255},
                     ForegroundOpacity = 0.8,
                     Background = {34/255, 34/255, 34/255},
                     BackgroundOpacity = 1.0,
+                    -- CUSTOM: New 5-point fixed structure with checkboxes
+                    HealthPercentColors = {
+                        {percent = 0,    color = {1, 0, 0},     enabled = true},   -- Red (0%)
+                        {percent = 0.25, color = {1, 0.5, 0},   enabled = false},  -- Orange (25%)
+                        {percent = 0.50, color = {1, 1, 0},     enabled = false},  -- Yellow (50%)
+                        {percent = 0.75, color = {0.5, 1, 0},   enabled = false},  -- Light Green (75%)
+                        {percent = 1.0,  color = {0, 1, 0},     enabled = true},   -- Green (100%)
+                    },
                 },
                 HealPrediction = {
                     Absorbs = {
@@ -508,12 +526,21 @@ local Defaults = {
                     ColourBackgroundByClass = false,
                     ColourByReaction = true,
                     ColourWhenTapped = true,
+                    ColourByHealthPercent = false,
                     AnchorToCooldownViewer = false,
                     Inverse = false,
                     Foreground = {8/255, 8/255, 8/255},
                     ForegroundOpacity = 0.8,
                     Background = {34/255, 34/255, 34/255},
                     BackgroundOpacity = 1.0,
+                    -- CUSTOM: New 5-point fixed structure with checkboxes
+                    HealthPercentColors = {
+                        {percent = 0,    color = {1, 0, 0},     enabled = true},   -- Red (0%)
+                        {percent = 0.25, color = {1, 0.5, 0},   enabled = false},  -- Orange (25%)
+                        {percent = 0.50, color = {1, 1, 0},     enabled = false},  -- Yellow (50%)
+                        {percent = 0.75, color = {0.5, 1, 0},   enabled = false},  -- Light Green (75%)
+                        {percent = 1.0,  color = {0, 1, 0},     enabled = true},   -- Green (100%)
+                    },
                 },
                 HealPrediction = {
                     Absorbs = {
@@ -691,12 +718,21 @@ local Defaults = {
                     ColourBackgroundByClass = false,
                     ColourByReaction = true,
                     ColourWhenTapped = true,
+                    ColourByHealthPercent = false,
                     AnchorToCooldownViewer = false,
                     Inverse = false,
                     Foreground = {8/255, 8/255, 8/255},
                     ForegroundOpacity = 0.8,
                     Background = {34/255, 34/255, 34/255},
                     BackgroundOpacity = 1.0,
+                    -- CUSTOM: New 5-point fixed structure with checkboxes
+                    HealthPercentColors = {
+                        {percent = 0,    color = {1, 0, 0},     enabled = true},   -- Red (0%)
+                        {percent = 0.25, color = {1, 0.5, 0},   enabled = false},  -- Orange (25%)
+                        {percent = 0.50, color = {1, 1, 0},     enabled = false},  -- Yellow (50%)
+                        {percent = 0.75, color = {0.5, 1, 0},   enabled = false},  -- Light Green (75%)
+                        {percent = 1.0,  color = {0, 1, 0},     enabled = true},   -- Green (100%)
+                    },
                 },
                 HealPrediction = {
                     Absorbs = {
@@ -875,12 +911,21 @@ local Defaults = {
                     ColourBackgroundByClass = false,
                     ColourByReaction = true,
                     ColourWhenTapped = true,
+                    ColourByHealthPercent = false,
                     AnchorToCooldownViewer = false,
                     Inverse = false,
                     Foreground = {8/255, 8/255, 8/255},
                     ForegroundOpacity = 0.8,
                     Background = {34/255, 34/255, 34/255},
                     BackgroundOpacity = 1.0,
+                    -- CUSTOM: New 5-point fixed structure with checkboxes
+                    HealthPercentColors = {
+                        {percent = 0,    color = {1, 0, 0},     enabled = true},   -- Red (0%)
+                        {percent = 0.25, color = {1, 0.5, 0},   enabled = false},  -- Orange (25%)
+                        {percent = 0.50, color = {1, 1, 0},     enabled = false},  -- Yellow (50%)
+                        {percent = 0.75, color = {0.5, 1, 0},   enabled = false},  -- Light Green (75%)
+                        {percent = 1.0,  color = {0, 1, 0},     enabled = true},   -- Green (100%)
+                    },
                 },
                 HealPrediction = {
                     Absorbs = {
@@ -1058,12 +1103,21 @@ local Defaults = {
                     ColourBackgroundByClass = false,
                     ColourByReaction = true,
                     ColourWhenTapped = true,
+                    ColourByHealthPercent = false,
                     AnchorToCooldownViewer = false,
                     Inverse = false,
                     Foreground = {8/255, 8/255, 8/255},
                     ForegroundOpacity = 0.8,
                     Background = {34/255, 34/255, 34/255},
                     BackgroundOpacity = 1.0,
+                    -- CUSTOM: New 5-point fixed structure with checkboxes
+                    HealthPercentColors = {
+                        {percent = 0,    color = {1, 0, 0},     enabled = true},   -- Red (0%)
+                        {percent = 0.25, color = {1, 0.5, 0},   enabled = false},  -- Orange (25%)
+                        {percent = 0.50, color = {1, 1, 0},     enabled = false},  -- Yellow (50%)
+                        {percent = 0.75, color = {0.5, 1, 0},   enabled = false},  -- Light Green (75%)
+                        {percent = 1.0,  color = {0, 1, 0},     enabled = true},   -- Green (100%)
+                    },
                 },
                 HealPrediction = {
                     Absorbs = {
