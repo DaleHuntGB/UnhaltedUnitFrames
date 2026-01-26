@@ -205,6 +205,18 @@ local Defaults = {
                         HighlightOpacity = 0.75,
                         Style = "GRADIENT"
                     },
+                    Totems = {
+                        Enabled = true,
+                        Size = 42,
+                        Layout = {"RIGHT", "LEFT", -1, 0, 1},
+                        GrowthDirection = "LEFT",
+                        TotemDuration = {
+                            Layout = {"CENTER", "CENTER", 0, 0},
+                            FontSize = 12,
+                            ScaleByIconSize = false,
+                            Colour = {1, 1, 1},
+                        },
+                    },
                 },
                 Auras = {
                     FrameStrata = "LOW",
