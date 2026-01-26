@@ -90,6 +90,7 @@ end
 
 function UUF:GetPixelPerfectScale()
     local _, screenHeight = GetPhysicalScreenSize()
+    if not screenHeight or screenHeight <= 0 then return end
     local pixelSize = 768 / screenHeight
     return pixelSize
 end
@@ -100,19 +101,28 @@ local function SetupSlashCommands()
     SLASH_UUF3 = "/uf"
     SlashCmdList["UUF"] = function() UUF:CreateGUI() end
     UUF:PrettyPrint("'|cFF8080FF/uuf|r' for in-game configuration.")
-
     -- RL command
     SLASH_UUFRELOAD1 = "/rl"
-    SlashCmdList["UUFRELOAD"] = function() C_UI.Reload() end
+    SlashCmdList["UUFRELOAD"] = function() ReloadUI() end
 end
 
 function UUF:SetUIScale()
     local GeneralDB = UUF.db.profile.General
-    if GeneralDB.UIScale.Enabled then
-        UIParent:SetScale(GeneralDB.UIScale.Scale or 0.5333333333333)
-    else
+    if not GeneralDB.UIScale.Enabled then
         return
     end
+    if InCombatLockdown() then
+        return
+    end
+    local scale = GeneralDB.UIScale.Scale
+    if not scale or scale <= 0 or scale >= 2 then
+        local pixelScale = UUF:GetPixelPerfectScale()
+        if not pixelScale or pixelScale <= 0 or pixelScale >= 2 then
+            return
+        end
+        scale = pixelScale
+    end
+    UIParent:SetScale(scale)
 end
 
 function UUF:LoadCustomColours()
@@ -142,18 +152,11 @@ function UUF:LoadCustomColours()
 
     for powerType, color in pairs(General.Colours.Power) do
         local powerTypeString = PowerTypesToString[powerType]
-        if powerTypeString then
-            oUF.colors.power[powerTypeString] = oUF:CreateColor(color[1], color[2], color[3])
-            oUF.colors.power[powerType] = oUF.colors.power[powerTypeString]
-        end
+        if powerTypeString then oUF.colors.power[powerTypeString] = oUF:CreateColor(color[1], color[2], color[3]) end
     end
 
-    for powerType, color in pairs(General.Colours.SecondaryPower) do
-        local powerTypeString = PowerTypesToString[powerType]
-        if powerTypeString then
-            oUF.colors.power[powerTypeString] = oUF:CreateColor(color[1], color[2], color[3])
-            oUF.colors.power[powerType] = oUF.colors.power[powerTypeString]
-        end
+    for powerType, color in pairs(General.Colours.Power) do
+        if powerType then oUF.colors.power[powerType] = oUF:CreateColor(color[1], color[2], color[3]) end
     end
 
     for reaction, color in pairs(General.Colours.Reaction) do
