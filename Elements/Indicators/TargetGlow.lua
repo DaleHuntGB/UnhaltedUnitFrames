@@ -5,10 +5,11 @@ local unitIsTargetEvtFrame = CreateFrame("Frame")
 unitIsTargetEvtFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
 unitIsTargetEvtFrame:RegisterEvent("UNIT_TARGET")
 unitIsTargetEvtFrame:SetScript("OnEvent", function()
-    if not UUF.db.profile.Units[UUF:GetNormalizedUnit("target")].Indicators.Target.Enabled then return end
     for _, frameData in ipairs(UUF.TargetHighlightEvtFrames) do
         local frame, unit = frameData.frame, frameData.unit
-        UUF:UpdateTargetGlowIndicator(frame, unit)
+        if UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Indicators.Target.Enabled then
+            UUF:UpdateTargetGlowIndicator(frame, unit)
+        end
     end
 end)
 
@@ -47,13 +48,13 @@ end
 function UUF:RegisterTargetGlowIndicatorFrame(frameName, unit)
     if not unit or not frameName then return end
         if UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Indicators.Target then
-        local unitFrame = type(frameName) == "table" and frameName or _G[frameName]
-        local DB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)]
-        table.insert(UUF.TargetHighlightEvtFrames, { frame = unitFrame, unit = unit })
-        if DB and DB.TargetIndicator and DB.TargetIndicator.Enabled then
-            UUF:UpdateTargetGlowIndicator(unitFrame, unit)
-        else
-            unitFrame.TargetIndicator:SetAlpha(0)
-        end
+            local unitFrame = type(frameName) == "table" and frameName or _G[frameName]
+            local DB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)]
+            table.insert(UUF.TargetHighlightEvtFrames, { frame = unitFrame, unit = unit })
+            if DB and DB.Indicators.Target and DB.Indicators.Target.Enabled then
+                UUF:UpdateTargetGlowIndicator(unitFrame, unit)
+            else
+                unitFrame.TargetIndicator:SetAlpha(0)
+            end
     end
 end
