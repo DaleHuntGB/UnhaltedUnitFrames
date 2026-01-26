@@ -388,8 +388,8 @@ function UUF:UpdateHealthBarLayout(unitFrame, unit)
     end
 
     if PowerBarDB and PowerBarDB.Enabled then
-        bottomOffset = bottomOffset + PowerBarDB.Height + 1
-        heightReduction = heightReduction + PowerBarDB.Height + 1
+        bottomOffset = bottomOffset + PowerBarDB.Height + (PowerBarDB.ShowBorder and 1 or 0)
+        heightReduction = heightReduction + PowerBarDB.Height + (PowerBarDB.ShowBorder and 1 or 0)
     end
 
     unitFrame.HealthBackground:ClearAllPoints()
