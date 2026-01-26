@@ -79,7 +79,12 @@ function UUF:UpdateUnitHealthBar(unitFrame, unit)
             UUF[unit:upper()]:SetPoint(FrameDB.Layout[1], parentFrame, FrameDB.Layout[2], FrameDB.Layout[3], FrameDB.Layout[4])
             UUF[unit:upper()]:SetSize(FrameDB.Width, FrameDB.Height)
         end
-        unitFrame.Container:SetBackdropBorderColor(HealthBarDB.BorderColor[1], HealthBarDB.BorderColor[2], HealthBarDB.BorderColor[3], HealthBarDB.ShowBorder and 1 or 0)
+
+        if HealthBarDB.ShowBorder then
+            unitFrame.Container:SetBackdropBorderColor(unpack(HealthBarDB.BorderColour))
+        else
+            unitFrame.Container:SetBackdropBorderColor(0, 0, 0, 0)
+        end
     end
 
     if unitFrame.Health then

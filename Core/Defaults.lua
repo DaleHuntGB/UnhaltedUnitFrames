@@ -101,7 +101,7 @@ local Defaults = {
                         Style = "GRADIENT",
                     },
                     ShowBorder = true,
-                    BorderColor = {0/255, 0/255, 0/255},
+                    BorderColour = {0/255, 0/255, 0/255, 1.0},
                 },
                 HealPrediction = {
                     Absorbs = {
@@ -131,7 +131,7 @@ local Defaults = {
                     Inverse = false,
                     BackgroundMultiplier = 0.75,
                     ShowBorder = true,
-                    BorderColor = {0/255, 0/255, 0/255},
+                    BorderColour = {0/255, 0/255, 0/255, 1.0},
                 },
                 SecondaryPowerBar = {
                     Enabled = false,
@@ -150,7 +150,7 @@ local Defaults = {
                     Inverse = false,
                     Layout = {"LEFT", "BOTTOMLEFT", 3, 1},
                     ShowBorder = true,
-                    BorderColor = {0/255, 0/255, 0/255},
+                    BorderColour = {0/255, 0/255, 0/255, 1.0},
                 },
                 CastBar = {
                     Enabled = true,
@@ -163,7 +163,7 @@ local Defaults = {
                     MatchParentWidth = true,
                     ColourByClass = false,
                     ShowBorder = true,
-                    BorderColor = {0/255, 0/255, 0/255},
+                    BorderColour = {0/255, 0/255, 0/255, 1.0},
                     Inverse = false,
                     FrameStrata = "MEDIUM",
                     Icon = {
@@ -340,7 +340,7 @@ local Defaults = {
                         Style = "GRADIENT",
                     },
                     ShowBorder = true,
-                    BorderColor = {0/255, 0/255, 0/255},
+                    BorderColour = {0/255, 0/255, 0/255, 1.0},
                 },
                 HealPrediction = {
                     Absorbs = {
@@ -370,7 +370,7 @@ local Defaults = {
                     Inverse = false,
                     BackgroundMultiplier = 0.75,
                     ShowBorder = true,
-                    BorderColor = {0/255, 0/255, 0/255},
+                    BorderColour = {0/255, 0/255, 0/255, 1.0},
                 },
                 CastBar = {
                     Enabled = true,
@@ -383,7 +383,7 @@ local Defaults = {
                     MatchParentWidth = true,
                     ColourByClass = false,
                     ShowBorder = true,
-                    BorderColor = {0/255, 0/255, 0/255},
+                    BorderColour = {0/255, 0/255, 0/255, 1.0},
                     Inverse = false,
                     FrameStrata = "MEDIUM",
                     Icon = {
@@ -547,7 +547,7 @@ local Defaults = {
                     Background = {34/255, 34/255, 34/255},
                     BackgroundOpacity = 1.0,
                     ShowBorder = true,
-                    BorderColor = {0/255, 0/255, 0/255},
+                    BorderColour = {0/255, 0/255, 0/255, 1.0},
                 },
                 HealPrediction = {
                     Absorbs = {
@@ -577,7 +577,7 @@ local Defaults = {
                     Inverse = false,
                     BackgroundMultiplier = 0.75,
                     ShowBorder = true,
-                    BorderColor = {0/255, 0/255, 0/255},
+                    BorderColour = {0/255, 0/255, 0/255, 1.0},
                 },
                 -- CastBar = {
                 --     Enabled = false,
@@ -739,7 +739,7 @@ local Defaults = {
                         Style = "GRADIENT",
                     },
                     ShowBorder = true,
-                    BorderColor = {0/255, 0/255, 0/255},
+                    BorderColour = {0/255, 0/255, 0/255, 1.0},
                 },
                 HealPrediction = {
                     Absorbs = {
@@ -769,7 +769,7 @@ local Defaults = {
                     Inverse = false,
                     BackgroundMultiplier = 0.75,
                     ShowBorder = true,
-                    BorderColor = {0/255, 0/255, 0/255},
+                    BorderColour = {0/255, 0/255, 0/255, 1.0},
                 },
                 CastBar = {
                     Enabled = true,
@@ -782,7 +782,7 @@ local Defaults = {
                     MatchParentWidth = true,
                     ColourByClass = false,
                     ShowBorder = true,
-                    BorderColor = {0/255, 0/255, 0/255},
+                    BorderColour = {0/255, 0/255, 0/255, 1.0},
                     Inverse = false,
                     FrameStrata = "MEDIUM",
                     Icon = {
@@ -930,7 +930,7 @@ local Defaults = {
                     Background = {34/255, 34/255, 34/255},
                     BackgroundOpacity = 1.0,
                     ShowBorder = true,
-                    BorderColor = {0/255, 0/255, 0/255},
+                    BorderColour = {0/255, 0/255, 0/255, 1.0},
                 },
                 HealPrediction = {
                     Absorbs = {
@@ -960,7 +960,7 @@ local Defaults = {
                     Inverse = false,
                     BackgroundMultiplier = 0.75,
                     ShowBorder = true,
-                    BorderColor = {0/255, 0/255, 0/255},
+                    BorderColour = {0/255, 0/255, 0/255, 1.0},
                 },
                 -- CastBar = {
                 --     Enabled = false,
@@ -1118,7 +1118,7 @@ local Defaults = {
                     Background = {34/255, 34/255, 34/255},
                     BackgroundOpacity = 1.0,
                     ShowBorder = true,
-                    BorderColor = {0/255, 0/255, 0/255},
+                    BorderColour = {0/255, 0/255, 0/255, 1.0},
                 },
                 HealPrediction = {
                     Absorbs = {
@@ -1148,7 +1148,7 @@ local Defaults = {
                     Inverse = false,
                     BackgroundMultiplier = 0.75,
                     ShowBorder = true,
-                    BorderColor = {0/255, 0/255, 0/255},
+                    BorderColour = {0/255, 0/255, 0/255, 1.0},
                 },
                 CastBar = {
                     Enabled = false,
@@ -1161,7 +1161,7 @@ local Defaults = {
                     MatchParentWidth = true,
                     ColourByClass = false,
                     ShowBorder = true,
-                    BorderColor = {0/255, 0/255, 0/255},
+                    BorderColour = {0/255, 0/255, 0/255, 1.0},
                     Inverse = false,
                     FrameStrata = "MEDIUM",
                     Icon = {
@@ -1309,7 +1309,7 @@ local Defaults = {
                     Background = {34/255, 34/255, 34/255},
                     BackgroundOpacity = 1.0,
                     ShowBorder = true,
-                    BorderColor = {0/255, 0/255, 0/255},
+                    BorderColour = {0/255, 0/255, 0/255, 1.0},
                 },
                 HealPrediction = {
                     Absorbs = {
@@ -1339,7 +1339,7 @@ local Defaults = {
                     Inverse = false,
                     BackgroundMultiplier = 0.75,
                     ShowBorder = true,
-                    BorderColor = {0/255, 0/255, 0/255},
+                    BorderColour = {0/255, 0/255, 0/255, 1.0},
                 },
                 CastBar = {
                     Enabled = true,
@@ -1352,7 +1352,7 @@ local Defaults = {
                     MatchParentWidth = true,
                     ColourByClass = false,
                     ShowBorder = true,
-                    BorderColor = {0/255, 0/255, 0/255},
+                    BorderColour = {0/255, 0/255, 0/255, 1.0},
                     Inverse = false,
                     FrameStrata = "MEDIUM",
                     Icon = {
