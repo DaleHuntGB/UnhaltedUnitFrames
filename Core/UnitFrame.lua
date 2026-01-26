@@ -85,7 +85,7 @@ function UUF:SpawnUnitFrame(unit)
         UUF[unit:upper()] = oUF:Spawn(unit, UUF:FetchFrameName(unit))
         UUF:RegisterTargetGlowIndicatorFrame(UUF:FetchFrameName(unit), unit)
         UUF[unit:upper()]:SetFrameStrata(FrameDB.FrameStrata)
-        UUF:RegisterDispelHighlightEvents(UUF[unit:upper()], unit)
+        if unit == "player" or unit == "target" or unit == "focus" then UUF:RegisterDispelHighlightEvents(UUF[unit:upper()], unit) end
     end
 
     if unit == "player" or unit == "target" then

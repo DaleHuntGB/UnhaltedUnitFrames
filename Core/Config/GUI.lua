@@ -572,21 +572,23 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
     ColourWhenTappedToggle:SetLabel("Colour When Tapped")
     ColourWhenTappedToggle:SetValue(HealthBarDB.ColourWhenTapped)
     ColourWhenTappedToggle:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.ColourWhenTapped = value updateCallback() end)
-    ColourWhenTappedToggle:SetRelativeWidth((unit == "player" or unit == "target") and 0.25 or 0.33)
+    ColourWhenTappedToggle:SetRelativeWidth(((unit == "player" or unit == "target") and 0.25) or (unit ~= "focus" and 0.5) or 0.33)
     ColourContainer:AddChild(ColourWhenTappedToggle)
 
-    local ColourByDispelTypeToggle = AG:Create("CheckBox")
-    ColourByDispelTypeToggle:SetLabel("Colour by Dispel Type")
-    ColourByDispelTypeToggle:SetValue(HealthBarDB.ColourByDispelType)
-    ColourByDispelTypeToggle:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.ColourByDispelType = value updateCallback() end)
-    ColourByDispelTypeToggle:SetRelativeWidth((unit == "player" or unit == "target") and 0.25 or 0.33)
-    ColourContainer:AddChild(ColourByDispelTypeToggle)
+    if unit == "player" or unit == "target" or unit == "focus" then
+        local ColourByDispelTypeToggle = AG:Create("CheckBox")
+        ColourByDispelTypeToggle:SetLabel("Colour by Dispel Type")
+        ColourByDispelTypeToggle:SetValue(HealthBarDB.ColourByDispelType)
+        ColourByDispelTypeToggle:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.ColourByDispelType = value updateCallback() end)
+        ColourByDispelTypeToggle:SetRelativeWidth(((unit == "player" or unit == "target") and 0.25) or 0.33)
+        ColourContainer:AddChild(ColourByDispelTypeToggle)
+    end
 
     local InverseGrowthDirectionToggle = AG:Create("CheckBox")
     InverseGrowthDirectionToggle:SetLabel("Inverse Growth Direction")
     InverseGrowthDirectionToggle:SetValue(HealthBarDB.Inverse)
     InverseGrowthDirectionToggle:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.Inverse = value updateCallback() end)
-    InverseGrowthDirectionToggle:SetRelativeWidth((unit == "player" or unit == "target") and 0.25 or 0.33)
+    InverseGrowthDirectionToggle:SetRelativeWidth(((unit == "player" or unit == "target") and 0.25) or (unit ~= "focus" and 0.5) or 0.33)
     ColourContainer:AddChild(InverseGrowthDirectionToggle)
 
     if unit == "player" or unit == "target" then
