@@ -77,6 +77,7 @@ function UUF:SpawnUnitFrame(unit)
             UUF[unit:upper() .. i]:SetSize(FrameDB.Width, FrameDB.Height)
             UUF.BOSS_FRAMES[i] = UUF[unit:upper() .. i]
             UUF[unit:upper() .. i]:SetFrameStrata(FrameDB.FrameStrata)
+            UUF:RegisterTargetGlowIndicatorFrame(UUF:FetchFrameName(unit .. i), unit .. i)
         end
         UUF:LayoutBossFrames()
     else
