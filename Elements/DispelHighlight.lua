@@ -50,6 +50,11 @@ function UUF:UpdateUnitDispelHighlight(unitFrame, unit)
         UUF:UpdateDispelColorCurve(unitFrame)
     end
 
+    if not UnitIsUnit(unit, "player") and not UnitIsFriend("player", unit) then
+        unitFrame.DispelHighlight:Hide()
+        return
+    end
+
     local dispelList = LibDispel:GetMyDispelTypes()
     if not (dispelList.Magic or dispelList.Curse or dispelList.Disease or dispelList.Poison or dispelList.Bleed) then
         unitFrame.DispelHighlight:Hide()
