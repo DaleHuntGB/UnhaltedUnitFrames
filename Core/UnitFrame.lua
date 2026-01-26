@@ -135,6 +135,7 @@ function UUF:UpdateUnitFrame(unitFrame, unit)
     if unit == "player" then UUF:UpdateUnitRestingIndicator(unitFrame, unit) end
     if unit == "player" then UUF:UpdateUnitTotems(unitFrame, unit) end
     UUF:UpdateUnitMouseoverIndicator(unitFrame, unit)
+    UUF:UpdateUnitTargetGlowIndicator(unitFrame, unit)
     UUF:UpdateUnitAuras(unitFrame, unit)
     UUF:UpdateUnitTags()
     unitFrame:SetFrameStrata(UnitDB.Frame.FrameStrata)
