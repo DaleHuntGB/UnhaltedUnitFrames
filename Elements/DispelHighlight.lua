@@ -84,4 +84,5 @@ function UUF:RegisterDispelHighlightEvents(unitFrame, unit)
     unitFrame.DispelHighlightHandler:RegisterUnitEvent("UNIT_AURA", unit)
     unitFrame.DispelHighlightHandler:RegisterEvent("SPELLS_CHANGED")
     unitFrame.DispelHighlightHandler:RegisterEvent("PLAYER_TALENT_UPDATE")
+    unitFrame.DispelHighlightHandler:RegisterEvent("PLAYER_TARGET_CHANGED")
 end
