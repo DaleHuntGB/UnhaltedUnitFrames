@@ -6,7 +6,11 @@ function UUF:CreateUnitContainer(unitFrame, unit)
         unitFrame.Container = CreateFrame("Frame", UUF:FetchFrameName(unit) .. "_Container", unitFrame, "BackdropTemplate")
         unitFrame.Container:SetBackdrop(UUF.BACKDROP)
         unitFrame.Container:SetBackdropColor(0, 0, 0, 0)
-        unitFrame.Container:SetBackdropBorderColor(HealthBarDB.BorderColor[1], HealthBarDB.BorderColor[2], HealthBarDB.BorderColor[3], HealthBarDB.ShowBorder and 1 or 0)
+        if HealthBarDB.ShowBorder then
+            unitFrame.Container:SetBackdropBorderColor(unpack(HealthBarDB.BorderColour))
+        else
+            unitFrame.Container:SetBackdropBorderColor(0, 0, 0, 0)
+        end
         unitFrame.Container:SetAllPoints(unitFrame)
 
         if not unitFrame.HighLevelContainer then
