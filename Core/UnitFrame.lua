@@ -14,6 +14,7 @@ function UUF:CreateUnitFrame(unitFrame, unit)
     UUF:CreateUnitContainer(unitFrame, unit)
     if unit ~= "targettarget" and unit ~= "focustarget" then UUF:CreateUnitCastBar(unitFrame, unit) end
     UUF:CreateUnitHealthBar(unitFrame, unit)
+    UUF:CreateUnitDispelHighlight(unitFrame, unit)
     UUF:CreateUnitHealPrediction(unitFrame, unit)
     if unit ~= "targettarget" and unit ~= "focustarget" then UUF:CreateUnitPortrait(unitFrame, unit) end
     UUF:CreateUnitPowerBar(unitFrame, unit)
@@ -84,6 +85,7 @@ function UUF:SpawnUnitFrame(unit)
         UUF[unit:upper()] = oUF:Spawn(unit, UUF:FetchFrameName(unit))
         UUF:RegisterTargetGlowIndicatorFrame(UUF:FetchFrameName(unit), unit)
         UUF[unit:upper()]:SetFrameStrata(FrameDB.FrameStrata)
+        UUF:RegisterDispelHighlightEvents(UUF[unit:upper()], unit)
     end
 
     if unit == "player" or unit == "target" then

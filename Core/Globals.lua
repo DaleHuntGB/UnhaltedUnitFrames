@@ -161,6 +161,23 @@ function UUF:LoadCustomColours()
         oUF.colors.reaction[reaction] = oUF:CreateColor(color[1], color[2], color[3])
     end
 
+    if General.Colours.Dispel then
+        local dispelMap = {
+            Magic = oUF.Enum.DispelType.Magic,
+            Curse = oUF.Enum.DispelType.Curse,
+            Disease = oUF.Enum.DispelType.Disease,
+            Poison = oUF.Enum.DispelType.Poison,
+            Bleed = oUF.Enum.DispelType.Bleed,
+        }
+        for dispelType, index in pairs(dispelMap) do
+            local color = General.Colours.Dispel[dispelType]
+            if color then
+                oUF.colors.dispel[index] = oUF:CreateColor(color[1], color[2], color[3])
+            end
+        end
+        UUF.dispelColorGeneration = (UUF.dispelColorGeneration or 0) + 1
+    end
+
     for _, obj in next, oUF.objects do
         if obj.UpdateTags then
             obj:UpdateTags()
@@ -187,11 +204,11 @@ function UUF:Init()
     AddAnchorsToBCDM()
 end
 
-function UUF:CopyTabe(originalTable, destinationTable)
+function UUF:CopyTable(originalTable, destinationTable)
     for key, value in pairs(originalTable) do
         if type(value) == "table" then
             destinationTable[key] = destinationTable[key] or {}
-            UUF:CopyTabe(value, destinationTable[key])
+            UUF:CopyTable(value, destinationTable[key])
         else
             destinationTable[key] = value
         end
