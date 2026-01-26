@@ -473,8 +473,8 @@ function UUF:UpdateHealthBarLayout(unitFrame, unit)
         end
     end
 
-    local topOffset = -1 - topDepth
-    local bottomOffset = 1 + bottomDepth
+    local topOffset = (PowerBarDB.ShowBorder and -1 or 0) - topDepth
+    local bottomOffset = (PowerBarDB.ShowBorder and 1 or 0) + bottomDepth
 
     unitFrame.HealthBackground:ClearAllPoints()
     unitFrame.HealthBackground:SetPoint("TOPLEFT", unitFrame.Container, "TOPLEFT", 1, topOffset)
