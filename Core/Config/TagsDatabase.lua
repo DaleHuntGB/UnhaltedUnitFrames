@@ -275,6 +275,30 @@ oUF.Tags.Methods["curpp:abbr"] = function(unit)
     end
 end
 
+oUF.Tags.Methods["curpp:manapercent"] = function(unit)
+    if not unit or not UnitExists(unit) then return "" end
+    local unitPower = UnitPower(unit)
+    local unitPowerType = UnitPowerType(unit)
+    if unitPowerType == Enum.PowerType.Mana and unitPower then
+        local powerPercent = UnitPowerPercent(unit, Enum.PowerType.Mana, true, CurveConstants.ScaleTo100)
+        return string.format("%.f", powerPercent)
+    else
+        return string.format("%s", unitPower)
+    end
+end
+
+oUF.Tags.Methods["curpp:manapercent:abbr"] = function(unit)
+    if not unit or not UnitExists(unit) then return "" end
+    local unitPower = UnitPower(unit)
+    local unitPowerType = UnitPowerType(unit)
+    if unitPowerType == Enum.PowerType.Mana and unitPower then
+        local powerPercent = UnitPowerPercent(unit, Enum.PowerType.Mana, true, CurveConstants.ScaleTo100)
+        return string.format("%.f", powerPercent)
+    else
+        return string.format("%s", AbbreviateValue(unitPower))
+    end
+end
+
 oUF.Tags.Methods["maxpp:abbr"] = function(unit)
     if not unit or not UnitExists(unit) then return "" end
     local unitPowerMax = UnitPowerMax(unit)
@@ -386,6 +410,8 @@ local PowerTags = {
         ["maxpp:colour"] = "Maximum Power with Colour",
         ["maxpp:abbr:colour"] = "Maximum Power with Abbreviation and Colour",
         ["missingpp"] = "Missing Power",
+        ["curpp:manapercent"] = "Current Power but Mana as Percentage",
+        ["curpp:manapercent:abbr"] = "Current Power but Mana as Percentage with Abbreviation",
     },
     {
         "perpp",
@@ -393,6 +419,8 @@ local PowerTags = {
         "curpp:colour",
         "curpp:abbr",
         "curpp:abbr:colour",
+        "curpp:manapercent",
+        "curpp:manapercent:abbr",
         "maxpp",
         "maxpp:abbr",
         "maxpp:colour",
