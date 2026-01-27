@@ -398,7 +398,7 @@ function UUF:UpdateHealthBarLayout(unitFrame, unit)
     local bottomOffset = 1
     local heightReduction = 2
 
-    local hasSecondaryPower = UUF:GetSecondaryPowerType() ~= nil
+    local hasSecondaryPower = UUF:GetSecondaryPowerType() ~= nil or UUF:IsRunePower()
 
     if SecondaryPowerBarDB and SecondaryPowerBarDB.Enabled and hasSecondaryPower then
         topOffset = topOffset - SecondaryPowerBarDB.Height - 1
@@ -420,3 +420,4 @@ function UUF:UpdateHealthBarLayout(unitFrame, unit)
     unitFrame.Health:SetPoint("BOTTOMRIGHT", unitFrame.Container, "BOTTOMRIGHT", -1, bottomOffset)
     unitFrame.Health:SetHeight(FrameDB.Height - heightReduction)
 end
+
