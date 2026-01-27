@@ -29,6 +29,9 @@ externals:
     Libraries/LibDualSpec-1.0:
         url: https://github.com/AdiAddons/LibDualSpec-1.0.git
         branch: master
+    Libraries/LibDispel-1.0:
+        url: https://github.com/tukui-org/LibDispel.git
+        branch: main
 
 ignore:
     - README.md

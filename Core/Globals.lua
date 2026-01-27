@@ -10,6 +10,7 @@ UUF.MAX_BOSS_FRAMES = 10
 UUF.LSM = LibStub("LibSharedMedia-3.0")
 UUF.LDS = LibStub("LibDualSpec-1.0")
 UUF.AG = LibStub("AceGUI-3.0")
+UUF.LD = LibStub("LibDispel-1.0")
 UUF.BACKDROP = { bgFile = "Interface\\Buttons\\WHITE8X8", edgeFile = "Interface\\Buttons\\WHITE8X8", edgeSize = 1, insets = {left = 0, right = 0, top = 0, bottom = 0} }
 UUF.INFOBUTTON = "|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\InfoButton.png:16:16|t "
 UUF.ADDON_NAME = C_AddOns.GetAddOnMetadata("UnhaltedUnitFrames", "Title")
@@ -160,6 +161,23 @@ function UUF:LoadCustomColours()
         oUF.colors.reaction[reaction] = oUF:CreateColor(color[1], color[2], color[3])
     end
 
+    if General.Colours.Dispel then
+        local dispelMap = {
+            Magic = oUF.Enum.DispelType.Magic,
+            Curse = oUF.Enum.DispelType.Curse,
+            Disease = oUF.Enum.DispelType.Disease,
+            Poison = oUF.Enum.DispelType.Poison,
+            Bleed = oUF.Enum.DispelType.Bleed,
+        }
+        for dispelType, index in pairs(dispelMap) do
+            local color = General.Colours.Dispel[dispelType]
+            if color then
+                oUF.colors.dispel[index] = oUF:CreateColor(color[1], color[2], color[3])
+            end
+        end
+        UUF.dispelColorGeneration = (UUF.dispelColorGeneration or 0) + 1
+    end
+
     for _, obj in next, oUF.objects do
         if obj.UpdateTags then
             obj:UpdateTags()
@@ -174,7 +192,7 @@ local function AddAnchorsToBCDM()
         ["UUF_Target"] = "|cFF8080FFUnhalted|rUnitFrames: Target Frame",
         ["UUF_Pet"] = "|cFF8080FFUnhalted|rUnitFrames: Pet Frame",
     }
-    BCDMG.AddAnchors("UnhaltedUnitFrames", {"Utility", "Custom", "AdditionalCustom", "Item", "ItemSpell", "Trinket"}, UUF_Anchors)
+    BCDMG:AddAnchors("UnhaltedUnitFrames", {"Utility", "Custom", "AdditionalCustom", "Item", "ItemSpell", "Trinket"}, UUF_Anchors)
 end
 
 function UUF:Init()
@@ -186,11 +204,11 @@ function UUF:Init()
     AddAnchorsToBCDM()
 end
 
-function UUF:CopyTabe(originalTable, destinationTable)
+function UUF:CopyTable(originalTable, destinationTable)
     for key, value in pairs(originalTable) do
         if type(value) == "table" then
             destinationTable[key] = destinationTable[key] or {}
-            UUF:CopyTabe(value, destinationTable[key])
+            UUF:CopyTable(value, destinationTable[key])
         else
             destinationTable[key] = value
         end
@@ -388,8 +406,8 @@ function UUF:UpdateHealthBarLayout(unitFrame, unit)
     end
 
     if PowerBarDB and PowerBarDB.Enabled then
-        bottomOffset = bottomOffset + PowerBarDB.Height + 1
-        heightReduction = heightReduction + PowerBarDB.Height + 1
+        bottomOffset = bottomOffset + PowerBarDB.Height + (PowerBarDB.ShowBorder and 1 or 0)
+        heightReduction = heightReduction + PowerBarDB.Height + (PowerBarDB.ShowBorder and 1 or 0)
     end
 
     unitFrame.HealthBackground:ClearAllPoints()

@@ -14,6 +14,7 @@ function UUF:CreateUnitFrame(unitFrame, unit)
     UUF:CreateUnitContainer(unitFrame, unit)
     if unit ~= "targettarget" and unit ~= "focustarget" then UUF:CreateUnitCastBar(unitFrame, unit) end
     UUF:CreateUnitHealthBar(unitFrame, unit)
+    UUF:CreateUnitDispelHighlight(unitFrame, unit)
     UUF:CreateUnitHealPrediction(unitFrame, unit)
     if unit ~= "targettarget" and unit ~= "focustarget" then UUF:CreateUnitPortrait(unitFrame, unit) end
     UUF:CreateUnitPowerBar(unitFrame, unit)
@@ -23,6 +24,7 @@ function UUF:CreateUnitFrame(unitFrame, unit)
     if unit == "player" or unit == "target" then UUF:CreateUnitLeaderAssistantIndicator(unitFrame, unit) end
     if unit == "player" or unit == "target" then UUF:CreateUnitCombatIndicator(unitFrame, unit) end
     if unit == "player" then UUF:CreateUnitRestingIndicator(unitFrame, unit) end
+    if unit == "player" then UUF:CreateUnitTotems(unitFrame, unit) end
     UUF:CreateUnitMouseoverIndicator(unitFrame, unit)
     UUF:CreateUnitTargetGlowIndicator(unitFrame, unit)
     UUF:CreateUnitAuras(unitFrame, unit)
@@ -76,12 +78,14 @@ function UUF:SpawnUnitFrame(unit)
             UUF[unit:upper() .. i]:SetSize(FrameDB.Width, FrameDB.Height)
             UUF.BOSS_FRAMES[i] = UUF[unit:upper() .. i]
             UUF[unit:upper() .. i]:SetFrameStrata(FrameDB.FrameStrata)
+            UUF:RegisterTargetGlowIndicatorFrame(UUF:FetchFrameName(unit .. i), unit .. i)
         end
         UUF:LayoutBossFrames()
     else
         UUF[unit:upper()] = oUF:Spawn(unit, UUF:FetchFrameName(unit))
         UUF:RegisterTargetGlowIndicatorFrame(UUF:FetchFrameName(unit), unit)
         UUF[unit:upper()]:SetFrameStrata(FrameDB.FrameStrata)
+        if unit == "player" or unit == "target" or unit == "focus" then UUF:RegisterDispelHighlightEvents(UUF[unit:upper()], unit) end
     end
 
     if unit == "player" or unit == "target" then
@@ -131,7 +135,9 @@ function UUF:UpdateUnitFrame(unitFrame, unit)
     if unit == "player" or unit == "target" then UUF:UpdateUnitLeaderAssistantIndicator(unitFrame, unit) end
     if unit == "player" or unit == "target" then UUF:UpdateUnitCombatIndicator(unitFrame, unit) end
     if unit == "player" then UUF:UpdateUnitRestingIndicator(unitFrame, unit) end
+    if unit == "player" then UUF:UpdateUnitTotems(unitFrame, unit) end
     UUF:UpdateUnitMouseoverIndicator(unitFrame, unit)
+    UUF:UpdateUnitTargetGlowIndicator(unitFrame, unit)
     UUF:UpdateUnitAuras(unitFrame, unit)
     UUF:UpdateUnitTags()
     unitFrame:SetFrameStrata(UnitDB.Frame.FrameStrata)
