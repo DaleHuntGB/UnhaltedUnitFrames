@@ -149,6 +149,24 @@ local function GenerateSupportText(parentFrame)
     parentFrame.statustext:SetText(SupportOptions[math.random(1, #SupportOptions)])
 end
 
+local function CreateMinimapIconToggle(containerParent)
+    local Container = GUIWidgets.CreateInlineGroup(containerParent, "Minimap Button")
+    local Toggle = AG:Create("CheckBox")
+    Toggle:SetLabel("Hide Minimap Button")
+    Toggle:SetValue(UUF.db.profile.General.minimap.hide)
+    Toggle:SetFullWidth(true)
+    Toggle:SetCallback("OnValueChanged", function(_, _, value) 
+            UUF.db.profile.General.minimap.hide = value
+            if UUF.db.profile.General.minimap.hide then
+                UUF.LDBIcon:Hide(UUF.ADDON_NAME)
+            else
+                UUF.LDBIcon:Show(UUF.ADDON_NAME)
+            end
+        end)
+    Toggle:SetRelativeWidth(0.5)
+    Container:AddChild(Toggle)
+end
+
 local function CreateUIScaleSettings(containerParent)
     local Container = GUIWidgets.CreateInlineGroup(containerParent, "UI Scale")
     GUIWidgets.CreateInformationTag(Container,"These options allow you to adjust the UI Scale beyond the means that |cFF00B0F7Blizzard|r provides. If you encounter issues, please |cFFFF4040disable|r this feature.")
@@ -3008,7 +3026,7 @@ function UUF:CreateGUI()
 
         if MainTab == "General" then
             local ScrollFrame = GUIWidgets.CreateScrollFrame(Wrapper)
-
+            CreateMinimapIconToggle(ScrollFrame)
             CreateUIScaleSettings(ScrollFrame)
             CreateColourSettings(ScrollFrame)
 
