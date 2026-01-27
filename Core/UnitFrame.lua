@@ -50,17 +50,6 @@ function UUF:LayoutBossFrames()
     AnchorUtil.VerticalLayout(bossFrames, initialAnchor, Frame.Layout[5])
 end
 
-function UUF:SpawnBossUnitFrames()
-    for i = 1, UUF.MAX_BOSS_FRAMES do
-        local BossFrame = oUF:Spawn("boss" .. i, UUF:FetchFrameName("boss" .. i))
-        BossFrame:SetSize(UUF.db.profile.Units.boss.Frame.Width, UUF.db.profile.Units.boss.Frame.Height)
-        UUF.BOSS_FRAMES[i] = BossFrame
-        UUF["BOSS" .. i] = BossFrame
-        -- UUF:RegisterRangeFrame(UUF:FetchFrameName("boss" .. i), "boss" .. i)
-    end
-    UUF:LayoutBossFrames()
-end
-
 function UUF:SpawnUnitFrame(unit)
     local UnitDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)]
     if not UnitDB or not UnitDB.Enabled then
@@ -97,7 +86,7 @@ function UUF:SpawnUnitFrame(unit)
         UUF[unit:upper()]:SetPoint(FrameDB.Layout[1], parentFrame, FrameDB.Layout[2], FrameDB.Layout[3], FrameDB.Layout[4])
         UUF[unit:upper()]:SetSize(FrameDB.Width, FrameDB.Height)
     end
-    -- UUF:RegisterRangeFrame(UUF:FetchFrameName(unit), unit)
+    UUF:RegisterRangeFrame(UUF:FetchFrameName(unit), unit)
 
     if UnitDB.Enabled then
         RegisterUnitWatch(UUF[unit:upper()])
