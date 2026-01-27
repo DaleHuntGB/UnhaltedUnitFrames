@@ -2011,7 +2011,7 @@ local function CreateIndicatorSettings(containerParent, unit)
         elseif IndicatorTab == "TargetIndicator" then
             CreateTargetIndicatorSettings(IndicatorContainer, unit, function() if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitTargetGlowIndicator(UUF[unit:upper()], unit) end end)
         elseif IndicatorTab == "Totems" then
-            CreateTotemsIndicatorSettings(IndicatorContainer, unit, function() UUF:UpdateUnitTotems(UUF[unit:upper()], unit) end)
+            -- CreateTotemsIndicatorSettings(IndicatorContainer, unit, function() UUF:UpdateUnitTotems(UUF[unit:upper()], unit) end)
         end
     end
 
@@ -2025,7 +2025,7 @@ local function CreateIndicatorSettings(containerParent, unit)
             { text = "Resting", value = "Resting" },
             { text = "Combat", value = "Combat" },
             { text = "Mouseover", value = "Mouseover" },
-            { text = "Totems", value = "Totems" },
+            -- { text = "Totems", value = "Totems" },
         })
     elseif unit == "target" then
         IndicatorContainerTabGroup:SetTabs({
