@@ -6,9 +6,9 @@
 [![Donate](https://img.shields.io/badge/Donate-1E88E5?style=for-the-badge&logo=streamlabs&logoColor=white)](https://streamelements.com/unhaltedgb/tip)
 [![KoFi](https://img.shields.io/badge/KoFi-FFDD00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black)](https://ko-fi.com/unhalted)
 
-## Midnight
-- Unhalted Unit Frames is ready for Pre-Patch & Midnight.
-- Settings from previous versions, will all be overwritten upon Pre-Patch.
+## Announcement
+- **Issues** are closed for now as I focus on real-life and other ventures. I am happy with the position of Unhalted Unit Frames. Development will continue but at a slower rate.
+- **Pull Requests** can be made but will likely be ignored / looked at less frequently. Please check all closed **Pull Requests** to ensure you are not creating something already denied.
 
 ## Unit Frames
 - Player.
