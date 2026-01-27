@@ -1,6 +1,6 @@
 local parent, ns = ...
 local global = C_AddOns.GetAddOnMetadata(parent, 'X-oUF')
-local _VERSION = '13.0.0'
+local _VERSION = '108f562'
 if(_VERSION:find('project%-version')) then
 	_VERSION = 'devel'
 end
@@ -631,7 +631,7 @@ do
 		end
 	end
 
-	--[[ oUF:SpawnHeader(overrideName, template, visibility, ...)
+	--[[ oUF:SpawnHeader(overrideName, template, ...)
 	Used to create a group header and apply the currently active style to it.
 
 	* self         - the global oUF object
@@ -763,7 +763,7 @@ do
 		if(IsLoggedIn()) then
 			C_NamePlate.SetNamePlateSize(driver.plateWidth or 200, driver.plateHeight or 30)
 
-			local enemyInset = driver.friendlyNonInteractible and hitInset or -hitInset
+			local enemyInset = driver.enemyNonInteractible and hitInset or -hitInset
 			C_NamePlateManager.SetNamePlateHitTestInsets(Enum.NamePlateType.Enemy, enemyInset, enemyInset, enemyInset, enemyInset)
 
 			local friendlyInset = driver.friendlyNonInteractible and hitInset or -hitInset
@@ -771,7 +771,13 @@ do
 
 			if(driver.cvars) then
 				for name, value in next, driver.cvars do
-					C_CVar.SetCVar(name, value)
+					if(type(value) == 'table') then
+						for bitmaskIndex, bitmaskValue in next, value do
+							C_CVar.SetCVarBitfield(name, bitmaskIndex, bitmaskValue)
+						end
+					else
+						C_CVar.SetCVar(name, value)
+					end
 				end
 			end
 		end
@@ -980,9 +986,9 @@ function oUF:AddElement(name, update, enable, disable)
 
 	if(elements[name]) then return nierror(string.format('Element [%s] is already registered.', name)) end
 	elements[name] = {
-		update = update;
-		enable = enable;
-		disable = disable;
+		update = update,
+		enable = enable,
+		disable = disable,
 	}
 end
 

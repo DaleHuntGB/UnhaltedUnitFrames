@@ -309,7 +309,7 @@ local function CreateTextureSettings(containerParent)
     local R, G, B = 8/255, 8/255, 8/255
     ForegroundColourPicker:SetColor(R, G, B)
     ForegroundColourPicker:SetRelativeWidth(0.5)
-    ForegroundColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) for _, unitDB in pairs(UUF.db.profile.Units) do unitDB.HealthBar.ForegroundColour = {r, g, b} end UUF:UpdateAllUnitFrames() end)
+    ForegroundColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) for _, unitDB in pairs(UUF.db.profile.Units) do unitDB.HealthBar.Foreground = {r, g, b} end UUF:UpdateAllUnitFrames() end)
     Container:AddChild(ForegroundColourPicker)
 
     local ForegroundOpacitySlider = AG:Create("Slider")
@@ -326,7 +326,7 @@ local function CreateTextureSettings(containerParent)
     local R2, G2, B2 = 8/255, 8/255, 8/255
     BackgroundColourPicker:SetColor(R2, G2, B2)
     BackgroundColourPicker:SetRelativeWidth(0.5)
-    BackgroundColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) for _, unitDB in pairs(UUF.db.profile.Units) do unitDB.HealthBar.BackgroundColour = {r, g, b} end UUF:UpdateAllUnitFrames() end)
+    BackgroundColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) for _, unitDB in pairs(UUF.db.profile.Units) do unitDB.HealthBar.Background = {r, g, b} end UUF:UpdateAllUnitFrames() end)
     Container:AddChild(BackgroundColourPicker)
 
     local BackgroundOpacitySlider = AG:Create("Slider")
@@ -381,21 +381,33 @@ local function CreateColourSettings(containerParent)
 
     local ResetAllColoursButton = AG:Create("Button")
     ResetAllColoursButton:SetText("All Colours")
-    ResetAllColoursButton:SetCallback("OnClick", function() UUF:CopyTabe(UUF:GetDefaultDB().profile.General.Colours, UUF.db.profile.General.Colours) Container:ReleaseChildren() CreateColourSettings(containerParent) Container:DoLayout() containerParent:DoLayout() end)
-    ResetAllColoursButton:SetRelativeWidth(0.33)
+    ResetAllColoursButton:SetCallback("OnClick", function() UUF:CopyTable(UUF:GetDefaultDB().profile.General.Colours, UUF.db.profile.General.Colours) Container:ReleaseChildren() CreateColourSettings(containerParent) Container:DoLayout() containerParent:DoLayout() end)
+    ResetAllColoursButton:SetRelativeWidth(1)
     Container:AddChild(ResetAllColoursButton)
 
     local ResetPowerColoursButton = AG:Create("Button")
     ResetPowerColoursButton:SetText("Power Colours")
-    ResetPowerColoursButton:SetCallback("OnClick", function() UUF:CopyTabe(UUF:GetDefaultDB().profile.General.Colours.Power, UUF.db.profile.General.Colours.Power) Container:ReleaseChildren() CreateColourSettings(containerParent) Container:DoLayout() containerParent:DoLayout() end)
-    ResetPowerColoursButton:SetRelativeWidth(0.33)
+    ResetPowerColoursButton:SetCallback("OnClick", function() UUF:CopyTable(UUF:GetDefaultDB().profile.General.Colours.Power, UUF.db.profile.General.Colours.Power) Container:ReleaseChildren() CreateColourSettings(containerParent) Container:DoLayout() containerParent:DoLayout() end)
+    ResetPowerColoursButton:SetRelativeWidth(0.25)
     Container:AddChild(ResetPowerColoursButton)
+
+    local ResetSecondaryPowerColoursButton = AG:Create("Button")
+    ResetSecondaryPowerColoursButton:SetText("Secondary Power Colours")
+    ResetSecondaryPowerColoursButton:SetCallback("OnClick", function() UUF:CopyTable(UUF:GetDefaultDB().profile.General.Colours.SecondaryPower, UUF.db.profile.General.Colours.SecondaryPower) Container:ReleaseChildren() CreateColourSettings(containerParent) Container:DoLayout() containerParent:DoLayout() end)
+    ResetSecondaryPowerColoursButton:SetRelativeWidth(0.25)
+    Container:AddChild(ResetSecondaryPowerColoursButton)
 
     local ResetReactionColoursButton = AG:Create("Button")
     ResetReactionColoursButton:SetText("Reaction Colours")
-    ResetReactionColoursButton:SetCallback("OnClick", function() UUF:CopyTabe(UUF:GetDefaultDB().profile.General.Colours.Reaction, UUF.db.profile.General.Colours.Reaction) Container:ReleaseChildren() CreateColourSettings(containerParent) Container:DoLayout() containerParent:DoLayout() end)
-    ResetReactionColoursButton:SetRelativeWidth(0.33)
+    ResetReactionColoursButton:SetCallback("OnClick", function() UUF:CopyTable(UUF:GetDefaultDB().profile.General.Colours.Reaction, UUF.db.profile.General.Colours.Reaction) Container:ReleaseChildren() CreateColourSettings(containerParent) Container:DoLayout() containerParent:DoLayout() end)
+    ResetReactionColoursButton:SetRelativeWidth(0.25)
     Container:AddChild(ResetReactionColoursButton)
+
+    local ResetDispelColoursButton = AG:Create("Button")
+    ResetDispelColoursButton:SetText("Dispel Colours")
+    ResetDispelColoursButton:SetCallback("OnClick", function() UUF:CopyTable(UUF:GetDefaultDB().profile.General.Colours.Dispel, UUF.db.profile.General.Colours.Dispel) Container:ReleaseChildren() CreateColourSettings(containerParent) Container:DoLayout() containerParent:DoLayout() end)
+    ResetDispelColoursButton:SetRelativeWidth(0.25)
+    Container:AddChild(ResetDispelColoursButton)
 
     GUIWidgets.CreateHeader(Container, "Power")
 
@@ -444,6 +456,21 @@ local function CreateColourSettings(containerParent)
         ReactionColourPicker:SetHasAlpha(false)
         ReactionColourPicker:SetRelativeWidth(0.25)
         Container:AddChild(ReactionColourPicker)
+    end
+
+    GUIWidgets.CreateHeader(Container, "Dispel Types")
+
+    local DispelTypes = {"Magic", "Curse", "Disease", "Poison", "Bleed"}
+
+    for _, dispelType in ipairs(DispelTypes) do
+        local DispelColourPicker = AG:Create("ColorPicker")
+        DispelColourPicker:SetLabel(dispelType)
+        local R, G, B = unpack(UUF.db.profile.General.Colours.Dispel[dispelType])
+        DispelColourPicker:SetColor(R, G, B)
+        DispelColourPicker:SetCallback("OnValueChanged", function(widget, _, r, g, b) UUF.db.profile.General.Colours.Dispel[dispelType] = {r, g, b} UUF:LoadCustomColours() UUF:UpdateAllUnitFrames() end)
+        DispelColourPicker:SetHasAlpha(false)
+        DispelColourPicker:SetRelativeWidth(0.2)
+        Container:AddChild(DispelColourPicker)
     end
 end
 
@@ -545,14 +572,23 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
     ColourWhenTappedToggle:SetLabel("Colour When Tapped")
     ColourWhenTappedToggle:SetValue(HealthBarDB.ColourWhenTapped)
     ColourWhenTappedToggle:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.ColourWhenTapped = value updateCallback() end)
-    ColourWhenTappedToggle:SetRelativeWidth((unit == "player" or unit == "target") and 0.33 or 0.5)
+    ColourWhenTappedToggle:SetRelativeWidth(((unit == "player" or unit == "target") and 0.25) or (unit ~= "focus" and 0.5) or 0.33)
     ColourContainer:AddChild(ColourWhenTappedToggle)
+
+    if unit == "player" or unit == "target" or unit == "focus" then
+        local ColourByDispelTypeToggle = AG:Create("CheckBox")
+        ColourByDispelTypeToggle:SetLabel("Colour by Dispel Type")
+        ColourByDispelTypeToggle:SetValue(HealthBarDB.ColourByDispelType)
+        ColourByDispelTypeToggle:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.ColourByDispelType = value updateCallback() end)
+        ColourByDispelTypeToggle:SetRelativeWidth(((unit == "player" or unit == "target") and 0.25) or 0.33)
+        ColourContainer:AddChild(ColourByDispelTypeToggle)
+    end
 
     local InverseGrowthDirectionToggle = AG:Create("CheckBox")
     InverseGrowthDirectionToggle:SetLabel("Inverse Growth Direction")
     InverseGrowthDirectionToggle:SetValue(HealthBarDB.Inverse)
     InverseGrowthDirectionToggle:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.Inverse = value updateCallback() end)
-    InverseGrowthDirectionToggle:SetRelativeWidth((unit == "player" or unit == "target") and 0.33 or 0.5)
+    InverseGrowthDirectionToggle:SetRelativeWidth(((unit == "player" or unit == "target") and 0.25) or (unit ~= "focus" and 0.5) or 0.33)
     ColourContainer:AddChild(InverseGrowthDirectionToggle)
 
     if unit == "player" or unit == "target" then
@@ -596,7 +632,7 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
         end)
         AnchorToCooldownViewerToggle:SetCallback("OnEnter", function() GameTooltip:SetOwner(AnchorToCooldownViewerToggle.frame, "ANCHOR_CURSOR") GameTooltip:AddLine("Anchor To |cFF8080FFEssential|r Cooldown Viewer. Toggling this will overwrite existing |cFF8080FFLayout|r Settings.", 1, 1, 1, false) GameTooltip:Show() end)
         AnchorToCooldownViewerToggle:SetCallback("OnLeave", function() GameTooltip:Hide() end)
-        AnchorToCooldownViewerToggle:SetRelativeWidth(0.33)
+        AnchorToCooldownViewerToggle:SetRelativeWidth(0.25)
         ColourContainer:AddChild(AnchorToCooldownViewerToggle)
     end
 
@@ -1874,6 +1910,144 @@ local function CreateTargetIndicatorSettings(containerParent, unit, updateCallba
     RefreshTargetIndicatorGUI()
 end
 
+local function CreateTotemsIndicatorSettings(containerParent, unit, updateCallback)
+    local TotemsIndicatorDB = UUF.db.profile.Units[unit].Indicators.Totems
+
+    local TotemDurationContainer = GUIWidgets.CreateInlineGroup(containerParent, "Aura Duration Settings")
+
+    local ColourPicker = AG:Create("ColorPicker")
+    ColourPicker:SetLabel("Cooldown Text Colour")
+    ColourPicker:SetColor(UUF.db.profile.Units[unit].Indicators.Totems.TotemDuration.Colour[1], UUF.db.profile.Units[unit].Indicators.Totems.TotemDuration.Colour[2], UUF.db.profile.Units[unit].Indicators.Totems.TotemDuration.Colour[3], 1)
+    ColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) UUF.db.profile.Units[unit].Indicators.Totems.TotemDuration.Colour = {r, g, b} UUF:UpdateUnitTotems(UUF[unit:upper()], unit) end)
+    ColourPicker:SetHasAlpha(false)
+    ColourPicker:SetRelativeWidth(0.5)
+    TotemDurationContainer:AddChild(ColourPicker)
+
+    local ScaleByIconSizeCheckbox = AG:Create("CheckBox")
+    ScaleByIconSizeCheckbox:SetLabel("Scale Cooldown Text By Icon Size")
+    ScaleByIconSizeCheckbox:SetValue(UUF.db.profile.Units[unit].Indicators.Totems.TotemDuration.ScaleByIconSize)
+    ScaleByIconSizeCheckbox:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.Units[unit].Indicators.Totems.TotemDuration.ScaleByIconSize = value UUF:UpdateUnitTotems(UUF[unit:upper()], unit) RefreshFontSizeSlider() end)
+    ScaleByIconSizeCheckbox:SetRelativeWidth(0.5)
+    TotemDurationContainer:AddChild(ScaleByIconSizeCheckbox)
+
+    local AnchorFromDropdown = AG:Create("Dropdown")
+    AnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
+    AnchorFromDropdown:SetLabel("Anchor From")
+    AnchorFromDropdown:SetValue(UUF.db.profile.Units[unit].Indicators.Totems.TotemDuration.Layout[1])
+    AnchorFromDropdown:SetRelativeWidth(0.5)
+    AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.Units[unit].Indicators.Totems.TotemDuration.Layout[1] = value UUF:UpdateUnitTotems(UUF[unit:upper()], unit) end)
+    TotemDurationContainer:AddChild(AnchorFromDropdown)
+
+    local AnchorToDropdown = AG:Create("Dropdown")
+    AnchorToDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
+    AnchorToDropdown:SetLabel("Anchor To")
+    AnchorToDropdown:SetValue(UUF.db.profile.Units[unit].Indicators.Totems.TotemDuration.Layout[2])
+    AnchorToDropdown:SetRelativeWidth(0.5)
+    AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.Units[unit].Indicators.Totems.TotemDuration.Layout[2] = value UUF:UpdateUnitTotems(UUF[unit:upper()], unit) end)
+    TotemDurationContainer:AddChild(AnchorToDropdown)
+
+    local XPosSlider = AG:Create("Slider")
+    XPosSlider:SetLabel("X Position")
+    XPosSlider:SetValue(UUF.db.profile.Units[unit].Indicators.Totems.TotemDuration.Layout[3])
+    XPosSlider:SetSliderValues(-1000, 1000, 0.1)
+    XPosSlider:SetRelativeWidth(0.33)
+    XPosSlider:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.Units[unit].Indicators.Totems.TotemDuration.Layout[3] = value UUF:UpdateUnitTotems(UUF[unit:upper()], unit) end)
+    TotemDurationContainer:AddChild(XPosSlider)
+
+    local YPosSlider = AG:Create("Slider")
+    YPosSlider:SetLabel("Y Position")
+    YPosSlider:SetValue(UUF.db.profile.Units[unit].Indicators.Totems.TotemDuration.Layout[4])
+    YPosSlider:SetSliderValues(-1000, 1000, 0.1)
+    YPosSlider:SetRelativeWidth(0.33)
+    YPosSlider:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.Units[unit].Indicators.Totems.TotemDuration.Layout[4] = value UUF:UpdateUnitTotems(UUF[unit:upper()], unit) end)
+    TotemDurationContainer:AddChild(YPosSlider)
+
+    local FontSizeSlider = AG:Create("Slider")
+    FontSizeSlider:SetLabel("Font Size")
+    FontSizeSlider:SetValue(UUF.db.profile.Units[unit].Indicators.Totems.TotemDuration.FontSize)
+    FontSizeSlider:SetSliderValues(8, 64, 1)
+    FontSizeSlider:SetRelativeWidth(0.33)
+    FontSizeSlider:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.Units[unit].Indicators.Totems.TotemDuration.FontSize = value UUF:UpdateUnitTotems(UUF[unit:upper()], unit) end)
+    FontSizeSlider:SetDisabled(UUF.db.profile.Units[unit].Indicators.Totems.TotemDuration.ScaleByIconSize)
+    TotemDurationContainer:AddChild(FontSizeSlider)
+
+    local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Totems Settings")
+
+    local Toggle = AG:Create("CheckBox")
+    Toggle:SetLabel("Enable |cFF8080FFTotems|r")
+    Toggle:SetValue(TotemsIndicatorDB.Enabled)
+    Toggle:SetCallback("OnValueChanged", function(_, _, value) TotemsIndicatorDB.Enabled = value updateCallback() RefreshTotemsIndicatorGUI() end)
+    Toggle:SetRelativeWidth(0.5)
+    ToggleContainer:AddChild(Toggle)
+
+    local SizeSlider = AG:Create("Slider")
+    SizeSlider:SetLabel("Icon Size")
+    SizeSlider:SetValue(TotemsIndicatorDB.Size)
+    SizeSlider:SetSliderValues(8, 64, 1)
+    SizeSlider:SetRelativeWidth(0.5)
+    SizeSlider:SetCallback("OnValueChanged", function(_, _, value) TotemsIndicatorDB.Size = value updateCallback() end)
+    ToggleContainer:AddChild(SizeSlider)
+
+    local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
+    local AnchorFromDropdown = AG:Create("Dropdown")
+    AnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
+    AnchorFromDropdown:SetLabel("Anchor From")
+    AnchorFromDropdown:SetValue(TotemsIndicatorDB.Layout[1])
+    AnchorFromDropdown:SetRelativeWidth(0.33)
+    AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) TotemsIndicatorDB.Layout[1] = value updateCallback() end)
+    LayoutContainer:AddChild(AnchorFromDropdown)
+
+    local AnchorToDropdown = AG:Create("Dropdown")
+    AnchorToDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
+    AnchorToDropdown:SetLabel("Anchor To")
+    AnchorToDropdown:SetValue(TotemsIndicatorDB.Layout[2])
+    AnchorToDropdown:SetRelativeWidth(0.33)
+    AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) TotemsIndicatorDB.Layout[2] = value updateCallback() end)
+    LayoutContainer:AddChild(AnchorToDropdown)
+
+    local GrowthDirectionDropdown = AG:Create("Dropdown")
+    GrowthDirectionDropdown:SetList({["RIGHT"] = "Right", ["LEFT"] = "Left"})
+    GrowthDirectionDropdown:SetLabel("Growth Direction")
+    GrowthDirectionDropdown:SetValue(TotemsIndicatorDB.GrowthDirection)
+    GrowthDirectionDropdown:SetRelativeWidth(0.33)
+    GrowthDirectionDropdown:SetCallback("OnValueChanged", function(_, _, value) TotemsIndicatorDB.GrowthDirection = value updateCallback() end)
+    LayoutContainer:AddChild(GrowthDirectionDropdown)
+
+    local XPosSlider = AG:Create("Slider")
+    XPosSlider:SetLabel("X Position")
+    XPosSlider:SetValue(TotemsIndicatorDB.Layout[3])
+    XPosSlider:SetSliderValues(-1000, 1000, 0.1)
+    XPosSlider:SetRelativeWidth(0.33)
+    XPosSlider:SetCallback("OnValueChanged", function(_, _, value) TotemsIndicatorDB.Layout[3] = value updateCallback() end)
+    LayoutContainer:AddChild(XPosSlider)
+
+    local YPosSlider = AG:Create("Slider")
+    YPosSlider:SetLabel("Y Position")
+    YPosSlider:SetValue(TotemsIndicatorDB.Layout[4])
+    YPosSlider:SetSliderValues(-1000, 1000, 0.1)
+    YPosSlider:SetRelativeWidth(0.33)
+    YPosSlider:SetCallback("OnValueChanged", function(_, _, value) TotemsIndicatorDB.Layout[4] = value updateCallback() end)
+    LayoutContainer:AddChild(YPosSlider)
+
+    local SpacingSlider = AG:Create("Slider")
+    SpacingSlider:SetLabel("Totems Indicator Spacing")
+    SpacingSlider:SetValue(TotemsIndicatorDB.Layout[5])
+    SpacingSlider:SetSliderValues(0, 100, 1)
+    SpacingSlider:SetRelativeWidth(0.33)
+    SpacingSlider:SetCallback("OnValueChanged", function(_, _, value) TotemsIndicatorDB.Layout[5] = value updateCallback() end)
+    LayoutContainer:AddChild(SpacingSlider)
+
+    function RefreshTotemsIndicatorGUI()
+        if TotemsIndicatorDB.Enabled then
+            GUIWidgets.DeepDisable(ToggleContainer, false, Toggle)
+        else
+            GUIWidgets.DeepDisable(ToggleContainer, true, Toggle)
+        end
+    end
+
+    RefreshTotemsIndicatorGUI()
+end
+
 local function CreateIndicatorSettings(containerParent, unit)
     local function SelectIndicatorTab(IndicatorContainer, _, IndicatorTab)
         SaveSubTab(unit, "Indicators", IndicatorTab)
@@ -1890,6 +2064,8 @@ local function CreateIndicatorSettings(containerParent, unit)
             CreateMouseoverSettings(IndicatorContainer, unit, function() if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitMouseoverIndicator(UUF[unit:upper()], unit) end end)
         elseif IndicatorTab == "TargetIndicator" then
             CreateTargetIndicatorSettings(IndicatorContainer, unit, function() if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitTargetGlowIndicator(UUF[unit:upper()], unit) end end)
+        elseif IndicatorTab == "Totems" then
+            CreateTotemsIndicatorSettings(IndicatorContainer, unit, function() UUF:UpdateUnitTotems(UUF[unit:upper()], unit) end)
         end
     end
 
@@ -1903,6 +2079,7 @@ local function CreateIndicatorSettings(containerParent, unit)
             { text = "Resting", value = "Resting" },
             { text = "Combat", value = "Combat" },
             { text = "Mouseover", value = "Mouseover" },
+            { text = "Totems", value = "Totems" },
         })
     elseif unit == "target" then
         IndicatorContainerTabGroup:SetTabs({

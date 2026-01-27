@@ -66,6 +66,13 @@ local Defaults = {
                     [16] = {0.41, 0.8, 0.94},           -- Arcane Charges
                     [19] = {100/255, 173/255, 206/255}, -- Essence
                 },
+                Dispel = {
+                    ["Magic"] = {0.2, 0.6, 1 },
+                    ["Curse"] = {0.6, 0, 1 },
+                    ["Disease"] = {0.6, 0.4, 0 },
+                    ["Poison"] = {0, 0.6, 0 },
+                    ["Bleed"] = {0.6, 0, 0.1 }
+                }
             }
         },
         Units = {
@@ -83,6 +90,7 @@ local Defaults = {
                     ColourBackgroundByClass = false,
                     ColourByReaction = true,
                     ColourWhenTapped = true,
+                    ColourByDispelType = true,
                     AnchorToCooldownViewer = false,
                     Inverse = false,
                     Foreground = {8/255, 8/255, 8/255},
@@ -98,14 +106,14 @@ local Defaults = {
                         UseStripedTexture = true,
                         Colour = {255/255, 204/255, 0/255, 1.0},
                         Position = "LEFT",
-                        Height = 42,
+                        Height = 40,
                     },
                     HealAbsorbs = {
                         Enabled = true,
                         UseStripedTexture = false,
                         Colour = {128/255, 64/255, 255/255, 1.0},
                         Position = "RIGHT",
-                        Height = 42,
+                        Height = 40,
                     },
                 },
                 PowerBar = {
@@ -213,6 +221,18 @@ local Defaults = {
                         HighlightOpacity = 0.75,
                         Style = "GRADIENT"
                     },
+                    Totems = {
+                        Enabled = true,
+                        Size = 42,
+                        Layout = {"RIGHT", "LEFT", -1, 0, 1},
+                        GrowthDirection = "LEFT",
+                        TotemDuration = {
+                            Layout = {"CENTER", "CENTER", 0, 0},
+                            FontSize = 12,
+                            ScaleByIconSize = false,
+                            Colour = {1, 1, 1},
+                        },
+                    },
                 },
                 Auras = {
                     FrameStrata = "LOW",
@@ -306,6 +326,7 @@ local Defaults = {
                     ColourBackgroundByClass = false,
                     ColourByReaction = true,
                     ColourWhenTapped = true,
+                    ColourByDispelType = true,
                     AnchorToCooldownViewer = false,
                     Inverse = false,
                     Foreground = {8/255, 8/255, 8/255},
@@ -321,14 +342,14 @@ local Defaults = {
                         UseStripedTexture = true,
                         Colour = {255/255, 204/255, 0/255, 1.0},
                         Position = "LEFT",
-                        Height = 42,
+                        Height = 40,
                     },
                     HealAbsorbs = {
                         Enabled = true,
                         UseStripedTexture = false,
                         Colour = {128/255, 64/255, 255/255, 1.0},
                         Position = "RIGHT",
-                        Height = 42,
+                        Height = 40,
                     },
                 },
                 PowerBar = {
@@ -514,7 +535,6 @@ local Defaults = {
                     ColourBackgroundByClass = false,
                     ColourByReaction = true,
                     ColourWhenTapped = true,
-                    AnchorToCooldownViewer = false,
                     Inverse = false,
                     Foreground = {8/255, 8/255, 8/255},
                     ForegroundOpacity = 0.8,
@@ -529,14 +549,14 @@ local Defaults = {
                         UseStripedTexture = true,
                         Colour = {255/255, 204/255, 0/255, 1.0},
                         Position = "LEFT",
-                        Height = 22,
+                        Height = 20,
                     },
                     HealAbsorbs = {
                         Enabled = true,
                         UseStripedTexture = false,
                         Colour = {128/255, 64/255, 255/255, 1.0},
                         Position = "RIGHT",
-                        Height = 22,
+                        Height = 20,
                     },
                 },
                 PowerBar = {
@@ -703,7 +723,7 @@ local Defaults = {
                     ColourBackgroundByClass = false,
                     ColourByReaction = true,
                     ColourWhenTapped = true,
-                    AnchorToCooldownViewer = false,
+                    ColourByDispelType = true,
                     Inverse = false,
                     Foreground = {8/255, 8/255, 8/255},
                     ForegroundOpacity = 0.8,
@@ -718,14 +738,14 @@ local Defaults = {
                         UseStripedTexture = true,
                         Colour = {255/255, 204/255, 0/255, 1.0},
                         Position = "LEFT",
-                        Height = 22,
+                        Height = 20,
                     },
                     HealAbsorbs = {
                         Enabled = true,
                         UseStripedTexture = false,
                         Colour = {128/255, 64/255, 255/255, 1.0},
                         Position = "RIGHT",
-                        Height = 22,
+                        Height = 20,
                     },
                 },
                 PowerBar = {
@@ -895,7 +915,6 @@ local Defaults = {
                     ColourBackgroundByClass = false,
                     ColourByReaction = true,
                     ColourWhenTapped = true,
-                    AnchorToCooldownViewer = false,
                     Inverse = false,
                     Foreground = {8/255, 8/255, 8/255},
                     ForegroundOpacity = 0.8,
@@ -910,14 +929,14 @@ local Defaults = {
                         UseStripedTexture = true,
                         Colour = {255/255, 204/255, 0/255, 1.0},
                         Position = "LEFT",
-                        Height = 22,
+                        Height = 20,
                     },
                     HealAbsorbs = {
                         Enabled = true,
                         UseStripedTexture = false,
                         Colour = {128/255, 64/255, 255/255, 1.0},
                         Position = "RIGHT",
-                        Height = 22,
+                        Height = 20,
                     },
                 },
                 PowerBar = {
@@ -1084,7 +1103,6 @@ local Defaults = {
                     ColourBackgroundByClass = false,
                     ColourByReaction = true,
                     ColourWhenTapped = true,
-                    AnchorToCooldownViewer = false,
                     Inverse = false,
                     Foreground = {8/255, 8/255, 8/255},
                     ForegroundOpacity = 0.8,
@@ -1099,14 +1117,14 @@ local Defaults = {
                         UseStripedTexture = true,
                         Colour = {255/255, 204/255, 0/255, 1.0},
                         Position = "LEFT",
-                        Height = 22,
+                        Height = 20,
                     },
                     HealAbsorbs = {
                         Enabled = true,
                         UseStripedTexture = false,
                         Colour = {128/255, 64/255, 255/255, 1.0},
                         Position = "RIGHT",
-                        Height = 22,
+                        Height = 20,
                     },
                 },
                 PowerBar = {
@@ -1276,7 +1294,6 @@ local Defaults = {
                     ColourBackgroundByClass = false,
                     ColourByReaction = true,
                     ColourWhenTapped = true,
-                    AnchorToCooldownViewer = false,
                     Inverse = false,
                     Foreground = {8/255, 8/255, 8/255},
                     ForegroundOpacity = 0.8,
@@ -1291,14 +1308,14 @@ local Defaults = {
                         UseStripedTexture = true,
                         Colour = {255/255, 204/255, 0/255, 1.0},
                         Position = "LEFT",
-                        Height = 42,
+                        Height = 40,
                     },
                     HealAbsorbs = {
                         Enabled = true,
                         UseStripedTexture = false,
                         Colour = {128/255, 64/255, 255/255, 1.0},
                         Position = "RIGHT",
-                        Height = 42,
+                        Height = 40,
                     },
                 },
                 PowerBar = {
