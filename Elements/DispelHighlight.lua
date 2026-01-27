@@ -22,12 +22,26 @@ function UUF:UpdateDispelColorCurve(unitFrame)
 end
 
 function UUF:CreateUnitDispelHighlight(unitFrame, unit)
+    local DispelHighlightDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].HealthBar.DispelHighlight
     if not unitFrame.DispelHighlight then
         local DispelHighlight = unitFrame.Health:CreateTexture(UUF:FetchFrameName(unit) .. "_DispelHighlight", "OVERLAY")
-        DispelHighlight:SetAllPoints(unitFrame)
-        DispelHighlight:SetTexture("Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Gradient.png")
-        DispelHighlight:SetBlendMode("ADD")
-        DispelHighlight:SetAlpha(1)
+        DispelHighlight:ClearAllPoints()
+        if DispelHighlightDB.Style == "GRADIENT" then
+            DispelHighlight:SetPoint("TOPLEFT", unitFrame, "TOPLEFT", 1, -1)
+            DispelHighlight:SetPoint("BOTTOMRIGHT", unitFrame, "BOTTOMRIGHT", -1, 1)
+            DispelHighlight:SetTexture("Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Gradient.png")
+            DispelHighlight:SetAlpha(1)
+        else
+            local barTexture = unitFrame.Health and unitFrame.Health:GetStatusBarTexture()
+            if barTexture then
+                DispelHighlight:SetAllPoints(barTexture)
+            else
+                DispelHighlight:SetAllPoints(unitFrame.Health)
+            end
+            DispelHighlight:SetTexture("Interface\\Buttons\\WHITE8X8")
+            DispelHighlight:SetAlpha(0.75)
+        end
+        DispelHighlight:SetBlendMode("BLEND")
         DispelHighlight:Hide()
 
         unitFrame.DispelHighlight = DispelHighlight
@@ -38,10 +52,47 @@ function UUF:CreateUnitDispelHighlight(unitFrame, unit)
             UUF:UpdateDispelColorCurve(unitFrame)
         end
     end
+
+    if DispelHighlightDB.Enabled then
+        unitFrame.DispelHighlight:Show()
+    else
+        unitFrame.DispelHighlight:Hide()
+    end
 end
 
 function UUF:UpdateUnitDispelHighlight(unitFrame, unit)
     if not unitFrame.DispelHighlight then return end
+    local DispelHighlightDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].HealthBar.DispelHighlight
+    if unitFrame.DispelHighlight then
+        if DispelHighlightDB.Enabled then
+            UUF:RegisterDispelHighlightEvents(unitFrame, unit)
+            unitFrame.DispelHighlight:ClearAllPoints()
+            if DispelHighlightDB.Style == "GRADIENT" then
+                unitFrame.DispelHighlight:SetPoint("TOPLEFT", unitFrame, "TOPLEFT", 1, -1)
+                unitFrame.DispelHighlight:SetPoint("BOTTOMRIGHT", unitFrame, "BOTTOMRIGHT", -1, 1)
+                unitFrame.DispelHighlight:SetTexture("Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Gradient.png")
+                unitFrame.DispelHighlight:SetAlpha(1)
+            else
+                local barTexture = unitFrame.Health and unitFrame.Health:GetStatusBarTexture()
+                if barTexture then
+                    unitFrame.DispelHighlight:SetAllPoints(barTexture)
+                else
+                    unitFrame.DispelHighlight:SetAllPoints(unitFrame.Health)
+                end
+                unitFrame.DispelHighlight:SetTexture("Interface\\Buttons\\WHITE8X8")
+                unitFrame.DispelHighlight:SetAlpha(0.75)
+            end
+            unitFrame.DispelHighlight:Show()
+        else
+            UUF:UnregisterDispelHighlightEvents(unitFrame)
+            unitFrame.DispelHighlight:Hide()
+        end
+    end
+end
+
+function UUF:UpdateUnitDispelState(unitFrame, unit)
+    if not unitFrame.DispelHighlight then return end
+    if not UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].HealthBar.DispelHighlight.Enabled then return end
 
     local LibDispel = UUF.LD
     if not LibDispel then return end
@@ -80,14 +131,21 @@ end
 
 function UUF:RegisterDispelHighlightEvents(unitFrame, unit)
     if not unitFrame.DispelHighlight then return end
+    if not UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].HealthBar.DispelHighlight.Enabled then return end
 
     if not unitFrame.DispelHighlightHandler then
         unitFrame.DispelHighlightHandler = CreateFrame("Frame")
-        unitFrame.DispelHighlightHandler:SetScript("OnEvent", function(self, event, ...) UUF:UpdateUnitDispelHighlight(unitFrame, unit) end)
+        unitFrame.DispelHighlightHandler:SetScript("OnEvent", function(self, event, ...) UUF:UpdateUnitDispelState(unitFrame, unit) end)
     end
 
     unitFrame.DispelHighlightHandler:RegisterUnitEvent("UNIT_AURA", unit)
     unitFrame.DispelHighlightHandler:RegisterEvent("SPELLS_CHANGED")
     unitFrame.DispelHighlightHandler:RegisterEvent("PLAYER_TALENT_UPDATE")
     unitFrame.DispelHighlightHandler:RegisterEvent("PLAYER_TARGET_CHANGED")
+end
+
+function UUF:UnregisterDispelHighlightEvents(unitFrame)
+    if not unitFrame.DispelHighlightHandler then return end
+
+    unitFrame.DispelHighlightHandler:UnregisterAllEvents()
 end

@@ -90,13 +90,16 @@ local Defaults = {
                     ColourBackgroundByClass = false,
                     ColourByReaction = true,
                     ColourWhenTapped = true,
-                    ColourByDispelType = true,
                     AnchorToCooldownViewer = false,
                     Inverse = false,
                     Foreground = {8/255, 8/255, 8/255},
                     ForegroundOpacity = 0.8,
                     Background = {34/255, 34/255, 34/255},
                     BackgroundOpacity = 1.0,
+                    DispelHighlight = {
+                        Enabled = true,
+                        Style = "GRADIENT",
+                    },
                 },
                 HealPrediction = {
                     Absorbs = {
@@ -316,13 +319,16 @@ local Defaults = {
                     ColourBackgroundByClass = false,
                     ColourByReaction = true,
                     ColourWhenTapped = true,
-                    ColourByDispelType = true,
                     AnchorToCooldownViewer = false,
                     Inverse = false,
                     Foreground = {8/255, 8/255, 8/255},
                     ForegroundOpacity = 0.8,
                     Background = {34/255, 34/255, 34/255},
                     BackgroundOpacity = 1.0,
+                    DispelHighlight = {
+                        Enabled = true,
+                        Style = "GRADIENT",
+                    },
                 },
                 HealPrediction = {
                     Absorbs = {
@@ -699,12 +705,15 @@ local Defaults = {
                     ColourBackgroundByClass = false,
                     ColourByReaction = true,
                     ColourWhenTapped = true,
-                    ColourByDispelType = true,
                     Inverse = false,
                     Foreground = {8/255, 8/255, 8/255},
                     ForegroundOpacity = 0.8,
                     Background = {34/255, 34/255, 34/255},
                     BackgroundOpacity = 1.0,
+                    DispelHighlight = {
+                        Enabled = false,
+                        Style = "GRADIENT",
+                    },
                 },
                 HealPrediction = {
                     Absorbs = {

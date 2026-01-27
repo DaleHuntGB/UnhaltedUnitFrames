@@ -65,6 +65,7 @@ end
 function UUF:UpdateUnitHealthBar(unitFrame, unit)
     local FrameDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Frame
     local HealthBarDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].HealthBar
+    local DispelHighlightDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].HealthBar.DispelHighlight
 
     if unitFrame then
         unitFrame:ClearAllPoints()
@@ -112,5 +113,10 @@ function UUF:UpdateUnitHealthBar(unitFrame, unit)
         unitFrame.Health:SetReverseFill(false)
         unitFrame.HealthBackground:SetReverseFill(true)
     end
+
+    if unitFrame.DispelHighlight then
+        UUF:UpdateUnitDispelHighlight(unitFrame, unit)
+    end
+
     unitFrame.Health:ForceUpdate()
 end
