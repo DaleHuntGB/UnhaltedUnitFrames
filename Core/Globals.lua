@@ -11,6 +11,8 @@ UUF.LSM = LibStub("LibSharedMedia-3.0")
 UUF.LDS = LibStub("LibDualSpec-1.0")
 UUF.AG = LibStub("AceGUI-3.0")
 UUF.LD = LibStub("LibDispel-1.0")
+UUF.LDB = LibStub("LibDataBroker-1.1")
+UUF.LDBIcon = LibStub("LibDBIcon-1.0")
 UUF.BACKDROP = { bgFile = "Interface\\Buttons\\WHITE8X8", edgeFile = "Interface\\Buttons\\WHITE8X8", edgeSize = 1, insets = {left = 0, right = 0, top = 0, bottom = 0} }
 UUF.INFOBUTTON = "|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\InfoButton.png:16:16|t "
 UUF.ADDON_NAME = C_AddOns.GetAddOnMetadata("UnhaltedUnitFrames", "Title")
@@ -107,6 +109,29 @@ local function SetupSlashCommands()
     SlashCmdList["UUFRELOAD"] = function() C_UI.Reload() end
 end
 
+local function InitializeDataBroker()
+    local UUFLDB = UUF.LDB:NewDataObject(UUF.ADDON_NAME, {
+        label = UUF.ADDON_NAME,
+        type = "launcher",
+        icon = "Interface/Addons/UnhaltedUnitFrames/Media/Textures/Logo.tga",
+        OnClick = function(...)
+            local _, b = ...
+            if b then UUF.CreateGUI() end
+        end,
+        OnTooltipShow = function(tooltip)
+            tooltip:SetText(UUF.ADDON_NAME, 1, 1, 1)
+            tooltip:AddLine("Open " .. UUF.ADDON_NAME .. " config", NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b)
+        end
+    })
+    if not UUF.db.profile.General.minimap then
+        UUF.db.profile.General.minimap = {
+            hide = false,
+        }
+    end
+    UUF.LDBIcon:Register(UUF.ADDON_NAME, UUFLDB, UUF.db.profile.General.minimap)
+    UUF.LDBIcon:AddButtonToCompartment(UUF.ADDON_NAME)
+end
+
 function UUF:SetUIScale()
     local GeneralDB = UUF.db.profile.General
     if GeneralDB.UIScale.Enabled then
@@ -197,6 +222,7 @@ end
 
 function UUF:Init()
     SetupSlashCommands()
+    InitializeDataBroker()
     UUF:SetUIScale()
     UUF:ResolveLSM()
     UUF:LoadCustomColours()
