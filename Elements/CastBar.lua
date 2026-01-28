@@ -34,6 +34,14 @@ function UUF:CreateUnitCastBar(unitFrame, unit)
     CastBar:SetFrameLevel(CastBarContainer:GetFrameLevel() + 1)
     CastBar:SetStatusBarColor(unpack(CastBarDB.Foreground))
 
+    CastBar.CreatePip = function(element, stage)
+        local texture = element:CreateTexture(nil, 'OVERLAY', 'CastingBarFrameStagePipTemplate', 1)
+        texture:SetParent(element)
+        texture:SetColorTexture(1, 1, 1)
+        texture:SetSize(2, element:GetHeight()) -- A simple vertical line
+        return texture
+    end
+
     CastBar.Background = CastBar:CreateTexture(nil, "BACKGROUND")
     CastBar.Background:SetAllPoints(CastBar)
     CastBar.Background:SetTexture(UUF.Media.Background)
