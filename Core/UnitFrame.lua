@@ -86,7 +86,7 @@ function UUF:SpawnUnitFrame(unit)
         UUF[unit:upper()]:SetPoint(FrameDB.Layout[1], parentFrame, FrameDB.Layout[2], FrameDB.Layout[3], FrameDB.Layout[4])
         UUF[unit:upper()]:SetSize(FrameDB.Width, FrameDB.Height)
     end
-    -- UUF:RegisterRangeFrame(UUF:FetchFrameName(unit), unit)
+    if unit ~= "player" then UUF:RegisterRangeFrame(UUF:FetchFrameName(unit), unit) end
 
     if UnitDB.Enabled then
         RegisterUnitWatch(UUF[unit:upper()])

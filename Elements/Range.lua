@@ -92,5 +92,5 @@ function UUF:UpdateRangeAlpha(frame, unit)
         inRange = UnitIsConnected(unit) and FriendlyIsInRange(unit)
     end
 
-    frame:SetAlpha(inRange and inAlpha or outAlpha)
+    frame:SetAlphaFromBoolean(inRange, inAlpha, outAlpha)
 end

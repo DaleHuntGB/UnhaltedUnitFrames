@@ -10,7 +10,7 @@
 	<Script file="PowerBar.lua"/>
 	<Script file="SecondaryPowerBar.lua"/>
 	<Script file="DispelHighlight.lua"/>
-	<!-- <Script file="Range.lua"/> -->
+	<Script file="Range.lua"/>
 	<Script file="Tags.lua"/>
 
 	<Script file="Indicators/LeaderAssistant.lua"/>
