@@ -3,10 +3,6 @@ local isRetail = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
 
 UUF.RangeEvtFrames = {}
 
-local IsSpellInRange = C_Spell.IsSpellInRange
-local UnitPhaseReason = UnitPhaseReason
-local CheckInteractDistance = CheckInteractDistance
-
 local RangeEventFrame = CreateFrame("Frame")
 RangeEventFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
 RangeEventFrame:RegisterEvent("UNIT_TARGET")
@@ -18,9 +14,7 @@ RangeEventFrame:SetScript("OnEvent", function()
 end)
 
 local function GetGroupUnit(unit)
-    if unit == "player" or unit:match("^party") or unit:match("^raid") then
-        return unit
-    end
+    if unit == "player" or unit:match("^party") or unit:match("^raid") then return unit end
 
     if UnitInParty(unit) or UnitInRaid(unit) then
         local isRaid = IsInRaid()
@@ -35,8 +29,8 @@ end
 
 local function IsUnitInRange(unit)
     local spell = UUF.db.profile.General.Range.Spell
-    if spell and IsSpellInRange(spell, unit) ~= nil then
-        return IsSpellInRange(spell, unit)
+    if spell and C_Spell.IsSpellInRange(spell, unit) ~= nil then
+        return C_Spell.IsSpellInRange(spell, unit)
     end
     return CheckInteractDistance(unit, 4)
 end
