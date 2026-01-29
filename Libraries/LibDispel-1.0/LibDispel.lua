@@ -1,4 +1,4 @@
-local MAJOR, MINOR = "LibDispel-1.0", 25
+local MAJOR, MINOR = "LibDispel-1.0", 26
 assert(LibStub, MAJOR.." requires LibStub")
 
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
@@ -106,6 +106,10 @@ function lib:IsDispellableByMe(debuffType)
 	return DispelList[debuffType]
 end
 
+function lib:ListUpdated()
+	-- callback function
+end
+
 do
 	local _, myClass = UnitClass("player")
 	local WarlockPetSpells = {
@@ -197,6 +201,8 @@ do
 			DispelList.Curse = cauterizing
 			DispelList.Bleed = cauterizing
 		end
+
+		lib:ListUpdated()
 
 		if undoRanks then
 			SetCVar('ShowAllSpellRanks', '0')
