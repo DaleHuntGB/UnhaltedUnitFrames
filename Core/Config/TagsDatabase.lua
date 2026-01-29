@@ -480,3 +480,7 @@ function UUF:FetchTagData(queriedDB)
         return MiscTags
     end
 end
+
+function UUFG:GetTags()
+    return oUF.Tags
+end
