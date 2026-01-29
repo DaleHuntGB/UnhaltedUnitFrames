@@ -136,7 +136,6 @@ function UUF:UpdateUnitSecondaryPowerBar(unitFrame, unit)
     secondaryPowerBarElement.ContainerBackground:SetPoint("TOPLEFT", unitFrame.Container, "TOPLEFT", 1, -1)
     secondaryPowerBarElement.ContainerBackground:Show()
 
-
     secondaryPowerBarElement.OverlayFrame:SetAllPoints(unitFrame.Container)
     secondaryPowerBarElement.OverlayFrame:SetFrameLevel(unitFrame.Container:GetFrameLevel() + 10)
     secondaryPowerBarElement.OverlayFrame:Show()
