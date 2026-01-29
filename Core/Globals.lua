@@ -356,6 +356,92 @@ function UUFG:UpdateAllTags()
     end
 end
 
+function UUF:UpdateOutOfCombatFade()
+    local inCombat = UnitAffectingCombat("player")
+    local hasTarget = UnitExists("target")
+    local fadeSettings = UUF.db.profile.General.OutOfCombatFade
+
+    -- List of units to update
+    local units = { "PLAYER", "TARGET", "TARGETTARGET", "FOCUS", "FOCUSTARGET", "PET" }
+
+    for _, unitKey in ipairs(units) do
+        local unitFrame = UUF[unitKey]
+        if unitFrame then
+            local unitName = unitKey:lower()
+            local unitDB = UUF.db.profile.Units[unitName]
+
+            if unitDB and unitDB.Frame then
+                local useGlobal = fadeSettings.UseGlobal
+                local fadeEnabled = false
+                local targetOpacity = 1.0
+                local fadeInWithTarget = false
+
+                if useGlobal then
+                    fadeEnabled = true
+                    targetOpacity = fadeSettings.GlobalOpacity or 0.5
+                    fadeInWithTarget = fadeSettings.FadeInWithTarget or false
+                else
+                    fadeEnabled = unitDB.Frame.OutOfCombatFade.Enabled
+                    targetOpacity = unitDB.Frame.OutOfCombatFade.Opacity or 0.5
+                    fadeInWithTarget = unitDB.Frame.OutOfCombatFade.FadeInWithTarget or false
+                end
+
+                -- Determine the target alpha:
+                -- - If in combat, always full opacity
+                -- - If out of combat and fade is enabled:
+                --   - If fadeInWithTarget is enabled and we have a target, full opacity
+                --   - Otherwise, use targetOpacity
+                local shouldFade = fadeEnabled and not inCombat
+                local shouldFadeInWithTarget = fadeInWithTarget and hasTarget
+
+                if shouldFade and not shouldFadeInWithTarget then
+                    unitFrame:SetAlpha(targetOpacity)
+                else
+                    unitFrame:SetAlpha(1.0)
+                end
+            end
+        end
+    end
+
+    -- Update boss frames
+    for i = 1, UUF.MAX_BOSS_FRAMES do
+        local bossFrame = UUF["BOSS" .. i]
+        if bossFrame then
+            local bossDB = UUF.db.profile.Units.boss
+            if bossDB and bossDB.Frame then
+                local useGlobal = fadeSettings.UseGlobal
+                local fadeEnabled = false
+                local targetOpacity = 1.0
+                local fadeInWithTarget = false
+
+                if useGlobal then
+                    fadeEnabled = true
+                    targetOpacity = fadeSettings.GlobalOpacity or 0.5
+                    fadeInWithTarget = fadeSettings.FadeInWithTarget or false
+                else
+                    fadeEnabled = bossDB.Frame.OutOfCombatFade.Enabled
+                    targetOpacity = bossDB.Frame.OutOfCombatFade.Opacity or 0.5
+                    fadeInWithTarget = bossDB.Frame.OutOfCombatFade.FadeInWithTarget or false
+                end
+
+                -- Determine the target alpha:
+                -- - If in combat, always full opacity
+                -- - If out of combat and fade is enabled:
+                --   - If fadeInWithTarget is enabled and we have a target, full opacity
+                --   - Otherwise, use targetOpacity
+                local shouldFade = fadeEnabled and not inCombat
+                local shouldFadeInWithTarget = fadeInWithTarget and hasTarget
+
+                if shouldFade and not shouldFadeInWithTarget then
+                    bossFrame:SetAlpha(targetOpacity)
+                else
+                    bossFrame:SetAlpha(1.0)
+                end
+            end
+        end
+    end
+end
+
 -- Thanks Details / Plater for this.
 function UUF:CleanTruncateUTF8String(text)
     local DetailsFramework = _G.DF
