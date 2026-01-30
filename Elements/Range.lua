@@ -3,8 +3,24 @@ local isRetail = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
 
 UUF.RangeEvtFrames = {}
 
--- LibRangeCheck-3.0: https://www.curseforge.com/wow/addons/librangecheck-3-0
--- Spell lists are derived from LibRangeCheck-3.0
+--[[
+    Range spell data derived from LibRangeCheck-3.0
+    https://www.curseforge.com/wow/addons/librangecheck-3-0
+
+    Copyright (c) 2023 The WoWUIDev Community
+    Licensed under the MIT License
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy
+    of this software and associated documentation files (the "Software"), to deal
+    in the Software without restriction, including without limitation the rights
+    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    copies of the Software, and to permit persons to whom the Software is
+    furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in all
+    copies or substantial portions of the Software.
+]]
+
 -- The idea to cache/store spells per class comes from ElvUI: https://github.com/tukui-org/ElvUI/blob/main/ElvUI/Game/Shared/Modules/UnitFrames/Elements/Range.lua#L1
 -- However, implementation is slightly different, as ElvUI allows for custom spell configuration, where I do not. I rely on the data below.
 
