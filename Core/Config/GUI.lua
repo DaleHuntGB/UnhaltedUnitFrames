@@ -2587,7 +2587,7 @@ local function CreateGlobalSettings(containerParent)
 
     CreateFontSettings(GlobalContainer)
     CreateTextureSettings(GlobalContainer)
-    -- CreateRangeSettings(GlobalContainer)
+    CreateRangeSettings(GlobalContainer)
     CreateAuraDurationSettings(GlobalContainer)
 
     local TagContainer = GUIWidgets.CreateInlineGroup(GlobalContainer, "Tag Settings")
