@@ -368,10 +368,16 @@ function UUF:UpdateRangeAlpha(frame, unit)
         inRange = UnitInSpellsRange(unit, "resurrect")
     elseif UnitCanAttack("player", unit) then
         inRange = UnitInSpellsRange(unit, "enemy")
-    elseif UnitIsConnected(unit) then
-        inRange = FriendlyIsInRange(unit)
     else
-        inRange = false
+        local isPet = UnitIsUnit(unit, "pet")
+        -- What a mess WoW API is.
+        if NotSecretValue(isPet) and isPet then
+            inRange = UnitInSpellsRange(unit, "pet")
+        elseif UnitIsConnected(unit) then
+            inRange = FriendlyIsInRange(unit)
+        else
+            inRange = false
+        end
     end
 
     if inRange == nil then
