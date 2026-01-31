@@ -880,7 +880,6 @@ local function CreateCastBarBarSettings(containerParent, unit, updateCallback)
     LayoutContainer:AddChild(FrameStrataDropdown)
 
     local ColourContainer = GUIWidgets.CreateInlineGroup(containerParent, "Colours & Toggles")
-
     local ForegroundColourPicker = AG:Create("ColorPicker")
     ForegroundColourPicker:SetLabel("Foreground")
     local R, G, B, A = unpack(CastBarDB.Foreground)
@@ -889,6 +888,16 @@ local function CreateCastBarBarSettings(containerParent, unit, updateCallback)
     ForegroundColourPicker:SetHasAlpha(true)
     ForegroundColourPicker:SetRelativeWidth(0.33)
     ColourContainer:AddChild(ForegroundColourPicker)
+    UUFGUI.ForegroundColourPicker = ForegroundColourPicker
+
+    if unit == "player" or unit == "pet" then
+        local ClassColourToggle = AG:Create("CheckBox")
+        ClassColourToggle:SetLabel("Use Class Colour")
+        ClassColourToggle:SetValue(CastBarDB.ColourByClass)
+        ClassColourToggle:SetCallback("OnValueChanged", function(_, _, value) CastBarDB.ColourByClass = value UUFGUI.ForegroundColourPicker:SetDisabled(CastBarDB.ColourByClass) updateCallback() end)
+        ClassColourToggle:SetRelativeWidth(0.33)
+        ColourContainer:AddChild(ClassColourToggle)
+    end
 
     local BackgroundColourPicker = AG:Create("ColorPicker")
     BackgroundColourPicker:SetLabel("Background")
