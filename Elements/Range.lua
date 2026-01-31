@@ -299,9 +299,16 @@ local function UnitInSpellsRange(unit, category)
 
     local inRange = UnitSpellRange(unit, spells)
     if (not inRange or inRange == 1) and not InCombatLockdown() then
-        return CheckInteractDistance(unit, 4)
+        local interactDistance = CheckInteractDistance(unit, 4)
+        if NotSecretValue(interactDistance) then
+            return interactDistance
+        end
+        return nil
     else
-        return (inRange == nil and 1) or inRange
+        if NotSecretValue(inRange) then
+            return (inRange == nil and 1) or inRange
+        end
+        return nil
     end
 end
 
@@ -369,7 +376,9 @@ function UUF:UpdateRangeAlpha(frame, unit)
         inRange = false
     end
 
-    if inRange == nil then inRange = true end
+    if inRange == nil then
+        inRange = true
+    end
 
     frame:SetAlphaFromBoolean(inRange, inAlpha, outAlpha)
 end
