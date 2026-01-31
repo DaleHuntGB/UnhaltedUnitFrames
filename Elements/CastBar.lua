@@ -40,7 +40,7 @@ function UUF:CreateUnitCastBar(unitFrame, unit)
             CastBar:SetStatusBarColor(unitColor.r, unitColor.g, unitColor.b, CastBarDB.ForegroundOpacity)
         end
     else
-    CastBar:SetStatusBarColor(unpack(CastBarDB.Foreground))
+        CastBar:SetStatusBarColor(unpack(CastBarDB.Foreground))
     end
 
     CastBar.Background = CastBar:CreateTexture(nil, "BACKGROUND")
