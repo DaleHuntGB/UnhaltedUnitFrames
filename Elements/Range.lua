@@ -263,19 +263,19 @@ RangeEventFrame:SetScript("OnEvent", function()
     end
 end)
 
-local function GetGroupUnit(unit)
-    if unit == "player" or unit:match("^party") or unit:match("^raid") then return unit end
+-- local function GetGroupUnit(unit)
+--     if unit == "player" or unit:match("^party") or unit:match("^raid") then return unit end
 
-    if UnitInParty(unit) or UnitInRaid(unit) then
-        local isRaid = IsInRaid()
-        for i = 1, GetNumGroupMembers() do
-            local groupUnit = (isRaid and "raid" or "party") .. i
-            if UnitIsUnit(unit, groupUnit) then
-                return groupUnit
-            end
-        end
-    end
-end
+--     if UnitInParty(unit) or UnitInRaid(unit) then
+--         local isRaid = IsInRaid()
+--         for i = 1, GetNumGroupMembers() do
+--             local groupUnit = (isRaid and "raid" or "party") .. i
+--             if UnitIsUnit(unit, groupUnit) then
+--                 return groupUnit
+--             end
+--         end
+--     end
+-- end
 
 local function UnitSpellRange(unit, spells)
     local isNotInRange;
@@ -313,7 +313,7 @@ local function UnitInSpellsRange(unit, category)
 end
 
 local function FriendlyIsInRange(realUnit)
-    local unit = GetGroupUnit(realUnit) or realUnit
+    local unit = --[[GetGroupUnit(realUnit) or ]]realUnit
 
     if UnitIsPlayer(unit) then
         if isRetail then
@@ -368,8 +368,6 @@ function UUF:UpdateRangeAlpha(frame, unit)
         inRange = UnitInSpellsRange(unit, "resurrect")
     elseif UnitCanAttack("player", unit) then
         inRange = UnitInSpellsRange(unit, "enemy")
-    elseif UnitIsUnit(unit, "pet") then
-        inRange = UnitInSpellsRange(unit, "pet")
     elseif UnitIsConnected(unit) then
         inRange = FriendlyIsInRange(unit)
     else
