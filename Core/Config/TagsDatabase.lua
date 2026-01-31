@@ -356,7 +356,7 @@ local function ShortenUnitName(unit, maxChars)
     if not unit or not UnitExists(unit) then return "" end
     local unitName = UnitName(unit):match("([^%s]+)$") or ""
     if maxChars and maxChars > 0 and #unitName > maxChars then
-        unitName = string.format("%." .. maxChars .. "s", unitName) .. ".."
+        unitName = string.format("%." .. maxChars .. "s", unitName)
     end
     return UUF:CleanTruncateUTF8String(unitName)
 end
