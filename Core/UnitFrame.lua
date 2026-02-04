@@ -9,6 +9,12 @@ local function ApplyScripts(unitFrame)
     unitFrame:HookScript("OnLeave", UnitFrame_OnLeave)
 end
 
+local function EnablePings(unitFrame)
+    unitFrame:SetAttribute("ping-receiver", true)
+    unitFrame.IsPingable = true
+    Mixin(unitFrame, PingableType_UnitFrameMixin)
+end
+
 function UUF:CreateUnitFrame(unitFrame, unit)
     if not unit or not unitFrame then return end
     UUF:CreateUnitContainer(unitFrame, unit)
@@ -30,6 +36,7 @@ function UUF:CreateUnitFrame(unitFrame, unit)
     UUF:CreateUnitAuras(unitFrame, unit)
     UUF:CreateUnitTags(unitFrame, unit)
     ApplyScripts(unitFrame)
+    EnablePings(unitFrame)
     return unitFrame
 end
 
