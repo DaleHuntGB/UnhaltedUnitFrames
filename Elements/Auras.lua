@@ -1,6 +1,43 @@
 local _, UUF = ...
 local oUF = UUF.oUF
 
+--- Custom FilterAura for spell ID whitelist/blacklist (player and target only).
+--- Order: onlyShowPlayer -> blacklist -> whitelist (empty = show all).
+local function CreateSpellIdFilterAura(unit)
+    return function(element, _, data, filter)
+        -- 1. Default onlyShowPlayer check (same as oUF FilterAura)
+        if element.onlyShowPlayer and not data.isPlayerAura then return false end
+
+        local normalizedUnit = UUF:GetNormalizedUnit(unit)
+        if normalizedUnit ~= "player" and normalizedUnit ~= "target" then
+            return true
+        end
+
+        local auraConfig = (filter == "HELPFUL" and UUF.db.profile.Units[normalizedUnit].Auras.Buffs)
+            or (filter == "HARMFUL" and UUF.db.profile.Units[normalizedUnit].Auras.Debuffs)
+        if not auraConfig then return true end
+
+        local blacklist = auraConfig.BlacklistSpellIds or {}
+        local whitelist = auraConfig.WhitelistSpellIds or {}
+        local spellId = data.spellId
+        if not spellId then return true end
+
+        for _, id in ipairs(blacklist) do
+            if id == spellId then return false end
+        end
+
+        if #whitelist > 0 then
+            local found = false
+            for _, id in ipairs(whitelist) do
+                if id == spellId then found = true break end
+            end
+            if not found then return false end
+        end
+
+        return true
+    end
+end
+
 local function FetchAuraDurationRegion(cooldown)
     if not cooldown then return end
     for _, region in ipairs({ cooldown:GetRegions() }) do
@@ -177,6 +214,7 @@ local function CreateUnitBuffs(unitFrame, unit)
         unitFrame.BuffContainer["growthY"] = BuffsDB.WrapDirection
         unitFrame.BuffContainer.filter = BuffsDB.Filter or "HELPFUL"
         unitFrame.BuffContainer.PostCreateButton = function(_, button) StyleAuras(_, button, unit, "HELPFUL") end
+        unitFrame.BuffContainer.FilterAura = CreateSpellIdFilterAura(unit)
         unitFrame.BuffContainer.anchoredButtons = 0
         unitFrame.BuffContainer.createdButtons = 0
         unitFrame.BuffContainer.tooltipAnchor = "ANCHOR_CURSOR"
@@ -220,6 +258,7 @@ local function CreateUnitDebuffs(unitFrame, unit)
         unitFrame.DebuffContainer.anchoredButtons = 0
         unitFrame.DebuffContainer.createdButtons = 0
         unitFrame.DebuffContainer.PostCreateButton = function(_, button) StyleAuras(_, button, unit, "HARMFUL") end
+        unitFrame.DebuffContainer.FilterAura = CreateSpellIdFilterAura(unit)
         unitFrame.DebuffContainer.tooltipAnchor = "ANCHOR_CURSOR"
         unitFrame.DebuffContainer.showType = DebuffsDB.ShowType
         unitFrame.DebuffContainer.showDebuffType = DebuffsDB.ShowType
@@ -269,6 +308,7 @@ function UUF:UpdateUnitAuras(unitFrame, unit)
         unitFrame.BuffContainer.createdButtons = unitFrame.Buffs.createdButtons or 0
         unitFrame.BuffContainer.anchoredButtons = unitFrame.Buffs.anchoredButtons or 0
         unitFrame.BuffContainer.PostCreateButton = function(_, button) StyleAuras(_, button, unit, "HELPFUL") end
+        unitFrame.BuffContainer.FilterAura = CreateSpellIdFilterAura(unit)
         unitFrame.BuffContainer.showType = BuffsDB.ShowType
         unitFrame.BuffContainer.showBuffType = BuffsDB.ShowType
         unitFrame.BuffContainer:Show()
@@ -298,6 +338,7 @@ function UUF:UpdateUnitAuras(unitFrame, unit)
         unitFrame.DebuffContainer.createdButtons = unitFrame.Debuffs.createdButtons or 0
         unitFrame.DebuffContainer.anchoredButtons = unitFrame.Debuffs.anchoredButtons or 0
         unitFrame.DebuffContainer.PostCreateButton = function(_, button) StyleAuras(_, button, unit, "HARMFUL") end
+        unitFrame.DebuffContainer.FilterAura = CreateSpellIdFilterAura(unit)
         unitFrame.DebuffContainer.showType = DebuffsDB.ShowType
         unitFrame.DebuffContainer.showDebuffType = DebuffsDB.ShowType
         unitFrame.DebuffContainer:Show()

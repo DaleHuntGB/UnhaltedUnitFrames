@@ -2241,6 +2241,98 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
     end)
     AuraContainer:AddChild(FilterDropdown)
 
+    -- Spell ID Whitelist/Blacklist (player and target only) - collapsed by default
+    if unit == "player" or unit == "target" then
+        local function parseSpellIds(text)
+            local ids = {}
+            for part in (text or ""):gmatch("[^,%s]+") do
+                local id = tonumber(part)
+                if id and id > 0 then
+                    ids[#ids + 1] = id
+                end
+            end
+            return ids
+        end
+
+        local function idsToText(ids)
+            if not ids or #ids == 0 then return "" end
+            return table.concat(ids, ", ")
+        end
+
+        local SpellIdFilterExpandCheckbox = AG:Create("CheckBox")
+        SpellIdFilterExpandCheckbox:SetLabel("Spell ID filter (advanced)")
+        SpellIdFilterExpandCheckbox:SetValue(false)
+        SpellIdFilterExpandCheckbox:SetFullWidth(true)
+        containerParent:AddChild(SpellIdFilterExpandCheckbox)
+
+        local SpellIdFilterGroup = GUIWidgets.CreateInlineGroup(containerParent, "Spell ID Filter")
+        SpellIdFilterGroup:SetFullWidth(true)
+
+        -- Remove from layout when collapsed (AceGUI layout always calls frame:Show(), so we must remove from children)
+        local function removeSpellIdFilterFromLayout()
+            for i = #containerParent.children, 1, -1 do
+                if containerParent.children[i] == SpellIdFilterGroup then
+                    table.remove(containerParent.children, i)
+                    break
+                end
+            end
+            SpellIdFilterGroup.frame:Hide()
+        end
+
+        local function addSpellIdFilterToLayout()
+            local insertIdx = 1
+            for i, c in ipairs(containerParent.children) do
+                if c == SpellIdFilterExpandCheckbox then
+                    insertIdx = i + 1
+                    break
+                end
+            end
+            table.insert(containerParent.children, insertIdx, SpellIdFilterGroup)
+            SpellIdFilterGroup.frame:Show()
+        end
+
+        removeSpellIdFilterFromLayout()
+        containerParent:DoLayout()
+
+        SpellIdFilterExpandCheckbox:SetCallback("OnValueChanged", function(_, _, value)
+            if value then
+                addSpellIdFilterToLayout()
+            else
+                removeSpellIdFilterFromLayout()
+            end
+            containerParent:DoLayout()
+        end)
+
+        local WhitelistEditBox = AG:Create("EditBox")
+        WhitelistEditBox:SetLabel("Whitelist (comma/space separated spell IDs)")
+        WhitelistEditBox:SetText(idsToText(AuraDB.WhitelistSpellIds or {}))
+        WhitelistEditBox:SetRelativeWidth(1)
+        WhitelistEditBox:DisableButton(true)
+        WhitelistEditBox:SetCallback("OnEnterPressed", function(_, _, value)
+            AuraDB.WhitelistSpellIds = parseSpellIds(value)
+            WhitelistEditBox:SetText(idsToText(AuraDB.WhitelistSpellIds))
+            if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit) end
+        end)
+        SpellIdFilterGroup:AddChild(WhitelistEditBox)
+
+        local BlacklistEditBox = AG:Create("EditBox")
+        BlacklistEditBox:SetLabel("Blacklist (comma/space separated spell IDs)")
+        BlacklistEditBox:SetText(idsToText(AuraDB.BlacklistSpellIds or {}))
+        BlacklistEditBox:SetRelativeWidth(1)
+        BlacklistEditBox:DisableButton(true)
+        BlacklistEditBox:SetCallback("OnEnterPressed", function(_, _, value)
+            AuraDB.BlacklistSpellIds = parseSpellIds(value)
+            BlacklistEditBox:SetText(idsToText(AuraDB.BlacklistSpellIds))
+            if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit) end
+        end)
+        SpellIdFilterGroup:AddChild(BlacklistEditBox)
+
+        local SpellIdDesc = AG:Create("Label")
+        SpellIdDesc:SetText("Empty whitelist = show all (subject to blacklist). IDs from Wowhead or spell tooltips.")
+        SpellIdDesc:SetFullWidth(true)
+        SpellIdFilterGroup:AddChild(SpellIdDesc)
+    end
+
     local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
 
     local AnchorFromDropdown = AG:Create("Dropdown")
