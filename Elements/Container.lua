@@ -8,6 +8,10 @@ function UUF:CreateUnitContainer(unitFrame, unit)
         unitFrame.Container:SetBackdropBorderColor(0, 0, 0, 1)
         unitFrame.Container:SetAllPoints(unitFrame)
 
+        unitFrame:SetAttribute("ping-receiver", true)
+        unitFrame.IsPingable = true
+        Mixin(unitFrame, PingableType_UnitFrameMixin)
+
         if not unitFrame.HighLevelContainer then
             unitFrame.HighLevelContainer = CreateFrame("Frame", UUF:FetchFrameName(unit) .. "_HighLevelContainer", unitFrame)
             unitFrame.HighLevelContainer:SetPoint("TOPLEFT", unitFrame, "TOPLEFT", 0, 0)
