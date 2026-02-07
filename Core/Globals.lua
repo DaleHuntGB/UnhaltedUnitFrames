@@ -5,7 +5,7 @@ UUF.AURA_TEST_MODE = false
 UUF.CASTBAR_TEST_MODE = false
 UUF.BOSS_TEST_MODE = false
 UUF.BOSS_FRAMES = {}
-UUF.MAX_BOSS_FRAMES = 10
+UUF.MAX_BOSS_FRAMES = 5
 
 UUF.LSM = LibStub("LibSharedMedia-3.0")
 UUF.LDS = LibStub("LibDualSpec-1.0")
