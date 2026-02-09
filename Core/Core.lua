@@ -28,6 +28,8 @@ function UUF:SetupEditModeHooks()
     UUF._editModeHooked = true
     EditModeManagerFrame:HookScript("OnShow", function() UUF:ApplyFrameMovers() end)
     EditModeManagerFrame:HookScript("OnHide", function() UUF:ApplyFrameMovers() end)
+    EditModeManagerFrame:HookScript("OnShow", function() UUF:ApplyEditModeLayout() end)
+    EditModeManagerFrame:HookScript("OnHide", function() UUF:ApplyEditModeLayout() end)
 end
 
 function UnhaltedUnitFrames:OnEnable()

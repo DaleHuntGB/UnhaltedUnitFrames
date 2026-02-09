@@ -78,6 +78,7 @@ local Defaults = {
                 }
             }
         },
+        EditModeLayouts = {},
         Units = {
             player = {
                 Enabled = true,

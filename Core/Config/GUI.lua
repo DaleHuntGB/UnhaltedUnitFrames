@@ -3197,27 +3197,41 @@ function UUF:CreateGUI()
     Container:SetWidth(900)
     Container:SetHeight(600)
     Container:EnableResize(false)
-    Container:SetCallback("OnClose", function(widget) AG:Release(widget) isGUIOpen = false DisableAllTestModes() end)
+    Container:SetCallback("OnClose", function(widget)
+        if UUF.FrameMoverButton then
+            UUF.FrameMoverButton:Hide()
+        end
+        AG:Release(widget)
+        isGUIOpen = false
+        DisableAllTestModes()
+    end)
 
     if not UUF.db.profile.General.FrameMover then
         UUF.db.profile.General.FrameMover = { Enabled = false }
     end
 
-    local moverButton = CreateFrame("Button", nil, Container.frame, "UIPanelButtonTemplate")
-    moverButton:SetSize(130, 22)
+    local moverButton = UUF.FrameMoverButton
+    if not moverButton then
+        moverButton = CreateFrame("Button", nil, Container.frame, "UIPanelButtonTemplate")
+        moverButton:SetSize(130, 22)
+        moverButton:SetScript("OnClick", function()
+            UUF:ToggleFrameMover()
+            moverButton:SetText(UUF:GetFrameMoverLabel())
+        end)
+        moverButton:SetScript("OnEnter", function(self)
+            GameTooltip:SetOwner(self, "ANCHOR_LEFT")
+            GameTooltip:AddLine("Toggle Frame Unlock")
+            GameTooltip:Show()
+        end)
+        moverButton:SetScript("OnLeave", function() GameTooltip:Hide() end)
+        UUF.FrameMoverButton = moverButton
+    else
+        moverButton:SetParent(Container.frame)
+        moverButton:Show()
+    end
+    moverButton:ClearAllPoints()
     moverButton:SetPoint("TOPLEFT", Container.frame, "TOPLEFT", 12, -15)
     moverButton:SetText(UUF:GetFrameMoverLabel())
-    moverButton:SetScript("OnClick", function()
-        UUF:ToggleFrameMover()
-        moverButton:SetText(UUF:GetFrameMoverLabel())
-    end)
-    moverButton:SetScript("OnEnter", function(self)
-        GameTooltip:SetOwner(self, "ANCHOR_LEFT")
-        GameTooltip:AddLine("Toggle Frame Unlock")
-        GameTooltip:Show()
-    end)
-    moverButton:SetScript("OnLeave", function() GameTooltip:Hide() end)
-    UUF.FrameMoverButton = moverButton
 
     local function SelectTab(GUIContainer, _, MainTab)
         GUIContainer:ReleaseChildren()
@@ -3383,6 +3397,14 @@ function UUF:CreateGUI()
     ContainerTabGroup:SetCallback("OnGroupSelected", SelectTab)
     ContainerTabGroup:SelectTab("General")
     Container:AddChild(ContainerTabGroup)
+end
+
+function UUF:ToggleGUI()
+    if isGUIOpen and Container then
+        Container:Hide()
+        return
+    end
+    UUF:CreateGUI()
 end
 
 function UUFG:OpenUUFGUI()

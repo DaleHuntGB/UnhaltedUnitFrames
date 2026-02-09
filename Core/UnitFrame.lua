@@ -28,8 +28,40 @@ function UUF:SaveUnitFramePosition(unitFrame)
     UnitDB.Frame.Layout[2] = relativePoint or "CENTER"
     UnitDB.Frame.Layout[3] = xOffset or 0
     UnitDB.Frame.Layout[4] = yOffset or 0
+    local layoutDB = UUF:GetEditModeLayoutDB()
+    if layoutDB then
+        layoutDB.Units[layoutUnit] = layoutDB.Units[layoutUnit] or {}
+        layoutDB.Units[layoutUnit].Frame = layoutDB.Units[layoutUnit].Frame or {}
+        layoutDB.Units[layoutUnit].Frame.Layout = { point, relativePoint or "CENTER", xOffset or 0, yOffset or 0 }
+    end
     if layoutUnit == "party" then UUF:LayoutPartyFrames() end
     if layoutUnit == "boss" then UUF:LayoutBossFrames() end
+end
+
+function UUF:GetLayoutForUnit(layoutUnit)
+    local unitDB = UUF.db.profile.Units[layoutUnit]
+    if not unitDB or not unitDB.Frame then return end
+    local defaultLayout = unitDB.Frame.Layout
+    local layout = defaultLayout
+    local layoutDB = UUF:GetEditModeLayoutDB()
+    if layoutDB and layoutDB.Units and layoutDB.Units[layoutUnit] and layoutDB.Units[layoutUnit].Frame and layoutDB.Units[layoutUnit].Frame.Layout then
+        layout = layoutDB.Units[layoutUnit].Frame.Layout
+        if #layout < #defaultLayout then
+            local merged = {}
+            for i = 1, #defaultLayout do
+                merged[i] = layout[i] ~= nil and layout[i] or defaultLayout[i]
+            end
+            layout = merged
+        end
+    end
+    return layout
+end
+
+function UUF:ApplyEditModeLayout()
+    if not UUF:GetEditModeLayoutDB() then return end
+    UUF:UpdateAllUnitFrames()
+    UUF:LayoutPartyFrames()
+    UUF:LayoutBossFrames()
 end
 
 function UUF:IsEditModeActive()
@@ -65,11 +97,12 @@ function UUF:UpdateFrameMoverGlow(unitFrame, active)
     end
     paddingX = math.min(paddingX, 24)
     paddingY = math.min(paddingY, 24)
-    paddingX = math.max(paddingX - 10, 0)
-    paddingY = math.max(paddingY - 10, 0)
+    paddingX = math.max(paddingX - 15, 0)
+    paddingY = math.max(paddingY - 15, 0)
     if not unitFrame.UUFFrameMoverGlowFrame then
         local glowFrame = CreateFrame("Frame", nil, unitFrame, "BackdropTemplate")
         glowFrame:SetAllPoints(anchorTarget)
+        glowFrame:SetFrameStrata("TOOLTIP")
         glowFrame:SetFrameLevel((anchorTarget:GetFrameLevel() or unitFrame:GetFrameLevel()) + 20)
         glowFrame:SetBackdrop({
             edgeFile = "Interface\\Buttons\\WHITE8X8",
@@ -79,10 +112,11 @@ function UUF:UpdateFrameMoverGlow(unitFrame, active)
         unitFrame.UUFFrameMoverGlowFrame = glowFrame
     end
     unitFrame.UUFFrameMoverGlowFrame:SetAllPoints(anchorTarget)
+    unitFrame.UUFFrameMoverGlowFrame:SetFrameStrata("TOOLTIP")
     unitFrame.UUFFrameMoverGlowFrame:SetFrameLevel((anchorTarget:GetFrameLevel() or unitFrame:GetFrameLevel()) + 20)
     unitFrame.UUFFrameMoverGlowFrame:ClearAllPoints()
-    unitFrame.UUFFrameMoverGlowFrame:SetPoint("TOPLEFT", anchorTarget, "TOPLEFT", -(paddingX + 5), paddingY)
-    unitFrame.UUFFrameMoverGlowFrame:SetPoint("BOTTOMRIGHT", anchorTarget, "BOTTOMRIGHT", paddingX - 5, -paddingY)
+    unitFrame.UUFFrameMoverGlowFrame:SetPoint("TOPLEFT", anchorTarget, "TOPLEFT", -(paddingX + 1), paddingY)
+    unitFrame.UUFFrameMoverGlowFrame:SetPoint("BOTTOMRIGHT", anchorTarget, "BOTTOMRIGHT", paddingX - 1, -paddingY)
     unitFrame.UUFFrameMoverGlowFrame:SetShown(active)
 end
 
@@ -134,6 +168,30 @@ function UUF:ApplyFrameMovers()
     for i = 1, #UUF.BOSS_FRAMES do
         UUF:ApplyFrameMover(UUF.BOSS_FRAMES[i])
     end
+    UUF:ApplyFrameMoverPreview(UUF:IsFrameMoverActive())
+end
+
+function UUF:ApplyFrameMoverPreview(active)
+    if InCombatLockdown() then return end
+
+    UUF.BOSS_TEST_MODE = active == true
+    UUF.PARTY_TEST_MODE = active == true
+    UUF:CreateTestBossFrames()
+    UUF:CreateTestPartyFrames()
+
+    local previewUnits = { "pet", "targettarget", "focustarget" }
+    for i = 1, #previewUnits do
+        local unit = previewUnits[i]
+        local frame = UUF[unit:upper()]
+        if frame then
+            if active then
+                UnregisterUnitWatch(frame)
+                frame:Show()
+            else
+                RegisterUnitWatch(frame)
+            end
+        end
+    end
 end
 
 function UUF:CreateUnitFrame(unitFrame, unit)
@@ -180,6 +238,7 @@ function UUF:LayoutPartyFrames()
     
     local PartyDB = UUF.db.profile.Units.party
     local Frame = PartyDB.Frame
+    local layout = UUF:GetLayoutForUnit("party") or Frame.Layout
     if #UUF.PARTY_FRAMES == 0 then return end
 
     local partyFrames = {}
@@ -198,32 +257,33 @@ function UUF:LayoutPartyFrames()
         table.sort(partyFrames, SortPartyFramesByRole)
     end
 
-    local layoutConfig = UUF.LayoutConfig[Frame.Layout[1]]
+    local layoutConfig = UUF.LayoutConfig[layout[1]]
     local frameHeight = partyFrames[1]:GetHeight()
-    local containerHeight = (frameHeight + Frame.Layout[5]) * #partyFrames - Frame.Layout[5]
+    local containerHeight = (frameHeight + layout[5]) * #partyFrames - layout[5]
     local offsetY = containerHeight * layoutConfig.offsetMultiplier
     if layoutConfig.isCenter then offsetY = offsetY - (frameHeight / 2) end
-    local initialAnchor = AnchorUtil.CreateAnchor(layoutConfig.anchor, UIParent, Frame.Layout[2], Frame.Layout[3], Frame.Layout[4] + offsetY)
-    AnchorUtil.VerticalLayout(partyFrames, initialAnchor, Frame.Layout[5])
+    local initialAnchor = AnchorUtil.CreateAnchor(layoutConfig.anchor, UIParent, layout[2], layout[3], layout[4] + offsetY)
+    AnchorUtil.VerticalLayout(partyFrames, initialAnchor, layout[5])
 end
 
 function UUF:LayoutBossFrames()
     if InCombatLockdown() then return end
     
     local Frame = UUF.db.profile.Units.boss.Frame
+    local layout = UUF:GetLayoutForUnit("boss") or Frame.Layout
     if #UUF.BOSS_FRAMES == 0 then return end
     local bossFrames = UUF.BOSS_FRAMES
     if Frame.GrowthDirection == "UP" then
         bossFrames = {}
         for i = #UUF.BOSS_FRAMES, 1, -1 do bossFrames[#bossFrames+1] = UUF.BOSS_FRAMES[i] end
     end
-    local layoutConfig = UUF.LayoutConfig[Frame.Layout[1]]
+    local layoutConfig = UUF.LayoutConfig[layout[1]]
     local frameHeight = bossFrames[1]:GetHeight()
-    local containerHeight = (frameHeight + Frame.Layout[5]) * #bossFrames - Frame.Layout[5]
+    local containerHeight = (frameHeight + layout[5]) * #bossFrames - layout[5]
     local offsetY = containerHeight * layoutConfig.offsetMultiplier
     if layoutConfig.isCenter then offsetY = offsetY - (frameHeight / 2) end
-    local initialAnchor = AnchorUtil.CreateAnchor(layoutConfig.anchor, UIParent, Frame.Layout[2], Frame.Layout[3], Frame.Layout[4] + offsetY)
-    AnchorUtil.VerticalLayout(bossFrames, initialAnchor, Frame.Layout[5])
+    local initialAnchor = AnchorUtil.CreateAnchor(layoutConfig.anchor, UIParent, layout[2], layout[3], layout[4] + offsetY)
+    AnchorUtil.VerticalLayout(bossFrames, initialAnchor, layout[5])
 end
 
 function UUF:SpawnUnitFrame(unit)
@@ -277,11 +337,13 @@ function UUF:SpawnUnitFrame(unit)
 
     if unit == "player" or unit == "target" then
         local parentFrame = UUF.db.profile.Units[unit].HealthBar.AnchorToCooldownViewer and _G["UUF_CDMAnchor"] or UIParent
-        UUF[unit:upper()]:SetPoint(FrameDB.Layout[1], parentFrame, FrameDB.Layout[2], FrameDB.Layout[3], FrameDB.Layout[4])
+        local layout = UUF:GetLayoutForUnit(UUF:GetNormalizedUnit(unit)) or FrameDB.Layout
+        UUF[unit:upper()]:SetPoint(layout[1], parentFrame, layout[2], layout[3], layout[4])
         UUF[unit:upper()]:SetSize(FrameDB.Width, FrameDB.Height)
     elseif unit == "targettarget" or unit == "focus" or unit == "focustarget" or unit == "pet" then
         local parentFrame = _G[UUF.db.profile.Units[unit].Frame.AnchorParent] or UIParent
-        UUF[unit:upper()]:SetPoint(FrameDB.Layout[1], parentFrame, FrameDB.Layout[2], FrameDB.Layout[3], FrameDB.Layout[4])
+        local layout = UUF:GetLayoutForUnit(UUF:GetNormalizedUnit(unit)) or FrameDB.Layout
+        UUF[unit:upper()]:SetPoint(layout[1], parentFrame, layout[2], layout[3], layout[4])
         UUF[unit:upper()]:SetSize(FrameDB.Width, FrameDB.Height)
     end
     if unit ~= "player" then UUF:RegisterRangeFrame(UUF:FetchFrameName(unit), unit) end

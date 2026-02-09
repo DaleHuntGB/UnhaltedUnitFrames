@@ -119,6 +119,37 @@ function UUF:GetPixelPerfectScale()
     return pixelSize
 end
 
+function UUF:GetEditModeLayoutKey()
+    if C_EditMode then
+        if C_EditMode.GetActiveLayoutInfo then
+            local ok, info = pcall(C_EditMode.GetActiveLayoutInfo)
+            if ok and info then
+                return tostring(info.layoutName or info.name or info.layoutID or info.id)
+            end
+        elseif C_EditMode.GetActiveLayout then
+            local ok, layoutID = pcall(C_EditMode.GetActiveLayout)
+            if ok and layoutID then
+                return tostring(layoutID)
+            end
+        end
+    end
+    if EditModeManagerFrame and EditModeManagerFrame.GetActiveLayoutInfo then
+        local ok, info = pcall(EditModeManagerFrame.GetActiveLayoutInfo, EditModeManagerFrame)
+        if ok and info then
+            return tostring(info.layoutName or info.name or info.layoutID or info.id)
+        end
+    end
+    return nil
+end
+
+function UUF:GetEditModeLayoutDB()
+    local key = UUF:GetEditModeLayoutKey()
+    if not key then return end
+    UUF.db.profile.EditModeLayouts = UUF.db.profile.EditModeLayouts or {}
+    UUF.db.profile.EditModeLayouts[key] = UUF.db.profile.EditModeLayouts[key] or { Units = {} }
+    return UUF.db.profile.EditModeLayouts[key]
+end
+
 function UUF:SetFrameMoverEnabled(enabled)
     if not UUF.db.profile.General.FrameMover then
         UUF.db.profile.General.FrameMover = { Enabled = false }
@@ -128,6 +159,12 @@ function UUF:SetFrameMoverEnabled(enabled)
         return
     end
     UUF.db.profile.General.FrameMover.Enabled = enabled == true
+    if SOUNDKIT then
+        local sound = enabled and SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON or SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_OFF
+        if sound then
+            PlaySound(sound)
+        end
+    end
     UUF:ApplyFrameMovers()
     if UUF.FrameMoverButton then
         UUF.FrameMoverButton:SetText(UUF:GetFrameMoverLabel())
@@ -152,6 +189,7 @@ function UUF:CreateMinimapButton()
     button:SetSize(32, 32)
     button:SetPoint("TOPLEFT", Minimap, "TOPLEFT", 0, 0)
     button:SetFrameStrata("HIGH")
+    button:RegisterForClicks("LeftButtonUp", "RightButtonUp")
     button:SetNormalTexture("Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Logo.tga")
     button:SetHighlightTexture("Interface\\Minimap\\UI-Minimap-ZoomButton-Highlight")
     button:SetScript("OnClick", function(_, mouseButton)
@@ -160,9 +198,8 @@ function UUF:CreateMinimapButton()
         elseif mouseButton == "RightButton" then
             if SlashCmdList["UUF"] then
                 SlashCmdList["UUF"]("")
-            else
-                UUF:CreateGUI()
             end
+            UUF:CreateGUI()
         end
     end)
     button:SetScript("OnEnter", function(self)
