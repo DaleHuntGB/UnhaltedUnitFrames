@@ -1254,6 +1254,203 @@ local Defaults = {
                     },
                 }
             },
+            party = {
+                Enabled = true,
+                ForceHideBlizzard = true,
+                HidePlayer = false,
+                SortOrder = "DEFAULT",
+                Frame = {
+                    Width = 150,
+                    Height = 40,
+                    Layout = {"CENTER", "CENTER", -500, 0, -1},
+                    GrowthDirection = "DOWN",
+                    FrameStrata = "LOW",
+                },
+                HealthBar = {
+                    ColourByClass = true,
+                    ColourBackgroundByClass = false,
+                    ColourByReaction = true,
+                    ColourWhenTapped = true,
+                    ColourByDispelType = true,
+                    Inverse = false,
+                    Foreground = {8/255, 8/255, 8/255},
+                    ForegroundOpacity = 0.8,
+                    Background = {34/255, 34/255, 34/255},
+                    BackgroundOpacity = 1.0,
+                },
+                HealPrediction = {
+                    Absorbs = {
+                        Enabled = true,
+                        UseStripedTexture = true,
+                        Colour = {255/255, 204/255, 0/255, 1.0},
+                        Position = "LEFT",
+                        Height = 40,
+                    },
+                    HealAbsorbs = {
+                        Enabled = true,
+                        UseStripedTexture = false,
+                        Colour = {128/255, 64/255, 255/255, 1.0},
+                        Position = "RIGHT",
+                        Height = 40,
+                    },
+                },
+                PowerBar = {
+                    Enabled = false,
+                    Height = 3,
+                    Foreground = {8/255, 8/255, 8/255},
+                    Background = {128/255, 128/255, 128/255},
+                    ColourByType = true,
+                    ColourBackgroundByType = false,
+                    ColourByClass = false,
+                    Smooth = false,
+                    Inverse = false,
+                    BackgroundMultiplier = 0.75,
+                },
+                CastBar = {
+                    Enabled = false,
+                    Width = 150,
+                    Height = 16,
+                    Layout = {"TOPLEFT", "BOTTOMLEFT", 0, -1},
+                    Foreground = {128/255, 128/255, 255/255},
+                    Background = {34/255, 34/255, 34/255},
+                    NotInterruptibleColour = {255/255, 64/255, 64/255},
+                    MatchParentWidth = true,
+                    ColourByClass = false,
+                    Inverse = false,
+                    FrameStrata = "MEDIUM",
+                    Icon = {
+                        Enabled = false,
+                        Position = "LEFT",
+                    },
+                    Text = {
+                        SpellName = {
+                            Enabled = true,
+                            FontSize = 12,
+                            Layout = {"LEFT", "LEFT", 3, 0},
+                            Colour = {1, 1, 1},
+                            MaxChars = 15,
+                        },
+                        Duration = {
+                            Enabled = true,
+                            FontSize = 12,
+                            Layout = {"RIGHT", "RIGHT", -3, 0},
+                            Colour = {1, 1, 1},
+                        }
+                    }
+                },
+                Portrait = {
+                    Enabled = false,
+                    Width = 30,
+                    Height = 30,
+                    Layout = {"LEFT", "RIGHT", 1, 0},
+                    Zoom = 0.3,
+                    UseClassPortrait = false,
+                    Style = "2D",
+                },
+                Indicators = {
+                    RaidTargetMarker = {
+                        Enabled = true,
+                        Size = 20,
+                        Layout = {"CENTER", "TOP", 0, 0},
+                    },
+                    LeaderAssistantIndicator = {
+                        Enabled = true,
+                        Size = 16,
+                        Layout = {"TOPLEFT", "TOPLEFT", 3, -3},
+                    },
+                    GroupRole = {
+                        Enabled = true,
+                        Size = 16,
+                        Layout = {"TOPRIGHT", "TOPRIGHT", -3, -3},
+                        Texture = "DEFAULT",
+                    },
+                    Mouseover = {
+                        Enabled = true,
+                        Colour = {1, 1, 1},
+                        HighlightOpacity = 0.75,
+                        Style = "GRADIENT"
+                    },
+                    Target = {
+                        Enabled = false,
+                        Colour = {1, 1, 1},
+                    }
+                },
+                Auras = {
+                    FrameStrata = "LOW",
+                    AuraDuration = {
+                        Layout = {"CENTER", "CENTER", 0, 0},
+                        FontSize = 12,
+                        ScaleByIconSize = false,
+                        Colour = {1, 1, 1},
+                    },
+                    Buffs = {
+                        Enabled = false,
+                        OnlyShowPlayer = false,
+                        Size = 30,
+                        Layout = {"LEFT", "RIGHT", 1, 0, 1},
+                        Num = 3,
+                        Wrap = 3,
+                        GrowthDirection = "RIGHT",
+                        WrapDirection = "UP",
+                        ShowType = false,
+                        Filter = "HELPFUL",
+                        Count = {
+                            Layout = {"BOTTOMRIGHT", "BOTTOMRIGHT", 0, 2},
+                            FontSize = 12,
+                            Colour = {1, 1, 1, 1}
+                        }
+                    },
+                    Debuffs = {
+                        Enabled = false,
+                        OnlyShowPlayer = false,
+                        Size = 30,
+                        Layout = {"RIGHT", "LEFT", -1, 0, 1},
+                        Num = 3,
+                        Wrap = 3,
+                        GrowthDirection = "LEFT",
+                        WrapDirection = "UP",
+                        ShowType = false,
+                        Filter = "HARMFUL",
+                        Count = {
+                            Layout = {"BOTTOMRIGHT", "BOTTOMRIGHT", 0, 2},
+                            FontSize = 12,
+                            Colour = {1, 1, 1, 1}
+                        }
+                    },
+                },
+                Tags = {
+                    TagOne = {
+                        FontSize = 12,
+                        Layout = {"CENTER", "CENTER", 0, 0},
+                        Colour = {1, 1, 1},
+                        Tag = "[name]",
+                    },
+                    TagTwo = {
+                        FontSize = 12,
+                        Layout = {"CENTER", "CENTER",0, 0},
+                        Colour = {1, 1, 1},
+                        Tag = "",
+                    },
+                    TagThree = {
+                        FontSize = 12,
+                        Layout = {"CENTER", "CENTER",0, 0},
+                        Colour = {1, 1, 1},
+                        Tag = "",
+                    },
+                    TagFour = {
+                        FontSize = 12,
+                        Layout = {"CENTER", "CENTER", 0, 0},
+                        Colour = {1, 1, 1},
+                        Tag = "",
+                    },
+                    TagFive = {
+                        FontSize = 12,
+                        Layout = {"CENTER", "CENTER", 0, 0},
+                        Colour = {1, 1, 1},
+                        Tag = "",
+                    },
+                }
+            },
             boss = {
                 Enabled = true,
                 ForceHideBlizzard = true,

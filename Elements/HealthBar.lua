@@ -4,10 +4,11 @@ function UUF:CreateUnitHealthBar(unitFrame, unit)
     local FrameDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Frame
     local HealthBarDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].HealthBar
     local unitContainer = unitFrame.Container
+    local frameName = unitFrame:GetName() or UUF:FetchFrameName(unit)
 
     if not unitFrame.HealthBar then
         if not unitFrame.HealthBackground then
-            unitFrame.HealthBackground = CreateFrame("StatusBar", UUF:FetchFrameName(unit) .. "_HealthBackground", unitContainer)
+            unitFrame.HealthBackground = CreateFrame("StatusBar", frameName .. "_HealthBackground", unitContainer)
             unitFrame.HealthBackground:SetPoint("TOPLEFT", unitContainer, "TOPLEFT", 1, -1)
             unitFrame.HealthBackground:SetSize(FrameDB.Width - 2, FrameDB.Height - 2)
             unitFrame.HealthBackground:SetStatusBarTexture(UUF.Media.Background)
@@ -15,7 +16,7 @@ function UUF:CreateUnitHealthBar(unitFrame, unit)
             unitFrame.HealthBackground:SetStatusBarColor(HealthBarDB.Background[1], HealthBarDB.Background[2], HealthBarDB.Background[3], HealthBarDB.BackgroundOpacity)
         end
 
-        local HealthBar = CreateFrame("StatusBar", UUF:FetchFrameName(unit) .. "_HealthBar", unitContainer)
+        local HealthBar = CreateFrame("StatusBar", frameName .. "_HealthBar", unitContainer)
         HealthBar:SetPoint("TOPLEFT", unitContainer, "TOPLEFT", 1, -1)
         HealthBar:SetSize(FrameDB.Width - 2, FrameDB.Height - 2)
         HealthBar:SetStatusBarTexture(UUF.Media.Foreground)
@@ -68,7 +69,9 @@ function UUF:UpdateUnitHealthBar(unitFrame, unit)
     local DispelHighlightDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].HealthBar.DispelHighlight
 
     if unitFrame then
-        unitFrame:ClearAllPoints()
+        if not InCombatLockdown() then
+            unitFrame:ClearAllPoints()
+        end
         unitFrame:SetSize(FrameDB.Width, FrameDB.Height)
         if unit == "player" or unit == "target" then
             local parentFrame = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].HealthBar.AnchorToCooldownViewer and _G["UUF_CDMAnchor"] or UIParent

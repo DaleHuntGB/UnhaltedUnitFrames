@@ -47,6 +47,14 @@ for i = 1, 10 do
     }
 end
 
+local PartyTestData = {
+    [1] = { healthPercent = 0.92, powerPercent = 0.88 },
+    [2] = { healthPercent = 0.84, powerPercent = 0.76 },
+    [3] = { healthPercent = 0.76, powerPercent = 0.64 },
+    [4] = { healthPercent = 0.68, powerPercent = 0.52 },
+    [5] = { healthPercent = 0.60, powerPercent = 0.40 },
+}
+
 local function GetTestUnitColour(id, defaultColour, colourByClass, opacity)
     if colourByClass then
         if id <= 5 then
@@ -373,6 +381,75 @@ function UUF:CreateTestBossFrames()
                 if button then button:Hide() end
             end
             BossFrame:Hide()
+        end
+    end
+end
+
+function UUF:CreateTestPartyFrames()
+    local PartyDB = UUF.db.profile.Units.party
+    local HidePlayer = PartyDB.HidePlayer
+
+    local function GetDefaultPartyUnit(frameIndex)
+        if not HidePlayer and frameIndex == 1 then
+            return "player"
+        else
+            local partyIndex = HidePlayer and frameIndex or (frameIndex - 1)
+            return partyIndex > 0 and ("party" .. partyIndex) or "player"
+        end
+    end
+
+    if UUF.PARTY_TEST_MODE then
+        local maxFrames = HidePlayer and 4 or 5
+
+        for i, PartyFrame in ipairs(UUF.PARTY_FRAMES) do
+            local data = PartyTestData[i]
+
+            PartyFrame:SetAttribute("unit", "player")
+            UnregisterUnitWatch(PartyFrame)
+
+            if PartyDB.Enabled and i <= maxFrames then
+                PartyFrame:Show()
+            else
+                PartyFrame:Hide()
+            end
+
+            PartyFrame:SetFrameStrata(PartyDB.Frame.FrameStrata)
+
+            if PartyFrame.UpdateAllElements then
+                PartyFrame:UpdateAllElements("RefreshUnit")
+            end
+
+            if PartyFrame.Health then
+                local maxHealth = UnitHealthMax("player")
+                local fakeHealth = maxHealth * data.healthPercent
+                local fakeMissing = maxHealth - fakeHealth
+
+                PartyFrame.Health:SetMinMaxValues(0, maxHealth)
+                PartyFrame.Health:SetValue(fakeHealth)
+                if PartyFrame.HealthBackground then
+                    PartyFrame.HealthBackground:SetMinMaxValues(0, maxHealth)
+                    PartyFrame.HealthBackground:SetValue(fakeMissing)
+                end
+            end
+
+            if PartyFrame.Power then
+                local maxPower = UnitPowerMax("player")
+                local fakePower = maxPower * data.powerPercent
+
+                PartyFrame.Power:SetMinMaxValues(0, maxPower)
+                PartyFrame.Power:SetValue(fakePower)
+            end
+        end
+    else
+        for i, PartyFrame in ipairs(UUF.PARTY_FRAMES) do
+            local unit = GetDefaultPartyUnit(i)
+            PartyFrame:SetAttribute("unit", unit)
+            RegisterUnitWatch(PartyFrame)
+            PartyFrame:Hide()
+
+            if PartyFrame.UpdateAllElements then
+                PartyFrame:UpdateAllElements("RefreshUnit")
+            end
         end
     end
 end

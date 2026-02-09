@@ -15,8 +15,9 @@ function UUF:CreateUnitCastBar(unitFrame, unit)
     local CastBarDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].CastBar
     local SpellNameDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].CastBar.Text.SpellName
     local DurationDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].CastBar.Text.Duration
+    local frameName = unitFrame:GetName() or UUF:FetchFrameName(unit)
 
-    local CastBarContainer = CreateFrame("Frame", UUF:FetchFrameName(unit) .. "_CastBarContainer", unitFrame, "BackdropTemplate")
+    local CastBarContainer = CreateFrame("Frame", frameName .. "_CastBarContainer", unitFrame, "BackdropTemplate")
     CastBarContainer:SetBackdrop(UUF.BACKDROP)
     CastBarContainer:SetBackdropColor(0, 0, 0, 0)
     CastBarContainer:SetBackdropBorderColor(0, 0, 0, 1)
@@ -26,13 +27,22 @@ function UUF:CreateUnitCastBar(unitFrame, unit)
     CastBarContainer:SetHeight(CastBarDB.Height)
     CastBarContainer:SetFrameStrata(CastBarDB.FrameStrata)
 
-    local CastBar = CreateFrame("StatusBar", UUF:FetchFrameName(unit) .. "_CastBar", CastBarContainer)
+    local CastBar = CreateFrame("StatusBar", frameName .. "_CastBar", CastBarContainer)
     CastBar:SetStatusBarTexture(UUF.Media.Foreground)
     CastBar:ClearAllPoints()
     CastBar:SetPoint("TOPLEFT", CastBarContainer, "TOPLEFT", 1, -1)
     CastBar:SetPoint("BOTTOMRIGHT", CastBarContainer, "BOTTOMRIGHT", -1, 1)
     CastBar:SetFrameLevel(CastBarContainer:GetFrameLevel() + 1)
-    CastBar:SetStatusBarColor(unpack(CastBarDB.Foreground))
+    if CastBarDB.ColourByClass then
+        local unitForClass = unit == "pet" and "player" or unit
+        local unitClass = select(2, UnitClass(unitForClass))
+        local unitColor = RAID_CLASS_COLORS[unitClass]
+        if unitColor then
+            CastBar:SetStatusBarColor(unitColor.r, unitColor.g, unitColor.b, CastBarDB.ForegroundOpacity)
+        end
+    else
+        CastBar:SetStatusBarColor(unpack(CastBarDB.Foreground))
+    end
 
     CastBar.Background = CastBar:CreateTexture(nil, "BACKGROUND")
     CastBar.Background:SetAllPoints(CastBar)
@@ -46,7 +56,7 @@ function UUF:CreateUnitCastBar(unitFrame, unit)
     CastBar.NotInterruptibleOverlay:SetVertexColor(unpack(CastBarDB.NotInterruptibleColour))
     CastBar.NotInterruptibleOverlay:SetAlpha(0) -- Hidden by default
 
-    CastBar.Icon = CastBar:CreateTexture(UUF:FetchFrameName(unit) .. "_CastBarIcon", "ARTWORK")
+    CastBar.Icon = CastBar:CreateTexture(frameName .. "_CastBarIcon", "ARTWORK")
     CastBar.Icon:SetSize(CastBarDB.Height - 2, CastBarDB.Height - 2)
     CastBar.Icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
     CastBar.Icon:ClearAllPoints()
@@ -67,7 +77,7 @@ function UUF:CreateUnitCastBar(unitFrame, unit)
         CastBar:SetPoint("BOTTOMRIGHT", CastBarContainer, "BOTTOMRIGHT", -1, 1)
     end
 
-    local SpellNameText = CastBar:CreateFontString(UUF:FetchFrameName(unit) .. "_CastBarSpellNameText", "OVERLAY")
+    local SpellNameText = CastBar:CreateFontString(frameName .. "_CastBarSpellNameText", "OVERLAY")
     SpellNameText:ClearAllPoints()
     SpellNameText:SetPoint(SpellNameDB.Layout[1], CastBar, SpellNameDB.Layout[2], SpellNameDB.Layout[3], SpellNameDB.Layout[4])
     SpellNameText:SetFont(UUF.Media.Font, SpellNameDB.FontSize, GeneralDB.Fonts.FontFlag)
@@ -88,7 +98,7 @@ function UUF:CreateUnitCastBar(unitFrame, unit)
     end
     SpellNameText:SetJustifyH(UUF:SetJustification(SpellNameDB.Layout[1]))
 
-    local DurationText = CastBar:CreateFontString(UUF:FetchFrameName(unit) .. "_CastBarDurationText", "OVERLAY")
+    local DurationText = CastBar:CreateFontString(frameName .. "_CastBarDurationText", "OVERLAY")
     DurationText:ClearAllPoints()
     DurationText:SetPoint(DurationDB.Layout[1], CastBar, DurationDB.Layout[2], DurationDB.Layout[3], DurationDB.Layout[4])
     DurationText:SetFont(UUF.Media.Font, DurationDB.FontSize, GeneralDB.Fonts.FontFlag)
@@ -121,7 +131,11 @@ function UUF:CreateUnitCastBar(unitFrame, unit)
         unitFrame.Castbar.Text = SpellNameText
         unitFrame.Castbar.Time = DurationText
         if CastBarDB.Icon.Enabled then unitFrame.Castbar.Icon = CastBar.Icon else unitFrame.Castbar.Icon = nil end
-        unitFrame.Castbar:HookScript("OnValueChanged", function(self, value) if self.Castbar then self.Castbar:SetValue(value) end end)
+        
+        unitFrame.Castbar:HookScript("OnShow", function(self)
+            local container = self:GetParent()
+            if container then container:Show() end
+        end)
         unitFrame.Castbar:HookScript("OnHide", function() CastBarContainer:Hide() end)
 
         local function UpdateNotInterruptibleOverlay(frameCastBar)
@@ -163,6 +177,7 @@ function UUF:UpdateUnitCastBar(unitFrame, unit)
     local GeneralDB = UUF.db.profile.General
     local FrameDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Frame
     local CastBarDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].CastBar
+    local frameName = unitFrame:GetName() or UUF:FetchFrameName(unit)
 
     if CastBarDB.Enabled then
         unitFrame.Castbar = unitFrame.Castbar or UUF:CreateUnitCastBar(unitFrame, unit)
@@ -182,7 +197,16 @@ function UUF:UpdateUnitCastBar(unitFrame, unit)
             if CastBarContainer then CastBarContainer:SetHeight(CastBarDB.Height) end
             unitFrame.Castbar:SetStatusBarTexture(UUF.Media.Foreground)
             unitFrame.Castbar.Background:SetTexture(UUF.Media.Background)
-            unitFrame.Castbar:SetStatusBarColor(unpack(CastBarDB.Foreground))
+            if CastBarDB.ColourByClass then
+                local unitForClass = unit == "pet" and "player" or unit
+                local unitClass = select(2, UnitClass(unitForClass))
+                local unitColor = RAID_CLASS_COLORS[unitClass]
+                if unitColor then
+                    unitFrame.Castbar:SetStatusBarColor(unitColor.r, unitColor.g, unitColor.b, CastBarDB.ForegroundOpacity)
+                end
+            else
+                unitFrame.Castbar:SetStatusBarColor(unpack(CastBarDB.Foreground))
+            end
             unitFrame.Castbar.Background:SetVertexColor(unpack(CastBarDB.Background))
 
             if unitFrame.Castbar.NotInterruptibleOverlay then
@@ -197,7 +221,7 @@ function UUF:UpdateUnitCastBar(unitFrame, unit)
             end
 
             if CastBarDB.Icon.Enabled then
-                unitFrame.Castbar.Icon = unitFrame.Castbar.Icon or unitFrame.Castbar:CreateTexture(UUF:FetchFrameName(unit) .. "_CastBarIcon", "ARTWORK")
+                unitFrame.Castbar.Icon = unitFrame.Castbar.Icon or unitFrame.Castbar:CreateTexture(frameName .. "_CastBarIcon", "ARTWORK")
                 unitFrame.Castbar.Icon:SetSize(CastBarDB.Height - 2, CastBarDB.Height - 2)
                 unitFrame.Castbar.Icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
                 unitFrame.Castbar.Icon:ClearAllPoints()
@@ -293,7 +317,16 @@ function UUF:CreateTestCastBar(unitFrame, unit)
                 self:SetValue(self.testValue)
                 unitFrame.Castbar.Time:SetText(string.format("%.1f", (self.testValue / 1000) * 5))
             end)
-            unitFrame.Castbar:SetStatusBarColor(unpack(CastBarDB.Foreground))
+            if CastBarDB.ColourByClass then
+                local unitForClass = unit == "pet" and "player" or unit
+                local unitClass = select(2, UnitClass(unitForClass))
+                local unitColor = RAID_CLASS_COLORS[unitClass]
+                if unitColor then
+                    unitFrame.Castbar:SetStatusBarColor(unitColor.r, unitColor.g, unitColor.b, CastBarDB.ForegroundOpacity)
+                end
+            else
+                unitFrame.Castbar:SetStatusBarColor(unpack(CastBarDB.Foreground))
+            end
             if unitFrame.Castbar.NotInterruptibleOverlay then
                 unitFrame.Castbar.NotInterruptibleOverlay:SetAlpha(0)
             end

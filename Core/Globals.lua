@@ -6,6 +6,9 @@ UUF.CASTBAR_TEST_MODE = false
 UUF.BOSS_TEST_MODE = false
 UUF.BOSS_FRAMES = {}
 UUF.MAX_BOSS_FRAMES = 5
+UUF.PARTY_TEST_MODE = false
+UUF.PARTY_FRAMES = {}
+UUF.MAX_PARTY_MEMBERS = 5
 
 UUF.LSM = LibStub("LibSharedMedia-3.0")
 UUF.LDS = LibStub("LibDualSpec-1.0")
@@ -57,6 +60,25 @@ UUF.StatusTextures = {
         ["RESTING7"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Resting\\Resting7.tga",
         ["RESTING8"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Resting\\Resting8.png",
     },
+    GroupRole = {
+        ["DEFAULT"] = {
+            path = "Interface\\FrameGeneral\\UIFrameRoleIcons",
+            coords = {
+                -- { left, right, top, bottom }
+                DAMAGER = { 0,      32/128, 0/32, 32/32 },
+                HEALER  = { 32/128, 64/128, 0/32, 32/32 },
+                TANK    = { 66/128, 98/128, 0/32, 32/32 },
+            },
+        },
+        ["GROUPROLE0"] = {
+            path = "Interface\\LFGFrame\\RoleIcons",
+            coords = {
+                DAMAGER = { 0/64,  18/64, 1/32,   19/32 },
+                HEALER  = { 18/64, 36/64, 1/32,   19/32 },
+                TANK    = { 36/64, 54/64, 1/32,   19/32 },
+            },
+        },
+    },
 }
 
 function UUF:PrettyPrint(MSG) print(UUF.ADDON_NAME .. ":|r " .. MSG) end
@@ -69,10 +91,12 @@ function UUF:FetchFrameName(unit)
         ["focus"] = "UUF_Focus",
         ["focustarget"] = "UUF_FocusTarget",
         ["pet"] = "UUF_Pet",
+        ["party"] = "UUF_Party",
         ["boss"] = "UUF_Boss",
     }
     if not unit then return end
     if unit:match("^boss(%d+)$") then local unitID = unit:match("^boss(%d+)$") return "UUF_Boss" .. unitID end
+    if unit:match("^party(%d+)$") then local unitID = unit:match("^party(%d+)$") return "UUF_Party" .. unitID end
     return UnitToFrame[unit]
 end
 
@@ -255,8 +279,12 @@ function UUF:GetReactionColour(reaction)
 end
 
 function UUF:GetNormalizedUnit(unit)
-    local normalizedUnit = unit:match("^boss%d+$") and "boss" or unit
-    return normalizedUnit
+    if unit:match("^boss%d+$") then
+        return "boss"
+    elseif unit:match("^party%d+$") then
+        return "party"
+    end
+    return unit
 end
 
 function UUF:RequiresAlternativePowerBar()

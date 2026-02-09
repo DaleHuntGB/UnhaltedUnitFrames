@@ -3,9 +3,10 @@ local _, UUF = ...
 local function CreateUnitTag(unitFrame, unit, tagDB)
     local GeneralDB = UUF.db.profile.General
     local TagDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Tags[tagDB]
+    local frameName = unitFrame:GetName() or UUF:FetchFrameName(unit)
 
     if not unitFrame.Tags[tagDB] then
-        unitFrame.Tags[tagDB] = unitFrame.HighLevelContainer:CreateFontString(UUF:FetchFrameName(unit) .. "_" .. tagDB, "ARTWORK")
+        unitFrame.Tags[tagDB] = unitFrame.HighLevelContainer:CreateFontString(frameName .. "_" .. tagDB, "ARTWORK")
         unitFrame.Tags[tagDB]:SetFont(UUF.Media.Font, TagDB.FontSize, GeneralDB.Fonts.FontFlag)
         unitFrame.Tags[tagDB]:SetVertexColor(TagDB.Colour[1], TagDB.Colour[2], TagDB.Colour[3], 1)
         if GeneralDB.Fonts.Shadow.Enabled then
@@ -23,7 +24,13 @@ end
 
 function UUF:UpdateUnitTag(unitFrame, unit, tagDB)
     local GeneralDB = UUF.db.profile.General
-    local TagDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Tags[tagDB]
+    local normalizedUnit = UUF:GetNormalizedUnit(unit)
+    local TagDB = UUF.db.profile.Units[normalizedUnit].Tags[tagDB]
+
+    -- Skip oUF tag updates when in test mode for multi-frame units showing fake data
+    -- For party frames, only skip if we're NOT in a party (showing fake data)
+    local inTestMode = (normalizedUnit == "boss" and UUF.BOSS_TEST_MODE) or 
+                       (normalizedUnit == "party" and UUF.PARTY_TEST_MODE and not (IsInGroup() and not IsInRaid()))
 
     if unitFrame.Tags[tagDB] then
         unitFrame.Tags[tagDB]:SetFont(UUF.Media.Font, TagDB.FontSize, GeneralDB.Fonts.FontFlag)
@@ -38,9 +45,11 @@ function UUF:UpdateUnitTag(unitFrame, unit, tagDB)
         unitFrame.Tags[tagDB]:ClearAllPoints()
         unitFrame.Tags[tagDB]:SetPoint(TagDB.Layout[1], unitFrame.HighLevelContainer, TagDB.Layout[2], TagDB.Layout[3], TagDB.Layout[4])
         unitFrame.Tags[tagDB]:SetJustifyH(UUF:SetJustification(TagDB.Layout[1]))
-        unitFrame:Tag(unitFrame.Tags[tagDB], TagDB.Tag)
+        if not inTestMode then
+            unitFrame:Tag(unitFrame.Tags[tagDB], TagDB.Tag)
+            unitFrame.Tags[tagDB]:UpdateTag()
+        end
     end
-    unitFrame.Tags[tagDB]:UpdateTag()
 end
 
 function UUF:CreateUnitTags(unitFrame, unit)
@@ -61,6 +70,15 @@ function UUF:UpdateUnitTags()
                 if bossFrame then
                     for tagName in pairs(UnitDB.Tags) do
                         UUF:UpdateUnitTag(bossFrame, "boss"..i, tagName)
+                    end
+                end
+            end
+        elseif unit == "party" then
+            for i = 1, UUF.MAX_PARTY_MEMBERS do
+                local partyFrame = UUF["PARTY"..i]
+                if partyFrame then
+                    for tagName in pairs(UnitDB.Tags) do
+                        UUF:UpdateUnitTag(partyFrame, "party"..i, tagName)
                     end
                 end
             end

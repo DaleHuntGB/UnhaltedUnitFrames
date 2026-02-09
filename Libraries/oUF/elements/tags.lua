@@ -444,7 +444,12 @@ local tagFuncs = setmetatable(
 		curpp = UnitPower,
 		maxhp = UnitHealthMax,
 		maxpp = UnitPowerMax,
-		class = UnitClass,
+		class = function(unit)
+			if UnitIsPlayer(unit) then
+				local _, class = UnitClass(unit)
+				return class
+			end
+		end,
 		faction = UnitFactionGroup,
 		race = UnitRace,
 	},

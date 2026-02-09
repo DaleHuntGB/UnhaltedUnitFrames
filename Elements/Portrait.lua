@@ -2,17 +2,18 @@ local _, UUF = ...
 
 function UUF:CreateUnitPortrait(unitFrame, unit)
     local PortraitDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Portrait
+    local frameName = unitFrame:GetName() or UUF:FetchFrameName(unit)
 
     local unitPortrait
     if PortraitDB.Style == "3D" then
-        local backdrop = CreateFrame("Frame", UUF:FetchFrameName(unit) .. "_PortraitBackdrop", unitFrame.HighLevelContainer, "BackdropTemplate")
+        local backdrop = CreateFrame("Frame", frameName .. "_PortraitBackdrop", unitFrame.HighLevelContainer, "BackdropTemplate")
         backdrop:SetSize(PortraitDB.Width, PortraitDB.Height)
         backdrop:SetPoint(PortraitDB.Layout[1], unitFrame.HighLevelContainer, PortraitDB.Layout[2], PortraitDB.Layout[3], PortraitDB.Layout[4])
         backdrop:SetBackdrop(UUF.BACKDROP)
         backdrop:SetBackdropColor(26/255, 26/255, 26/255, 1)
         backdrop:SetBackdropBorderColor(0, 0, 0, 0)
 
-        unitPortrait = CreateFrame("PlayerModel", UUF:FetchFrameName(unit) .. "_Portrait3D", backdrop)
+        unitPortrait = CreateFrame("PlayerModel", frameName .. "_Portrait3D", backdrop)
         unitPortrait:SetAllPoints(backdrop)
         unitPortrait:SetCamDistanceScale(1)
         unitPortrait:SetPortraitZoom(1)
@@ -20,7 +21,7 @@ function UUF:CreateUnitPortrait(unitFrame, unit)
 
         unitPortrait.Backdrop = backdrop
     else
-        unitPortrait = unitFrame.HighLevelContainer:CreateTexture(UUF:FetchFrameName(unit) .. "_Portrait2D", "BACKGROUND")
+        unitPortrait = unitFrame.HighLevelContainer:CreateTexture(frameName .. "_Portrait2D", "BACKGROUND")
         unitPortrait:SetSize(PortraitDB.Width, PortraitDB.Height)
         unitPortrait:SetPoint(PortraitDB.Layout[1], unitFrame.HighLevelContainer, PortraitDB.Layout[2], PortraitDB.Layout[3], PortraitDB.Layout[4])
         unitPortrait:SetTexCoord((PortraitDB.Zoom or 0) * 0.5, 1 - (PortraitDB.Zoom or 0) * 0.5, (PortraitDB.Zoom or 0) * 0.5, 1 - (PortraitDB.Zoom or 0) * 0.5)
@@ -28,7 +29,7 @@ function UUF:CreateUnitPortrait(unitFrame, unit)
     end
 
     local borderParent = unitPortrait.Backdrop or unitFrame.HighLevelContainer
-    unitPortrait.Border = CreateFrame("Frame", UUF:FetchFrameName(unit) .. "_PortraitBorder", borderParent, "BackdropTemplate")
+    unitPortrait.Border = CreateFrame("Frame", frameName .. "_PortraitBorder", borderParent, "BackdropTemplate")
     unitPortrait.Border:SetAllPoints(unitPortrait.Backdrop or unitPortrait)
     unitPortrait.Border:SetBackdrop(UUF.BACKDROP)
     unitPortrait.Border:SetBackdropColor(0, 0, 0, 0)

@@ -14,6 +14,7 @@
 	<Script file="Tags.lua"/>
 
 	<Script file="Indicators/LeaderAssistant.lua"/>
+	<Script file="Indicators/GroupRole.lua"/>
 	<Script file="Indicators/Mouseover.lua"/>
 	<Script file="Indicators/RaidTargetMarker.lua"/>
 	<Script file="Indicators/Resting.lua"/>

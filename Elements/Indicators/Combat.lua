@@ -7,8 +7,9 @@ end
 
 function UUF:CreateUnitCombatIndicator(unitFrame, unit)
     local CombatDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Indicators.Combat
+    local frameName = unitFrame:GetName() or UUF:FetchFrameName(unit)
 
-    local Combat = unitFrame.HighLevelContainer:CreateTexture(UUF:FetchFrameName(unit).."_CombatIndicator", "OVERLAY")
+    local Combat = unitFrame.HighLevelContainer:CreateTexture(frameName..".._CombatIndicator", "OVERLAY")
     Combat:SetSize(CombatDB.Size, CombatDB.Size)
     Combat:SetPoint(CombatDB.Layout[1], unitFrame.HighLevelContainer, CombatDB.Layout[2], CombatDB.Layout[3], CombatDB.Layout[4])
 

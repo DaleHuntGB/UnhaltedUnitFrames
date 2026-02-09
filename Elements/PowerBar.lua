@@ -4,8 +4,9 @@ function UUF:CreateUnitPowerBar(unitFrame, unit)
     local FrameDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Frame
     local PowerBarDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].PowerBar
     local unitContainer = unitFrame.Container
+    local frameName = unitFrame:GetName() or UUF:FetchFrameName(unit)
 
-    local PowerBar = CreateFrame("StatusBar", UUF:FetchFrameName(unit) .. "_PowerBar", unitContainer)
+    local PowerBar = CreateFrame("StatusBar", frameName .. "_PowerBar", unitContainer)
     PowerBar:SetPoint("BOTTOMLEFT", unitContainer, "BOTTOMLEFT", 1, 1)
     PowerBar:SetSize(FrameDB.Width - 2, PowerBarDB.Height)
     PowerBar:SetStatusBarTexture(UUF.Media.Foreground)
@@ -21,7 +22,7 @@ function UUF:CreateUnitPowerBar(unitFrame, unit)
         PowerBar:SetReverseFill(false)
     end
 
-    PowerBar.Background = PowerBar:CreateTexture(UUF:FetchFrameName(unit) .. "_PowerBackground", "BACKGROUND")
+    PowerBar.Background = PowerBar:CreateTexture(frameName .. "_PowerBackground", "BACKGROUND")
     PowerBar.Background:SetPoint("BOTTOMLEFT", unitContainer, "BOTTOMLEFT", 1, 1)
     PowerBar.Background:SetSize(FrameDB.Width - 2, PowerBarDB.Height)
     PowerBar.Background:SetTexture(UUF.Media.Background)

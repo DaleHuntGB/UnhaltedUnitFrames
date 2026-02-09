@@ -191,8 +191,9 @@ end
 
 local function CreateUnitBuffs(unitFrame, unit)
     local BuffsDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Auras.Buffs
+    local frameName = unitFrame:GetName() or UUF:FetchFrameName(unit)
     if not unitFrame.BuffContainer then
-        unitFrame.BuffContainer = CreateFrame("Frame", UUF:FetchFrameName(unit) .. "_BuffsContainer", unitFrame)
+        unitFrame.BuffContainer = CreateFrame("Frame", frameName .. "_BuffsContainer", unitFrame)
         unitFrame.BuffContainer:SetFrameStrata(UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Auras.FrameStrata)
         local buffPerRow = BuffsDB.Wrap or 4
         local buffRows = math.ceil(BuffsDB.Num / buffPerRow)
@@ -234,8 +235,9 @@ end
 
 local function CreateUnitDebuffs(unitFrame, unit)
     local DebuffsDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Auras.Debuffs
+    local frameName = unitFrame:GetName() or UUF:FetchFrameName(unit)
     if not unitFrame.DebuffContainer then
-        unitFrame.DebuffContainer = CreateFrame("Frame", UUF:FetchFrameName(unit) .. "_DebuffsContainer", unitFrame)
+        unitFrame.DebuffContainer = CreateFrame("Frame", frameName .. "_DebuffsContainer", unitFrame)
         unitFrame.DebuffContainer:SetFrameStrata(UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Auras.FrameStrata)
         local debuffPerRow = DebuffsDB.Wrap or 3
         local debuffRows = math.ceil(DebuffsDB.Num / debuffPerRow)
