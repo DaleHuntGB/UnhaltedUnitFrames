@@ -15,9 +15,131 @@ local function EnablePings(unitFrame)
     Mixin(unitFrame, PingableType_UnitFrameMixin)
 end
 
+function UUF:SaveUnitFramePosition(unitFrame)
+    if not unitFrame or InCombatLockdown() then return end
+    local unit = unitFrame.unit
+    if not unit then return end
+    local layoutUnit = unitFrame.UUFLayoutUnit or UUF:GetNormalizedUnit(unit)
+    local UnitDB = UUF.db.profile.Units[layoutUnit]
+    if not UnitDB or not UnitDB.Frame then return end
+    local point, _, relativePoint, xOffset, yOffset = unitFrame:GetPoint(1)
+    if not point then return end
+    UnitDB.Frame.Layout[1] = point
+    UnitDB.Frame.Layout[2] = relativePoint or "CENTER"
+    UnitDB.Frame.Layout[3] = xOffset or 0
+    UnitDB.Frame.Layout[4] = yOffset or 0
+    if layoutUnit == "party" then UUF:LayoutPartyFrames() end
+    if layoutUnit == "boss" then UUF:LayoutBossFrames() end
+end
+
+function UUF:IsEditModeActive()
+    if EditModeManagerFrame and EditModeManagerFrame.IsEditModeActive then
+        local ok, active = pcall(EditModeManagerFrame.IsEditModeActive, EditModeManagerFrame)
+        if ok then return active == true end
+    end
+    if C_EditMode and C_EditMode.IsEditModeActive then
+        local ok, active = pcall(C_EditMode.IsEditModeActive)
+        if ok then return active == true end
+    end
+    return false
+end
+
+function UUF:IsFrameMoverActive()
+    if UUF.db.profile.General.FrameMover and UUF.db.profile.General.FrameMover.Enabled then
+        return true
+    end
+    return UUF:IsEditModeActive()
+end
+
+function UUF:UpdateFrameMoverGlow(unitFrame, active)
+    if not unitFrame then return end
+    local anchorTarget = unitFrame.HighLevelContainer or unitFrame
+    local layoutUnit = unitFrame.UUFLayoutUnit or (unitFrame.unit and UUF:GetNormalizedUnit(unitFrame.unit))
+    local paddingX, paddingY = 16, 16
+    if layoutUnit then
+        local unitDB = UUF.db.profile.Units[layoutUnit]
+        if unitDB and unitDB.Frame then
+            paddingX = unitDB.Frame.Width or paddingX
+            paddingY = unitDB.Frame.Height or paddingY
+        end
+    end
+    paddingX = math.min(paddingX, 24)
+    paddingY = math.min(paddingY, 24)
+    paddingX = math.max(paddingX - 10, 0)
+    paddingY = math.max(paddingY - 10, 0)
+    if not unitFrame.UUFFrameMoverGlowFrame then
+        local glowFrame = CreateFrame("Frame", nil, unitFrame, "BackdropTemplate")
+        glowFrame:SetAllPoints(anchorTarget)
+        glowFrame:SetFrameLevel((anchorTarget:GetFrameLevel() or unitFrame:GetFrameLevel()) + 20)
+        glowFrame:SetBackdrop({
+            edgeFile = "Interface\\Buttons\\WHITE8X8",
+            edgeSize = 2,
+        })
+        glowFrame:SetBackdropBorderColor(1, 0.82, 0, 0.85)
+        unitFrame.UUFFrameMoverGlowFrame = glowFrame
+    end
+    unitFrame.UUFFrameMoverGlowFrame:SetAllPoints(anchorTarget)
+    unitFrame.UUFFrameMoverGlowFrame:SetFrameLevel((anchorTarget:GetFrameLevel() or unitFrame:GetFrameLevel()) + 20)
+    unitFrame.UUFFrameMoverGlowFrame:ClearAllPoints()
+    unitFrame.UUFFrameMoverGlowFrame:SetPoint("TOPLEFT", anchorTarget, "TOPLEFT", -(paddingX + 5), paddingY)
+    unitFrame.UUFFrameMoverGlowFrame:SetPoint("BOTTOMRIGHT", anchorTarget, "BOTTOMRIGHT", paddingX - 5, -paddingY)
+    unitFrame.UUFFrameMoverGlowFrame:SetShown(active)
+end
+
+function UUF:ApplyFrameMover(unitFrame)
+    if not unitFrame then return end
+    if not UUF.db.profile.General.FrameMover then
+        UUF.db.profile.General.FrameMover = { Enabled = false }
+    end
+    if not unitFrame.UUFFrameMoverSetup then
+        unitFrame.UUFFrameMoverSetup = true
+        unitFrame:RegisterForDrag("LeftButton")
+        unitFrame:SetClampedToScreen(true)
+        unitFrame:HookScript("OnDragStart", function(frame)
+            if not UUF:IsFrameMoverActive() then return end
+            if InCombatLockdown() then return end
+            frame:StartMoving()
+        end)
+        unitFrame:HookScript("OnDragStop", function(frame)
+            if not UUF:IsFrameMoverActive() then return end
+            frame:StopMovingOrSizing()
+            UUF:SaveUnitFramePosition(frame)
+        end)
+    end
+
+    local enabled = UUF:IsFrameMoverActive() == true
+    UUF:QueueOrRun(function()
+        unitFrame:SetMovable(enabled)
+    end)
+    UUF:UpdateFrameMoverGlow(unitFrame, enabled)
+end
+
+function UUF:ApplyFrameMovers()
+    if not UUF.db.profile.General.FrameMover then
+        UUF.db.profile.General.FrameMover = { Enabled = false }
+    end
+    if InCombatLockdown() then
+        UUF:PrettyPrint("Cannot toggle frame movers in combat.")
+        return
+    end
+    for unit in pairs(UUF.db.profile.Units) do
+        local unitFrame = UUF[unit:upper()]
+        if unitFrame then
+            UUF:ApplyFrameMover(unitFrame)
+        end
+    end
+    for i = 1, #UUF.PARTY_FRAMES do
+        UUF:ApplyFrameMover(UUF.PARTY_FRAMES[i])
+    end
+    for i = 1, #UUF.BOSS_FRAMES do
+        UUF:ApplyFrameMover(UUF.BOSS_FRAMES[i])
+    end
+end
+
 function UUF:CreateUnitFrame(unitFrame, unit)
     if not unit or not unitFrame then return end
     local normalizedUnit = UUF:GetNormalizedUnit(unit)
+    unitFrame.UUFLayoutUnit = unitFrame.UUFLayoutUnit or normalizedUnit
     UUF:CreateUnitContainer(unitFrame, unit)
     if normalizedUnit ~= "targettarget" and normalizedUnit ~= "focustarget" then UUF:CreateUnitCastBar(unitFrame, unit) end
     UUF:CreateUnitHealthBar(unitFrame, unit)
@@ -41,6 +163,7 @@ function UUF:CreateUnitFrame(unitFrame, unit)
     ApplyScripts(unitFrame)
     EnablePings(unitFrame)
     UUF:CreateUnitMouseoverIndicator(unitFrame, unit)
+    UUF:ApplyFrameMover(unitFrame)
     return unitFrame
 end
 
@@ -118,6 +241,7 @@ function UUF:SpawnUnitFrame(unit)
         for i = 1, UUF.MAX_BOSS_FRAMES do
             UUF[unit:upper() .. i] = oUF:Spawn(unit .. i, UUF:FetchFrameName(unit .. i))
             UUF[unit:upper() .. i]:SetSize(FrameDB.Width, FrameDB.Height)
+            UUF[unit:upper() .. i].UUFLayoutUnit = "boss"
             UUF.BOSS_FRAMES[i] = UUF[unit:upper() .. i]
             UUF[unit:upper() .. i]:SetFrameStrata(FrameDB.FrameStrata)
             UUF:RegisterTargetGlowIndicatorFrame(UUF:FetchFrameName(unit .. i), unit .. i)
@@ -136,6 +260,7 @@ function UUF:SpawnUnitFrame(unit)
             end
             UUF[unit:upper() .. i] = oUF:Spawn(spawnUnit, UUF:FetchFrameName(unit .. i))
             UUF[unit:upper() .. i]:SetSize(FrameDB.Width, FrameDB.Height)
+            UUF[unit:upper() .. i].UUFLayoutUnit = "party"
             UUF.PARTY_FRAMES[i] = UUF[unit:upper() .. i]
             UUF:RegisterTargetGlowIndicatorFrame(UUF:FetchFrameName(unit .. i), unit .. i)
             UUF[unit:upper() .. i]:SetFrameStrata(FrameDB.FrameStrata)

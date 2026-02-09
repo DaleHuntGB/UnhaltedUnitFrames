@@ -22,8 +22,17 @@ function UnhaltedUnitFrames:OnInitialize()
     playerSpecalizationChangedEventFrame:SetScript("OnEvent", function(_, event, ...) if InCombatLockdown() then return end if event == "PLAYER_SPECIALIZATION_CHANGED" then local unit = ... if unit == "player" then UUF:UpdateAllUnitFrames() end end end)
 end
 
+function UUF:SetupEditModeHooks()
+    if UUF._editModeHooked then return end
+    if not EditModeManagerFrame then return end
+    UUF._editModeHooked = true
+    EditModeManagerFrame:HookScript("OnShow", function() UUF:ApplyFrameMovers() end)
+    EditModeManagerFrame:HookScript("OnHide", function() UUF:ApplyFrameMovers() end)
+end
+
 function UnhaltedUnitFrames:OnEnable()
     UUF:Init()
+    UUF:SetupEditModeHooks()
     UUF:CreatePositionController()
     UUF:SpawnUnitFrame("player")
     UUF:SpawnUnitFrame("target")

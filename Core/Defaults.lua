@@ -15,6 +15,9 @@ local Defaults = {
                 Enabled = false,
                 Scale = 1.0,
             },
+            FrameMover = {
+                Enabled = false,
+            },
             Textures = {
                 Foreground = "Better Blizzard",
                 Background = "Better Blizzard",

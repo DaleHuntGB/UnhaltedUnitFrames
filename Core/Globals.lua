@@ -119,11 +119,78 @@ function UUF:GetPixelPerfectScale()
     return pixelSize
 end
 
+function UUF:SetFrameMoverEnabled(enabled)
+    if not UUF.db.profile.General.FrameMover then
+        UUF.db.profile.General.FrameMover = { Enabled = false }
+    end
+    if InCombatLockdown() then
+        UUF:PrettyPrint("Cannot toggle frame movers in combat.")
+        return
+    end
+    UUF.db.profile.General.FrameMover.Enabled = enabled == true
+    UUF:ApplyFrameMovers()
+    if UUF.FrameMoverButton then
+        UUF.FrameMoverButton:SetText(UUF:GetFrameMoverLabel())
+    end
+end
+
+function UUF:ToggleFrameMover()
+    local enabled = UUF.db.profile.General.FrameMover and UUF.db.profile.General.FrameMover.Enabled
+    UUF:SetFrameMoverEnabled(not enabled)
+end
+
+function UUF:GetFrameMoverLabel()
+    local enabled = UUF.db.profile.General.FrameMover and UUF.db.profile.General.FrameMover.Enabled
+    return enabled and "Lock Frames" or "Unlock Frames"
+end
+
+function UUF:CreateMinimapButton()
+    if UUF.MinimapButton then return end
+    if not Minimap then return end
+
+    local button = CreateFrame("Button", "UUF_MinimapButton", Minimap)
+    button:SetSize(32, 32)
+    button:SetPoint("TOPLEFT", Minimap, "TOPLEFT", 0, 0)
+    button:SetFrameStrata("HIGH")
+    button:SetNormalTexture("Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Logo.tga")
+    button:SetHighlightTexture("Interface\\Minimap\\UI-Minimap-ZoomButton-Highlight")
+    button:SetScript("OnClick", function(_, mouseButton)
+        if mouseButton == "LeftButton" then
+            UUF:ToggleFrameMover()
+        elseif mouseButton == "RightButton" then
+            if SlashCmdList["UUF"] then
+                SlashCmdList["UUF"]("")
+            else
+                UUF:CreateGUI()
+            end
+        end
+    end)
+    button:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_LEFT")
+        GameTooltip:AddLine(UUF.PRETTY_ADDON_NAME)
+        GameTooltip:AddLine("Left Click: Toggle Frame Unlock", 1, 1, 1)
+        GameTooltip:AddLine("Right Click: Open Config", 1, 1, 1)
+        GameTooltip:Show()
+    end)
+    button:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    UUF.MinimapButton = button
+end
+
 local function SetupSlashCommands()
     SLASH_UUF1 = "/uuf"
     SLASH_UUF2 = "/unhaltedunitframes"
     SLASH_UUF3 = "/uf"
-    SlashCmdList["UUF"] = function() UUF:CreateGUI() end
+    SlashCmdList["UUF"] = function(msg)
+        local command = strtrim((msg or ""):lower())
+        if command == "unlock" then
+            UUF:SetFrameMoverEnabled(true)
+            return
+        elseif command == "lock" then
+            UUF:SetFrameMoverEnabled(false)
+            return
+        end
+        UUF:CreateGUI()
+    end
     UUF:PrettyPrint("'|cFF8080FF/uuf|r' for in-game configuration.")
 
     -- RL command
@@ -226,6 +293,7 @@ function UUF:Init()
     UUF:LoadCustomColours()
     UUF:SetTagUpdateInterval()
     AddAnchorsToBCDM()
+    UUF:CreateMinimapButton()
 end
 
 function UUF:CopyTable(originalTable, destinationTable)

@@ -285,6 +285,31 @@ local function CreateUIScaleSettings(containerParent)
     GUIWidgets.DeepDisable(Container, not UUF.db.profile.General.UIScale.Enabled, Toggle)
 end
 
+local function CreateFrameMoverSettings(containerParent)
+    local Container = GUIWidgets.CreateInlineGroup(containerParent, "Frame Movers")
+
+    if not UUF.db.profile.General.FrameMover then
+        UUF.db.profile.General.FrameMover = { Enabled = false }
+    end
+
+    GUIWidgets.CreateInformationTag(Container, "Unlock frames to drag them with the left mouse button. Re-lock when finished.")
+
+    local Toggle = AG:Create("CheckBox")
+    Toggle:SetLabel("Unlock Frames")
+    Toggle:SetValue(UUF.db.profile.General.FrameMover.Enabled)
+    Toggle:SetFullWidth(true)
+    Toggle:SetCallback("OnValueChanged", function(_, _, value)
+        if InCombatLockdown() then
+            UUF:PrettyPrint("Cannot toggle frame movers in combat.")
+            Toggle:SetValue(UUF.db.profile.General.FrameMover.Enabled)
+            return
+        end
+        UUF.db.profile.General.FrameMover.Enabled = value
+        UUF:ApplyFrameMovers()
+    end)
+    Container:AddChild(Toggle)
+end
+
 local function CreateFontSettings(containerParent)
     local Container = GUIWidgets.CreateInlineGroup(containerParent, "Fonts")
 
@@ -3173,6 +3198,26 @@ function UUF:CreateGUI()
     Container:SetHeight(600)
     Container:EnableResize(false)
     Container:SetCallback("OnClose", function(widget) AG:Release(widget) isGUIOpen = false DisableAllTestModes() end)
+
+    if not UUF.db.profile.General.FrameMover then
+        UUF.db.profile.General.FrameMover = { Enabled = false }
+    end
+
+    local moverButton = CreateFrame("Button", nil, Container.frame, "UIPanelButtonTemplate")
+    moverButton:SetSize(130, 22)
+    moverButton:SetPoint("TOPLEFT", Container.frame, "TOPLEFT", 12, -15)
+    moverButton:SetText(UUF:GetFrameMoverLabel())
+    moverButton:SetScript("OnClick", function()
+        UUF:ToggleFrameMover()
+        moverButton:SetText(UUF:GetFrameMoverLabel())
+    end)
+    moverButton:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_LEFT")
+        GameTooltip:AddLine("Toggle Frame Unlock")
+        GameTooltip:Show()
+    end)
+    moverButton:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    UUF.FrameMoverButton = moverButton
 
     local function SelectTab(GUIContainer, _, MainTab)
         GUIContainer:ReleaseChildren()
