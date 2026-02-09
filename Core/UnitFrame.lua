@@ -10,9 +10,44 @@ local function ApplyScripts(unitFrame)
 end
 
 local function EnablePings(unitFrame)
+    if not unitFrame then return end
     unitFrame:SetAttribute("ping-receiver", true)
     unitFrame.IsPingable = true
-    Mixin(unitFrame, PingableType_UnitFrameMixin)
+    if PingableType_UnitFrameMixin then
+        Mixin(unitFrame, PingableType_UnitFrameMixin)
+        if unitFrame.OnLoad then
+            pcall(unitFrame.OnLoad, unitFrame)
+        end
+    end
+end
+
+function UUF:EnsurePingIndicator(unitFrame)
+    if not unitFrame or unitFrame.UUFPingIndicator then return end
+    local anchorTarget = unitFrame.HighLevelContainer or unitFrame
+    local ping = anchorTarget:CreateTexture(nil, "OVERLAY", nil, 7)
+    ping:SetTexture("Interface\\Minimap\\Ping\\MinimapPing")
+    ping:SetBlendMode("ADD")
+    ping:SetSize(36, 36)
+    ping:SetPoint("CENTER", anchorTarget, "CENTER", 0, 0)
+    ping:Hide()
+    unitFrame.UUFPingIndicator = ping
+end
+
+function UUF:ShowPingOnUnit(unit)
+    if not unit then return end
+    local unitFrame = UUF[unit:upper()]
+    if not unitFrame then return end
+    UUF:EnsurePingIndicator(unitFrame)
+    if not unitFrame.UUFPingIndicator then return end
+    unitFrame.UUFPingIndicator:Show()
+    unitFrame.UUFPingIndicator:SetAlpha(1)
+    unitFrame.UUFPingToken = (unitFrame.UUFPingToken or 0) + 1
+    local token = unitFrame.UUFPingToken
+    C_Timer.After(1.2, function()
+        if unitFrame.UUFPingToken == token and unitFrame.UUFPingIndicator then
+            unitFrame.UUFPingIndicator:Hide()
+        end
+    end)
 end
 
 function UUF:SaveUnitFramePosition(unitFrame)
@@ -213,6 +248,7 @@ function UUF:CreateUnitFrame(unitFrame, unit)
     end
     if normalizedUnit == "party" then UUF:CreateUnitGroupRoleIndicator(unitFrame, unit) end
     if unit == "player" or unit == "target" then UUF:CreateUnitCombatIndicator(unitFrame, unit) end
+    if unit == "player" or unit == "target" then UUF:CreateUnitPvPIndicator(unitFrame, unit) end
     if unit == "player" then UUF:CreateUnitRestingIndicator(unitFrame, unit) end
     -- if unit == "player" then UUF:CreateUnitTotems(unitFrame, unit) end
     UUF:CreateUnitTargetGlowIndicator(unitFrame, unit)
@@ -412,6 +448,7 @@ function UUF:UpdateUnitFrame(unitFrame, unit)
     end
     if normalizedUnit == "party" then UUF:UpdateUnitGroupRoleIndicator(unitFrame, unit) end
     if unit == "player" or unit == "target" then UUF:UpdateUnitCombatIndicator(unitFrame, unit) end
+    if unit == "player" or unit == "target" then UUF:UpdateUnitPvPIndicator(unitFrame, unit) end
     if unit == "player" then UUF:UpdateUnitRestingIndicator(unitFrame, unit) end
     -- if unit == "player" then UUF:UpdateUnitTotems(unitFrame, unit) end
     UUF:UpdateUnitMouseoverIndicator(unitFrame, unit)
