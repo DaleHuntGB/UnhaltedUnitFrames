@@ -7,14 +7,18 @@ function UUF:CreateUnitPortrait(unitFrame, unit)
     local unitPortrait
     if PortraitDB.Style == "3D" then
         local backdrop = CreateFrame("Frame", frameName .. "_PortraitBackdrop", unitFrame.HighLevelContainer, "BackdropTemplate")
-        backdrop:SetSize(PortraitDB.Width, PortraitDB.Height)
-        backdrop:SetPoint(PortraitDB.Layout[1], unitFrame.HighLevelContainer, PortraitDB.Layout[2], PortraitDB.Layout[3], PortraitDB.Layout[4])
+        UUF:QueueOrRun(function()
+            backdrop:SetSize(PortraitDB.Width, PortraitDB.Height)
+            backdrop:SetPoint(PortraitDB.Layout[1], unitFrame.HighLevelContainer, PortraitDB.Layout[2], PortraitDB.Layout[3], PortraitDB.Layout[4])
+        end)
         backdrop:SetBackdrop(UUF.BACKDROP)
         backdrop:SetBackdropColor(26/255, 26/255, 26/255, 1)
         backdrop:SetBackdropBorderColor(0, 0, 0, 0)
 
         unitPortrait = CreateFrame("PlayerModel", frameName .. "_Portrait3D", backdrop)
-        unitPortrait:SetAllPoints(backdrop)
+        UUF:QueueOrRun(function()
+            unitPortrait:SetAllPoints(backdrop)
+        end)
         unitPortrait:SetCamDistanceScale(1)
         unitPortrait:SetPortraitZoom(1)
         unitPortrait:SetPosition(0, 0, 0)
@@ -22,35 +26,32 @@ function UUF:CreateUnitPortrait(unitFrame, unit)
         unitPortrait.Backdrop = backdrop
     else
         unitPortrait = unitFrame.HighLevelContainer:CreateTexture(frameName .. "_Portrait2D", "BACKGROUND")
-        unitPortrait:SetSize(PortraitDB.Width, PortraitDB.Height)
-        unitPortrait:SetPoint(PortraitDB.Layout[1], unitFrame.HighLevelContainer, PortraitDB.Layout[2], PortraitDB.Layout[3], PortraitDB.Layout[4])
+        UUF:QueueOrRun(function()
+            unitPortrait:SetSize(PortraitDB.Width, PortraitDB.Height)
+            unitPortrait:SetPoint(PortraitDB.Layout[1], unitFrame.HighLevelContainer, PortraitDB.Layout[2], PortraitDB.Layout[3], PortraitDB.Layout[4])
+        end)
         unitPortrait:SetTexCoord((PortraitDB.Zoom or 0) * 0.5, 1 - (PortraitDB.Zoom or 0) * 0.5, (PortraitDB.Zoom or 0) * 0.5, 1 - (PortraitDB.Zoom or 0) * 0.5)
         unitPortrait.showClass = PortraitDB.UseClassPortrait
     end
 
     local borderParent = unitPortrait.Backdrop or unitFrame.HighLevelContainer
     unitPortrait.Border = CreateFrame("Frame", frameName .. "_PortraitBorder", borderParent, "BackdropTemplate")
-    unitPortrait.Border:SetAllPoints(unitPortrait.Backdrop or unitPortrait)
+    UUF:QueueOrRun(function()
+        unitPortrait.Border:SetAllPoints(unitPortrait.Backdrop or unitPortrait)
+        unitPortrait.Border:SetFrameLevel(borderParent:GetFrameLevel() + 10)
+    end)
     unitPortrait.Border:SetBackdrop(UUF.BACKDROP)
     unitPortrait.Border:SetBackdropColor(0, 0, 0, 0)
     unitPortrait.Border:SetBackdropBorderColor(0, 0, 0, 1)
-    unitPortrait.Border:SetFrameLevel(borderParent:GetFrameLevel() + 10)
 
     if PortraitDB.Enabled then
         unitFrame.Portrait = unitPortrait
-        unitFrame.Portrait:Show()
-        if unitFrame.Portrait.Backdrop then
-            unitFrame.Portrait.Backdrop:Show()
-        end
+        UUF:QueueOrRun(function() unitFrame.Portrait:Show() if unitFrame.Portrait.Backdrop then unitFrame.Portrait.Backdrop:Show() end end)
     else
         if unitFrame:IsElementEnabled("Portrait") then
             unitFrame:DisableElement("Portrait")
         end
-        unitPortrait:Hide()
-        unitPortrait.Border:Hide()
-        if unitPortrait.Backdrop then
-            unitPortrait.Backdrop:Hide()
-        end
+        UUF:QueueOrRun(function() unitPortrait:Hide() unitPortrait.Border:Hide() if unitPortrait.Backdrop then unitPortrait.Backdrop:Hide() end end)
     end
 
     return unitPortrait
@@ -89,25 +90,29 @@ function UUF:UpdateUnitPortrait(unitFrame, unit)
 
         if unitFrame.Portrait then
             if unitFrame.Portrait:IsObjectType("PlayerModel") then
-                unitFrame.Portrait.Backdrop:ClearAllPoints()
-                unitFrame.Portrait.Backdrop:SetSize(PortraitDB.Width, PortraitDB.Height)
-                unitFrame.Portrait.Backdrop:SetPoint(PortraitDB.Layout[1], unitFrame.HighLevelContainer, PortraitDB.Layout[2], PortraitDB.Layout[3], PortraitDB.Layout[4])
-
+                UUF:QueueOrRun(function()
+                    unitFrame.Portrait.Backdrop:ClearAllPoints()
+                    unitFrame.Portrait.Backdrop:SetSize(PortraitDB.Width, PortraitDB.Height)
+                    unitFrame.Portrait.Backdrop:SetPoint(PortraitDB.Layout[1], unitFrame.HighLevelContainer, PortraitDB.Layout[2], PortraitDB.Layout[3], PortraitDB.Layout[4])
+                    unitFrame.Portrait.Backdrop:Show()
+                end)
                 unitFrame.Portrait:SetCamDistanceScale(1)
                 unitFrame.Portrait:SetPortraitZoom(1)
                 unitFrame.Portrait:SetPosition(0, 0, 0)
-
-                unitFrame.Portrait.Backdrop:Show()
             else
-                unitFrame.Portrait:ClearAllPoints()
-                unitFrame.Portrait:SetSize(PortraitDB.Width, PortraitDB.Height)
-                unitFrame.Portrait:SetPoint(PortraitDB.Layout[1], unitFrame.HighLevelContainer, PortraitDB.Layout[2], PortraitDB.Layout[3], PortraitDB.Layout[4])
+                UUF:QueueOrRun(function()
+                    unitFrame.Portrait:ClearAllPoints()
+                    unitFrame.Portrait:SetSize(PortraitDB.Width, PortraitDB.Height)
+                    unitFrame.Portrait:SetPoint(PortraitDB.Layout[1], unitFrame.HighLevelContainer, PortraitDB.Layout[2], PortraitDB.Layout[3], PortraitDB.Layout[4])
+                end)
                 unitFrame.Portrait:SetTexCoord((PortraitDB.Zoom or 0) * 0.5, 1 - (PortraitDB.Zoom or 0) * 0.5, (PortraitDB.Zoom or 0) * 0.5, 1 - (PortraitDB.Zoom or 0) * 0.5)
                 unitFrame.Portrait.showClass = PortraitDB.UseClassPortrait
             end
 
-            unitFrame.Portrait:Show()
-            unitFrame.Portrait.Border:Show()
+            UUF:QueueOrRun(function()
+                unitFrame.Portrait:Show()
+                unitFrame.Portrait.Border:Show()
+            end)
             unitFrame.Portrait:ForceUpdate()
         end
     else

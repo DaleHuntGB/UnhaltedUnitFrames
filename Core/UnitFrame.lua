@@ -28,7 +28,9 @@ function UUF:CreateUnitFrame(unitFrame, unit)
     if unit == "player" then UUF:CreateUnitAlternativePowerBar(unitFrame, unit) end
     if unit == "player" then UUF:CreateUnitSecondaryPowerBar(unitFrame, unit) end
     UUF:CreateUnitRaidTargetMarker(unitFrame, unit)
-    if unit == "player" or unit == "target" or normalizedUnit == "party" then UUF:CreateUnitLeaderAssistantIndicator(unitFrame, unit) end
+    if (unit == "player" or unit == "target" or normalizedUnit == "party") and UUF.CreateUnitLeaderAssistantIndicator then
+        UUF:CreateUnitLeaderAssistantIndicator(unitFrame, unit)
+    end
     if normalizedUnit == "party" then UUF:CreateUnitGroupRoleIndicator(unitFrame, unit) end
     if unit == "player" or unit == "target" then UUF:CreateUnitCombatIndicator(unitFrame, unit) end
     if unit == "player" then UUF:CreateUnitRestingIndicator(unitFrame, unit) end
@@ -51,6 +53,8 @@ local function SortPartyFramesByRole(a, b)
 end
 
 function UUF:LayoutPartyFrames()
+    if InCombatLockdown() then return end
+    
     local PartyDB = UUF.db.profile.Units.party
     local Frame = PartyDB.Frame
     if #UUF.PARTY_FRAMES == 0 then return end
@@ -81,6 +85,8 @@ function UUF:LayoutPartyFrames()
 end
 
 function UUF:LayoutBossFrames()
+    if InCombatLockdown() then return end
+    
     local Frame = UUF.db.profile.Units.boss.Frame
     if #UUF.BOSS_FRAMES == 0 then return end
     local bossFrames = UUF.BOSS_FRAMES
@@ -158,32 +164,44 @@ function UUF:SpawnUnitFrame(unit)
     if UnitDB.Enabled then
         if unit == "boss" then
             for i = 1, UUF.MAX_BOSS_FRAMES do
-                RegisterUnitWatch(UUF[unit:upper() .. i])
-                UUF[unit:upper() .. i]:Show()
+                UUF:QueueOrRun(function()
+                    RegisterUnitWatch(UUF[unit:upper() .. i])
+                    UUF[unit:upper() .. i]:Show()
+                end)
             end
         elseif unit == "party" then
             for i = 1, UUF.MAX_PARTY_MEMBERS do
-                RegisterUnitWatch(UUF[unit:upper() .. i])
-                UUF[unit:upper() .. i]:Show()
+                UUF:QueueOrRun(function()
+                    RegisterUnitWatch(UUF[unit:upper() .. i])
+                    UUF[unit:upper() .. i]:Show()
+                end)
             end
         else
-            RegisterUnitWatch(UUF[unit:upper()])
-            UUF[unit:upper()]:Show()
+            UUF:QueueOrRun(function()
+                RegisterUnitWatch(UUF[unit:upper()])
+                UUF[unit:upper()]:Show()
+            end)
         end
     else
         if unit == "boss" then
             for i = 1, UUF.MAX_BOSS_FRAMES do
-                UnregisterUnitWatch(UUF[unit:upper() .. i])
-                UUF[unit:upper() .. i]:Hide()
+                UUF:QueueOrRun(function()
+                    UnregisterUnitWatch(UUF[unit:upper() .. i])
+                    UUF[unit:upper() .. i]:Hide()
+                end)
             end
         elseif unit == "party" then
             for i = 1, UUF.MAX_PARTY_MEMBERS do
-                UnregisterUnitWatch(UUF[unit:upper() .. i])
-                UUF[unit:upper() .. i]:Hide()
+                UUF:QueueOrRun(function()
+                    UnregisterUnitWatch(UUF[unit:upper() .. i])
+                    UUF[unit:upper() .. i]:Hide()
+                end)
             end
         else
-            UnregisterUnitWatch(UUF[unit:upper()])
-            UUF[unit:upper()]:Hide()
+            UUF:QueueOrRun(function()
+                UnregisterUnitWatch(UUF[unit:upper()])
+                UUF[unit:upper()]:Hide()
+            end)
         end
     end
 
@@ -191,6 +209,7 @@ function UUF:SpawnUnitFrame(unit)
 end
 
 function UUF:UpdateUnitFrame(unitFrame, unit)
+    if not unitFrame or not unit then return end
     local normalizedUnit = UUF:GetNormalizedUnit(unit)
     local UnitDB = UUF.db.profile.Units[normalizedUnit]
     if normalizedUnit ~= "targettarget" and normalizedUnit ~= "focustarget" then UUF:UpdateUnitCastBar(unitFrame, unit) end
@@ -201,7 +220,9 @@ function UUF:UpdateUnitFrame(unitFrame, unit)
     if unit == "player" then UUF:UpdateUnitAlternativePowerBar(unitFrame, unit) end
     if unit == "player" then UUF:UpdateUnitSecondaryPowerBar(unitFrame, unit) end
     UUF:UpdateUnitRaidTargetMarker(unitFrame, unit)
-    if unit == "player" or unit == "target" or normalizedUnit == "party" then UUF:UpdateUnitLeaderAssistantIndicator(unitFrame, unit) end
+    if (unit == "player" or unit == "target" or normalizedUnit == "party") and UUF.UpdateUnitLeaderAssistantIndicator then
+        UUF:UpdateUnitLeaderAssistantIndicator(unitFrame, unit)
+    end
     if normalizedUnit == "party" then UUF:UpdateUnitGroupRoleIndicator(unitFrame, unit) end
     if unit == "player" or unit == "target" then UUF:UpdateUnitCombatIndicator(unitFrame, unit) end
     if unit == "player" then UUF:UpdateUnitRestingIndicator(unitFrame, unit) end
@@ -210,7 +231,9 @@ function UUF:UpdateUnitFrame(unitFrame, unit)
     UUF:UpdateUnitTargetGlowIndicator(unitFrame, unit)
     UUF:UpdateUnitAuras(unitFrame, unit)
     UUF:UpdateUnitTags()
-    unitFrame:SetFrameStrata(UnitDB.Frame.FrameStrata)
+    UUF:QueueOrRun(function()
+        unitFrame:SetFrameStrata(UnitDB.Frame.FrameStrata)
+    end)
 end
 
 function UUF:UpdateBossFrames()
@@ -258,19 +281,25 @@ function UUF:ToggleUnitFrameVisibility(unit)
     if unit == "boss" then
         for i = 1, UUF.MAX_BOSS_FRAMES do
             local unitFrame = UUF["BOSS"..i]
-            if unitFrame then (UnitDB.Enabled and RegisterUnitWatch or UnregisterUnitWatch)(unitFrame) unitFrame:SetShown(UnitDB.Enabled) end
+            if unitFrame then
+                local enabled = UnitDB.Enabled
+                UUF:QueueOrRun(function() (enabled and RegisterUnitWatch or UnregisterUnitWatch)(unitFrame) unitFrame:SetShown(enabled) end)
+            end
         end
         return
     elseif unit == "party" then
         for i = 1, UUF.MAX_PARTY_MEMBERS do
             local unitFrame = UUF["PARTY"..i]
-            if unitFrame then (UnitDB.Enabled and RegisterUnitWatch or UnregisterUnitWatch)(unitFrame) unitFrame:SetShown(UnitDB.Enabled) end
+            if unitFrame then
+                local enabled = UnitDB.Enabled
+                UUF:QueueOrRun(function() (enabled and RegisterUnitWatch or UnregisterUnitWatch)(unitFrame) unitFrame:SetShown(enabled) end)
+            end
         end
         return
     end
 
     local unitFrame = UUF[UnitKey]
     if not unitFrame then return end
-    (UnitDB.Enabled and RegisterUnitWatch or UnregisterUnitWatch)(unitFrame)
-    unitFrame:SetShown(UnitDB.Enabled)
+    local enabled = UnitDB.Enabled
+    UUF:QueueOrRun(function() (enabled and RegisterUnitWatch or UnregisterUnitWatch)(unitFrame) unitFrame:SetShown(enabled) end)
 end

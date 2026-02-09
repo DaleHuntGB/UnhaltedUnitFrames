@@ -7,8 +7,10 @@ function UUF:CreateUnitPowerBar(unitFrame, unit)
     local frameName = unitFrame:GetName() or UUF:FetchFrameName(unit)
 
     local PowerBar = CreateFrame("StatusBar", frameName .. "_PowerBar", unitContainer)
-    PowerBar:SetPoint("BOTTOMLEFT", unitContainer, "BOTTOMLEFT", 1, 1)
-    PowerBar:SetSize(FrameDB.Width - 2, PowerBarDB.Height)
+    UUF:QueueOrRun(function()
+        PowerBar:SetPoint("BOTTOMLEFT", unitContainer, "BOTTOMLEFT", 1, 1)
+        PowerBar:SetSize(FrameDB.Width - 2, PowerBarDB.Height)
+    end)
     PowerBar:SetStatusBarTexture(UUF.Media.Foreground)
     PowerBar:SetStatusBarColor(PowerBarDB.Foreground[1], PowerBarDB.Foreground[2], PowerBarDB.Foreground[3], PowerBarDB.Foreground[4] or 1)
     PowerBar:SetFrameLevel(unitContainer:GetFrameLevel() + 2)
@@ -23,8 +25,10 @@ function UUF:CreateUnitPowerBar(unitFrame, unit)
     end
 
     PowerBar.Background = PowerBar:CreateTexture(frameName .. "_PowerBackground", "BACKGROUND")
-    PowerBar.Background:SetPoint("BOTTOMLEFT", unitContainer, "BOTTOMLEFT", 1, 1)
-    PowerBar.Background:SetSize(FrameDB.Width - 2, PowerBarDB.Height)
+    UUF:QueueOrRun(function()
+        PowerBar.Background:SetPoint("BOTTOMLEFT", unitContainer, "BOTTOMLEFT", 1, 1)
+        PowerBar.Background:SetSize(FrameDB.Width - 2, PowerBarDB.Height)
+    end)
     PowerBar.Background:SetTexture(UUF.Media.Background)
     PowerBar.Background:SetVertexColor(PowerBarDB.Background[1], PowerBarDB.Background[2], PowerBarDB.Background[3], PowerBarDB.Background[4] or 1)
 
@@ -39,12 +43,10 @@ function UUF:CreateUnitPowerBar(unitFrame, unit)
 
     if PowerBarDB.Enabled then
         unitFrame.Power = PowerBar
-        PowerBar:Show()
-        if unitFrame.PowerBackground then unitFrame.PowerBackground:Show() end
+        UUF:QueueOrRun(function() PowerBar:Show() if unitFrame.PowerBackground then unitFrame.PowerBackground:Show() end end)
     else
         if unitFrame:IsElementEnabled("Power") then unitFrame:DisableElement("Power") end
-        PowerBar:Hide()
-        if unitFrame.PowerBackground then unitFrame.PowerBackground:Hide() end
+        UUF:QueueOrRun(function() PowerBar:Hide() if unitFrame.PowerBackground then unitFrame.PowerBackground:Hide() end end)
     end
 
     UUF:UpdateHealthBarLayout(unitFrame, unit)
@@ -62,41 +64,41 @@ function UUF:UpdateUnitPowerBar(unitFrame, unit)
         if not unitFrame:IsElementEnabled("Power") then unitFrame:EnableElement("Power") end
 
         if unitFrame.Power then
-            unitFrame.Power:ClearAllPoints()
-            unitFrame.Power:SetPoint("BOTTOMLEFT", unitFrame.Container, "BOTTOMLEFT", 1, 1)
-            unitFrame.Power:SetSize(unitFrame:GetWidth() - 2, PowerBarDB.Height)
-            unitFrame.Power:SetStatusBarColor(PowerBarDB.Foreground[1], PowerBarDB.Foreground[2], PowerBarDB.Foreground[3], PowerBarDB.Foreground[4] or 1)
-            unitFrame.Power:SetStatusBarTexture(UUF.Media.Foreground)
-            unitFrame.Power.colorPower = PowerBarDB.ColourByType
-            unitFrame.Power.colorClass = PowerBarDB.ColourByClass
-            unitFrame.Power.frequentUpdates = PowerBarDB.Smooth
-            if PowerBarDB.Inverse then
-                unitFrame.Power:SetReverseFill(true)
-            else
-                unitFrame.Power:SetReverseFill(false)
-            end
+            local pw = unitFrame.Power
+            UUF:QueueOrRun(function()
+                pw:ClearAllPoints()
+                pw:SetPoint("BOTTOMLEFT", unitFrame.Container, "BOTTOMLEFT", 1, 1)
+                pw:SetSize(unitFrame:GetWidth() - 2, PowerBarDB.Height)
+                if pw.Background then
+                    pw.Background:ClearAllPoints()
+                    pw.Background:SetPoint("BOTTOMLEFT", unitFrame.Container, "BOTTOMLEFT", 1, 1)
+                    pw.Background:SetSize(unitFrame:GetWidth() - 2, PowerBarDB.Height)
+                    pw.Background:SetTexture(UUF.Media.Background)
+                    pw.Background:SetVertexColor(PowerBarDB.Background[1], PowerBarDB.Background[2], PowerBarDB.Background[3], PowerBarDB.Background[4] or 1)
+                end
+                if pw.PowerBarBorder then
+                    pw.PowerBarBorder:ClearAllPoints()
+                    pw.PowerBarBorder:SetPoint("TOPLEFT", pw, "TOPLEFT", 0, 1)
+                    pw.PowerBarBorder:SetPoint("TOPRIGHT", pw, "TOPRIGHT", 0, 1)
+                end
+                pw:SetStatusBarColor(PowerBarDB.Foreground[1], PowerBarDB.Foreground[2], PowerBarDB.Foreground[3], PowerBarDB.Foreground[4] or 1)
+                pw:SetStatusBarTexture(UUF.Media.Foreground)
+                pw.colorPower = PowerBarDB.ColourByType
+                pw.colorClass = PowerBarDB.ColourByClass
+                pw.frequentUpdates = PowerBarDB.Smooth
+                if PowerBarDB.Inverse then
+                    pw:SetReverseFill(true)
+                else
+                    pw:SetReverseFill(false)
+                end
+                pw:Show()
+                pw:ForceUpdate()
+            end)
         end
-
-        if unitFrame.Power.Background then
-            unitFrame.Power.Background:ClearAllPoints()
-            unitFrame.Power.Background:SetPoint("BOTTOMLEFT", unitFrame.Container, "BOTTOMLEFT", 1, 1)
-            unitFrame.Power.Background:SetSize(unitFrame:GetWidth() - 2, PowerBarDB.Height)
-            unitFrame.Power.Background:SetVertexColor(PowerBarDB.Background[1], PowerBarDB.Background[2], PowerBarDB.Background[3], PowerBarDB.Background[4] or 1)
-            unitFrame.Power.Background:SetTexture(UUF.Media.Background)
-        end
-
-        if unitFrame.Power.PowerBarBorder then
-            unitFrame.Power.PowerBarBorder:ClearAllPoints()
-            unitFrame.Power.PowerBarBorder:SetPoint("TOPLEFT", unitFrame.Power, "TOPLEFT", 0, 1)
-            unitFrame.Power.PowerBarBorder:SetPoint("TOPRIGHT", unitFrame.Power, "TOPRIGHT", 0, 1)
-        end
-
-        unitFrame.Power:Show()
-        unitFrame.Power:ForceUpdate()
     else
         if not unitFrame.Power then return end
         if unitFrame:IsElementEnabled("Power") then unitFrame:DisableElement("Power") end
-        unitFrame.Power:Hide()
+        if unitFrame.Power then UUF:QueueOrRun(function() unitFrame.Power:Hide() end) end
         unitFrame.Power = nil
     end
 

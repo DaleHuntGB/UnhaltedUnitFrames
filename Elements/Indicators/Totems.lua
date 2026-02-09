@@ -53,11 +53,12 @@ function UUF:CreateUnitTotems(unitFrame, unit)
     -- Create 4 totems but stack them all in the same position
     for index = 1, 4 do
         local Totem = CreateFrame('Button', nil, unitFrame, 'SecureActionButtonTemplate')
-        Totem:SetSize(TotemsDB.Size, TotemsDB.Size)
-        Totem:SetPoint(anchorFrom, unitFrame, anchorTo, xOffset, yOffset)
-        Totem:RegisterForClicks("RightButtonUp", "RightButtonDown")
-        Totem:SetAttribute("type2", "destroytotem")
-        Totem:SetAttribute("totem-slot2", index)
+        UUF:QueueOrRun(function()
+            Totem:SetSize(TotemsDB.Size, TotemsDB.Size)
+            Totem:SetPoint(anchorFrom, unitFrame, anchorTo, xOffset, yOffset)
+            Totem:SetAttribute("type2", "destroytotem")
+            Totem:SetAttribute("totem-slot2", index)
+        end)
 
         local Border = Totem:CreateTexture(nil, 'BACKGROUND')
         Border:SetAllPoints()
@@ -102,9 +103,11 @@ function UUF:UpdateUnitTotems(unitFrame, unit)
 
             for index = 1, 4 do
                 local Totem = unitFrame.Totems[index]
-                Totem:SetSize(TotemsDB.Size, TotemsDB.Size)
-                Totem:ClearAllPoints()
-                Totem:SetPoint(anchorFrom, unitFrame, anchorTo, xOffset, yOffset)
+                UUF:QueueOrRun(function()
+                    Totem:SetSize(TotemsDB.Size, TotemsDB.Size)
+                    Totem:ClearAllPoints()
+                    Totem:SetPoint(anchorFrom, unitFrame, anchorTo, xOffset, yOffset)
+                end)
                 ApplyAuraDuration(Totem.Cooldown, unit)
             end
         end

@@ -23,19 +23,23 @@ function UUF:CreateUnitAlternativePowerBar(unitFrame, unit)
     local frameName = unitFrame:GetName() or UUF:FetchFrameName(unit)
 
     local AlternativePowerBar = CreateFrame("Frame", frameName.."_AlternativePowerBar", unitContainer, "BackdropTemplate")
-    AlternativePowerBar:SetPoint(AlternativePowerBarDB.Layout[1], unitContainer, AlternativePowerBarDB.Layout[2], AlternativePowerBarDB.Layout[3], AlternativePowerBarDB.Layout[4])
-    AlternativePowerBar:SetSize(AlternativePowerBarDB.Width, AlternativePowerBarDB.Height)
-    AlternativePowerBar:SetBackdrop(UUF.BACKDROP)
-    AlternativePowerBar:SetBackdropColor(AlternativePowerBarDB.Background[1], AlternativePowerBarDB.Background[2], AlternativePowerBarDB.Background[3], AlternativePowerBarDB.Background[4])
-    AlternativePowerBar:SetBackdropBorderColor(0, 0, 0, 1)
-    AlternativePowerBar:SetFrameLevel(unitContainer:GetFrameLevel() + 5)
+    UUF:QueueOrRun(function()
+        AlternativePowerBar:SetPoint(AlternativePowerBarDB.Layout[1], unitContainer, AlternativePowerBarDB.Layout[2], AlternativePowerBarDB.Layout[3], AlternativePowerBarDB.Layout[4])
+        AlternativePowerBar:SetSize(AlternativePowerBarDB.Width, AlternativePowerBarDB.Height)
+        AlternativePowerBar:SetBackdrop(UUF.BACKDROP)
+        AlternativePowerBar:SetBackdropColor(AlternativePowerBarDB.Background[1], AlternativePowerBarDB.Background[2], AlternativePowerBarDB.Background[3], AlternativePowerBarDB.Background[4])
+        AlternativePowerBar:SetBackdropBorderColor(0, 0, 0, 1)
+        AlternativePowerBar:SetFrameLevel(unitContainer:GetFrameLevel() + 5)
+    end)
 
     AlternativePowerBar.Status = CreateFrame("StatusBar", frameName.."_AlternativePowerBarStatus", AlternativePowerBar)
-    AlternativePowerBar.Status:SetPoint("TOPLEFT", AlternativePowerBar, "TOPLEFT", 1, -1)
-    AlternativePowerBar.Status:SetPoint("BOTTOMRIGHT", AlternativePowerBar, "BOTTOMRIGHT", -1, 1)
-    AlternativePowerBar.Status:SetSize(AlternativePowerBarDB.Width, AlternativePowerBarDB.Height)
-    AlternativePowerBar.Status:SetStatusBarTexture(UUF.Media.Foreground)
-    AlternativePowerBar.Status:SetFrameLevel(AlternativePowerBar:GetFrameLevel() + 1)
+    UUF:QueueOrRun(function()
+        AlternativePowerBar.Status:SetPoint("TOPLEFT", AlternativePowerBar, "TOPLEFT", 1, -1)
+        AlternativePowerBar.Status:SetPoint("BOTTOMRIGHT", AlternativePowerBar, "BOTTOMRIGHT", -1, 1)
+        AlternativePowerBar.Status:SetSize(AlternativePowerBarDB.Width, AlternativePowerBarDB.Height)
+        AlternativePowerBar.Status:SetStatusBarTexture(UUF.Media.Foreground)
+        AlternativePowerBar.Status:SetFrameLevel(AlternativePowerBar:GetFrameLevel() + 1)
+    end)
     if AlternativePowerBarDB.ColourByType then
         local powerColour = UUFDB.General.Colours.Power[0]
         if powerColour then AlternativePowerBar.Status:SetStatusBarColor(powerColour[1], powerColour[2], powerColour[3], powerColour[4]) end
@@ -51,14 +55,14 @@ function UUF:CreateUnitAlternativePowerBar(unitFrame, unit)
     end
 
     if AlternativePowerBarDB.Enabled and UUF:RequiresAlternativePowerBar() then
-        AlternativePowerBar:Show()
+        UUF:QueueOrRun(function() AlternativePowerBar:Show() end)
         AlternativePowerBar:RegisterEvent("PLAYER_ENTERING_WORLD")
         for _, event in ipairs(ALTERNATIVE_POWER_BAR_EVENTS) do
             AlternativePowerBar:RegisterUnitEvent(event, unit)
         end
         AlternativePowerBar:SetScript("OnEvent", UpdateUnitPowerBarValues)
     else
-        AlternativePowerBar:Hide()
+        UUF:QueueOrRun(function() AlternativePowerBar:Hide() end)
         AlternativePowerBar:UnregisterAllEvents()
         AlternativePowerBar:SetScript("OnEvent", nil)
     end
@@ -74,14 +78,16 @@ function UUF:UpdateUnitAlternativePowerBar(unitFrame, unit)
     if not AlternativePowerBar then return end
 
     AlternativePowerBar:ClearAllPoints()
-    AlternativePowerBar:SetPoint(AlternativePowerBarDB.Layout[1], unitFrame.Container, AlternativePowerBarDB.Layout[2], AlternativePowerBarDB.Layout[3], AlternativePowerBarDB.Layout[4])
-    AlternativePowerBar:SetSize(AlternativePowerBarDB.Width, AlternativePowerBarDB.Height)
-    AlternativePowerBar:SetBackdropColor(AlternativePowerBarDB.Background[1], AlternativePowerBarDB.Background[2], AlternativePowerBarDB.Background[3], AlternativePowerBarDB.Background[4])
+    UUF:QueueOrRun(function()
+        AlternativePowerBar:SetPoint(AlternativePowerBarDB.Layout[1], unitFrame.Container, AlternativePowerBarDB.Layout[2], AlternativePowerBarDB.Layout[3], AlternativePowerBarDB.Layout[4])
+        AlternativePowerBar:SetSize(AlternativePowerBarDB.Width, AlternativePowerBarDB.Height)
+        AlternativePowerBar:SetBackdropColor(AlternativePowerBarDB.Background[1], AlternativePowerBarDB.Background[2], AlternativePowerBarDB.Background[3], AlternativePowerBarDB.Background[4])
 
-    AlternativePowerBar.Status:ClearAllPoints()
-    AlternativePowerBar.Status:SetPoint("TOPLEFT", AlternativePowerBar, "TOPLEFT", 1, -1)
-    AlternativePowerBar.Status:SetPoint("BOTTOMRIGHT", AlternativePowerBar, "BOTTOMRIGHT", -1, 1)
-    AlternativePowerBar.Status:SetSize(AlternativePowerBarDB.Width, AlternativePowerBarDB.Height)
+        AlternativePowerBar.Status:ClearAllPoints()
+        AlternativePowerBar.Status:SetPoint("TOPLEFT", AlternativePowerBar, "TOPLEFT", 1, -1)
+        AlternativePowerBar.Status:SetPoint("BOTTOMRIGHT", AlternativePowerBar, "BOTTOMRIGHT", -1, 1)
+        AlternativePowerBar.Status:SetSize(AlternativePowerBarDB.Width, AlternativePowerBarDB.Height)
+    end)
     if AlternativePowerBarDB.ColourByType then
         local powerColour = UUFDB.General.Colours.Power[0]
         if powerColour then AlternativePowerBar.Status:SetStatusBarColor(powerColour[1], powerColour[2], powerColour[3], powerColour[4]) end
@@ -96,7 +102,7 @@ function UUF:UpdateUnitAlternativePowerBar(unitFrame, unit)
     end
 
     if AlternativePowerBarDB.Enabled and UUF:RequiresAlternativePowerBar() then
-        AlternativePowerBar:Show()
+        UUF:QueueOrRun(function() AlternativePowerBar:Show() end)
         AlternativePowerBar:Show()
         AlternativePowerBar:RegisterEvent("PLAYER_ENTERING_WORLD")
         for _, event in ipairs(ALTERNATIVE_POWER_BAR_EVENTS) do
@@ -104,7 +110,7 @@ function UUF:UpdateUnitAlternativePowerBar(unitFrame, unit)
         end
         AlternativePowerBar:SetScript("OnEvent", UpdateUnitPowerBarValues)
     else
-        AlternativePowerBar:Hide()
+        UUF:QueueOrRun(function() AlternativePowerBar:Hide() end)
         AlternativePowerBar:UnregisterAllEvents()
         AlternativePowerBar:SetScript("OnEvent", nil)
     end

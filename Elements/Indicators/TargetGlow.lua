@@ -18,13 +18,15 @@ function UUF:CreateUnitTargetGlowIndicator(unitFrame, unit)
     local frameName = unitFrame:GetName() or UUF:FetchFrameName(unit)
     if TargetIndicatorDB then
         unitFrame.TargetIndicator = CreateFrame("Frame", frameName.."_TargetIndicator", unitFrame.Container, "BackdropTemplate")
-        unitFrame.TargetIndicator:SetFrameLevel(unitFrame.Container:GetFrameLevel() + 3)
-        unitFrame.TargetIndicator:SetBackdrop({ edgeFile = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Glow.tga", edgeSize = 3, insets = {left = -3, right = -3, top = -3, bottom = -3} })
-        unitFrame.TargetIndicator:SetBackdropColor(0, 0, 0, 0)
-        unitFrame.TargetIndicator:SetBackdropBorderColor(TargetIndicatorDB.Colour[1], TargetIndicatorDB.Colour[2], TargetIndicatorDB.Colour[3], TargetIndicatorDB.Colour[4])
-        unitFrame.TargetIndicator:SetPoint("TOPLEFT", unitFrame.Container, "TOPLEFT", -3, 3)
-        unitFrame.TargetIndicator:SetPoint("BOTTOMRIGHT", unitFrame.Container, "BOTTOMRIGHT", 3, -3)
-        unitFrame.TargetIndicator:SetAlpha(0)
+        UUF:QueueOrRun(function()
+            unitFrame.TargetIndicator:SetFrameLevel(unitFrame.Container:GetFrameLevel() + 3)
+            unitFrame.TargetIndicator:SetBackdrop({ edgeFile = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Glow.tga", edgeSize = 3, insets = {left = -3, right = -3, top = -3, bottom = -3} })
+            unitFrame.TargetIndicator:SetBackdropColor(0, 0, 0, 0)
+            unitFrame.TargetIndicator:SetBackdropBorderColor(TargetIndicatorDB.Colour[1], TargetIndicatorDB.Colour[2], TargetIndicatorDB.Colour[3], TargetIndicatorDB.Colour[4])
+            unitFrame.TargetIndicator:SetPoint("TOPLEFT", unitFrame.Container, "TOPLEFT", -3, 3)
+            unitFrame.TargetIndicator:SetPoint("BOTTOMRIGHT", unitFrame.Container, "BOTTOMRIGHT", 3, -3)
+            unitFrame.TargetIndicator:SetAlpha(0)
+        end)
     end
 end
 

@@ -14,7 +14,13 @@ local function GroupRoleOverride(self, event)
         configUnit = "party"
     end
     
-    local GroupRoleDB = UUF.db.profile.Units[configUnit].Indicators.GroupRole
+    local unitConfig = UUF.db.profile.Units[configUnit]
+    if not unitConfig then
+        if element then UUF:QueueOrRun(function() element:Hide() end) end
+        return
+    end
+    
+    local GroupRoleDB = unitConfig.Indicators.GroupRole
     local texData = GetTextureData(GroupRoleDB and GroupRoleDB.Texture)
     
     local role = UnitGroupRolesAssigned(self.unit)
@@ -22,9 +28,9 @@ local function GroupRoleOverride(self, event)
         if texData and texData.coords and texData.coords[role] then
             element:SetTexCoord(unpack(texData.coords[role]))
         end
-        element:Show()
+        UUF:QueueOrRun(function() element:Show() end)
     else
-        element:Hide()
+        UUF:QueueOrRun(function() element:Hide() end)
     end
 end
 
@@ -34,8 +40,10 @@ function UUF:CreateUnitGroupRoleIndicator(unitFrame, unit)
 
     if GroupRoleDB then
         local Role = unitFrame.HighLevelContainer:CreateTexture(frameName .. "_GroupRoleIndicator", "OVERLAY")
-        Role:SetSize(GroupRoleDB.Size, GroupRoleDB.Size)
-        Role:SetPoint(GroupRoleDB.Layout[1], unitFrame.HighLevelContainer, GroupRoleDB.Layout[2], GroupRoleDB.Layout[3], GroupRoleDB.Layout[4])
+        UUF:QueueOrRun(function()
+            Role:SetSize(GroupRoleDB.Size, GroupRoleDB.Size)
+            Role:SetPoint(GroupRoleDB.Layout[1], unitFrame.HighLevelContainer, GroupRoleDB.Layout[2], GroupRoleDB.Layout[3], GroupRoleDB.Layout[4])
+        end)
 
         if GroupRoleDB.Enabled then
             unitFrame.GroupRoleIndicator = Role
@@ -54,32 +62,43 @@ function UUF:CreateUnitGroupRoleIndicator(unitFrame, unit)
 end
 
 function UUF:UpdateUnitGroupRoleIndicator(unitFrame, unit)
-    local GroupRoleDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Indicators.GroupRole
+    local GroupRoleDB = UUF:GetUnitIndicatorConfig(unit, "GroupRole")
+    
+    if not GroupRoleDB then
+        if unitFrame.GroupRoleIndicator then
+            unitFrame:DisableElement("GroupRoleIndicator")
+        end
+        return
+    end
 
     if GroupRoleDB.Enabled then
         unitFrame.GroupRoleIndicator = unitFrame.GroupRoleIndicator or UUF:CreateUnitGroupRoleIndicator(unitFrame, unit)
         if not unitFrame:IsElementEnabled("GroupRoleIndicator") then unitFrame:EnableElement("GroupRoleIndicator") end
 
-        if unitFrame.GroupRoleIndicator then
-            unitFrame.GroupRoleIndicator:ClearAllPoints()
-            unitFrame.GroupRoleIndicator:SetSize(GroupRoleDB.Size, GroupRoleDB.Size)
-            unitFrame.GroupRoleIndicator:SetPoint(GroupRoleDB.Layout[1], unitFrame.HighLevelContainer, GroupRoleDB.Layout[2], GroupRoleDB.Layout[3], GroupRoleDB.Layout[4])
-            local texData = GetTextureData(GroupRoleDB.Texture)
-            if texData and texData.path then
-                unitFrame.GroupRoleIndicator:SetTexture(texData.path)
-                unitFrame.GroupRoleIndicator.Override = GroupRoleOverride
-            else
-                unitFrame.GroupRoleIndicator:SetTexture(nil)
-                unitFrame.GroupRoleIndicator.Override = nil
+            if unitFrame.GroupRoleIndicator then
+                local indicator = unitFrame.GroupRoleIndicator
+                local texData = GetTextureData(GroupRoleDB.Texture)
+                UUF:QueueOrRun(function()
+                    indicator:ClearAllPoints()
+                    indicator:SetSize(GroupRoleDB.Size, GroupRoleDB.Size)
+                    indicator:SetPoint(GroupRoleDB.Layout[1], unitFrame.HighLevelContainer, GroupRoleDB.Layout[2], GroupRoleDB.Layout[3], GroupRoleDB.Layout[4])
+                    if texData and texData.path then
+                        indicator:SetTexture(texData.path)
+                        indicator.Override = GroupRoleOverride
+                    else
+                        indicator:SetTexture(nil)
+                        indicator.Override = nil
+                    end
+                    indicator:Show()
+                    indicator:ForceUpdate()
+                end)
             end
-            unitFrame.GroupRoleIndicator:Show()
-            unitFrame.GroupRoleIndicator:ForceUpdate()
-        end
     else
         if not unitFrame.GroupRoleIndicator then return end
         if unitFrame:IsElementEnabled("GroupRoleIndicator") then unitFrame:DisableElement("GroupRoleIndicator") end
         if unitFrame.GroupRoleIndicator then
-            unitFrame.GroupRoleIndicator:Hide()
+            local ind = unitFrame.GroupRoleIndicator
+            UUF:QueueOrRun(function() ind:Hide() end)
             unitFrame.GroupRoleIndicator = nil
         end
     end

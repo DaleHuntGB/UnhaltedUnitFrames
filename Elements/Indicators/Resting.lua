@@ -22,7 +22,7 @@ function UUF:CreateUnitRestingIndicator(unitFrame, unit)
             Resting:SetTexture(SetRestingTexture(RestingDB.Texture))
             Resting:SetTexCoord(0, 1, 0, 1)
         end
-        if IsResting() then Resting:Show() end
+        if IsResting() then UUF:QueueOrRun(function() Resting:Show() end) end
     end
 
     return Resting
@@ -37,27 +37,29 @@ function UUF:UpdateUnitRestingIndicator(unitFrame, unit)
         if not unitFrame:IsElementEnabled("RestingIndicator") then unitFrame:EnableElement("RestingIndicator") end
 
         if unitFrame.RestingIndicator then
-            unitFrame.RestingIndicator:ClearAllPoints()
-            unitFrame.RestingIndicator:SetSize(RestingDB.Size, RestingDB.Size)
-            unitFrame.RestingIndicator:SetPoint(RestingDB.Layout[1], unitFrame.HighLevelContainer, RestingDB.Layout[2], RestingDB.Layout[3], RestingDB.Layout[4])
-            if RestingDB.Texture == "DEFAULT" then
-                unitFrame.RestingIndicator:SetTexture([[Interface\CharacterFrame\UI-StateIcon]])
-                unitFrame.RestingIndicator:SetTexCoord(0, 0.5, 0, 0.421875)
-            else
-                unitFrame.RestingIndicator:SetTexture(SetRestingTexture(RestingDB.Texture))
-                unitFrame.RestingIndicator:SetTexCoord(0, 1, 0, 1)
-            end
-            if IsResting() then
-                unitFrame.RestingIndicator:Show()
-            else
-                unitFrame.RestingIndicator:Hide()
-            end
+            UUF:QueueOrRun(function()
+                unitFrame.RestingIndicator:ClearAllPoints()
+                unitFrame.RestingIndicator:SetSize(RestingDB.Size, RestingDB.Size)
+                unitFrame.RestingIndicator:SetPoint(RestingDB.Layout[1], unitFrame.HighLevelContainer, RestingDB.Layout[2], RestingDB.Layout[3], RestingDB.Layout[4])
+                if RestingDB.Texture == "DEFAULT" then
+                    unitFrame.RestingIndicator:SetTexture([[Interface\CharacterFrame\UI-StateIcon]])
+                    unitFrame.RestingIndicator:SetTexCoord(0, 0.5, 0, 0.421875)
+                else
+                    unitFrame.RestingIndicator:SetTexture(SetRestingTexture(RestingDB.Texture))
+                    unitFrame.RestingIndicator:SetTexCoord(0, 1, 0, 1)
+                end
+                if IsResting() then
+                    unitFrame.RestingIndicator:Show()
+                else
+                    unitFrame.RestingIndicator:Hide()
+                end
+            end)
         end
     else
         if not unitFrame.RestingIndicator then return end
         if unitFrame:IsElementEnabled("RestingIndicator") then unitFrame:DisableElement("RestingIndicator") end
         if unitFrame.RestingIndicator then
-            unitFrame.RestingIndicator:Hide()
+            UUF:QueueOrRun(function() unitFrame.RestingIndicator:Hide() end)
             unitFrame.RestingIndicator = nil
         end
     end

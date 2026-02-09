@@ -130,44 +130,46 @@ function UUF:UpdateUnitSecondaryPowerBar(unitFrame, unit)
     local totalWidth = FrameDB.Width - 2
     local unitFrameWidth = totalWidth / currentMaxPower
 
-    secondaryPowerBarElement.ContainerBackground:SetSize(totalWidth, DB.Height)
-    secondaryPowerBarElement.ContainerBackground:SetVertexColor(DB.Background[1], DB.Background[2], DB.Background[3], DB.Background[4] or 1)
-    secondaryPowerBarElement.ContainerBackground:ClearAllPoints()
-    secondaryPowerBarElement.ContainerBackground:SetPoint("TOPLEFT", unitFrame.Container, "TOPLEFT", 1, -1)
-    secondaryPowerBarElement.ContainerBackground:Show()
+    UUF:QueueOrRun(function()
+        secondaryPowerBarElement.ContainerBackground:SetSize(totalWidth, DB.Height)
+        secondaryPowerBarElement.ContainerBackground:SetVertexColor(DB.Background[1], DB.Background[2], DB.Background[3], DB.Background[4] or 1)
+        secondaryPowerBarElement.ContainerBackground:ClearAllPoints()
+        secondaryPowerBarElement.ContainerBackground:SetPoint("TOPLEFT", unitFrame.Container, "TOPLEFT", 1, -1)
+        secondaryPowerBarElement.ContainerBackground:Show()
 
-    secondaryPowerBarElement.OverlayFrame:SetAllPoints(unitFrame.Container)
-    secondaryPowerBarElement.OverlayFrame:SetFrameLevel(unitFrame.Container:GetFrameLevel() + 10)
-    secondaryPowerBarElement.OverlayFrame:Show()
+        secondaryPowerBarElement.OverlayFrame:SetAllPoints(unitFrame.Container)
+        secondaryPowerBarElement.OverlayFrame:SetFrameLevel(unitFrame.Container:GetFrameLevel() + 10)
+        secondaryPowerBarElement.OverlayFrame:Show()
 
-    secondaryPowerBarElement.PowerBarBorder:ClearAllPoints()
-    secondaryPowerBarElement.PowerBarBorder:SetVertexColor(0, 0, 0, 1)
-    secondaryPowerBarElement.PowerBarBorder:SetPoint("TOPLEFT", unitFrame.Container, "TOPLEFT", 1, -1 - DB.Height)
-    secondaryPowerBarElement.PowerBarBorder:SetPoint("TOPRIGHT", unitFrame.Container, "TOPLEFT", 1 + totalWidth, -1 - DB.Height)
-    secondaryPowerBarElement.PowerBarBorder:SetHeight(1)
-    secondaryPowerBarElement.PowerBarBorder:Show()
+        secondaryPowerBarElement.PowerBarBorder:ClearAllPoints()
+        secondaryPowerBarElement.PowerBarBorder:SetVertexColor(0, 0, 0, 1)
+        secondaryPowerBarElement.PowerBarBorder:SetPoint("TOPLEFT", unitFrame.Container, "TOPLEFT", 1, -1 - DB.Height)
+        secondaryPowerBarElement.PowerBarBorder:SetPoint("TOPRIGHT", unitFrame.Container, "TOPLEFT", 1 + totalWidth, -1 - DB.Height)
+        secondaryPowerBarElement.PowerBarBorder:SetHeight(1)
+        secondaryPowerBarElement.PowerBarBorder:Show()
 
-    for i = 1, currentMaxPower do
-        local bar = secondaryPowerBarElement[i]
-        bar:ClearAllPoints()
-        bar:SetPoint("TOPLEFT", unitFrame.Container, "TOPLEFT", 1 + ((i - 1) * unitFrameWidth), -1)
-        bar:SetSize(unitFrameWidth, DB.Height)
-        bar.Background:SetVertexColor(DB.Background[1], DB.Background[2], DB.Background[3], DB.Background[4] or 1)
-        bar:Show()
-    end
+        for i = 1, currentMaxPower do
+            local bar = secondaryPowerBarElement[i]
+            bar:ClearAllPoints()
+            bar:SetPoint("TOPLEFT", unitFrame.Container, "TOPLEFT", 1 + ((i - 1) * unitFrameWidth), -1)
+            bar:SetSize(unitFrameWidth, DB.Height)
+            bar.Background:SetVertexColor(DB.Background[1], DB.Background[2], DB.Background[3], DB.Background[4] or 1)
+            bar:Show()
+        end
 
-    for i = 1, currentMaxPower - 1 do
-        local tick = secondaryPowerBarElement.Ticks[i]
-        tick:ClearAllPoints()
-        tick:SetSize(1, DB.Height)
-        tick:SetVertexColor(0, 0, 0, 1)
-        tick:SetPoint("TOPLEFT", unitFrame.Container, "TOPLEFT", 1 + (i * unitFrameWidth) - 0.5, -1)
-        tick:Show()
-    end
+        for i = 1, currentMaxPower - 1 do
+            local tick = secondaryPowerBarElement.Ticks[i]
+            tick:ClearAllPoints()
+            tick:SetSize(1, DB.Height)
+            tick:SetVertexColor(0, 0, 0, 1)
+            tick:SetPoint("TOPLEFT", unitFrame.Container, "TOPLEFT", 1 + (i * unitFrameWidth) - 0.5, -1)
+            tick:Show()
+        end
 
-    for i = currentMaxPower, #secondaryPowerBarElement.Ticks do
-        secondaryPowerBarElement.Ticks[i]:Hide()
-    end
+        for i = currentMaxPower, #secondaryPowerBarElement.Ticks do
+            secondaryPowerBarElement.Ticks[i]:Hide()
+        end
+    end)
 
     if isRunes then
         secondaryPowerBarElement.colorSpec = DB.ColourByType

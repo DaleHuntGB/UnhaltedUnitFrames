@@ -72,6 +72,8 @@ local function GetTestUnitColour(id, defaultColour, colourByClass, opacity)
 end
 
 function UUF:CreateTestBossFrames()
+    if InCombatLockdown() then return end
+    
     local General = UUF.db.profile.General
     local AuraDurationDB = UUF.db.profile.Units.boss.Auras.AuraDuration
     local BuffsDB = UUF.db.profile.Units.boss.Auras.Buffs
@@ -386,6 +388,8 @@ function UUF:CreateTestBossFrames()
 end
 
 function UUF:CreateTestPartyFrames()
+    if InCombatLockdown() then return end
+    
     local PartyDB = UUF.db.profile.Units.party
     local HidePlayer = PartyDB.HidePlayer
 

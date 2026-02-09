@@ -16,7 +16,7 @@ local function CreateUnitTag(unitFrame, unit, tagDB)
             unitFrame.Tags[tagDB]:SetShadowColor(0, 0, 0, 0)
             unitFrame.Tags[tagDB]:SetShadowOffset(0, 0)
         end
-        unitFrame.Tags[tagDB]:SetPoint(TagDB.Layout[1], unitFrame.HighLevelContainer, TagDB.Layout[2], TagDB.Layout[3], TagDB.Layout[4])
+        UUF:QueueOrRun(function() unitFrame.Tags[tagDB]:SetPoint(TagDB.Layout[1], unitFrame.HighLevelContainer, TagDB.Layout[2], TagDB.Layout[3], TagDB.Layout[4]) end)
         unitFrame.Tags[tagDB]:SetJustifyH(UUF:SetJustification(TagDB.Layout[1]))
         unitFrame:Tag(unitFrame.Tags[tagDB], TagDB.Tag)
     end
@@ -42,8 +42,10 @@ function UUF:UpdateUnitTag(unitFrame, unit, tagDB)
             unitFrame.Tags[tagDB]:SetShadowColor(0, 0, 0, 0)
             unitFrame.Tags[tagDB]:SetShadowOffset(0, 0)
         end
-        unitFrame.Tags[tagDB]:ClearAllPoints()
-        unitFrame.Tags[tagDB]:SetPoint(TagDB.Layout[1], unitFrame.HighLevelContainer, TagDB.Layout[2], TagDB.Layout[3], TagDB.Layout[4])
+        UUF:QueueOrRun(function()
+            unitFrame.Tags[tagDB]:ClearAllPoints()
+            unitFrame.Tags[tagDB]:SetPoint(TagDB.Layout[1], unitFrame.HighLevelContainer, TagDB.Layout[2], TagDB.Layout[3], TagDB.Layout[4])
+        end)
         unitFrame.Tags[tagDB]:SetJustifyH(UUF:SetJustification(TagDB.Layout[1]))
         if not inTestMode then
             unitFrame:Tag(unitFrame.Tags[tagDB], TagDB.Tag)

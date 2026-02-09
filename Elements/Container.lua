@@ -7,14 +7,16 @@ function UUF:CreateUnitContainer(unitFrame, unit)
         unitFrame.Container:SetBackdrop(UUF.BACKDROP)
         unitFrame.Container:SetBackdropColor(0, 0, 0, 0)
         unitFrame.Container:SetBackdropBorderColor(0, 0, 0, 1)
-        unitFrame.Container:SetAllPoints(unitFrame)
+        UUF:QueueOrRun(function() unitFrame.Container:SetAllPoints(unitFrame) end)
 
         if not unitFrame.HighLevelContainer then
             unitFrame.HighLevelContainer = CreateFrame("Frame", frameName .. "_HighLevelContainer", unitFrame)
-            unitFrame.HighLevelContainer:SetPoint("TOPLEFT", unitFrame, "TOPLEFT", 0, 0)
-            unitFrame.HighLevelContainer:SetPoint("BOTTOMRIGHT", unitFrame, "BOTTOMRIGHT", 0, 0)
-            unitFrame.HighLevelContainer:SetFrameLevel(999)
-            unitFrame.HighLevelContainer:SetFrameStrata("MEDIUM")
+            UUF:QueueOrRun(function()
+                unitFrame.HighLevelContainer:SetPoint("TOPLEFT", unitFrame, "TOPLEFT", 0, 0)
+                unitFrame.HighLevelContainer:SetPoint("BOTTOMRIGHT", unitFrame, "BOTTOMRIGHT", 0, 0)
+                unitFrame.HighLevelContainer:SetFrameLevel(999)
+                unitFrame.HighLevelContainer:SetFrameStrata("MEDIUM")
+            end)
         end
     end
 end

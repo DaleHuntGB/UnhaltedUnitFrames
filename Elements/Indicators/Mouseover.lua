@@ -61,7 +61,7 @@ function UUF:UpdateUnitMouseoverIndicator(unitFrame, unit)
 
     else
         if unitFrame.MouseoverHighlight then
-            unitFrame.MouseoverHighlight:Hide()
+            UUF:QueueOrRun(function() unitFrame.MouseoverHighlight:Hide() end)
             unitFrame.MouseoverHighlight = nil
         end
     end

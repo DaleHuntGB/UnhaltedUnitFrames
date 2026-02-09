@@ -54,9 +54,9 @@ function UUF:CreateUnitDispelHighlight(unitFrame, unit)
     end
 
     if DispelHighlightDB.Enabled then
-        unitFrame.DispelHighlight:Show()
+        UUF:QueueOrRun(function() unitFrame.DispelHighlight:Show() end)
     else
-        unitFrame.DispelHighlight:Hide()
+        UUF:QueueOrRun(function() unitFrame.DispelHighlight:Hide() end)
     end
 end
 
@@ -66,26 +66,28 @@ function UUF:UpdateUnitDispelHighlight(unitFrame, unit)
     if unitFrame.DispelHighlight then
         if DispelHighlightDB.Enabled then
             UUF:RegisterDispelHighlightEvents(unitFrame, unit)
-            unitFrame.DispelHighlight:ClearAllPoints()
-            if DispelHighlightDB.Style == "GRADIENT" then
-                unitFrame.DispelHighlight:SetPoint("TOPLEFT", unitFrame, "TOPLEFT", 1, -1)
-                unitFrame.DispelHighlight:SetPoint("BOTTOMRIGHT", unitFrame, "BOTTOMRIGHT", -1, 1)
-                unitFrame.DispelHighlight:SetTexture("Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Gradient.png")
-                unitFrame.DispelHighlight:SetAlpha(1)
-            else
-                local barTexture = unitFrame.Health and unitFrame.Health:GetStatusBarTexture()
-                if barTexture then
-                    unitFrame.DispelHighlight:SetAllPoints(barTexture)
+            UUF:QueueOrRun(function()
+                unitFrame.DispelHighlight:ClearAllPoints()
+                if DispelHighlightDB.Style == "GRADIENT" then
+                    unitFrame.DispelHighlight:SetPoint("TOPLEFT", unitFrame, "TOPLEFT", 1, -1)
+                    unitFrame.DispelHighlight:SetPoint("BOTTOMRIGHT", unitFrame, "BOTTOMRIGHT", -1, 1)
+                    unitFrame.DispelHighlight:SetTexture("Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Gradient.png")
+                    unitFrame.DispelHighlight:SetAlpha(1)
                 else
-                    unitFrame.DispelHighlight:SetAllPoints(unitFrame.Health)
+                    local barTexture = unitFrame.Health and unitFrame.Health:GetStatusBarTexture()
+                    if barTexture then
+                        unitFrame.DispelHighlight:SetAllPoints(barTexture)
+                    else
+                        unitFrame.DispelHighlight:SetAllPoints(unitFrame.Health)
+                    end
+                    unitFrame.DispelHighlight:SetTexture("Interface\\Buttons\\WHITE8X8")
+                    unitFrame.DispelHighlight:SetAlpha(0.75)
                 end
-                unitFrame.DispelHighlight:SetTexture("Interface\\Buttons\\WHITE8X8")
-                unitFrame.DispelHighlight:SetAlpha(0.75)
-            end
-            unitFrame.DispelHighlight:Show()
+                unitFrame.DispelHighlight:Show()
+            end)
         else
             UUF:UnregisterDispelHighlightEvents(unitFrame)
-            unitFrame.DispelHighlight:Hide()
+            UUF:QueueOrRun(function() unitFrame.DispelHighlight:Hide() end)
         end
     end
 end

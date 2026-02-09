@@ -9,16 +9,20 @@ function UUF:CreateUnitHealthBar(unitFrame, unit)
     if not unitFrame.HealthBar then
         if not unitFrame.HealthBackground then
             unitFrame.HealthBackground = CreateFrame("StatusBar", frameName .. "_HealthBackground", unitContainer)
-            unitFrame.HealthBackground:SetPoint("TOPLEFT", unitContainer, "TOPLEFT", 1, -1)
-            unitFrame.HealthBackground:SetSize(FrameDB.Width - 2, FrameDB.Height - 2)
+                UUF:QueueOrRun(function()
+                    unitFrame.HealthBackground:SetPoint("TOPLEFT", unitContainer, "TOPLEFT", 1, -1)
+                    unitFrame.HealthBackground:SetSize(FrameDB.Width - 2, FrameDB.Height - 2)
+                end)
             unitFrame.HealthBackground:SetStatusBarTexture(UUF.Media.Background)
             unitFrame.HealthBackground:SetFrameLevel(unitContainer:GetFrameLevel() + 1)
             unitFrame.HealthBackground:SetStatusBarColor(HealthBarDB.Background[1], HealthBarDB.Background[2], HealthBarDB.Background[3], HealthBarDB.BackgroundOpacity)
         end
 
         local HealthBar = CreateFrame("StatusBar", frameName .. "_HealthBar", unitContainer)
-        HealthBar:SetPoint("TOPLEFT", unitContainer, "TOPLEFT", 1, -1)
-        HealthBar:SetSize(FrameDB.Width - 2, FrameDB.Height - 2)
+        UUF:QueueOrRun(function()
+            HealthBar:SetPoint("TOPLEFT", unitContainer, "TOPLEFT", 1, -1)
+            HealthBar:SetSize(FrameDB.Width - 2, FrameDB.Height - 2)
+        end)
         HealthBar:SetStatusBarTexture(UUF.Media.Foreground)
         HealthBar:SetFrameLevel(unitContainer:GetFrameLevel() + 2)
         HealthBar:SetStatusBarColor(HealthBarDB.Foreground[1], HealthBarDB.Foreground[2], HealthBarDB.Foreground[3], HealthBarDB.ForegroundOpacity)
@@ -69,7 +73,7 @@ function UUF:UpdateUnitHealthBar(unitFrame, unit)
     local DispelHighlightDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].HealthBar.DispelHighlight
 
     if unitFrame then
-        if not InCombatLockdown() then
+        UUF:QueueOrRun(function()
             unitFrame:ClearAllPoints()
             unitFrame:SetSize(FrameDB.Width, FrameDB.Height)
             if unit == "player" or unit == "target" then
@@ -81,11 +85,13 @@ function UUF:UpdateUnitHealthBar(unitFrame, unit)
                 UUF[unit:upper()]:SetPoint(FrameDB.Layout[1], parentFrame, FrameDB.Layout[2], FrameDB.Layout[3], FrameDB.Layout[4])
                 UUF[unit:upper()]:SetSize(FrameDB.Width, FrameDB.Height)
             end
-        end
+        end)
     end
 
     if unitFrame.Health then
-        unitFrame.Health:SetSize(FrameDB.Width - 2, FrameDB.Height - 2)
+        UUF:QueueOrRun(function()
+            unitFrame.Health:SetSize(FrameDB.Width - 2, FrameDB.Height - 2)
+        end)
         unitFrame.Health:SetStatusBarColor(HealthBarDB.Foreground[1], HealthBarDB.Foreground[2], HealthBarDB.Foreground[3], HealthBarDB.ForegroundOpacity)
         unitFrame.Health.colorClass = HealthBarDB.ColourByClass
         unitFrame.Health.colorReaction = HealthBarDB.ColourByClass
@@ -104,7 +110,9 @@ function UUF:UpdateUnitHealthBar(unitFrame, unit)
     end
 
     if unitFrame.HealthBackground then
-        unitFrame.HealthBackground:SetSize(FrameDB.Width - 2, FrameDB.Height - 2)
+        UUF:QueueOrRun(function()
+            unitFrame.HealthBackground:SetSize(FrameDB.Width - 2, FrameDB.Height - 2)
+        end)
         unitFrame.HealthBackground:SetStatusBarColor(HealthBarDB.Background[1], HealthBarDB.Background[2], HealthBarDB.Background[3], HealthBarDB.BackgroundOpacity)
         unitFrame.HealthBackground:SetStatusBarTexture(UUF.Media.Background)
     end

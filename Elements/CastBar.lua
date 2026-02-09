@@ -174,6 +174,7 @@ function UUF:CreateUnitCastBar(unitFrame, unit)
 end
 
 function UUF:UpdateUnitCastBar(unitFrame, unit)
+    if not unitFrame or not unit then return end
     local GeneralDB = UUF.db.profile.General
     local FrameDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Frame
     local CastBarDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].CastBar
@@ -186,10 +187,12 @@ function UUF:UpdateUnitCastBar(unitFrame, unit)
 
         if not unitFrame:IsElementEnabled("Castbar") then unitFrame:EnableElement("Castbar") end
 
-        if unitFrame.Castbar then
-            if CastBarContainer then CastBarContainer:ClearAllPoints() end
-            if CastBarContainer then CastBarContainer:SetPoint(CastBarDB.Layout[1], unitFrame, CastBarDB.Layout[2], CastBarDB.Layout[3], CastBarDB.Layout[4]) end
-            if CastBarContainer then CastBarContainer:SetFrameStrata(CastBarDB.FrameStrata) end
+            if unitFrame.Castbar then
+                UUF:QueueOrRun(function()
+                    if CastBarContainer then CastBarContainer:ClearAllPoints() end
+                    if CastBarContainer then CastBarContainer:SetPoint(CastBarDB.Layout[1], unitFrame, CastBarDB.Layout[2], CastBarDB.Layout[3], CastBarDB.Layout[4]) end
+                    if CastBarContainer then CastBarContainer:SetFrameStrata(CastBarDB.FrameStrata) end
+                end)
             unitFrame.Castbar:ClearAllPoints()
             unitFrame.Castbar:SetPoint("TOPLEFT", CastBarContainer, "TOPLEFT", 1, -1)
             unitFrame.Castbar:SetPoint("BOTTOMRIGHT", CastBarContainer, "BOTTOMRIGHT", -1, 1)
