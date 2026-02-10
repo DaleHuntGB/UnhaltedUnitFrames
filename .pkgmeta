@@ -25,7 +25,7 @@ externals:
         commit: default
     Libraries/oUF:
         url: https://github.com/oUF-wow/oUF.git
-        branch: master
+        branch: castbar-taint-fix
     Libraries/LibDualSpec-1.0:
         url: https://github.com/AdiAddons/LibDualSpec-1.0.git
         branch: master
