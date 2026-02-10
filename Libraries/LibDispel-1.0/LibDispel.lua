@@ -1,4 +1,4 @@
-local MAJOR, MINOR = "LibDispel-1.0", 26
+local MAJOR, MINOR = "LibDispel-1.0", 27
 assert(LibStub, MAJOR.." requires LibStub")
 
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
@@ -24,7 +24,6 @@ local Wrath = WOW_PROJECT_ID == WOW_PROJECT_WRATH_CLASSIC
 local Mists = WOW_PROJECT_ID == WOW_PROJECT_MISTS_CLASSIC
 local Retail = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
 local Classic = WOW_PROJECT_ID == WOW_PROJECT_CLASSIC
-local Midnight = wowtoc >= 120000
 
 local function SetList(object, key, value)
 	if object[key] then return end
@@ -66,7 +65,6 @@ SetList(DebuffColors, 'Disease', _G.DEBUFF_TYPE_DISEASE_COLOR or { r = 0.6, g = 
 SetList(DebuffColors, 'Poison', _G.DEBUFF_TYPE_POISON_COLOR or { r = 0, g = 0.6, b = 0 })
 SetList(DebuffColors, 'Bleed',  _G.DEBUFF_TYPE_BLEED_COLOR or { r = 0.6, g = 0, b = 0.1 })
 SetList(DebuffColors, 'Enrage', { r = 0.95, g = 0.37, b = 0.96 })
-SetList(DebuffColors, 'EnemyNPC', { r = 0.9, g = 0.1, b = 0.1 })
 SetList(DebuffColors, 'BadDispel', { r = 0.05, g = 0.85, b = 0.94 })
 SetList(DebuffColors, 'Stealable', { r = 0.93, g = 0.91, b = 0.55 })
 
@@ -221,7 +219,7 @@ do
 	frame:RegisterEvent('CHARACTER_POINTS_CHANGED')
 	frame:RegisterEvent('SPELLS_CHANGED')
 
-	if Midnight or TBC then
+	if Retail or TBC then
 		frame:RegisterEvent('LEARNED_SPELL_IN_SKILL_LINE')
 	else
 		frame:RegisterEvent('LEARNED_SPELL_IN_TAB')
