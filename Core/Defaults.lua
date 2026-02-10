@@ -219,7 +219,7 @@ local Defaults = {
                     PvPIndicator = {
                         Enabled = true,
                         Size = 24,
-                        Layout = {"TOPRIGHT", "TOPRIGHT", -3, -3},
+                        Layout = {"TOPRIGHT", "TOPRIGHT", -2, -2},
                     },
                     Mouseover = {
                         Enabled = true,
