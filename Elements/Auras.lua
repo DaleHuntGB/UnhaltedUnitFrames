@@ -137,9 +137,6 @@ local function StyleAuras(_, button, unit, auraType)
         auraOverlay:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", -1, 1)
         auraOverlay:SetTexCoord(0, 1, 0, 1)
     end
-
-    -- local auraInstanceID = button.auraInstanceID
-    -- local hasExpiration = C_UnitAuras.DoesAuraHaveExpirationTime(unit, auraInstanceID)
 end
 
 local function RestyleAuras(_, button, unit, auraType)
@@ -217,8 +214,8 @@ local function CreateUnitBuffs(unitFrame, unit)
         unitFrame.BuffContainer.anchoredButtons = 0
         unitFrame.BuffContainer.createdButtons = 0
         unitFrame.BuffContainer.tooltipAnchor = "ANCHOR_CURSOR"
-        unitFrame.BuffContainer.showType = BuffsDB.ShowType
-        unitFrame.BuffContainer.showBuffType = BuffsDB.ShowType
+        unitFrame.BuffContainer.showType = false
+        unitFrame.BuffContainer.showBuffType = false
         unitFrame.BuffContainer.dispelColorCurve = C_CurveUtil.CreateColorCurve()
         unitFrame.BuffContainer.dispelColorCurve:SetType(Enum.LuaCurveType.Step)
         for _, dispelIndex in next, oUF.Enum.DispelType do
@@ -260,8 +257,8 @@ local function CreateUnitDebuffs(unitFrame, unit)
         unitFrame.DebuffContainer.createdButtons = 0
         unitFrame.DebuffContainer.PostCreateButton = function(_, button) StyleAuras(_, button, unit, "HARMFUL") end
         unitFrame.DebuffContainer.tooltipAnchor = "ANCHOR_CURSOR"
-        unitFrame.DebuffContainer.showType = DebuffsDB.ShowType
-        unitFrame.DebuffContainer.showDebuffType = DebuffsDB.ShowType
+        unitFrame.DebuffContainer.showType = false
+        unitFrame.DebuffContainer.showDebuffType = false
         unitFrame.DebuffContainer.dispelColorCurve = C_CurveUtil.CreateColorCurve()
         unitFrame.DebuffContainer.dispelColorCurve:SetType(Enum.LuaCurveType.Step)
         for _, dispelIndex in next, oUF.Enum.DispelType do
@@ -310,8 +307,8 @@ function UUF:UpdateUnitAuras(unitFrame, unit)
         unitFrame.BuffContainer.createdButtons = unitFrame.Buffs.createdButtons or 0
         unitFrame.BuffContainer.anchoredButtons = unitFrame.Buffs.anchoredButtons or 0
         unitFrame.BuffContainer.PostCreateButton = function(_, button) StyleAuras(_, button, unit, "HELPFUL") end
-        unitFrame.BuffContainer.showType = BuffsDB.ShowType
-        unitFrame.BuffContainer.showBuffType = BuffsDB.ShowType
+        unitFrame.BuffContainer.showType = false
+        unitFrame.BuffContainer.showBuffType = false
         unitFrame.BuffContainer:Show()
     else
         unitFrame.BuffContainer:Hide()
@@ -341,8 +338,8 @@ function UUF:UpdateUnitAuras(unitFrame, unit)
         unitFrame.DebuffContainer.createdButtons = unitFrame.Debuffs.createdButtons or 0
         unitFrame.DebuffContainer.anchoredButtons = unitFrame.Debuffs.anchoredButtons or 0
         unitFrame.DebuffContainer.PostCreateButton = function(_, button) StyleAuras(_, button, unit, "HARMFUL") end
-        unitFrame.DebuffContainer.showType = DebuffsDB.ShowType
-        unitFrame.DebuffContainer.showDebuffType = DebuffsDB.ShowType
+        unitFrame.DebuffContainer.showType = false
+        unitFrame.DebuffContainer.showDebuffType = false
         unitFrame.DebuffContainer:Show()
     else
         unitFrame.DebuffContainer:Hide()
