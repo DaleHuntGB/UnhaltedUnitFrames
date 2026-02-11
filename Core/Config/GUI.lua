@@ -34,6 +34,65 @@ local UnitDBToUnitPrettyName = {
 local AnchorPoints = { { ["TOPLEFT"] = "Top Left", ["TOP"] = "Top", ["TOPRIGHT"] = "Top Right", ["LEFT"] = "Left", ["CENTER"] = "Center", ["RIGHT"] = "Right", ["BOTTOMLEFT"] = "Bottom Left", ["BOTTOM"] = "Bottom", ["BOTTOMRIGHT"] = "Bottom Right" }, { "TOPLEFT", "TOP", "TOPRIGHT", "LEFT", "CENTER", "RIGHT", "BOTTOMLEFT", "BOTTOM", "BOTTOMRIGHT", } }
 local FrameStrataList = {{ ["BACKGROUND"] = "Background", ["LOW"] = "Low", ["MEDIUM"] = "Medium", ["HIGH"] = "High", ["DIALOG"] = "Dialog", ["FULLSCREEN"] = "Fullscreen", ["FULLSCREEN_DIALOG"] = "Fullscreen Dialog", ["TOOLTIP"] = "Tooltip" }, { "BACKGROUND", "LOW", "MEDIUM", "HIGH", "DIALOG", "FULLSCREEN", "FULLSCREEN_DIALOG", "TOOLTIP" }}
 
+local function GetAuraBaseFilter(auraDB)
+    return auraDB == "Buffs" and "HELPFUL" or "HARMFUL"
+end
+
+local function GetAuraFilterConfig(auraDB)
+    if not UUF.AURA_FILTERS or type(UUF.AURA_FILTERS[auraDB]) ~= "table" then
+        return {}
+    end
+    return UUF.AURA_FILTERS[auraDB]
+end
+
+local function GetAuraFilterToggleOrder(auraDB)
+    local auraFilterConfig = GetAuraFilterConfig(auraDB)
+    local baseFilter = GetAuraBaseFilter(auraDB)
+    local auraFilters = {}
+    for filterType, filterData in pairs(auraFilterConfig) do
+        if filterType ~= baseFilter and type(filterData) == "table" then
+            auraFilters[#auraFilters + 1] = filterType
+        end
+    end
+    table.sort(auraFilters, function(a, b)
+        local auraFilterA = (auraFilterConfig[a] and auraFilterConfig[a].Title) or a
+        local auraFilterB = (auraFilterConfig[b] and auraFilterConfig[b].Title) or b
+        if auraFilterA == auraFilterB then return a < b end
+        return auraFilterA < auraFilterB
+    end)
+    return auraFilters
+end
+
+local function ParseAuraFilterSelections(auraDB, filterString)
+    local auraFilterConfig = GetAuraFilterConfig(auraDB)
+    local baseFilter = GetAuraBaseFilter(auraDB)
+    local selectedFilters = {}
+    if type(filterString) ~= "string" then return selectedFilters end
+    local decodedFilterString = filterString:gsub("||", "|")
+    for filterType in decodedFilterString:gmatch("[^|]+") do
+        if filterType ~= baseFilter and auraFilterConfig[filterType] then
+            selectedFilters[filterType] = true
+        end
+    end
+    return selectedFilters
+end
+
+local function BuildAuraFilterString(baseFilter, selectedFilters, orderedFilters)
+    local filterParts = {baseFilter}
+    for _, filterType in ipairs(orderedFilters) do
+        if selectedFilters[filterType] then
+            filterParts[#filterParts + 1] = filterType
+        end
+    end
+    return table.concat(filterParts, "|")
+end
+
+local function EncodeAuraFilterStringForStorage(filterString)
+    if type(filterString) ~= "string" then return "" end
+    local decodedFilterString = filterString:gsub("||", "|")
+    return decodedFilterString:gsub("|", "||")
+end
+
 local Power = {
     [0] = "Mana",
     [1] = "Rage",
@@ -2198,48 +2257,61 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
     Toggle:SetRelativeWidth(0.33)
     AuraContainer:AddChild(Toggle)
 
-    local OnlyShowPlayerToggle = AG:Create("CheckBox")
-    OnlyShowPlayerToggle:SetLabel("Only Show Player "..auraDB)
-    OnlyShowPlayerToggle:SetValue(AuraDB.OnlyShowPlayer)
-    OnlyShowPlayerToggle:SetCallback("OnValueChanged", function(_, _, value) AuraDB.OnlyShowPlayer = value if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end end)
-    OnlyShowPlayerToggle:SetRelativeWidth(0.33)
-    AuraContainer:AddChild(OnlyShowPlayerToggle)
+    -- local OnlyShowPlayerToggle = AG:Create("CheckBox")
+    -- OnlyShowPlayerToggle:SetLabel("Only Show Player "..auraDB)
+    -- OnlyShowPlayerToggle:SetValue(AuraDB.OnlyShowPlayer)
+    -- OnlyShowPlayerToggle:SetCallback("OnValueChanged", function(_, _, value) AuraDB.OnlyShowPlayer = value if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end end)
+    -- OnlyShowPlayerToggle:SetRelativeWidth(0.33)
+    -- AuraContainer:AddChild(OnlyShowPlayerToggle)
 
-    local ShowTypeCheckbox = AG:Create("CheckBox")
-    ShowTypeCheckbox:SetLabel(auraDB .. " Type Border")
-    ShowTypeCheckbox:SetValue(AuraDB.ShowType)
-    ShowTypeCheckbox:SetCallback("OnValueChanged", function(_, _, value) AuraDB.ShowType = value if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end end)
-    ShowTypeCheckbox:SetRelativeWidth(0.33)
-    AuraContainer:AddChild(ShowTypeCheckbox)
+    -- local ShowTypeCheckbox = AG:Create("CheckBox")
+    -- ShowTypeCheckbox:SetLabel(auraDB .. " Type Border")
+    -- ShowTypeCheckbox:SetValue(AuraDB.ShowType)
+    -- ShowTypeCheckbox:SetCallback("OnValueChanged", function(_, _, value) AuraDB.ShowType = value if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end end)
+    -- ShowTypeCheckbox:SetRelativeWidth(0.33)
+    -- AuraContainer:AddChild(ShowTypeCheckbox)
 
-    local FilterDropdown = AG:Create("Dropdown")
-    if auraDB == "Buffs" then
-        FilterDropdown:SetList({
-            ["HELPFUL"] = "All",
-            ["HELPFUL|PLAYER"] = "Player",
-            ["HELPFUL|RAID"] = "Raid",
-            ["INCLUDE_NAME_PLATE_ONLY"] = "Nameplate",
-        })
-    else
-        FilterDropdown:SetList({
-            ["HARMFUL"] = "All",
-            ["HARMFUL|PLAYER"] = "Player",
-            ["HARMFUL|RAID"] = "Raid",
-            ["INCLUDE_NAME_PLATE_ONLY"] = "Nameplate",
-        })
-    end
-    FilterDropdown:SetLabel("Aura Filter")
-    FilterDropdown:SetValue(AuraDB.Filter or (auraDB == "Buffs" and "HELPFUL" or "HARMFUL"))
-    FilterDropdown:SetRelativeWidth(1.0)
-    FilterDropdown:SetCallback("OnValueChanged", function(_, _, value)
-        AuraDB.Filter = value
+    local auraBaseFilter = GetAuraBaseFilter(auraDB)
+    local auraFilterConfig = GetAuraFilterConfig(auraDB)
+    local auraFilterOrder = GetAuraFilterToggleOrder(auraDB)
+    local auraFilterSelections = ParseAuraFilterSelections(auraDB, AuraDB.Filter or auraBaseFilter)
+
+    local function UpdateAuraFilter()
+        local builtFilter = BuildAuraFilterString(auraBaseFilter, auraFilterSelections, auraFilterOrder)
+        AuraDB.Filter = EncodeAuraFilterStringForStorage(builtFilter)
         if unit == "boss" then
             UUF:UpdateBossFrames()
         else
             UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB)
         end
-    end)
-    AuraContainer:AddChild(FilterDropdown)
+    end
+
+    local normalizedAuraFilter = EncodeAuraFilterStringForStorage(BuildAuraFilterString(auraBaseFilter, auraFilterSelections, auraFilterOrder))
+    if AuraDB.Filter ~= normalizedAuraFilter then
+        AuraDB.Filter = normalizedAuraFilter
+        if unit == "boss" then
+            UUF:UpdateBossFrames()
+        else
+            UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB)
+        end
+    end
+
+    GUIWidgets.CreateHeader(AuraContainer, "Aura Filters")
+
+    for _, auraFilter in ipairs(auraFilterOrder) do
+        local filterType = auraFilter
+        local filterData = auraFilterConfig[filterType]
+        local FilterToggle = AG:Create("CheckBox")
+        FilterToggle:SetLabel(filterData.Title or filterType)
+        FilterToggle:SetDescription(filterData.Desc or "")
+        FilterToggle:SetValue(auraFilterSelections[filterType] or false)
+        FilterToggle:SetRelativeWidth(1.0)
+        FilterToggle:SetCallback("OnValueChanged", function(_, _, value)
+            auraFilterSelections[filterType] = value and true or nil
+            UpdateAuraFilter()
+        end)
+        AuraContainer:AddChild(FilterToggle)
+    end
 
     local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
 

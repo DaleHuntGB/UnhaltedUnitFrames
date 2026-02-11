@@ -40,6 +40,31 @@ local function ApplyAuraDuration(icon, unit)
     end)
 end
 
+local function DecodeAuraFilterString(filterString)
+    if type(filterString) ~= "string" then return nil end
+    return filterString:gsub("||", "|")
+end
+
+local function EncodeAuraFilterStringForStorage(filterString)
+    if type(filterString) ~= "string" then return "" end
+    local decodedFilterString = DecodeAuraFilterString(filterString) or ""
+    return decodedFilterString:gsub("|", "||")
+end
+
+local function NormalizeAuraFilter(filterString, baseFilter, auraFilterConfig)
+    local normalizedFilter = {baseFilter}
+    local seen = {}
+    local decodedFilterString = DecodeAuraFilterString(filterString)
+    if type(decodedFilterString) ~= "string" then return baseFilter end
+    for filterType in decodedFilterString:gmatch("[^|]+") do
+        if filterType ~= baseFilter and auraFilterConfig and auraFilterConfig[filterType] and not seen[filterType] then
+            normalizedFilter[#normalizedFilter + 1] = filterType
+            seen[filterType] = true
+        end
+    end
+    return table.concat(normalizedFilter, "|")
+end
+
 local function StyleAuras(_, button, unit, auraType)
     if not button or not unit or not auraType then return end
     local GeneralDB = UUF.db.profile.General
@@ -175,7 +200,9 @@ local function CreateUnitBuffs(unitFrame, unit)
         unitFrame.BuffContainer.onlyShowPlayer = BuffsDB.OnlyShowPlayer
         unitFrame.BuffContainer["growthX"] = BuffsDB.GrowthDirection
         unitFrame.BuffContainer["growthY"] = BuffsDB.WrapDirection
-        unitFrame.BuffContainer.filter = BuffsDB.Filter or "HELPFUL"
+        local buffFilter = NormalizeAuraFilter(BuffsDB.Filter, "HELPFUL", UUF.AURA_FILTERS and UUF.AURA_FILTERS.Buffs)
+        BuffsDB.Filter = EncodeAuraFilterStringForStorage(buffFilter)
+        unitFrame.BuffContainer.filter = buffFilter
         unitFrame.BuffContainer.PostCreateButton = function(_, button) StyleAuras(_, button, unit, "HELPFUL") end
         unitFrame.BuffContainer.anchoredButtons = 0
         unitFrame.BuffContainer.createdButtons = 0
@@ -216,7 +243,9 @@ local function CreateUnitDebuffs(unitFrame, unit)
         unitFrame.DebuffContainer.onlyShowPlayer = DebuffsDB.OnlyShowPlayer
         unitFrame.DebuffContainer["growthX"] = DebuffsDB.GrowthDirection
         unitFrame.DebuffContainer["growthY"] = DebuffsDB.WrapDirection
-        unitFrame.DebuffContainer.filter = DebuffsDB.Filter or "HARMFUL"
+        local debuffFilter = NormalizeAuraFilter(DebuffsDB.Filter, "HARMFUL", UUF.AURA_FILTERS and UUF.AURA_FILTERS.Debuffs)
+        DebuffsDB.Filter = EncodeAuraFilterStringForStorage(debuffFilter)
+        unitFrame.DebuffContainer.filter = debuffFilter
         unitFrame.DebuffContainer.anchoredButtons = 0
         unitFrame.DebuffContainer.createdButtons = 0
         unitFrame.DebuffContainer.PostCreateButton = function(_, button) StyleAuras(_, button, unit, "HARMFUL") end
@@ -265,7 +294,9 @@ function UUF:UpdateUnitAuras(unitFrame, unit)
         unitFrame.BuffContainer.onlyShowPlayer = BuffsDB.OnlyShowPlayer
         unitFrame.BuffContainer["growthX"] = BuffsDB.GrowthDirection
         unitFrame.BuffContainer["growthY"] = BuffsDB.WrapDirection
-        unitFrame.BuffContainer.filter = BuffsDB.Filter or "HELPFUL"
+        local buffFilter = NormalizeAuraFilter(BuffsDB.Filter, "HELPFUL", UUF.AURA_FILTERS and UUF.AURA_FILTERS.Buffs)
+        BuffsDB.Filter = EncodeAuraFilterStringForStorage(buffFilter)
+        unitFrame.BuffContainer.filter = buffFilter
         unitFrame.BuffContainer.createdButtons = unitFrame.Buffs.createdButtons or 0
         unitFrame.BuffContainer.anchoredButtons = unitFrame.Buffs.anchoredButtons or 0
         unitFrame.BuffContainer.PostCreateButton = function(_, button) StyleAuras(_, button, unit, "HELPFUL") end
@@ -294,7 +325,9 @@ function UUF:UpdateUnitAuras(unitFrame, unit)
         unitFrame.DebuffContainer.onlyShowPlayer = DebuffsDB.OnlyShowPlayer
         unitFrame.DebuffContainer["growthX"] = DebuffsDB.GrowthDirection
         unitFrame.DebuffContainer["growthY"] = DebuffsDB.WrapDirection
-        unitFrame.DebuffContainer.filter = DebuffsDB.Filter or "HARMFUL"
+        local debuffFilter = NormalizeAuraFilter(DebuffsDB.Filter, "HARMFUL", UUF.AURA_FILTERS and UUF.AURA_FILTERS.Debuffs)
+        DebuffsDB.Filter = EncodeAuraFilterStringForStorage(debuffFilter)
+        unitFrame.DebuffContainer.filter = debuffFilter
         unitFrame.DebuffContainer.createdButtons = unitFrame.Debuffs.createdButtons or 0
         unitFrame.DebuffContainer.anchoredButtons = unitFrame.Debuffs.anchoredButtons or 0
         unitFrame.DebuffContainer.PostCreateButton = function(_, button) StyleAuras(_, button, unit, "HARMFUL") end
