@@ -52,17 +52,27 @@ local function EncodeAuraFilterStringForStorage(filterString)
 end
 
 local function NormalizeAuraFilter(filterString, baseFilter, auraFilterConfig)
-    local normalizedFilter = {baseFilter}
-    local seen = {}
     local decodedFilterString = DecodeAuraFilterString(filterString)
     if type(decodedFilterString) ~= "string" then return baseFilter end
+
+    if auraFilterConfig and decodedFilterString ~= baseFilter and auraFilterConfig[decodedFilterString] then
+        return decodedFilterString
+    end
+
     for filterType in decodedFilterString:gmatch("[^|]+") do
-        if filterType ~= baseFilter and auraFilterConfig and auraFilterConfig[filterType] and not seen[filterType] then
-            normalizedFilter[#normalizedFilter + 1] = filterType
-            seen[filterType] = true
+        if filterType ~= baseFilter and auraFilterConfig then
+            if auraFilterConfig[filterType] then
+                return filterType
+            end
+
+            local baseQualifiedFilter = baseFilter .. "|" .. filterType
+            if auraFilterConfig[baseQualifiedFilter] then
+                return baseQualifiedFilter
+            end
         end
     end
-    return table.concat(normalizedFilter, "|")
+
+    return baseFilter
 end
 
 local function StyleAuras(_, button, unit, auraType)

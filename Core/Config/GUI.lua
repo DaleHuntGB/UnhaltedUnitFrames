@@ -63,28 +63,55 @@ local function GetAuraFilterToggleOrder(auraDB)
     return auraFilters
 end
 
-local function ParseAuraFilterSelections(auraDB, filterString)
+local function ResolveAuraFilterSelectionKey(auraDB, filterString)
     local auraFilterConfig = GetAuraFilterConfig(auraDB)
     local baseFilter = GetAuraBaseFilter(auraDB)
-    local selectedFilters = {}
-    if type(filterString) ~= "string" then return selectedFilters end
+    if type(filterString) ~= "string" then return nil end
     local decodedFilterString = filterString:gsub("||", "|")
+
+    if decodedFilterString ~= baseFilter and auraFilterConfig[decodedFilterString] then
+        return decodedFilterString
+    end
+
     for filterType in decodedFilterString:gmatch("[^|]+") do
-        if filterType ~= baseFilter and auraFilterConfig[filterType] then
-            selectedFilters[filterType] = true
+        if filterType ~= baseFilter then
+            if auraFilterConfig[filterType] then
+                return filterType
+            end
+            local baseQualifiedFilter = baseFilter .. "|" .. filterType
+            if auraFilterConfig[baseQualifiedFilter] then
+                return baseQualifiedFilter
+            end
         end
     end
+
+    return nil
+end
+
+local function ParseAuraFilterSelections(auraDB, filterString)
+    local selectedFilters = {}
+    local selectedFilter = ResolveAuraFilterSelectionKey(auraDB, filterString)
+    if selectedFilter then selectedFilters[selectedFilter] = true end
     return selectedFilters
 end
 
-local function BuildAuraFilterString(baseFilter, selectedFilters, orderedFilters)
-    local filterParts = {baseFilter}
+local function GetSelectedAuraFilter(selectedFilters, orderedFilters)
     for _, filterType in ipairs(orderedFilters) do
         if selectedFilters[filterType] then
-            filterParts[#filterParts + 1] = filterType
+            return filterType
         end
     end
-    return table.concat(filterParts, "|")
+end
+
+local function SetSelectedAuraFilter(selectedFilters, orderedFilters, selectedFilter)
+    for _, filterType in ipairs(orderedFilters) do
+        selectedFilters[filterType] = filterType == selectedFilter and true or nil
+    end
+end
+
+local function BuildAuraFilterString(baseFilter, selectedFilters, orderedFilters)
+    local selectedFilter = GetSelectedAuraFilter(selectedFilters, orderedFilters)
+    return selectedFilter or baseFilter
 end
 
 local function EncodeAuraFilterStringForStorage(filterString)
@@ -2275,6 +2302,8 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
     local auraFilterConfig = GetAuraFilterConfig(auraDB)
     local auraFilterOrder = GetAuraFilterToggleOrder(auraDB)
     local auraFilterSelections = ParseAuraFilterSelections(auraDB, AuraDB.Filter or auraBaseFilter)
+    local auraFilterToggles = {}
+    local isUpdatingAuraFilterToggles = false
 
     local function UpdateAuraFilter()
         local builtFilter = BuildAuraFilterString(auraBaseFilter, auraFilterSelections, auraFilterOrder)
@@ -2284,6 +2313,19 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
         else
             UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB)
         end
+    end
+
+    local function RefreshAuraFilterToggles()
+        local selectedFilter = GetSelectedAuraFilter(auraFilterSelections, auraFilterOrder)
+        isUpdatingAuraFilterToggles = true
+        for _, filterType in ipairs(auraFilterOrder) do
+            local filterToggle = auraFilterToggles[filterType]
+            if filterToggle then
+                filterToggle:SetValue(auraFilterSelections[filterType] or false)
+                filterToggle:SetDisabled(selectedFilter and selectedFilter ~= filterType)
+            end
+        end
+        isUpdatingAuraFilterToggles = false
     end
 
     local normalizedAuraFilter = EncodeAuraFilterStringForStorage(BuildAuraFilterString(auraBaseFilter, auraFilterSelections, auraFilterOrder))
@@ -2307,11 +2349,19 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
         FilterToggle:SetValue(auraFilterSelections[filterType] or false)
         FilterToggle:SetRelativeWidth(1.0)
         FilterToggle:SetCallback("OnValueChanged", function(_, _, value)
-            auraFilterSelections[filterType] = value and true or nil
+            if isUpdatingAuraFilterToggles then return end
+            if value then
+                SetSelectedAuraFilter(auraFilterSelections, auraFilterOrder, filterType)
+            else
+                auraFilterSelections[filterType] = nil
+            end
+            RefreshAuraFilterToggles()
             UpdateAuraFilter()
         end)
+        auraFilterToggles[filterType] = FilterToggle
         AuraContainer:AddChild(FilterToggle)
     end
+    RefreshAuraFilterToggles()
 
     local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
 
@@ -2452,6 +2502,7 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
             GUIWidgets.DeepDisable(AuraContainer, false, Toggle)
             GUIWidgets.DeepDisable(LayoutContainer, false, Toggle)
             GUIWidgets.DeepDisable(CountContainer, false, Toggle)
+            RefreshAuraFilterToggles()
         else
             GUIWidgets.DeepDisable(AuraContainer, true, Toggle)
             GUIWidgets.DeepDisable(LayoutContainer, true, Toggle)
