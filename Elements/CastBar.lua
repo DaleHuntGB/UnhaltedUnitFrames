@@ -192,12 +192,12 @@ function UUF:UpdateUnitCastBar(unitFrame, unit)
                     if CastBarContainer then CastBarContainer:ClearAllPoints() end
                     if CastBarContainer then CastBarContainer:SetPoint(CastBarDB.Layout[1], unitFrame, CastBarDB.Layout[2], CastBarDB.Layout[3], CastBarDB.Layout[4]) end
                     if CastBarContainer then CastBarContainer:SetFrameStrata(CastBarDB.FrameStrata) end
+                    unitFrame.Castbar:ClearAllPoints()
+                    unitFrame.Castbar:SetPoint("TOPLEFT", CastBarContainer, "TOPLEFT", 1, -1)
+                    unitFrame.Castbar:SetPoint("BOTTOMRIGHT", CastBarContainer, "BOTTOMRIGHT", -1, 1)
+                    if CastBarDB.MatchParentWidth then if CastBarContainer then CastBarContainer:SetWidth(FrameDB.Width) end else if CastBarContainer then CastBarContainer:SetWidth(CastBarDB.Width) end end
+                    if CastBarContainer then CastBarContainer:SetHeight(CastBarDB.Height) end
                 end)
-            unitFrame.Castbar:ClearAllPoints()
-            unitFrame.Castbar:SetPoint("TOPLEFT", CastBarContainer, "TOPLEFT", 1, -1)
-            unitFrame.Castbar:SetPoint("BOTTOMRIGHT", CastBarContainer, "BOTTOMRIGHT", -1, 1)
-            if CastBarDB.MatchParentWidth then if CastBarContainer then CastBarContainer:SetWidth(FrameDB.Width) end else if CastBarContainer then CastBarContainer:SetWidth(CastBarDB.Width) end end
-            if CastBarContainer then CastBarContainer:SetHeight(CastBarDB.Height) end
             unitFrame.Castbar:SetStatusBarTexture(UUF.Media.Foreground)
             unitFrame.Castbar.Background:SetTexture(UUF.Media.Background)
             if CastBarDB.ColourByClass then
@@ -227,36 +227,37 @@ function UUF:UpdateUnitCastBar(unitFrame, unit)
                 unitFrame.Castbar.Icon = unitFrame.Castbar.Icon or unitFrame.Castbar:CreateTexture(frameName .. "_CastBarIcon", "ARTWORK")
                 unitFrame.Castbar.Icon:SetSize(CastBarDB.Height - 2, CastBarDB.Height - 2)
                 unitFrame.Castbar.Icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
-                unitFrame.Castbar.Icon:ClearAllPoints()
-                if CastBarDB.Icon.Enabled and CastBarDB.Icon.Position == "LEFT" then
-                    unitFrame.Castbar.Icon:SetPoint("TOPLEFT", CastBarContainer, "TOPLEFT", 1, -1)
-                    unitFrame.Castbar:ClearAllPoints()
-                    unitFrame.Castbar:SetPoint("TOPLEFT", CastBarContainer, "TOPLEFT", CastBarDB.Height - 1, -1)
-                    unitFrame.Castbar:SetPoint("BOTTOMRIGHT", CastBarContainer, "BOTTOMRIGHT", -1, 1)
-                elseif CastBarDB.Icon.Enabled and CastBarDB.Icon.Position == "RIGHT" then
-                    unitFrame.Castbar.Icon:SetPoint("TOPRIGHT", CastBarContainer, "TOPRIGHT", -1, -1)
-                    unitFrame.Castbar:ClearAllPoints()
-                    unitFrame.Castbar:SetPoint("TOPLEFT", CastBarContainer, "TOPLEFT", 1, -1)
-                    unitFrame.Castbar:SetPoint("BOTTOMRIGHT", CastBarContainer, "BOTTOMRIGHT", -(CastBarDB.Height - 1), 1)
-                elseif not CastBarDB.Icon.Enabled then
-                    unitFrame.Castbar.Icon:Hide()
-                    unitFrame.Castbar:ClearAllPoints()
-                    unitFrame.Castbar:SetPoint("TOPLEFT", CastBarContainer, "TOPLEFT", 1, -1)
-                    unitFrame.Castbar:SetPoint("BOTTOMRIGHT", CastBarContainer, "BOTTOMRIGHT", -1, 1)
-                end
+                UUF:QueueOrRun(function()
+                    unitFrame.Castbar.Icon:ClearAllPoints()
+                    if CastBarDB.Icon.Enabled and CastBarDB.Icon.Position == "LEFT" then
+                        unitFrame.Castbar.Icon:SetPoint("TOPLEFT", CastBarContainer, "TOPLEFT", 1, -1)
+                        unitFrame.Castbar:ClearAllPoints()
+                        unitFrame.Castbar:SetPoint("TOPLEFT", CastBarContainer, "TOPLEFT", CastBarDB.Height - 1, -1)
+                        unitFrame.Castbar:SetPoint("BOTTOMRIGHT", CastBarContainer, "BOTTOMRIGHT", -1, 1)
+                    elseif CastBarDB.Icon.Enabled and CastBarDB.Icon.Position == "RIGHT" then
+                        unitFrame.Castbar.Icon:SetPoint("TOPRIGHT", CastBarContainer, "TOPRIGHT", -1, -1)
+                        unitFrame.Castbar:ClearAllPoints()
+                        unitFrame.Castbar:SetPoint("TOPLEFT", CastBarContainer, "TOPLEFT", 1, -1)
+                        unitFrame.Castbar:SetPoint("BOTTOMRIGHT", CastBarContainer, "BOTTOMRIGHT", -(CastBarDB.Height - 1), 1)
+                    end
+                end)
                 unitFrame.Castbar.Icon:Show()
             else
                 if unitFrame.Castbar.Icon then unitFrame.Castbar.Icon:Hide() end
                 unitFrame.Castbar.Icon = nil
-                unitFrame.Castbar:ClearAllPoints()
-                unitFrame.Castbar:SetPoint("TOPLEFT", CastBarContainer, "TOPLEFT", 1, -1)
-                unitFrame.Castbar:SetPoint("BOTTOMRIGHT", CastBarContainer, "BOTTOMRIGHT", -1, 1)
+                UUF:QueueOrRun(function()
+                    unitFrame.Castbar:ClearAllPoints()
+                    unitFrame.Castbar:SetPoint("TOPLEFT", CastBarContainer, "TOPLEFT", 1, -1)
+                    unitFrame.Castbar:SetPoint("BOTTOMRIGHT", CastBarContainer, "BOTTOMRIGHT", -1, 1)
+                end)
             end
 
             if unitFrame.Castbar.Text then
                 local SpellNameDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].CastBar.Text.SpellName
-                unitFrame.Castbar.Text:ClearAllPoints()
-                unitFrame.Castbar.Text:SetPoint(SpellNameDB.Layout[1], unitFrame.Castbar, SpellNameDB.Layout[2], SpellNameDB.Layout[3], SpellNameDB.Layout[4])
+                UUF:QueueOrRun(function()
+                    unitFrame.Castbar.Text:ClearAllPoints()
+                    unitFrame.Castbar.Text:SetPoint(SpellNameDB.Layout[1], unitFrame.Castbar, SpellNameDB.Layout[2], SpellNameDB.Layout[3], SpellNameDB.Layout[4])
+                end)
                 unitFrame.Castbar.Text:SetFont(UUF.Media.Font, SpellNameDB.FontSize, UUF.db.profile.General.Fonts.FontFlag)
                 if GeneralDB.Fonts.Shadow.Enabled then
                     unitFrame.Castbar.Text:SetShadowColor(GeneralDB.Fonts.Shadow.Colour[1], GeneralDB.Fonts.Shadow.Colour[2], GeneralDB.Fonts.Shadow.Colour[3], GeneralDB.Fonts.Shadow.Colour[4])
@@ -272,8 +273,10 @@ function UUF:UpdateUnitCastBar(unitFrame, unit)
 
             if unitFrame.Castbar.Time then
                 local DurationDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].CastBar.Text.Duration
-                unitFrame.Castbar.Time:ClearAllPoints()
-                unitFrame.Castbar.Time:SetPoint(DurationDB.Layout[1], unitFrame.Castbar, DurationDB.Layout[2], DurationDB.Layout[3], DurationDB.Layout[4])
+                UUF:QueueOrRun(function()
+                    unitFrame.Castbar.Time:ClearAllPoints()
+                    unitFrame.Castbar.Time:SetPoint(DurationDB.Layout[1], unitFrame.Castbar, DurationDB.Layout[2], DurationDB.Layout[3], DurationDB.Layout[4])
+                end)
                 unitFrame.Castbar.Time:SetFont(UUF.Media.Font, DurationDB.FontSize, UUF.db.profile.General.Fonts.FontFlag)
                 if GeneralDB.Fonts.Shadow.Enabled then
                     unitFrame.Castbar.Time:SetShadowColor(GeneralDB.Fonts.Shadow.Colour[1], GeneralDB.Fonts.Shadow.Colour[2], GeneralDB.Fonts.Shadow.Colour[3], GeneralDB.Fonts.Shadow.Colour[4])

@@ -69,7 +69,7 @@ function UUF:UpdateUnitHealthBar(unitFrame, unit)
     local DispelHighlightDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].HealthBar.DispelHighlight
 
     if unitFrame then
-        if not InCombatLockdown() then
+        UUF:QueueOrRun(function()
             unitFrame:ClearAllPoints()
             unitFrame:SetSize(FrameDB.Width, FrameDB.Height)
             if unit == "player" or unit == "target" then
@@ -81,7 +81,7 @@ function UUF:UpdateUnitHealthBar(unitFrame, unit)
                 UUF[unit:upper()]:SetPoint(FrameDB.Layout[1], parentFrame, FrameDB.Layout[2], FrameDB.Layout[3], FrameDB.Layout[4])
                 UUF[unit:upper()]:SetSize(FrameDB.Width, FrameDB.Height)
             end
-        end
+        end)
     end
 
     if unitFrame.Health then
