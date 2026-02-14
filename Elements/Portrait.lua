@@ -1,5 +1,97 @@
 local _, UUF = ...
 
+-- Helper function to create a portrait highlight frame
+local function CreatePortraitHighlight(portraitButton, unitFrame, PortraitDB, MouseoverDB)
+    local PortraitHighlight = CreateFrame("Frame", nil, unitFrame.Portrait.Border, "BackdropTemplate")
+    local portraitHeight = PortraitDB.Height
+    local highlightHeight = portraitHeight * 0.25
+    
+    PortraitHighlight:SetPoint("BOTTOMLEFT", unitFrame.Portrait, "BOTTOMLEFT", 0, 0)
+    PortraitHighlight:SetPoint("BOTTOMRIGHT", unitFrame.Portrait, "BOTTOMRIGHT", 0, 0)
+    PortraitHighlight:SetPoint("TOPLEFT", unitFrame.Portrait, "BOTTOMLEFT", 0, highlightHeight)
+    PortraitHighlight:SetPoint("TOPRIGHT", unitFrame.Portrait, "BOTTOMRIGHT", 0, highlightHeight)
+    
+    PortraitHighlight:Hide()
+    PortraitHighlight:SetFrameLevel(unitFrame.Portrait.Border:GetFrameLevel() + 1)
+    portraitButton.PortraitHighlight = PortraitHighlight
+    
+    return PortraitHighlight
+end
+
+-- Helper function to set up highlight backdrop style
+local function SetupPortraitHighlightStyle(highlight, MouseoverDB)
+    if MouseoverDB.Style == "BORDER" then
+        highlight:SetBackdrop(UUF.BACKDROP)
+        highlight:SetBackdropColor(0, 0, 0, 0)
+        highlight:SetBackdropBorderColor(MouseoverDB.Colour[1], MouseoverDB.Colour[2], MouseoverDB.Colour[3], MouseoverDB.HighlightOpacity)
+    elseif MouseoverDB.Style == "GRADIENT" then
+        highlight:SetBackdrop({
+            bgFile = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Gradient.png",
+            edgeFile = nil,
+            tile = false, tileSize = 0, edgeSize = 0,
+            insets = { left = 0, right = 0, top = 0, bottom = 0 },
+        })
+        highlight:SetBackdropColor(MouseoverDB.Colour[1], MouseoverDB.Colour[2], MouseoverDB.Colour[3], MouseoverDB.HighlightOpacity)
+        highlight:SetBackdropBorderColor(0, 0, 0, 0)
+    else
+        highlight:SetBackdrop(UUF.BACKDROP)
+        highlight:SetBackdropColor(MouseoverDB.Colour[1], MouseoverDB.Colour[2], MouseoverDB.Colour[3], MouseoverDB.HighlightOpacity)
+        highlight:SetBackdropBorderColor(0, 0, 0, 0)
+    end
+end
+
+-- Helper function to update highlight position
+local function UpdatePortraitHighlightPosition(highlight, portrait, PortraitDB)
+    local portraitHeight = PortraitDB.Height
+    local highlightHeight = portraitHeight * 0.25
+    highlight:ClearAllPoints()
+    highlight:SetPoint("BOTTOMLEFT", portrait, "BOTTOMLEFT", 0, 0)
+    highlight:SetPoint("BOTTOMRIGHT", portrait, "BOTTOMRIGHT", 0, 0)
+    highlight:SetPoint("TOPLEFT", portrait, "BOTTOMLEFT", 0, highlightHeight)
+    highlight:SetPoint("TOPRIGHT", portrait, "BOTTOMRIGHT", 0, highlightHeight)
+end
+
+-- Helper function to set up portrait button OnEnter/OnLeave scripts
+local function SetupPortraitButtonScripts(portraitButton, unitFrame, hasHighlight)
+    if hasHighlight then
+        portraitButton:SetScript("OnEnter", function()
+            UnitFrame_OnEnter(unitFrame)
+            if portraitButton.PortraitHighlight then
+                portraitButton.PortraitHighlight:Show()
+            end
+        end)
+        portraitButton:SetScript("OnLeave", function()
+            UnitFrame_OnLeave(unitFrame)
+            if portraitButton.PortraitHighlight then
+                portraitButton.PortraitHighlight:Hide()
+            end
+        end)
+    else
+        portraitButton:SetScript("OnEnter", function() UnitFrame_OnEnter(unitFrame) end)
+        portraitButton:SetScript("OnLeave", function() UnitFrame_OnLeave(unitFrame) end)
+    end
+end
+
+-- Helper function to create or update portrait highlight
+local function CreateOrUpdatePortraitHighlight(portraitButton, unitFrame, unit, PortraitDB, MouseoverDB)
+    if not MouseoverDB or not MouseoverDB.Enabled then
+        if portraitButton.PortraitHighlight then
+            portraitButton.PortraitHighlight:Hide()
+        end
+        return
+    end
+    
+    local highlight = portraitButton.PortraitHighlight
+    if not highlight then
+        highlight = CreatePortraitHighlight(portraitButton, unitFrame, PortraitDB, MouseoverDB)
+        SetupPortraitHighlightStyle(highlight, MouseoverDB)
+        portraitButton.__owner = unitFrame
+    else
+        UpdatePortraitHighlightPosition(highlight, unitFrame.Portrait, PortraitDB)
+        SetupPortraitHighlightStyle(highlight, MouseoverDB)
+    end
+end
+
 function UUF:CreateUnitPortrait(unitFrame, unit)
     local PortraitDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Portrait
 
@@ -111,233 +203,80 @@ function UUF:UpdateUnitPortrait(unitFrame, unit)
             
             -- Update or create secure button overlay for left-click and/or right-click
             if PortraitDB.LeftClickTargetOnPortrait or PortraitDB.RightClickMenuOnPortrait then
-                if not unitFrame.Portrait.PortraitButton then
-                    local PortraitButton = CreateFrame("Button", UUF:FetchFrameName(unit) .. "_PortraitButton", unitFrame, "SecureUnitButtonTemplate")
+                local PortraitButton = unitFrame.Portrait.PortraitButton
+                
+                if not PortraitButton then
+                    -- Create new portrait button
+                    PortraitButton = CreateFrame("Button", UUF:FetchFrameName(unit) .. "_PortraitButton", unitFrame, "SecureUnitButtonTemplate")
                     PortraitButton:SetSize(PortraitDB.Width, PortraitDB.Height)
-                    -- Anchor to unitFrame (secure) using same anchor points as portrait (HighLevelContainer covers unitFrame)
                     PortraitButton:SetPoint(PortraitDB.Layout[1], unitFrame, PortraitDB.Layout[2], PortraitDB.Layout[3], PortraitDB.Layout[4])
                     PortraitButton:RegisterForClicks("AnyUp")
                     PortraitButton:SetAttribute("unit", unitFrame.unit)
-                    if PortraitDB.LeftClickTargetOnPortrait then
-                        PortraitButton:SetAttribute("*type1", "target")
-                    end
-                    if PortraitDB.RightClickMenuOnPortrait then
-                        PortraitButton:SetAttribute("*type2", "togglemenu")
-                    end
                     PortraitButton:SetFrameLevel(unitFrame.HighLevelContainer:GetFrameLevel() + 1)
                     PortraitButton:EnableMouse(true)
-                    unitFrame.Portrait.PortraitButton = PortraitButton
-                    
-                    -- Store reference to unitFrame for tooltip
                     PortraitButton.__owner = unitFrame
-                    
-                    -- Set up hooks if left-click is enabled
-                    if PortraitDB.LeftClickTargetOnPortrait then
-                        local MouseoverDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Indicators.Mouseover
-                        if MouseoverDB and MouseoverDB.Enabled then
-                            -- Create highlight overlay
-                            local PortraitHighlight = CreateFrame("Frame", nil, unitFrame.Portrait.Border, "BackdropTemplate")
-                            local portraitHeight = PortraitDB.Height
-                            local highlightHeight = portraitHeight * 0.25
-                            PortraitHighlight:SetPoint("BOTTOMLEFT", unitFrame.Portrait, "BOTTOMLEFT", 0, 0)
-                            PortraitHighlight:SetPoint("BOTTOMRIGHT", unitFrame.Portrait, "BOTTOMRIGHT", 0, 0)
-                            PortraitHighlight:SetPoint("TOPLEFT", unitFrame.Portrait, "BOTTOMLEFT", 0, highlightHeight)
-                            PortraitHighlight:SetPoint("TOPRIGHT", unitFrame.Portrait, "BOTTOMRIGHT", 0, highlightHeight)
-                            
-                            if MouseoverDB.Style == "BORDER" then
-                                PortraitHighlight:SetBackdrop(UUF.BACKDROP)
-                                PortraitHighlight:SetBackdropColor(0,0,0,0)
-                                PortraitHighlight:SetBackdropBorderColor(MouseoverDB.Colour[1], MouseoverDB.Colour[2], MouseoverDB.Colour[3], MouseoverDB.HighlightOpacity)
-                            elseif MouseoverDB.Style == "GRADIENT" then
-                                PortraitHighlight:SetBackdrop({
-                                    bgFile = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Gradient.png",
-                                    edgeFile = nil,
-                                    tile = false, tileSize = 0, edgeSize = 0,
-                                    insets = { left = 0, right = 0, top = 0, bottom = 0 },
-                                })
-                                PortraitHighlight:SetBackdropColor(MouseoverDB.Colour[1], MouseoverDB.Colour[2], MouseoverDB.Colour[3], MouseoverDB.HighlightOpacity)
-                                PortraitHighlight:SetBackdropBorderColor(0,0,0,0)
-                            else
-                                PortraitHighlight:SetBackdrop(UUF.BACKDROP)
-                                PortraitHighlight:SetBackdropColor(MouseoverDB.Colour[1], MouseoverDB.Colour[2], MouseoverDB.Colour[3], MouseoverDB.HighlightOpacity)
-                                PortraitHighlight:SetBackdropBorderColor(0,0,0,0)
-                            end
-                            
-                            PortraitHighlight:Hide()
-                            PortraitHighlight:SetFrameLevel(unitFrame.Portrait.Border:GetFrameLevel() + 1)
-                            PortraitButton.PortraitHighlight = PortraitHighlight
-                            
-                            -- Set OnEnter/OnLeave for tooltip and highlight
-                            PortraitButton:SetScript("OnEnter", function()
-                                UnitFrame_OnEnter(unitFrame)
-                                if PortraitButton.PortraitHighlight then
-                                    PortraitButton.PortraitHighlight:Show()
-                                end
-                            end)
-                            PortraitButton:SetScript("OnLeave", function()
-                                UnitFrame_OnLeave(unitFrame)
-                                if PortraitButton.PortraitHighlight then
-                                    PortraitButton.PortraitHighlight:Hide()
-                                end
-                            end)
-                        else
-                            -- Set tooltip even if highlight is disabled
-                            PortraitButton:SetScript("OnEnter", function() UnitFrame_OnEnter(unitFrame) end)
-                            PortraitButton:SetScript("OnLeave", function() UnitFrame_OnLeave(unitFrame) end)
-                        end
-                    end
+                    unitFrame.Portrait.PortraitButton = PortraitButton
                 else
-                    unitFrame.Portrait.PortraitButton:ClearAllPoints()
-                    unitFrame.Portrait.PortraitButton:SetSize(PortraitDB.Width, PortraitDB.Height)
-                    -- Anchor to unitFrame (secure) using same anchor points as portrait (HighLevelContainer covers unitFrame)
-                    unitFrame.Portrait.PortraitButton:SetPoint(PortraitDB.Layout[1], unitFrame, PortraitDB.Layout[2], PortraitDB.Layout[3], PortraitDB.Layout[4])
-                    unitFrame.Portrait.PortraitButton:SetAttribute("unit", unitFrame.unit)
-                    -- Update attributes based on current settings
-                    if PortraitDB.LeftClickTargetOnPortrait then
-                        unitFrame.Portrait.PortraitButton:SetAttribute("*type1", "target")
-                        
-                        -- Update or create highlight overlay
-                        local MouseoverDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Indicators.Mouseover
-                        if MouseoverDB and MouseoverDB.Enabled then
-                            if not unitFrame.Portrait.PortraitButton.PortraitHighlight then
-                                local PortraitHighlight = CreateFrame("Frame", nil, unitFrame.Portrait.Border, "BackdropTemplate")
-                                -- Set highlight to 25% of portrait height (anchored at bottom)
-                                local portraitHeight = PortraitDB.Height
-                                local highlightHeight = portraitHeight * 0.25
-                                PortraitHighlight:SetPoint("BOTTOMLEFT", unitFrame.Portrait, "BOTTOMLEFT", 0, 0)
-                                PortraitHighlight:SetPoint("BOTTOMRIGHT", unitFrame.Portrait, "BOTTOMRIGHT", 0, 0)
-                                PortraitHighlight:SetPoint("TOPLEFT", unitFrame.Portrait, "BOTTOMLEFT", 0, highlightHeight)
-                                PortraitHighlight:SetPoint("TOPRIGHT", unitFrame.Portrait, "BOTTOMRIGHT", 0, highlightHeight)
-                                
-                                if MouseoverDB.Style == "BORDER" then
-                                    PortraitHighlight:SetBackdrop(UUF.BACKDROP)
-                                    PortraitHighlight:SetBackdropColor(0,0,0,0)
-                                    PortraitHighlight:SetBackdropBorderColor(MouseoverDB.Colour[1], MouseoverDB.Colour[2], MouseoverDB.Colour[3], MouseoverDB.HighlightOpacity)
-                                elseif MouseoverDB.Style == "GRADIENT" then
-                                    PortraitHighlight:SetBackdrop({
-                                        bgFile = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Gradient.png",
-                                        edgeFile = nil,
-                                        tile = false, tileSize = 0, edgeSize = 0,
-                                        insets = { left = 0, right = 0, top = 0, bottom = 0 },
-                                    })
-                                    PortraitHighlight:SetBackdropColor(MouseoverDB.Colour[1], MouseoverDB.Colour[2], MouseoverDB.Colour[3], MouseoverDB.HighlightOpacity)
-                                    PortraitHighlight:SetBackdropBorderColor(0,0,0,0)
-                                else
-                                    PortraitHighlight:SetBackdrop(UUF.BACKDROP)
-                                    PortraitHighlight:SetBackdropColor(MouseoverDB.Colour[1], MouseoverDB.Colour[2], MouseoverDB.Colour[3], MouseoverDB.HighlightOpacity)
-                                    PortraitHighlight:SetBackdropBorderColor(0,0,0,0)
-                                end
-                                
-                                PortraitHighlight:Hide()
-                                PortraitHighlight:SetFrameLevel(unitFrame.Portrait.Border:GetFrameLevel() + 1)
-                                unitFrame.Portrait.PortraitButton.PortraitHighlight = PortraitHighlight
-                                
-                                -- Store reference to unitFrame for tooltip
-                                unitFrame.Portrait.PortraitButton.__owner = unitFrame
-                                
-                                -- Set OnEnter/OnLeave for tooltip and highlight
-                                unitFrame.Portrait.PortraitButton:SetScript("OnEnter", function()
-                                    UnitFrame_OnEnter(unitFrame)
-                                    if unitFrame.Portrait.PortraitButton.PortraitHighlight then
-                                        unitFrame.Portrait.PortraitButton.PortraitHighlight:Show()
-                                    end
-                                end)
-                                unitFrame.Portrait.PortraitButton:SetScript("OnLeave", function()
-                                    UnitFrame_OnLeave(unitFrame)
-                                    if unitFrame.Portrait.PortraitButton.PortraitHighlight then
-                                        unitFrame.Portrait.PortraitButton.PortraitHighlight:Hide()
-                                    end
-                                end)
-                            else
-                                -- Update highlight style if it exists
-                                -- Set highlight to 25% of portrait height (anchored at bottom)
-                                local portraitHeight = PortraitDB.Height
-                                local highlightHeight = portraitHeight * 0.25
-                                unitFrame.Portrait.PortraitButton.PortraitHighlight:ClearAllPoints()
-                                unitFrame.Portrait.PortraitButton.PortraitHighlight:SetPoint("BOTTOMLEFT", unitFrame.Portrait, "BOTTOMLEFT", 0, 0)
-                                unitFrame.Portrait.PortraitButton.PortraitHighlight:SetPoint("BOTTOMRIGHT", unitFrame.Portrait, "BOTTOMRIGHT", 0, 0)
-                                unitFrame.Portrait.PortraitButton.PortraitHighlight:SetPoint("TOPLEFT", unitFrame.Portrait, "BOTTOMLEFT", 0, highlightHeight)
-                                unitFrame.Portrait.PortraitButton.PortraitHighlight:SetPoint("TOPRIGHT", unitFrame.Portrait, "BOTTOMRIGHT", 0, highlightHeight)
-                                if MouseoverDB.Style == "BORDER" then
-                                    unitFrame.Portrait.PortraitButton.PortraitHighlight:SetBackdrop(UUF.BACKDROP)
-                                    unitFrame.Portrait.PortraitButton.PortraitHighlight:SetBackdropColor(0,0,0,0)
-                                    unitFrame.Portrait.PortraitButton.PortraitHighlight:SetBackdropBorderColor(MouseoverDB.Colour[1], MouseoverDB.Colour[2], MouseoverDB.Colour[3], MouseoverDB.HighlightOpacity)
-                                elseif MouseoverDB.Style == "GRADIENT" then
-                                    unitFrame.Portrait.PortraitButton.PortraitHighlight:SetBackdrop({
-                                        bgFile = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Gradient.png",
-                                        edgeFile = nil,
-                                        tile = false, tileSize = 0, edgeSize = 0,
-                                        insets = { left = 0, right = 0, top = 0, bottom = 0 },
-                                    })
-                                    unitFrame.Portrait.PortraitButton.PortraitHighlight:SetBackdropColor(MouseoverDB.Colour[1], MouseoverDB.Colour[2], MouseoverDB.Colour[3], MouseoverDB.HighlightOpacity)
-                                    unitFrame.Portrait.PortraitButton.PortraitHighlight:SetBackdropBorderColor(0,0,0,0)
-                                else
-                                    unitFrame.Portrait.PortraitButton.PortraitHighlight:SetBackdrop(UUF.BACKDROP)
-                                    unitFrame.Portrait.PortraitButton.PortraitHighlight:SetBackdropColor(MouseoverDB.Colour[1], MouseoverDB.Colour[2], MouseoverDB.Colour[3], MouseoverDB.HighlightOpacity)
-                                    unitFrame.Portrait.PortraitButton.PortraitHighlight:SetBackdropBorderColor(0,0,0,0)
-                                end
-                            end
-                        elseif unitFrame.Portrait.PortraitButton.PortraitHighlight then
-                            -- Hide highlight if mouseover indicator is disabled
-                            unitFrame.Portrait.PortraitButton.PortraitHighlight:Hide()
-                        end
-                        -- Always ensure OnEnter/OnLeave hooks are set when left-click is enabled
-                        -- (they may have been removed when left-click was previously disabled)
-                        unitFrame.Portrait.PortraitButton:SetScript("OnEnter", function()
-                            UnitFrame_OnEnter(unitFrame)
-                            if unitFrame.Portrait.PortraitButton.PortraitHighlight then
-                                unitFrame.Portrait.PortraitButton.PortraitHighlight:Show()
-                            end
-                        end)
-                        unitFrame.Portrait.PortraitButton:SetScript("OnLeave", function()
-                            UnitFrame_OnLeave(unitFrame)
-                            if unitFrame.Portrait.PortraitButton.PortraitHighlight then
-                                unitFrame.Portrait.PortraitButton.PortraitHighlight:Hide()
-                            end
-                        end)
-                    else
-                        unitFrame.Portrait.PortraitButton:SetAttribute("*type1", nil)
-                        if unitFrame.Portrait.PortraitButton.PortraitHighlight then
-                            unitFrame.Portrait.PortraitButton.PortraitHighlight:Hide()
-                        end
-                        -- Remove OnEnter/OnLeave hooks from portrait button when left-click is disabled
-                        unitFrame.Portrait.PortraitButton:SetScript("OnEnter", nil)
-                        unitFrame.Portrait.PortraitButton:SetScript("OnLeave", nil)
-                        -- Restore OnEnter/OnLeave hooks to main frame
-                        -- HookScript is safe to call multiple times - it just adds hooks
-                        unitFrame:HookScript("OnEnter", UnitFrame_OnEnter)
-                        unitFrame:HookScript("OnLeave", UnitFrame_OnLeave)
-                    end
-                    if PortraitDB.RightClickMenuOnPortrait then
-                        unitFrame.Portrait.PortraitButton:SetAttribute("*type2", "togglemenu")
-                    else
-                        unitFrame.Portrait.PortraitButton:SetAttribute("*type2", nil)
-                    end
+                    -- Update existing button position and size
+                    PortraitButton:ClearAllPoints()
+                    PortraitButton:SetSize(PortraitDB.Width, PortraitDB.Height)
+                    PortraitButton:SetPoint(PortraitDB.Layout[1], unitFrame, PortraitDB.Layout[2], PortraitDB.Layout[3], PortraitDB.Layout[4])
+                    PortraitButton:SetAttribute("unit", unitFrame.unit)
                 end
-                unitFrame.Portrait.PortraitButton:Show()
-                -- Remove left-click targeting from main frame if on portrait
+                
+                -- Update click attributes
+                if PortraitDB.LeftClickTargetOnPortrait then
+                    PortraitButton:SetAttribute("*type1", "target")
+                else
+                    PortraitButton:SetAttribute("*type1", nil)
+                end
+                
+                if PortraitDB.RightClickMenuOnPortrait then
+                    PortraitButton:SetAttribute("*type2", "togglemenu")
+                else
+                    PortraitButton:SetAttribute("*type2", nil)
+                end
+                
+                -- Handle left-click specific features (highlight and tooltip)
+                if PortraitDB.LeftClickTargetOnPortrait then
+                    local MouseoverDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Indicators.Mouseover
+                    CreateOrUpdatePortraitHighlight(PortraitButton, unitFrame, unit, PortraitDB, MouseoverDB)
+                    SetupPortraitButtonScripts(PortraitButton, unitFrame, MouseoverDB and MouseoverDB.Enabled and PortraitButton.PortraitHighlight ~= nil)
+                else
+                    -- Disable left-click features
+                    if PortraitButton.PortraitHighlight then
+                        PortraitButton.PortraitHighlight:Hide()
+                    end
+                    PortraitButton:SetScript("OnEnter", nil)
+                    PortraitButton:SetScript("OnLeave", nil)
+                    -- Restore hooks to main frame
+                    unitFrame:HookScript("OnEnter", UnitFrame_OnEnter)
+                    unitFrame:HookScript("OnLeave", UnitFrame_OnLeave)
+                end
+                
+                PortraitButton:Show()
+                
+                -- Update main frame attributes based on portrait settings
                 if PortraitDB.LeftClickTargetOnPortrait then
                     unitFrame:SetAttribute("*type1", nil)
-                    -- Update mouseover indicator to prevent tooltip (it uses SetScript which will override HookScript hooks)
-                    UUF:UpdateUnitMouseoverIndicator(unitFrame, unit)
                 else
                     unitFrame:SetAttribute("*type1", "target")
-                    -- Update mouseover indicator to restore tooltip
-                    UUF:UpdateUnitMouseoverIndicator(unitFrame, unit)
                 end
-                -- Remove right-click menu from main frame if on portrait
+                
                 if PortraitDB.RightClickMenuOnPortrait then
                     unitFrame:SetAttribute("*type2", nil)
                 else
                     unitFrame:SetAttribute("*type2", "togglemenu")
                 end
+                
+                -- Update mouseover indicator to sync tooltip behavior
+                UUF:UpdateUnitMouseoverIndicator(unitFrame, unit)
             else
+                -- Hide portrait button and restore main frame attributes
                 if unitFrame.Portrait.PortraitButton then
                     unitFrame.Portrait.PortraitButton:Hide()
                 end
-                -- Restore left-click targeting to main frame
                 unitFrame:SetAttribute("*type1", "target")
-                -- Restore right-click menu to main frame
                 unitFrame:SetAttribute("*type2", "togglemenu")
             end
             
