@@ -1,12 +1,23 @@
 local _, UUF = ...
 local oUF = UUF.oUF
 
+-- Helper function to check if left-click targeting is on portrait
+local function IsLeftClickOnPortrait(unit)
+    local PortraitDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Portrait
+    return PortraitDB and PortraitDB.Enabled and PortraitDB.LeftClickTargetOnPortrait
+end
+
+-- Helper function to check if right-click menu is on portrait
+local function IsRightClickOnPortrait(unit)
+    local PortraitDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Portrait
+    return PortraitDB and PortraitDB.Enabled and PortraitDB.RightClickMenuOnPortrait
+end
+
 local function ApplyScripts(unitFrame, unit)
     unitFrame:RegisterForClicks("AnyUp")
     
     -- Check if left-click targeting should be on portrait instead
-    local PortraitDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Portrait
-    if PortraitDB and PortraitDB.Enabled and PortraitDB.LeftClickTargetOnPortrait then
+    if IsLeftClickOnPortrait(unit) then
         -- Don't set left-click targeting on main frame if it's on portrait
         unitFrame:SetAttribute("*type1", nil)
     else
@@ -14,7 +25,7 @@ local function ApplyScripts(unitFrame, unit)
     end
     
     -- Check if right-click menu should be on portrait instead
-    if PortraitDB and PortraitDB.Enabled and PortraitDB.RightClickMenuOnPortrait then
+    if IsRightClickOnPortrait(unit) then
         -- Don't set right-click menu on main frame if it's on portrait
         unitFrame:SetAttribute("*type2", nil)
     else
@@ -23,7 +34,7 @@ local function ApplyScripts(unitFrame, unit)
     
     -- Only hook OnEnter/OnLeave on main frame if left-click targeting is NOT on portrait
     -- (tooltip will be handled by portrait button when left-click is on portrait)
-    if not (PortraitDB and PortraitDB.Enabled and PortraitDB.LeftClickTargetOnPortrait) then
+    if not IsLeftClickOnPortrait(unit) then
         unitFrame:HookScript("OnEnter", UnitFrame_OnEnter)
         unitFrame:HookScript("OnLeave", UnitFrame_OnLeave)
     end

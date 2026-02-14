@@ -1,5 +1,60 @@
 local _, UUF = ...
 
+-- Helper function to check if left-click targeting is on portrait
+local function IsLeftClickOnPortrait(unit)
+    local PortraitDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Portrait
+    return PortraitDB and PortraitDB.Enabled and PortraitDB.LeftClickTargetOnPortrait
+end
+
+-- Helper function to set up highlight backdrop style
+local function SetupMouseoverHighlightStyle(highlight, MouseoverDB)
+    if MouseoverDB.Style == "BORDER" then
+        highlight:SetBackdrop(UUF.BACKDROP)
+        highlight:SetBackdropColor(0, 0, 0, 0)
+        highlight:SetBackdropBorderColor(MouseoverDB.Colour[1], MouseoverDB.Colour[2], MouseoverDB.Colour[3], MouseoverDB.HighlightOpacity)
+    elseif MouseoverDB.Style == "GRADIENT" then
+        highlight:SetBackdrop({
+            bgFile = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Gradient.png",
+            edgeFile = nil,
+            tile = false, tileSize = 0, edgeSize = 0,
+            insets = { left = 0, right = 0, top = 0, bottom = 0 },
+        })
+        highlight:SetBackdropColor(MouseoverDB.Colour[1], MouseoverDB.Colour[2], MouseoverDB.Colour[3], MouseoverDB.HighlightOpacity)
+        highlight:SetBackdropBorderColor(0, 0, 0, 0)
+    else
+        highlight:SetBackdrop(UUF.BACKDROP)
+        highlight:SetBackdropColor(MouseoverDB.Colour[1], MouseoverDB.Colour[2], MouseoverDB.Colour[3], MouseoverDB.HighlightOpacity)
+        highlight:SetBackdropBorderColor(0, 0, 0, 0)
+    end
+end
+
+-- Helper function to set up OnEnter/OnLeave scripts for mouseover indicator
+local function SetupMouseoverScripts(unitFrame, unit, highlight)
+    unitFrame:SetScript("OnEnter", function()
+        local DB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Indicators.Mouseover
+        -- Don't show tooltip or highlight on main frame if left-click targeting is on portrait
+        if not IsLeftClickOnPortrait(unit) then
+            UnitFrame_OnEnter(unitFrame)
+        end
+        -- Show highlight only if enabled and left-click is NOT on portrait
+        if DB.Enabled and not IsLeftClickOnPortrait(unit) then
+            highlight:Show()
+        end
+    end)
+    
+    unitFrame:SetScript("OnLeave", function()
+        local DB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Indicators.Mouseover
+        -- Hide tooltip if left-click is NOT on portrait
+        if not IsLeftClickOnPortrait(unit) then
+            UnitFrame_OnLeave(unitFrame)
+        end
+        -- Hide highlight if enabled
+        if DB.Enabled then
+            highlight:Hide()
+        end
+    end)
+end
+
 function UUF:CreateUnitMouseoverIndicator(unitFrame, unit)
     local MouseoverDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Indicators.Mouseover
 
@@ -7,110 +62,23 @@ function UUF:CreateUnitMouseoverIndicator(unitFrame, unit)
     MouseoverHighlight:SetPoint("TOPLEFT", unitFrame.Health, "TOPLEFT", 0, 0)
     MouseoverHighlight:SetPoint("BOTTOMRIGHT", unitFrame.Health, "BOTTOMRIGHT", 0, 0)
 
-    if MouseoverDB.Style == "BORDER" then
-        MouseoverHighlight:SetBackdrop(UUF.BACKDROP)
-        MouseoverHighlight:SetBackdropColor(0,0,0,0)
-        MouseoverHighlight:SetBackdropBorderColor(MouseoverDB.Colour[1], MouseoverDB.Colour[2], MouseoverDB.Colour[3], MouseoverDB.HighlightOpacity)
-    elseif MouseoverDB.Style == "GRADIENT" then
-        MouseoverHighlight:SetBackdrop({
-            bgFile = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Gradient.png",
-            edgeFile = nil,
-            tile = false, tileSize = 0, edgeSize = 0,
-            insets = { left = 0, right = 0, top = 0, bottom = 0 },
-        })
-        MouseoverHighlight:SetBackdropColor(MouseoverDB.Colour[1], MouseoverDB.Colour[2], MouseoverDB.Colour[3], MouseoverDB.HighlightOpacity)
-        MouseoverHighlight:SetBackdropBorderColor(0,0,0,0)
-    else
-        MouseoverHighlight:SetBackdrop(UUF.BACKDROP)
-        MouseoverHighlight:SetBackdropColor(MouseoverDB.Colour[1], MouseoverDB.Colour[2], MouseoverDB.Colour[3], MouseoverDB.HighlightOpacity)
-        MouseoverHighlight:SetBackdropBorderColor(0,0,0,0)
-    end
+    SetupMouseoverHighlightStyle(MouseoverHighlight, MouseoverDB)
 
     MouseoverHighlight:Hide()
     MouseoverHighlight:SetFrameLevel(unitFrame.Health:GetFrameLevel() + 3)
-    unitFrame:SetScript("OnEnter", function() 
-        local DB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Indicators.Mouseover 
-        local PortraitDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Portrait
-        -- Don't show tooltip or highlight on main frame if left-click targeting is on portrait
-        if not (PortraitDB and PortraitDB.Enabled and PortraitDB.LeftClickTargetOnPortrait) then
-            -- Only show tooltip if left-click is NOT on portrait
-            UnitFrame_OnEnter(unitFrame)
-        end
-        -- Show highlight only if enabled and left-click is NOT on portrait
-        if DB.Enabled and not (PortraitDB and PortraitDB.Enabled and PortraitDB.LeftClickTargetOnPortrait) then 
-            MouseoverHighlight:Show() 
-        end 
-    end)
-    unitFrame:SetScript("OnLeave", function() 
-        local DB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Indicators.Mouseover 
-        local PortraitDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Portrait
-        -- Hide tooltip if left-click is NOT on portrait
-        if not (PortraitDB and PortraitDB.Enabled and PortraitDB.LeftClickTargetOnPortrait) then
-            UnitFrame_OnLeave(unitFrame)
-        end
-        -- Hide highlight if enabled
-        if DB.Enabled then 
-            MouseoverHighlight:Hide() 
-        end 
-    end)
+    SetupMouseoverScripts(unitFrame, unit, MouseoverHighlight)
 
     return MouseoverHighlight
 end
 
 function UUF:UpdateUnitMouseoverIndicator(unitFrame, unit)
     local MouseoverDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Indicators.Mouseover
-    local PortraitDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Portrait
 
     if MouseoverDB.Enabled then
         unitFrame.MouseoverHighlight = unitFrame.MouseoverHighlight or UUF:CreateUnitMouseoverIndicator(unitFrame, unit)
 
-        if MouseoverDB.Style == "BORDER" then
-            unitFrame.MouseoverHighlight:SetBackdrop(UUF.BACKDROP)
-            unitFrame.MouseoverHighlight:SetBackdropColor(0,0,0,0)
-            unitFrame.MouseoverHighlight:SetBackdropBorderColor(MouseoverDB.Colour[1], MouseoverDB.Colour[2], MouseoverDB.Colour[3], MouseoverDB.HighlightOpacity)
-        elseif MouseoverDB.Style == "GRADIENT" then
-            unitFrame.MouseoverHighlight:SetBackdrop({
-                bgFile = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Gradient.png",
-                edgeFile = nil,
-                tile = false, tileSize = 0, edgeSize = 0,
-                insets = { left = 0, right = 0, top = 0, bottom = 0 },
-            })
-            unitFrame.MouseoverHighlight:SetBackdropColor(MouseoverDB.Colour[1], MouseoverDB.Colour[2], MouseoverDB.Colour[3], MouseoverDB.HighlightOpacity)
-            unitFrame.MouseoverHighlight:SetBackdropBorderColor(0,0,0,0)
-        else
-            unitFrame.MouseoverHighlight:SetBackdrop(UUF.BACKDROP)
-            unitFrame.MouseoverHighlight:SetBackdropColor(MouseoverDB.Colour[1], MouseoverDB.Colour[2], MouseoverDB.Colour[3], MouseoverDB.HighlightOpacity)
-            unitFrame.MouseoverHighlight:SetBackdropBorderColor(0,0,0,0)
-        end
-
-        -- Update OnEnter script to check portrait setting
-        unitFrame:SetScript("OnEnter", function() 
-            local DB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Indicators.Mouseover 
-            local PortraitDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Portrait
-            -- Don't show highlight or tooltip on main frame if left-click targeting is on portrait
-            if not (PortraitDB and PortraitDB.Enabled and PortraitDB.LeftClickTargetOnPortrait) then
-                -- Only show tooltip if left-click is NOT on portrait
-                UnitFrame_OnEnter(unitFrame)
-            end
-            -- Show highlight only if enabled and left-click is NOT on portrait
-            if DB.Enabled and not (PortraitDB and PortraitDB.Enabled and PortraitDB.LeftClickTargetOnPortrait) then 
-                unitFrame.MouseoverHighlight:Show() 
-            end 
-        end)
-        
-        -- Update OnLeave script to check portrait setting
-        unitFrame:SetScript("OnLeave", function() 
-            local DB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Indicators.Mouseover 
-            local PortraitDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Portrait
-            -- Hide tooltip if left-click is NOT on portrait
-            if not (PortraitDB and PortraitDB.Enabled and PortraitDB.LeftClickTargetOnPortrait) then
-                UnitFrame_OnLeave(unitFrame)
-            end
-            -- Hide highlight if enabled
-            if DB.Enabled then 
-                unitFrame.MouseoverHighlight:Hide() 
-            end 
-        end)
+        SetupMouseoverHighlightStyle(unitFrame.MouseoverHighlight, MouseoverDB)
+        SetupMouseoverScripts(unitFrame, unit, unitFrame.MouseoverHighlight)
 
     else
         if unitFrame.MouseoverHighlight then
