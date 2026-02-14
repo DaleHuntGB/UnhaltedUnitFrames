@@ -1498,6 +1498,23 @@ local function CreatePortraitSettings(containerParent, unit, updateCallback)
     UseClassPortraitToggle:SetDisabled(PortraitDB.Style ~= "2D")
     ToggleContainer:AddChild(UseClassPortraitToggle)
 
+    -- Only show portrait click options for player frame
+    if unit == "player" then
+        local LeftClickTargetOnPortraitToggle = AG:Create("CheckBox")
+        LeftClickTargetOnPortraitToggle:SetLabel("Left-Click Target on Portrait")
+        LeftClickTargetOnPortraitToggle:SetValue(PortraitDB.LeftClickTargetOnPortrait or false)
+        LeftClickTargetOnPortraitToggle:SetCallback("OnValueChanged", function(_, _, value) PortraitDB.LeftClickTargetOnPortrait = value updateCallback() end)
+        LeftClickTargetOnPortraitToggle:SetRelativeWidth(0.5)
+        ToggleContainer:AddChild(LeftClickTargetOnPortraitToggle)
+
+        local RightClickMenuOnPortraitToggle = AG:Create("CheckBox")
+        RightClickMenuOnPortraitToggle:SetLabel("Right-Click Menu on Portrait")
+        RightClickMenuOnPortraitToggle:SetValue(PortraitDB.RightClickMenuOnPortrait or false)
+        RightClickMenuOnPortraitToggle:SetCallback("OnValueChanged", function(_, _, value) PortraitDB.RightClickMenuOnPortrait = value updateCallback() end)
+        RightClickMenuOnPortraitToggle:SetRelativeWidth(0.5)
+        ToggleContainer:AddChild(RightClickMenuOnPortraitToggle)
+    end
+
     local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
 
     local AnchorFromDropdown = AG:Create("Dropdown")
@@ -1562,9 +1579,17 @@ local function CreatePortraitSettings(containerParent, unit, updateCallback)
         if PortraitDB.Enabled then
             GUIWidgets.DeepDisable(ToggleContainer, false, Toggle)
             GUIWidgets.DeepDisable(LayoutContainer, false, Toggle)
+            if unit == "player" then
+                RightClickMenuOnPortraitToggle:SetDisabled(false)
+                LeftClickTargetOnPortraitToggle:SetDisabled(false)
+            end
         else
             GUIWidgets.DeepDisable(ToggleContainer, true, Toggle)
             GUIWidgets.DeepDisable(LayoutContainer, true, Toggle)
+            if unit == "player" then
+                RightClickMenuOnPortraitToggle:SetDisabled(true)
+                LeftClickTargetOnPortraitToggle:SetDisabled(true)
+            end
         end
         UseClassPortraitToggle:SetDisabled(PortraitDB.Style ~= "2D")
         ZoomSlider:SetDisabled(PortraitDB.Style ~= "2D")

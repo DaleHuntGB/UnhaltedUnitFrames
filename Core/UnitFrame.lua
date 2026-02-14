@@ -1,12 +1,32 @@
 local _, UUF = ...
 local oUF = UUF.oUF
 
-local function ApplyScripts(unitFrame)
+local function ApplyScripts(unitFrame, unit)
     unitFrame:RegisterForClicks("AnyUp")
-    unitFrame:SetAttribute("*type1", "target")
-    unitFrame:SetAttribute("*type2", "togglemenu")
-    unitFrame:HookScript("OnEnter", UnitFrame_OnEnter)
-    unitFrame:HookScript("OnLeave", UnitFrame_OnLeave)
+    
+    -- Check if left-click targeting should be on portrait instead
+    local PortraitDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Portrait
+    if PortraitDB and PortraitDB.Enabled and PortraitDB.LeftClickTargetOnPortrait then
+        -- Don't set left-click targeting on main frame if it's on portrait
+        unitFrame:SetAttribute("*type1", nil)
+    else
+        unitFrame:SetAttribute("*type1", "target")
+    end
+    
+    -- Check if right-click menu should be on portrait instead
+    if PortraitDB and PortraitDB.Enabled and PortraitDB.RightClickMenuOnPortrait then
+        -- Don't set right-click menu on main frame if it's on portrait
+        unitFrame:SetAttribute("*type2", nil)
+    else
+        unitFrame:SetAttribute("*type2", "togglemenu")
+    end
+    
+    -- Only hook OnEnter/OnLeave on main frame if left-click targeting is NOT on portrait
+    -- (tooltip will be handled by portrait button when left-click is on portrait)
+    if not (PortraitDB and PortraitDB.Enabled and PortraitDB.LeftClickTargetOnPortrait) then
+        unitFrame:HookScript("OnEnter", UnitFrame_OnEnter)
+        unitFrame:HookScript("OnLeave", UnitFrame_OnLeave)
+    end
 end
 
 function UUF:CreateUnitFrame(unitFrame, unit)
@@ -29,7 +49,7 @@ function UUF:CreateUnitFrame(unitFrame, unit)
     UUF:CreateUnitTargetGlowIndicator(unitFrame, unit)
     UUF:CreateUnitAuras(unitFrame, unit)
     UUF:CreateUnitTags(unitFrame, unit)
-    ApplyScripts(unitFrame)
+    ApplyScripts(unitFrame, unit)
     return unitFrame
 end
 
@@ -106,6 +126,17 @@ function UUF:SpawnUnitFrame(unit)
             end
         else
             UUF[unit:upper()]:Hide()
+        end
+    end
+
+    -- Update portrait after frame is fully created to ensure portrait button hooks are properly set up
+    if unit ~= "targettarget" and unit ~= "focustarget" then
+        if unit == "boss" then
+            for i = 1, UUF.MAX_BOSS_FRAMES do
+                UUF:UpdateUnitPortrait(UUF[unit:upper() .. i], unit .. i)
+            end
+        else
+            UUF:UpdateUnitPortrait(UUF[unit:upper()], unit)
         end
     end
 
