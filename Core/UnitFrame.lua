@@ -5,8 +5,8 @@ local function ApplyScripts(unitFrame)
     unitFrame:RegisterForClicks("AnyUp")
     unitFrame:SetAttribute("*type1", "target")
     unitFrame:SetAttribute("*type2", "togglemenu")
-    unitFrame:HookScript("OnEnter", UnitFrame_OnEnter)
-    unitFrame:HookScript("OnLeave", UnitFrame_OnLeave)
+    unitFrame:SetScript("OnEnter", UnitFrame_OnEnter)
+    unitFrame:SetScript("OnLeave", UnitFrame_OnLeave)
 end
 
 function UUF:CreateUnitFrame(unitFrame, unit)
@@ -25,11 +25,11 @@ function UUF:CreateUnitFrame(unitFrame, unit)
     if unit == "player" or unit == "target" then UUF:CreateUnitCombatIndicator(unitFrame, unit) end
     if unit == "player" then UUF:CreateUnitRestingIndicator(unitFrame, unit) end
     -- if unit == "player" then UUF:CreateUnitTotems(unitFrame, unit) end
-    UUF:CreateUnitMouseoverIndicator(unitFrame, unit)
     UUF:CreateUnitTargetGlowIndicator(unitFrame, unit)
     UUF:CreateUnitAuras(unitFrame, unit)
     UUF:CreateUnitTags(unitFrame, unit)
     ApplyScripts(unitFrame)
+    UUF:CreateUnitMouseoverIndicator(unitFrame, unit)
     return unitFrame
 end
 
