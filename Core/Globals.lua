@@ -417,3 +417,23 @@ function UUF:UpdateHealthBarLayout(unitFrame, unit)
     unitFrame.Health:SetPoint("TOPLEFT", unitFrame.Container, "TOPLEFT", 1, topOffset)
     unitFrame.Health:SetPoint("BOTTOMRIGHT", unitFrame.Container, "BOTTOMRIGHT", -1, bottomOffset)
 end
+
+
+UUF.AURA_FILTERS = {
+    Buffs = {
+        ["HELPFUL"] = {Title = "Helpful", Desc = "Buffs"},
+        ["HELPFUL|PLAYER"] = {Title = "Player", Desc = "Buffs applied by the Player"},
+        ["HELPFUL|RAID"] = {Title = "Raid", Desc = "|cFF40FF40Helpful|r: Buffs filtered by the Player's Class."},
+        ["EXTERNAL_DEFENSIVE"] = {Title = "External Defensives", Desc = "Externals."},
+        ["BIG_DEFENSIVE"] = {Title = "Big Defensives", Desc = "Big Defensive Buffs."},
+        ["IMPORTANT"] = {Title = "Important", Desc = "Important Buffs. Flagged by |cFF00B0F7Blizzard|r."},
+    },
+    Debuffs = {
+        ["HARMFUL"] = {Title = "Harmful", Desc = "Debuffs"},
+        ["HARMFUL|PLAYER"] = {Title = "Player", Desc = "Debuffs applied by the Player"},
+        ["HARMFUL|RAID"] = {Title = "Raid", Desc = "|cFFFF4040Harmful|r: Debuffs that show up on Raid Frames."},
+        ["CROWD_CONTROL"] = {Title = "Crowd Control", Desc = "Crowd Control Effects."},
+        ["RAID_PLAYER_DISPELLABLE"] = {Title = "Player Dispellable", Desc = "Auras that the Player can dispel."},
+        ["IMPORTANT"] = {Title = "Important", Desc = "Important Debuffs. Flagged by |cFF00B0F7Blizzard|r."},
+    }
+}
