@@ -34,6 +34,7 @@ local Tags = {
     ["curhpperhp:abbr"] = "UNIT_HEALTH UNIT_MAXHEALTH",
     ["absorbs"] = "UNIT_ABSORB_AMOUNT_CHANGED",
     ["absorbs:abbr"] = "UNIT_ABSORB_AMOUNT_CHANGED",
+    ["absorbs:truncate"] = "UNIT_ABSORB_AMOUNT_CHANGED",
     ["maxhp:abbr"] = "UNIT_HEALTH UNIT_MAXHEALTH",
 
     ["curpp:colour"] = "UNIT_POWER_UPDATE UNIT_MAXPOWER",
@@ -249,6 +250,14 @@ oUF.Tags.Methods["absorbs:abbr"] = function(unit)
     end
 end
 
+oUF.Tags.Methods["absorbs:truncate"] = function(unit)
+    if not unit or not UnitExists(unit) then return "" end
+    local absorbAmount = UnitGetTotalAbsorbs(unit) or 0
+    if absorbAmount then
+        return string.format("%s", C_StringUtil.TruncateWhenZero(absorbAmount))
+    end
+end
+
 oUF.Tags.Methods["curpp:colour"] = function(unit)
     if not unit or not UnitExists(unit) then return "" end
     local powerColourR, powerColourG, powerColourB = FetchUnitPowerColour(unit)
@@ -382,6 +391,7 @@ local HealthTags = {
         ["maxhp:abbr"] = "Maximum Health with Abbreviation",
         ["absorbs"] = "Total Absorbs",
         ["absorbs:abbr"] = "Total Absorbs with Abbreviation",
+        ["absorbs:truncate"] = "Total Absorbs but will hide when at zero.",
         ["missinghp"] = "Missing Health",
     },
     {
@@ -393,6 +403,7 @@ local HealthTags = {
         "maxhp:abbr",
         "absorbs",
         "absorbs:abbr",
+        "absorbs:truncate",
         "missinghp",
     }
 
