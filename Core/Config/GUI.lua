@@ -423,6 +423,32 @@ local function CreateTextureSettings(containerParent)
     BackgroundOpacitySlider:SetIsPercent(true)
     BackgroundOpacitySlider:SetCallback("OnValueChanged", function(_, _, value) for _, unitDB in pairs(UUF.db.profile.Units) do unitDB.HealthBar.BackgroundOpacity = value end UUF:UpdateAllUnitFrames() end)
     Container:AddChild(BackgroundOpacitySlider)
+
+    local CastBarContainer = GUIWidgets.CreateInlineGroup(Container, "Cast Bar")
+
+    local CastBarForegroundColourPicker = AG:Create("ColorPicker")
+    CastBarForegroundColourPicker:SetLabel("Foreground Colour")
+    local CR, CG, CB = 128/255, 128/255, 255/255
+    CastBarForegroundColourPicker:SetColor(CR, CG, CB)
+    CastBarForegroundColourPicker:SetRelativeWidth(0.33)
+    CastBarForegroundColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) for _, unitDB in pairs(UUF.db.profile.Units) do if unitDB.CastBar then unitDB.CastBar.Foreground = {r, g, b} end end UUF:UpdateAllUnitFrames() end)
+    CastBarContainer:AddChild(CastBarForegroundColourPicker)
+
+    local CastBarBackgroundColourPicker = AG:Create("ColorPicker")
+    CastBarBackgroundColourPicker:SetLabel("Background Colour")
+    local CR2, CG2, CB2 = 34/255, 34/255, 34/255
+    CastBarBackgroundColourPicker:SetColor(CR2, CG2, CB2)
+    CastBarBackgroundColourPicker:SetRelativeWidth(0.33)
+    CastBarBackgroundColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) for _, unitDB in pairs(UUF.db.profile.Units) do if unitDB.CastBar then unitDB.CastBar.Background = {r, g, b} end end UUF:UpdateAllUnitFrames() end)
+    CastBarContainer:AddChild(CastBarBackgroundColourPicker)
+
+    local CastBarInterruptibleColourPicker = AG:Create("ColorPicker")
+    CastBarInterruptibleColourPicker:SetLabel("Interruptible Colour")
+    local CR3, CG3, CB3 = 255/255, 64/255, 64/255
+    CastBarInterruptibleColourPicker:SetColor(CR3, CG3, CB3)
+    CastBarInterruptibleColourPicker:SetRelativeWidth(0.33)
+    CastBarInterruptibleColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) for _, unitDB in pairs(UUF.db.profile.Units) do if unitDB.CastBar then unitDB.CastBar.NotInterruptibleColour = {r, g, b} end end UUF:UpdateAllUnitFrames() end)
+    CastBarContainer:AddChild(CastBarInterruptibleColourPicker)
 end
 
 local function CreateRangeSettings(containerParent)
