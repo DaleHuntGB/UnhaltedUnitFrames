@@ -40,6 +40,10 @@ local Tags = {
     ["curpp:colour"] = "UNIT_POWER_UPDATE UNIT_MAXPOWER",
     ["curpp:abbr"] = "UNIT_POWER_UPDATE UNIT_MAXPOWER",
     ["curpp:abbr:colour"] = "UNIT_POWER_UPDATE UNIT_MAXPOWER",
+    ["curpp:manapercent"] = "UNIT_POWER_UPDATE UNIT_MAXPOWER",
+    ["curpp:manapercent:abbr"] = "UNIT_POWER_UPDATE UNIT_MAXPOWER",
+    ["curpp:manapercent-with-sign"] = "UNIT_POWER_UPDATE UNIT_MAXPOWER",
+    ["curpp:manapercent-with-sign:abbr"] = "UNIT_POWER_UPDATE UNIT_MAXPOWER",
 
     ["maxpp:abbr"] = "UNIT_POWER_UPDATE UNIT_MAXPOWER",
     ["maxpp:colour"] = "UNIT_POWER_UPDATE UNIT_MAXPOWER",
@@ -296,6 +300,18 @@ oUF.Tags.Methods["curpp:manapercent"] = function(unit)
     end
 end
 
+oUF.Tags.Methods["curpp:manapercent-with-sign"] = function(unit)
+    if not unit or not UnitExists(unit) then return "" end
+    local unitPower = UnitPower(unit)
+    local unitPowerType = UnitPowerType(unit)
+    if unitPowerType == Enum.PowerType.Mana and unitPower then
+        local powerPercent = UnitPowerPercent(unit, Enum.PowerType.Mana, true, CurveConstants.ScaleTo100)
+        return string.format("%.f%%", powerPercent)
+    else
+        return string.format("%s", unitPower)
+    end
+end
+
 oUF.Tags.Methods["curpp:manapercent:abbr"] = function(unit)
     if not unit or not UnitExists(unit) then return "" end
     local unitPower = UnitPower(unit)
@@ -303,6 +319,18 @@ oUF.Tags.Methods["curpp:manapercent:abbr"] = function(unit)
     if unitPowerType == Enum.PowerType.Mana and unitPower then
         local powerPercent = UnitPowerPercent(unit, Enum.PowerType.Mana, true, CurveConstants.ScaleTo100)
         return string.format("%.f", powerPercent)
+    else
+        return string.format("%s", AbbreviateValue(unitPower))
+    end
+end
+
+oUF.Tags.Methods["curpp:manapercent-with-sign:abbr"] = function(unit)
+    if not unit or not UnitExists(unit) then return "" end
+    local unitPower = UnitPower(unit)
+    local unitPowerType = UnitPowerType(unit)
+    if unitPowerType == Enum.PowerType.Mana and unitPower then
+        local powerPercent = UnitPowerPercent(unit, Enum.PowerType.Mana, true, CurveConstants.ScaleTo100)
+        return string.format("%.f%%", powerPercent)
     else
         return string.format("%s", AbbreviateValue(unitPower))
     end
@@ -423,6 +451,8 @@ local PowerTags = {
         ["missingpp"] = "Missing Power",
         ["curpp:manapercent"] = "Current Power but Mana as Percentage",
         ["curpp:manapercent:abbr"] = "Current Power but Mana as Percentage with Abbreviation",
+        ["curpp:manapercent-with-sign"] = "Current Power but Mana as Percentage with % Sign",
+        ["curpp:manapercent-with-sign:abbr"] = "Current Power but Mana as Percentage with % Sign and Abbreviation",
     },
     {
         "perpp",
