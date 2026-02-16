@@ -28,8 +28,8 @@ function UUF:CreateUnitMouseoverIndicator(unitFrame, unit)
 
     MouseoverHighlight:Hide()
     MouseoverHighlight:SetFrameLevel(unitFrame.Health:GetFrameLevel() + 3)
-    unitFrame:SetScript("OnEnter", function() local DB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Indicators.Mouseover if DB.Enabled then MouseoverHighlight:Show() end end)
-    unitFrame:SetScript("OnLeave", function() local DB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Indicators.Mouseover if DB.Enabled then MouseoverHighlight:Hide() end end)
+    unitFrame:HookScript("OnEnter", function() local DB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Indicators.Mouseover if DB.Enabled then MouseoverHighlight:Show() end end)
+    unitFrame:HookScript("OnLeave", function() local DB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Indicators.Mouseover if DB.Enabled then MouseoverHighlight:Hide() end end)
 
     return MouseoverHighlight
 end
@@ -62,8 +62,6 @@ function UUF:UpdateUnitMouseoverIndicator(unitFrame, unit)
     else
         if unitFrame.MouseoverHighlight then
             unitFrame.MouseoverHighlight:Hide()
-            unitFrame:SetScript("OnEnter", nil)
-            unitFrame:SetScript("OnLeave", nil)
             unitFrame.MouseoverHighlight = nil
         end
     end
