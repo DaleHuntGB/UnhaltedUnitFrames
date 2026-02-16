@@ -5,6 +5,7 @@
 	<Script file="LibDeflate/LibDeflate.lua"/>
 	<!-- <Script file="LibRangeCheck-3.0/LibRangeCheck-3.0.lua"/> -->
 	<Include file="Ace3/AceAddon-3.0/AceAddon-3.0.xml"/>
+	<Include file="Ace3/AceLocale-3.0/AceLocale-3.0.xml"/>
 	<Include file="Ace3/AceDB-3.0/AceDB-3.0.xml"/>
 	<Include file="Ace3/AceDBOptions-3.0/AceDBOptions-3.0.xml"/>
 	<Include file="Ace3/AceGUI-3.0/AceGUI-3.0.xml"/>
