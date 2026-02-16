@@ -19,7 +19,11 @@ function UUF:CreateUnitCastBar(unitFrame, unit)
     local CastBarContainer = CreateFrame("Frame", UUF:FetchFrameName(unit) .. "_CastBarContainer", unitFrame, "BackdropTemplate")
     CastBarContainer:SetBackdrop(UUF.BACKDROP)
     CastBarContainer:SetBackdropColor(0, 0, 0, 0)
-    CastBarContainer:SetBackdropBorderColor(0, 0, 0, 1)
+    if CastBarDB.ShowBorder then
+        CastBarContainer:SetBackdropBorderColor(unpack(CastBarDB.BorderColour))
+    else
+        CastBarContainer:SetBackdropBorderColor(0, 0, 0, 0)
+    end
     CastBarContainer:ClearAllPoints()
     CastBarContainer:SetPoint(CastBarDB.Layout[1], unitFrame, CastBarDB.Layout[2], CastBarDB.Layout[3], CastBarDB.Layout[4])
     if CastBarDB.MatchParentWidth then CastBarContainer:SetWidth(FrameDB.Width) else CastBarContainer:SetWidth(CastBarDB.Width) end
@@ -172,9 +176,16 @@ function UUF:UpdateUnitCastBar(unitFrame, unit)
         if not unitFrame:IsElementEnabled("Castbar") then unitFrame:EnableElement("Castbar") end
 
         if unitFrame.Castbar then
-            if CastBarContainer then CastBarContainer:ClearAllPoints() end
-            if CastBarContainer then CastBarContainer:SetPoint(CastBarDB.Layout[1], unitFrame, CastBarDB.Layout[2], CastBarDB.Layout[3], CastBarDB.Layout[4]) end
-            if CastBarContainer then CastBarContainer:SetFrameStrata(CastBarDB.FrameStrata) end
+            if CastBarContainer then
+                CastBarContainer:ClearAllPoints()
+                CastBarContainer:SetPoint(CastBarDB.Layout[1], unitFrame, CastBarDB.Layout[2], CastBarDB.Layout[3], CastBarDB.Layout[4])
+                CastBarContainer:SetFrameStrata(CastBarDB.FrameStrata)
+                if CastBarDB.ShowBorder then
+                    CastBarContainer:SetBackdropBorderColor(unpack(CastBarDB.BorderColour))
+                else
+                    CastBarContainer:SetBackdropBorderColor(0, 0, 0, 0)
+                end
+            end
             unitFrame.Castbar:ClearAllPoints()
             unitFrame.Castbar:SetPoint("TOPLEFT", CastBarContainer, "TOPLEFT", 1, -1)
             unitFrame.Castbar:SetPoint("BOTTOMRIGHT", CastBarContainer, "BOTTOMRIGHT", -1, 1)
