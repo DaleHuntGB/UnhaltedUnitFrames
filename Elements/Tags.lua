@@ -95,4 +95,21 @@ function UUF:UpdateUnitTags()
     end
 end
 
+function UUF:UpdateUnitTagsForUnit(unit)
+    if not unit then return end
+    UUF.SEPARATOR = UUF.db.profile.General.Separator or "||"
+    UUF.TOT_SEPARATOR = UUF.db.profile.General.ToTSeparator or "»"
+
+    local normalizedUnit = UUF:GetNormalizedUnit(unit)
+    local unitDB = UUF.db.profile.Units[normalizedUnit]
+    if not unitDB then return end
+
+    local frame = UUF[unit:upper()]
+    if not frame then return end
+
+    for tagName in pairs(unitDB.Tags) do
+        UUF:UpdateUnitTag(frame, unit, tagName)
+    end
+end
+
 

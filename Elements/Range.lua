@@ -231,6 +231,13 @@ local function NotSecretValue(value)
     return issecretvalue(value) == false
 end
 
+local function SafeBool(value)
+    if issecretvalue(value) then
+        return nil
+    end
+    return value
+end
+
 local function UpdateActiveSpells()
 
     local function BuildList(category, spellList)
@@ -298,7 +305,10 @@ local function UnitInSpellsRange(unit, category)
     end
 
     local inRange = UnitSpellRange(unit, spells)
-    if (not inRange or inRange == 1) and not InCombatLockdown() then
+    if issecretvalue(inRange) then
+        inRange = nil
+    end
+    if (inRange == false or inRange == nil or inRange == 1) and not InCombatLockdown() then
         local interactDistance = CheckInteractDistance(unit, 4)
         if NotSecretValue(interactDistance) then
             return interactDistance
@@ -315,16 +325,20 @@ end
 local function FriendlyIsInRange(realUnit)
     local unit = --[[GetGroupUnit(realUnit) or ]]realUnit
 
-    if UnitIsPlayer(unit) then
+    if SafeBool(UnitIsPlayer(unit)) then
         if isRetail then
-            if UnitPhaseReason(unit) then return false end
+            local phaseReason = UnitPhaseReason(unit)
+            if NotSecretValue(phaseReason) and phaseReason then return false end
         end
     end
 
     if isRetail then
         local inRange, checkedRange = UnitInRange(unit)
-        if NotSecretValue(checkedRange) and checkedRange and not inRange then
-            return false
+        if NotSecretValue(checkedRange) and checkedRange then
+            local safeInRange = SafeBool(inRange)
+            if safeInRange == false then
+                return false
+            end
         end
     end
 
@@ -357,23 +371,26 @@ end
 function UUF:UpdateRangeAlpha(frame, unit)
     local RangeDB = UUF.db.profile.General.Range
     if not RangeDB or not RangeDB.Enabled then frame:SetAlpha(1) return end
-    if not frame:IsVisible() or not unit or not UnitExists(unit) then return end
+    local unitExists = UnitExists(unit)
+    if issecretvalue(unitExists) then unitExists = true end
+    if not frame:IsVisible() or not unit or unitExists == false then return end
     if unit == "player" then frame:SetAlpha(1) return end
 
     local inAlpha = RangeDB.InRange or 1
     local outAlpha = RangeDB.OutOfRange or 0.5
     local inRange;
 
-    if UnitIsDeadOrGhost(unit) then
+    local isDead = SafeBool(UnitIsDeadOrGhost(unit))
+    if isDead then
         inRange = UnitInSpellsRange(unit, "resurrect")
-    elseif UnitCanAttack("player", unit) then
+    elseif SafeBool(UnitCanAttack("player", unit)) then
         inRange = UnitInSpellsRange(unit, "enemy")
     else
         local isPet = UnitIsUnit(unit, "pet")
         -- What a mess WoW API is.
         if NotSecretValue(isPet) and isPet then
             inRange = UnitInSpellsRange(unit, "pet")
-        elseif UnitIsConnected(unit) then
+        elseif SafeBool(UnitIsConnected(unit)) then
             inRange = FriendlyIsInRange(unit)
         else
             inRange = false

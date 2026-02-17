@@ -264,8 +264,12 @@ end
 local RoleSortOrder = { TANK = 1, HEALER = 2, DAMAGER = 3, NONE = 4 }
 
 local function SortPartyFramesByRole(a, b)
-    local roleA = UnitGroupRolesAssigned(a.unit) or "NONE"
-    local roleB = UnitGroupRolesAssigned(b.unit) or "NONE"
+    local roleA = UnitGroupRolesAssigned(a.unit)
+    if issecretvalue(roleA) then roleA = nil end
+    roleA = roleA or "NONE"
+    local roleB = UnitGroupRolesAssigned(b.unit)
+    if issecretvalue(roleB) then roleB = nil end
+    roleB = roleB or "NONE"
     return RoleSortOrder[roleA] < RoleSortOrder[roleB]
 end
 
@@ -454,7 +458,7 @@ function UUF:UpdateUnitFrame(unitFrame, unit)
     UUF:UpdateUnitMouseoverIndicator(unitFrame, unit)
     UUF:UpdateUnitTargetGlowIndicator(unitFrame, unit)
     UUF:UpdateUnitAuras(unitFrame, unit)
-    UUF:UpdateUnitTags()
+    UUF:UpdateUnitTagsForUnit(unit)
     UUF:QueueOrRun(function()
         unitFrame:SetFrameStrata(UnitDB.Frame.FrameStrata)
     end)
