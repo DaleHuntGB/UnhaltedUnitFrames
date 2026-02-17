@@ -13,7 +13,7 @@ local function ApplyAuraDuration(icon, unit)
     local TotemsDB = UUFDB.Units[UUF:GetNormalizedUnit(unit)].Indicators.Totems
     local TotemsDurationDB = TotemsDB.TotemDuration
     if not icon then return end
-    C_Timer.After(0.01, function()
+    UUF:ScheduleTimer("TotemDuration", 0.01, function()
         local textRegion = FetchAuraDurationRegion(icon)
         if textRegion then
             if TotemsDurationDB.ScaleByIconSize then

@@ -50,6 +50,12 @@ local Tags = {
     ["maxpp:abbr:colour"] = "UNIT_POWER_UPDATE UNIT_MAXPOWER",
 
     ["name:colour"] = "UNIT_CLASSIFICATION_CHANGED UNIT_FACTION UNIT_NAME_UPDATE",
+
+    -- Status and Threat tags (Patch 12.0.0+ compatible)
+    ["status"] = "UNIT_HEALTH UNIT_CONNECTION",
+    ["threat"] = "UNIT_THREAT_SITUATION_UPDATE",
+    ["threatcolor"] = "UNIT_THREAT_SITUATION_UPDATE",
+    ["smartlevel"] = "UNIT_LEVEL UNIT_CLASSIFICATION_CHANGED",
 }
 
 for i = 1, 25 do
@@ -389,6 +395,64 @@ oUF.Tags.Methods["resetcolor"] = function(unit)
     return "|r"
 end
 
+-- Status and Threat Tags
+oUF.Tags.Methods["status"] = function(unit)
+    if not unit or not UnitExists(unit) then return "" end
+    if UnitIsDead(unit) then
+        return "Dead"
+    elseif UnitIsGhost(unit) then
+        return "Ghost"
+    elseif not UnitIsConnected(unit) then
+        return "Offline"
+    end
+    return ""
+end
+
+oUF.Tags.Methods["threat"] = function(unit)
+    if not unit or not UnitExists(unit) then return "" end
+    local threatSituation = UnitThreatSituation(unit)
+    if threatSituation == 1 then
+        return "++"
+    elseif threatSituation == 2 then
+        return "--"
+    elseif threatSituation == 3 then
+        return "Aggro"
+    end
+    return ""
+end
+
+oUF.Tags.Methods["threatcolor"] = function(unit)
+    if not unit or not UnitExists(unit) then return "" end
+    local threatSituation = UnitThreatSituation(unit)
+    if threatSituation == 1 then
+        return "|cffff0000"  -- Red for aggro
+    elseif threatSituation == 2 then
+        return "|cffffff00"  -- Yellow for near aggro
+    elseif threatSituation == 3 then
+        return "|cff00ff00"  -- Green for losing threat
+    end
+    return "|r"
+end
+
+oUF.Tags.Methods["smartlevel"] = function(unit)
+    if not unit or not UnitExists(unit) then return "" end
+    local unitLevel = UnitLevel(unit) or "??"
+    local classification = UnitClassification(unit)
+    if classification == "elite" then
+        return unitLevel .. "*"
+    elseif classification == "rareelite" then
+        return unitLevel .. "R*"
+    elseif classification == "rare" then
+        return unitLevel .. "R"
+    elseif classification == "worldboss" then
+        return "BOSS"
+    elseif classification == "minus" then
+        return unitLevel .. "-"
+    else
+        return tostring(unitLevel)
+    end
+end
+
 local function ShortenUnitName(unit, maxChars)
     if not unit or not UnitExists(unit) then return "" end
     local unitName = UnitName(unit) or ""
@@ -421,6 +485,7 @@ local HealthTags = {
         ["absorbs:abbr"] = "Total Absorbs with Abbreviation",
         ["absorbs:truncate"] = "Total Absorbs but will hide when at zero.",
         ["missinghp"] = "Missing Health",
+        ["status"] = "Combined Status (Dead/Ghost/Offline)",
     },
     {
         "curhp",
@@ -433,6 +498,7 @@ local HealthTags = {
         "absorbs:abbr",
         "absorbs:truncate",
         "missinghp",
+        "status",
     }
 
 }
@@ -492,6 +558,9 @@ local MiscTags = {
         ["creature"] = "Creature Type",
         ["group"] = "Group Number",
         ["level"] = "Unit Level",
+        ["smartlevel"] = "Unit Level with Elite Indicator",
+        ["threat"] = "Unit Threat Status (++/--/Aggro)",
+        ["threatcolor"] = "Unit Threat Status with Colour",
         ["powercolor"] = "Unit Power Colour - Prefix",
         ["raidcolor"] = "Unit Class Colour - Prefix",
         ["class"] = "Unit Class",
@@ -503,6 +572,9 @@ local MiscTags = {
         "creature",
         "group",
         "level",
+        "smartlevel",
+        "threat",
+        "threatcolor",
         "powercolor",
         "raidcolor",
         "class",

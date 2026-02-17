@@ -2,10 +2,19 @@
 	<Script file="Core.lua"/>
     <Script file="Defaults.lua"/>
     <Script file="Globals.lua"/>
+    <Script file="LDB.lua"/>
+    <Script file="Helpers.lua"/>
     <Script file="TestEnvironment.lua"/>
-    <Script file="UnitFrame.lua"/>
+	<Script file="UnitFrame.lua"/>
 
     <Script file="Config/GUIWidgets.lua"/>
+    <Script file="Config/GUIGeneral.lua"/>
+    <Script file="Config/GUIFrameMover.lua"/>
+    <Script file="Config/GUIMacros.lua"/>
+    <Script file="Config/GUIIndicators.lua"/>
+    <Script file="Config/GUIUnits.lua"/>
+    <Script file="Config/GUITabProfiles.lua"/>
+    <Script file="Config/GUITabTags.lua"/>
     <Script file="Config/GUI.lua"/>
     <Script file="Config/Share.lua"/>
     <Script file="Config/TagsDatabase.lua"/>

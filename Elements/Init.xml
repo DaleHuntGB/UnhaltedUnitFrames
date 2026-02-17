@@ -22,4 +22,13 @@
 	<Script file="Indicators/PvPIndicator.lua"/>
 	<Script file="Indicators/TargetGlow.lua"/>
 	<!-- <Script file="Indicators/Totems.lua"/> -->
+
+	<Script file="Indicators/Runes.lua"/>
+	<Script file="Indicators/Stagger.lua"/>
+	<Script file="Indicators/Threat.lua"/>
+	<Script file="Indicators/Resurrect.lua"/>
+	<Script file="Indicators/Summon.lua"/>
+	<Script file="Indicators/Quest.lua"/>
+	<Script file="Indicators/PvPClassification.lua"/>
+	<Script file="Indicators/PowerPrediction.lua"/>
 </Ui>

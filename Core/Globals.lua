@@ -214,11 +214,11 @@ function UUF:CreateMinimapButton()
 end
 
 local function SetupSlashCommands()
-    SLASH_UUF1 = "/uuf"
-    SLASH_UUF2 = "/unhaltedunitframes"
-    SLASH_UUF3 = "/uf"
-    SlashCmdList["UUF"] = function(msg)
-        local command = strtrim((msg or ""):lower())
+    local AceAddon = LibStub("AceAddon-3.0")
+    local addon = AceAddon:GetAddon("UnhaltedUnitFrames")
+    
+    addon:RegisterChatCommand("uuf", function(input)
+        local command = strtrim((input or ""):lower())
         if command == "unlock" then
             UUF:SetFrameMoverEnabled(true)
             return
@@ -227,7 +227,32 @@ local function SetupSlashCommands()
             return
         end
         UUF:CreateGUI()
-    end
+    end)
+    
+    addon:RegisterChatCommand("unhaltedunitframes", function(input)
+        local command = strtrim((input or ""):lower())
+        if command == "unlock" then
+            UUF:SetFrameMoverEnabled(true)
+            return
+        elseif command == "lock" then
+            UUF:SetFrameMoverEnabled(false)
+            return
+        end
+        UUF:CreateGUI()
+    end)
+    
+    addon:RegisterChatCommand("uf", function(input)
+        local command = strtrim((input or ""):lower())
+        if command == "unlock" then
+            UUF:SetFrameMoverEnabled(true)
+            return
+        elseif command == "lock" then
+            UUF:SetFrameMoverEnabled(false)
+            return
+        end
+        UUF:CreateGUI()
+    end)
+    
     UUF:PrettyPrint("'|cFF8080FF/uuf|r' for in-game configuration.")
 
     -- RL command

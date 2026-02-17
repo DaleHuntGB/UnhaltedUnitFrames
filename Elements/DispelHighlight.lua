@@ -109,7 +109,16 @@ function UUF:UpdateUnitDispelState(unitFrame, unit)
     end
 
     local dispelList = LibDispel:GetMyDispelTypes()
-    if not (dispelList.Magic or dispelList.Curse or dispelList.Disease or dispelList.Poison or dispelList.Bleed) then
+    -- Safely check if any dispel type is available, guarding against secret values
+    local hasDispelType = false
+    for _, dispelKey in ipairs({"Magic", "Curse", "Disease", "Poison", "Bleed"}) do
+        local value = dispelList[dispelKey]
+        if not issecretvalue(value) and value then
+            hasDispelType = true
+            break
+        end
+    end
+    if not hasDispelType then
         unitFrame.DispelHighlight:Hide()
         return
     end

@@ -43,7 +43,7 @@ function UUF:ShowPingOnUnit(unit)
     unitFrame.UUFPingIndicator:SetAlpha(1)
     unitFrame.UUFPingToken = (unitFrame.UUFPingToken or 0) + 1
     local token = unitFrame.UUFPingToken
-    C_Timer.After(1.2, function()
+    UUF:ScheduleTimer("PingIndicator", 1.2, function()
         if unitFrame.UUFPingToken == token and unitFrame.UUFPingIndicator then
             unitFrame.UUFPingIndicator:Hide()
         end
@@ -233,6 +233,7 @@ function UUF:CreateUnitFrame(unitFrame, unit)
     if not unit or not unitFrame then return end
     local normalizedUnit = UUF:GetNormalizedUnit(unit)
     unitFrame.UUFLayoutUnit = unitFrame.UUFLayoutUnit or normalizedUnit
+    unitFrame.UUFUnitDB = UUF.db.profile.Units[normalizedUnit]
     UUF:CreateUnitContainer(unitFrame, unit)
     if normalizedUnit ~= "targettarget" and normalizedUnit ~= "focustarget" then UUF:CreateUnitCastBar(unitFrame, unit) end
     UUF:CreateUnitHealthBar(unitFrame, unit)
@@ -252,6 +253,14 @@ function UUF:CreateUnitFrame(unitFrame, unit)
     if unit == "player" then UUF:CreateUnitRestingIndicator(unitFrame, unit) end
     -- if unit == "player" then UUF:CreateUnitTotems(unitFrame, unit) end
     UUF:CreateUnitTargetGlowIndicator(unitFrame, unit)
+    UUF:CreateUnitRunes(unitFrame, unit)
+    UUF:CreateUnitStagger(unitFrame, unit)
+    UUF:CreateUnitThreatIndicator(unitFrame, unit)
+    UUF:CreateUnitResurrectIndicator(unitFrame, unit)
+    UUF:CreateUnitSummonIndicator(unitFrame, unit)
+    UUF:CreateUnitQuestIndicator(unitFrame, unit)
+    UUF:CreateUnitPvPClassificationIndicator(unitFrame, unit)
+    UUF:CreateUnitPowerPrediction(unitFrame, unit)
     UUF:CreateUnitAuras(unitFrame, unit)
     UUF:CreateUnitTags(unitFrame, unit)
     ApplyScripts(unitFrame)
@@ -457,6 +466,14 @@ function UUF:UpdateUnitFrame(unitFrame, unit)
     -- if unit == "player" then UUF:UpdateUnitTotems(unitFrame, unit) end
     UUF:UpdateUnitMouseoverIndicator(unitFrame, unit)
     UUF:UpdateUnitTargetGlowIndicator(unitFrame, unit)
+    UUF:UpdateUnitRunes(unitFrame, unit)
+    UUF:UpdateUnitStagger(unitFrame, unit)
+    UUF:UpdateUnitThreatIndicator(unitFrame, unit)
+    UUF:UpdateUnitResurrectIndicator(unitFrame, unit)
+    UUF:UpdateUnitSummonIndicator(unitFrame, unit)
+    UUF:UpdateUnitQuestIndicator(unitFrame, unit)
+    UUF:UpdateUnitPvPClassificationIndicator(unitFrame, unit)
+    UUF:UpdateUnitPowerPrediction(unitFrame, unit)
     UUF:UpdateUnitAuras(unitFrame, unit)
     UUF:UpdateUnitTagsForUnit(unit)
     UUF:QueueOrRun(function()
@@ -479,7 +496,6 @@ function UUF:UpdatePartyFrames()
     UUF:CreateTestPartyFrames()
     UUF:LayoutPartyFrames()
 end
-
 
 function UUF:UpdateAllUnitFrames()
     for unit, _ in pairs(UUF.db.profile.Units) do

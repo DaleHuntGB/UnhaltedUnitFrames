@@ -8,20 +8,6 @@ local function ShortenCastName(text, maxChars)
     return UUF:CleanTruncateUTF8String(text)
 end
 
-local function ApplyClassColor(statusBar, unitForClass, opacity, fallbackColor)
-    local classToken = select(2, UnitClass(unitForClass))
-    if issecretvalue(classToken) then
-        if fallbackColor then statusBar:SetStatusBarColor(unpack(fallbackColor)) end
-        return
-    end
-    local unitColor = classToken and RAID_CLASS_COLORS[classToken]
-    if unitColor then
-        statusBar:SetStatusBarColor(unitColor.r, unitColor.g, unitColor.b, opacity)
-    elseif fallbackColor then
-        statusBar:SetStatusBarColor(unpack(fallbackColor))
-    end
-end
-
 function UUF:CreateUnitCastBar(unitFrame, unit)
     local FontDB = UUF.db.profile.General.Fonts
     local GeneralDB = UUF.db.profile.General
@@ -49,7 +35,7 @@ function UUF:CreateUnitCastBar(unitFrame, unit)
     CastBar:SetFrameLevel(CastBarContainer:GetFrameLevel() + 1)
     if CastBarDB.ColourByClass then
         local unitForClass = unit == "pet" and "player" or unit
-        ApplyClassColor(CastBar, unitForClass, CastBarDB.ForegroundOpacity, CastBarDB.Foreground)
+        UUF:ApplyClassColor(CastBar, unitForClass, CastBarDB.ForegroundOpacity, CastBarDB.Foreground)
     else
         CastBar:SetStatusBarColor(unpack(CastBarDB.Foreground))
     end
@@ -212,7 +198,7 @@ function UUF:UpdateUnitCastBar(unitFrame, unit)
             unitFrame.Castbar.Background:SetTexture(UUF.Media.Background)
             if CastBarDB.ColourByClass then
                 local unitForClass = unit == "pet" and "player" or unit
-                ApplyClassColor(unitFrame.Castbar, unitForClass, CastBarDB.ForegroundOpacity, CastBarDB.Foreground)
+                UUF:ApplyClassColor(unitFrame.Castbar, unitForClass, CastBarDB.ForegroundOpacity, CastBarDB.Foreground)
             else
                 unitFrame.Castbar:SetStatusBarColor(unpack(CastBarDB.Foreground))
             end
@@ -331,7 +317,7 @@ function UUF:CreateTestCastBar(unitFrame, unit)
             end)
             if CastBarDB.ColourByClass then
                 local unitForClass = unit == "pet" and "player" or unit
-                ApplyClassColor(unitFrame.Castbar, unitForClass, CastBarDB.ForegroundOpacity, CastBarDB.Foreground)
+                UUF:ApplyClassColor(unitFrame.Castbar, unitForClass, CastBarDB.ForegroundOpacity, CastBarDB.Foreground)
             else
                 unitFrame.Castbar:SetStatusBarColor(unpack(CastBarDB.Foreground))
             end

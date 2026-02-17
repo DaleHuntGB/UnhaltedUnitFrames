@@ -30,11 +30,7 @@ function UUF:CreateUnitHealthBar(unitFrame, unit)
             HealthBar.colorClass = false
             HealthBar.colorReaction = false
             HealthBar.colorHealth = false
-            local unitClass = select(2, UnitClass("player"))
-            local unitColor = RAID_CLASS_COLORS[unitClass]
-            if unitColor then
-                HealthBar:SetStatusBarColor(unitColor.r, unitColor.g, unitColor.b, HealthBarDB.ForegroundOpacity)
-            end
+            UUF:ApplyClassColor(HealthBar, "player", HealthBarDB.ForegroundOpacity, HealthBarDB.Foreground)
         end
 
         unitFrame.Health = HealthBar
@@ -96,9 +92,11 @@ function UUF:UpdateUnitHealthBar(unitFrame, unit)
             unitFrame.Health.colorReaction = false
             unitFrame.Health.colorHealth = false
             local unitClass = select(2, UnitClass("player"))
-            local unitColor = RAID_CLASS_COLORS[unitClass]
-            if unitColor then
-                unitFrame.Health:SetStatusBarColor(unitColor.r, unitColor.g, unitColor.b, HealthBarDB.ForegroundOpacity)
+            if not issecretvalue(unitClass) then
+                local unitColor = RAID_CLASS_COLORS[unitClass]
+                if unitColor then
+                    unitFrame.Health:SetStatusBarColor(unitColor.r, unitColor.g, unitColor.b, HealthBarDB.ForegroundOpacity)
+                end
             end
         end
     end

@@ -10,7 +10,7 @@ UpdateSecondaryPowerBarEventFrame:SetScript("OnEvent", function(self, event, ...
         local unit = ...
         if unit ~= "player" then return end
     end
-    C_Timer.After(0.1, function()
+    UUF:ScheduleTimer("SecondaryPowerBar", 0.1, function()
         if UUF.PLAYER then
             UUF:UpdateUnitSecondaryPowerBar(UUF.PLAYER, "player")
         end
