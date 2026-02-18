@@ -17,11 +17,6 @@ function UnhaltedUnitFrames:OnInitialize()
     UUF.db.RegisterCallback(UUF, "OnProfileCopied", function() UUF:UpdateAllUnitFrames() end)
     UUF.db.RegisterCallback(UUF, "OnProfileReset", function() UUF:UpdateAllUnitFrames() end)
 
-    -- Detect AbstractFramework (initialized in GUIBridge.lua)
-    if UUF.HasAbstractFramework then
-        print("|cFF8080FFUnhalted|rUnitFrames: AbstractFramework detected - Enhanced GUI features enabled")
-    end
-
     local playerSpecalizationChangedEventFrame = CreateFrame("Frame")
     playerSpecalizationChangedEventFrame:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
     playerSpecalizationChangedEventFrame:SetScript("OnEvent", function(_, event, ...) if InCombatLockdown() then return end if event == "PLAYER_SPECIALIZATION_CHANGED" then local unit = ... if unit == "player" then UUF:UpdateAllUnitFrames() end end end)

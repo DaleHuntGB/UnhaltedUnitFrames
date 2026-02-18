@@ -2,10 +2,27 @@ local _, UUF = ...
 local LSM = UUF.LSM
 local AG = UUF.AG
 local GUIWidgets = UUF.GUIWidgets
+local GUIGeneral = UUF.GUIGeneral or require("Core.Config.GUIGeneral")
+local GUIFrameMover = UUF.GUIFrameMover or require("Core.Config.GUIFrameMover")
+local GUIIndicators = UUF.GUIIndicators or require("Core.Config.GUIIndicators")
+local GUIMacros = UUF.GUIMacros or require("Core.Config.GUIMacros")
+local GUIUnits = UUF.GUIUnits or require("Core.Config.GUIUnits")
+local GUITabProfiles = UUF.GUITabProfiles or require("Core.Config.GUITabProfiles")
+local GUITabTags = UUF.GUITabTags or require("Core.Config.GUITabTags")
 local UUFGUI = {}
 local isGUIOpen = false
 -- Stores last selected tabs: [unit] = { mainTab = "CastBar", subTabs = { CastBar = "Bar" } }
 local lastSelectedUnitTabs = {}
+
+local function UpdateMultiFrameUnit(unit, updateFunc)
+    if unit == "boss" then
+        UUF:UpdateBossFrames()
+    elseif unit == "party" then
+        UUF:UpdatePartyFrames()
+    else
+        updateFunc()
+    end
+end
 
 local function SaveSubTab(unit, tabName, subTabValue)
     if not lastSelectedUnitTabs[unit] then lastSelectedUnitTabs[unit] = {} end
@@ -28,97 +45,12 @@ local UnitDBToUnitPrettyName = {
     focus = "Focus",
     focustarget = "Focus Target",
     pet = "Pet",
+    party = "Party",
     boss = "Boss",
 }
 
 local AnchorPoints = { { ["TOPLEFT"] = "Top Left", ["TOP"] = "Top", ["TOPRIGHT"] = "Top Right", ["LEFT"] = "Left", ["CENTER"] = "Center", ["RIGHT"] = "Right", ["BOTTOMLEFT"] = "Bottom Left", ["BOTTOM"] = "Bottom", ["BOTTOMRIGHT"] = "Bottom Right" }, { "TOPLEFT", "TOP", "TOPRIGHT", "LEFT", "CENTER", "RIGHT", "BOTTOMLEFT", "BOTTOM", "BOTTOMRIGHT", } }
 local FrameStrataList = {{ ["BACKGROUND"] = "Background", ["LOW"] = "Low", ["MEDIUM"] = "Medium", ["HIGH"] = "High", ["DIALOG"] = "Dialog", ["FULLSCREEN"] = "Fullscreen", ["FULLSCREEN_DIALOG"] = "Fullscreen Dialog", ["TOOLTIP"] = "Tooltip" }, { "BACKGROUND", "LOW", "MEDIUM", "HIGH", "DIALOG", "FULLSCREEN", "FULLSCREEN_DIALOG", "TOOLTIP" }}
-
-local function GetAuraBaseFilter(auraDB)
-    return auraDB == "Buffs" and "HELPFUL" or "HARMFUL"
-end
-
-local function GetAuraFilterConfig(auraDB)
-    if not UUF.AURA_FILTERS or type(UUF.AURA_FILTERS[auraDB]) ~= "table" then
-        return {}
-    end
-    return UUF.AURA_FILTERS[auraDB]
-end
-
-local function GetAuraFilterToggleOrder(auraDB)
-    local auraFilterConfig = GetAuraFilterConfig(auraDB)
-    local baseFilter = GetAuraBaseFilter(auraDB)
-    local auraFilters = {}
-    for filterType, filterData in pairs(auraFilterConfig) do
-        if filterType ~= baseFilter and type(filterData) == "table" then
-            auraFilters[#auraFilters + 1] = filterType
-        end
-    end
-    table.sort(auraFilters, function(a, b)
-        local auraFilterA = (auraFilterConfig[a] and auraFilterConfig[a].Title) or a
-        local auraFilterB = (auraFilterConfig[b] and auraFilterConfig[b].Title) or b
-        if auraFilterA == auraFilterB then return a < b end
-        return auraFilterA < auraFilterB
-    end)
-    return auraFilters
-end
-
-local function ResolveAuraFilterSelectionKey(auraDB, filterString)
-    local auraFilterConfig = GetAuraFilterConfig(auraDB)
-    local baseFilter = GetAuraBaseFilter(auraDB)
-    if type(filterString) ~= "string" then return nil end
-    local decodedFilterString = filterString:gsub("||", "|")
-
-    if decodedFilterString ~= baseFilter and auraFilterConfig[decodedFilterString] then
-        return decodedFilterString
-    end
-
-    for filterType in decodedFilterString:gmatch("[^|]+") do
-        if filterType ~= baseFilter then
-            if auraFilterConfig[filterType] then
-                return filterType
-            end
-            local baseQualifiedFilter = baseFilter .. "|" .. filterType
-            if auraFilterConfig[baseQualifiedFilter] then
-                return baseQualifiedFilter
-            end
-        end
-    end
-
-    return nil
-end
-
-local function ParseAuraFilterSelections(auraDB, filterString)
-    local selectedFilters = {}
-    local selectedFilter = ResolveAuraFilterSelectionKey(auraDB, filterString)
-    if selectedFilter then selectedFilters[selectedFilter] = true end
-    return selectedFilters
-end
-
-local function GetSelectedAuraFilter(selectedFilters, orderedFilters)
-    for _, filterType in ipairs(orderedFilters) do
-        if selectedFilters[filterType] then
-            return filterType
-        end
-    end
-end
-
-local function SetSelectedAuraFilter(selectedFilters, orderedFilters, selectedFilter)
-    for _, filterType in ipairs(orderedFilters) do
-        selectedFilters[filterType] = filterType == selectedFilter and true or nil
-    end
-end
-
-local function BuildAuraFilterString(baseFilter, selectedFilters, orderedFilters)
-    local selectedFilter = GetSelectedAuraFilter(selectedFilters, orderedFilters)
-    return selectedFilter or baseFilter
-end
-
-local function EncodeAuraFilterStringForStorage(filterString)
-    if type(filterString) ~= "string" then return "" end
-    local decodedFilterString = filterString:gsub("||", "|")
-    return decodedFilterString:gsub("|", "||")
-end
 
 local Power = {
     [0] = "Mana",
@@ -176,7 +108,13 @@ local StatusTextures = {
         ["RESTING6"] = "|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Resting\\Resting6.tga:18:18|t",
         ["RESTING7"] = "|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Resting\\Resting7.tga:18:18|t",
         ["RESTING8"] = "|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Status\\Resting\\Resting8.png:18:18|t",
+    },
+
+    GroupRole = {
+        ["DEFAULT"] = "|TInterface\\FrameGeneral\\UIFrameRoleIcons:20:60:0:0:128:32:0:96:0:30|t",
+        ["GROUPROLE0"] = "|TInterface\\LFGFrame\\RoleIcons:20:60:0:0:64:32:0:55:0:18|t",
     }
+    
 }
 
 local function EnableAurasTestMode(unit)
@@ -200,19 +138,34 @@ local function DisableCastBarTestMode(unit)
 end
 
 local function EnableBossFramesTestMode()
+    if UUF.BOSS_TEST_MODE == true then return end
     UUF.BOSS_TEST_MODE = true
     UUF:CreateTestBossFrames()
 end
 
 local function DisableBossFramesTestMode()
+    if UUF.BOSS_TEST_MODE == false then return end
     UUF.BOSS_TEST_MODE = false
     UUF:CreateTestBossFrames()
+end
+
+local function EnablePartyFramesTestMode()
+    if UUF.PARTY_TEST_MODE == true then return end
+    UUF.PARTY_TEST_MODE = true
+    UUF:CreateTestPartyFrames()
+end
+
+local function DisablePartyFramesTestMode()
+    if UUF.PARTY_TEST_MODE == false then return end
+    UUF.PARTY_TEST_MODE = false
+    UUF:CreateTestPartyFrames()
 end
 
 local function DisableAllTestModes()
     UUF.AURA_TEST_MODE = false
     UUF.CASTBAR_TEST_MODE = false
     UUF.BOSS_TEST_MODE = false
+    UUF.PARTY_TEST_MODE = false
     for unit, _ in pairs(UUF.db.profile.Units) do
         if UUF[unit:upper()] then
             UUF:CreateTestAuras(UUF[unit:upper()], unit)
@@ -220,6 +173,7 @@ local function DisableAllTestModes()
         end
     end
     UUF:CreateTestBossFrames()
+    UUF:CreateTestPartyFrames()
 end
 
 local function GenerateSupportText(parentFrame)
@@ -448,32 +402,6 @@ local function CreateTextureSettings(containerParent)
     BackgroundOpacitySlider:SetIsPercent(true)
     BackgroundOpacitySlider:SetCallback("OnValueChanged", function(_, _, value) for _, unitDB in pairs(UUF.db.profile.Units) do unitDB.HealthBar.BackgroundOpacity = value end UUF:UpdateAllUnitFrames() end)
     Container:AddChild(BackgroundOpacitySlider)
-
-    local CastBarContainer = GUIWidgets.CreateInlineGroup(Container, "Cast Bar")
-
-    local CastBarForegroundColourPicker = AG:Create("ColorPicker")
-    CastBarForegroundColourPicker:SetLabel("Foreground Colour")
-    local CR, CG, CB = 128/255, 128/255, 255/255
-    CastBarForegroundColourPicker:SetColor(CR, CG, CB)
-    CastBarForegroundColourPicker:SetRelativeWidth(0.33)
-    CastBarForegroundColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) for _, unitDB in pairs(UUF.db.profile.Units) do if unitDB.CastBar then unitDB.CastBar.Foreground = {r, g, b} end end UUF:UpdateAllUnitFrames() end)
-    CastBarContainer:AddChild(CastBarForegroundColourPicker)
-
-    local CastBarBackgroundColourPicker = AG:Create("ColorPicker")
-    CastBarBackgroundColourPicker:SetLabel("Background Colour")
-    local CR2, CG2, CB2 = 34/255, 34/255, 34/255
-    CastBarBackgroundColourPicker:SetColor(CR2, CG2, CB2)
-    CastBarBackgroundColourPicker:SetRelativeWidth(0.33)
-    CastBarBackgroundColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) for _, unitDB in pairs(UUF.db.profile.Units) do if unitDB.CastBar then unitDB.CastBar.Background = {r, g, b} end end UUF:UpdateAllUnitFrames() end)
-    CastBarContainer:AddChild(CastBarBackgroundColourPicker)
-
-    local CastBarInterruptibleColourPicker = AG:Create("ColorPicker")
-    CastBarInterruptibleColourPicker:SetLabel("Interruptible Colour")
-    local CR3, CG3, CB3 = 255/255, 64/255, 64/255
-    CastBarInterruptibleColourPicker:SetColor(CR3, CG3, CB3)
-    CastBarInterruptibleColourPicker:SetRelativeWidth(0.33)
-    CastBarInterruptibleColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) for _, unitDB in pairs(UUF.db.profile.Units) do if unitDB.CastBar then unitDB.CastBar.NotInterruptibleColour = {r, g, b} end end UUF:UpdateAllUnitFrames() end)
-    CastBarContainer:AddChild(CastBarInterruptibleColourPicker)
 end
 
 local function CreateRangeSettings(containerParent)
@@ -611,355 +539,74 @@ local function CreateColourSettings(containerParent)
     end
 end
 
-local function CreateFrameSettings(containerParent, unit, unitHasParent, updateCallback)
-    local FrameDB = UUF.db.profile.Units[unit].Frame
-    local HealthBarDB = UUF.db.profile.Units[unit].HealthBar
+-- All 23 per-unit Create* functions have been moved to GUIUnits.lua
+-- These functions are now called through GUIUnits: methods from SelectUnitTab
 
-    local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
+local function CreateGlobalSettings(containerParent)
 
-    local WidthSlider = AG:Create("Slider")
-    WidthSlider:SetLabel("Width")
-    WidthSlider:SetValue(FrameDB.Width)
-    WidthSlider:SetSliderValues(1, 1000, 0.1)
-    WidthSlider:SetRelativeWidth(0.5)
-    WidthSlider:SetCallback("OnValueChanged", function(_, _, value) FrameDB.Width = value updateCallback() end)
-    LayoutContainer:AddChild(WidthSlider)
+    local GlobalContainer = GUIWidgets.CreateInlineGroup(containerParent, "Global Settings")
 
-    local HeightSlider = AG:Create("Slider")
-    HeightSlider:SetLabel("Height")
-    HeightSlider:SetValue(FrameDB.Height)
-    HeightSlider:SetSliderValues(1, 1000, 0.1)
-    HeightSlider:SetRelativeWidth(0.5)
-    HeightSlider:SetCallback("OnValueChanged", function(_, _, value) FrameDB.Height = value updateCallback() end)
-    LayoutContainer:AddChild(HeightSlider)
+    GUIWidgets.CreateInformationTag(GlobalContainer, "The settings below will apply to all unit frames within" .. UUF.PRETTY_ADDON_NAME .. ".\nOptions are not dynamic. They are static but will apply to all unit frames when changed.")
 
-    local AnchorFromDropdown = AG:Create("Dropdown")
-    AnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
-    AnchorFromDropdown:SetLabel("Anchor From")
-    AnchorFromDropdown:SetValue(FrameDB.Layout[1])
-    AnchorFromDropdown:SetRelativeWidth((unitHasParent or unit == "boss") and 0.33 or 0.5)
-    AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) FrameDB.Layout[1] = value updateCallback() end)
-    LayoutContainer:AddChild(AnchorFromDropdown)
+    local ToggleContainer = GUIWidgets.CreateInlineGroup(GlobalContainer, "Toggles")
 
-    if unitHasParent then
-        local AnchorParentEditBox = AG:Create("EditBox")
-        AnchorParentEditBox:SetLabel("Anchor Parent")
-        AnchorParentEditBox:SetText(FrameDB.AnchorParent or "")
-        AnchorParentEditBox:SetRelativeWidth(0.33)
-        AnchorParentEditBox:DisableButton(true)
-        AnchorParentEditBox:SetCallback("OnEnterPressed", function(_, _, value) FrameDB.AnchorParent = value ~= "" and value or nil AnchorParentEditBox:SetText(FrameDB.AnchorParent or "") updateCallback() end)
-        LayoutContainer:AddChild(AnchorParentEditBox)
-    end
+    local ApplyColours = AG:Create("Button")
+    ApplyColours:SetText("Colour Mode")
+    ApplyColours:SetRelativeWidth(0.5)
+    ApplyColours:SetCallback("OnClick", function()
+        for _, unitDB in pairs(UUF.db.profile.Units) do
+            unitDB.HealthBar.ColourByClass = true
+            unitDB.HealthBar.ColourWhenTapped = true
+            unitDB.HealthBar.ColourBackgroundByClass = false
+        end
+        UUF:UpdateAllUnitFrames()
+    end)
+    ToggleContainer:AddChild(ApplyColours)
 
-    local AnchorToDropdown = AG:Create("Dropdown")
-    AnchorToDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
-    AnchorToDropdown:SetLabel("Anchor To")
-    AnchorToDropdown:SetValue(FrameDB.Layout[2])
-    AnchorToDropdown:SetRelativeWidth((unitHasParent or unit == "boss") and 0.33 or 0.5)
-    AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) FrameDB.Layout[2] = value updateCallback() end)
-    LayoutContainer:AddChild(AnchorToDropdown)
+    local RemoveColours = AG:Create("Button")
+    RemoveColours:SetText("Dark Mode")
+    RemoveColours:SetRelativeWidth(0.5)
+    RemoveColours:SetCallback("OnClick", function()
+        for _, unitDB in pairs(UUF.db.profile.Units) do
+            unitDB.HealthBar.ColourByClass = false
+            unitDB.HealthBar.ColourWhenTapped = false
+            unitDB.HealthBar.ColourBackgroundByClass = false
+        end
+        UUF:UpdateAllUnitFrames()
+    end)
+    ToggleContainer:AddChild(RemoveColours)
 
-    if unit == "boss" then
-        local GrowthDirectionDropdown = AG:Create("Dropdown")
-        GrowthDirectionDropdown:SetList({["UP"] = "Up", ["DOWN"] = "Down"})
-        GrowthDirectionDropdown:SetLabel("Growth Direction")
-        GrowthDirectionDropdown:SetValue(FrameDB.GrowthDirection)
-        GrowthDirectionDropdown:SetRelativeWidth(0.33)
-        GrowthDirectionDropdown:SetCallback("OnValueChanged", function(_, _, value) FrameDB.GrowthDirection = value updateCallback() end)
-        LayoutContainer:AddChild(GrowthDirectionDropdown)
-    end
+    CreateFontSettings(GlobalContainer)
+    CreateTextureSettings(GlobalContainer)
+    CreateRangeSettings(GlobalContainer)
+    CreateAuraDurationSettings(GlobalContainer)
 
-    local XPosSlider = AG:Create("Slider")
-    XPosSlider:SetLabel("X Position")
-    XPosSlider:SetValue(FrameDB.Layout[3])
-    XPosSlider:SetSliderValues(-1000, 1000, 0.1)
-    XPosSlider:SetRelativeWidth(unit == "boss" and 0.25 or 0.33)
-    XPosSlider:SetCallback("OnValueChanged", function(_, _, value) FrameDB.Layout[3] = value updateCallback() end)
-    LayoutContainer:AddChild(XPosSlider)
+    local TagContainer = GUIWidgets.CreateInlineGroup(GlobalContainer, "Tag Settings")
 
-    local YPosSlider = AG:Create("Slider")
-    YPosSlider:SetLabel("Y Position")
-    YPosSlider:SetValue(FrameDB.Layout[4])
-    YPosSlider:SetSliderValues(-1000, 1000, 0.1)
-    YPosSlider:SetRelativeWidth(unit == "boss" and 0.25 or 0.33)
-    YPosSlider:SetCallback("OnValueChanged", function(_, _, value) FrameDB.Layout[4] = value updateCallback() end)
-    LayoutContainer:AddChild(YPosSlider)
+    local UseCustomAbbreviationsCheckbox = AG:Create("CheckBox")
+    UseCustomAbbreviationsCheckbox:SetLabel("Custom Abbreviations")
+    UseCustomAbbreviationsCheckbox:SetValue(UUF.db.profile.General.UseCustomAbbreviations)
+    UseCustomAbbreviationsCheckbox:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.General.UseCustomAbbreviations = value UUF:UpdateUnitTags() end)
+    UseCustomAbbreviationsCheckbox:SetRelativeWidth(0.33)
+    TagContainer:AddChild(UseCustomAbbreviationsCheckbox)
 
-    if unit == "boss" then
-        local SpacingSlider = AG:Create("Slider")
-        SpacingSlider:SetLabel("Frame Spacing")
-        SpacingSlider:SetValue(FrameDB.Layout[5])
-        SpacingSlider:SetSliderValues(-1, 100, 0.1)
-        SpacingSlider:SetRelativeWidth(0.33)
-        SpacingSlider:SetCallback("OnValueChanged", function(_, _, value) FrameDB.Layout[5] = value updateCallback() end)
-        LayoutContainer:AddChild(SpacingSlider)
-    end
+    local TagIntervalSlider = AG:Create("Slider")
+    TagIntervalSlider:SetLabel("Tag Updates Per Second")
+    TagIntervalSlider:SetValue(1 / UUF.db.profile.General.TagUpdateInterval)
+    TagIntervalSlider:SetSliderValues(1, 10, 0.5)
+    TagIntervalSlider:SetRelativeWidth(0.33)
+    TagIntervalSlider:SetCallback("OnValueChanged", function(_, _, value) UUF.TAG_UPDATE_INTERVAL = 1 / value UUF.db.profile.General.TagUpdateInterval = 1 / value UUF:SetTagUpdateInterval() UUF:UpdateUnitTags() end)
+    TagContainer:AddChild(TagIntervalSlider)
 
-    local FrameStrataDropdown = AG:Create("Dropdown")
-    FrameStrataDropdown:SetList(FrameStrataList[1], FrameStrataList[2])
-    FrameStrataDropdown:SetLabel("Frame Strata")
-    FrameStrataDropdown:SetValue(FrameDB.FrameStrata)
-    FrameStrataDropdown:SetRelativeWidth(unit == "boss" and 0.25 or 0.33)
-    FrameStrataDropdown:SetCallback("OnValueChanged", function(_, _, value) FrameDB.FrameStrata = value updateCallback() end)
-    LayoutContainer:AddChild(FrameStrataDropdown)
-
-    local ColourContainer = GUIWidgets.CreateInlineGroup(containerParent, "Colours & Toggles")
-
-    local ColourWhenTappedToggle = AG:Create("CheckBox")
-    ColourWhenTappedToggle:SetLabel("Colour When Tapped")
-    ColourWhenTappedToggle:SetValue(HealthBarDB.ColourWhenTapped)
-    ColourWhenTappedToggle:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.ColourWhenTapped = value updateCallback() end)
-    ColourWhenTappedToggle:SetRelativeWidth((unit == "player" or unit == "target") and 0.33 or 0.5)
-    ColourContainer:AddChild(ColourWhenTappedToggle)
-
-    local InverseGrowthDirectionToggle = AG:Create("CheckBox")
-    InverseGrowthDirectionToggle:SetLabel("Inverse Growth Direction")
-    InverseGrowthDirectionToggle:SetValue(HealthBarDB.Inverse)
-    InverseGrowthDirectionToggle:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.Inverse = value updateCallback() end)
-    InverseGrowthDirectionToggle:SetRelativeWidth((unit == "player" or unit == "target") and 0.33 or 0.5)
-    ColourContainer:AddChild(InverseGrowthDirectionToggle)
-
-    if unit == "player" or unit == "target" then
-        local AnchorToCooldownViewerToggle = AG:Create("CheckBox")
-        AnchorToCooldownViewerToggle:SetLabel("Anchor To Cooldown Viewer")
-        AnchorToCooldownViewerToggle:SetValue(HealthBarDB.AnchorToCooldownViewer)
-        AnchorToCooldownViewerToggle:SetCallback("OnValueChanged",
-        function(_, _, value)
-            HealthBarDB.AnchorToCooldownViewer = value
-            if not value then
-                FrameDB.Layout[1] = UUF:GetDefaultDB().profile.Units[unit].Frame.Layout[1]
-                FrameDB.Layout[2] = UUF:GetDefaultDB().profile.Units[unit].Frame.Layout[2]
-                FrameDB.Layout[3] = UUF:GetDefaultDB().profile.Units[unit].Frame.Layout[3]
-                FrameDB.Layout[4] = UUF:GetDefaultDB().profile.Units[unit].Frame.Layout[4]
-                AnchorFromDropdown:SetValue(FrameDB.Layout[1])
-                AnchorToDropdown:SetValue(FrameDB.Layout[2])
-                XPosSlider:SetValue(FrameDB.Layout[3])
-                YPosSlider:SetValue(FrameDB.Layout[4])
-            else
-                if unit == "player" then
-                    FrameDB.Layout[1] = "RIGHT"
-                    FrameDB.Layout[2] = "LEFT"
-                    FrameDB.Layout[3] = 0
-                    FrameDB.Layout[4] = 0
-                    AnchorFromDropdown:SetValue(FrameDB.Layout[1])
-                    AnchorToDropdown:SetValue(FrameDB.Layout[2])
-                    XPosSlider:SetValue(FrameDB.Layout[3])
-                    YPosSlider:SetValue(FrameDB.Layout[4])
-                elseif unit == "target" then
-                    FrameDB.Layout[1] = "LEFT"
-                    FrameDB.Layout[2] = "RIGHT"
-                    FrameDB.Layout[3] = 0
-                    FrameDB.Layout[4] = 0
-                    AnchorFromDropdown:SetValue(FrameDB.Layout[1])
-                    AnchorToDropdown:SetValue(FrameDB.Layout[2])
-                    XPosSlider:SetValue(FrameDB.Layout[3])
-                    YPosSlider:SetValue(FrameDB.Layout[4])
-                end
-            end
-            updateCallback()
-        end)
-        AnchorToCooldownViewerToggle:SetCallback("OnEnter", function() GameTooltip:SetOwner(AnchorToCooldownViewerToggle.frame, "ANCHOR_CURSOR") GameTooltip:AddLine("Anchor To |cFF8080FFEssential|r Cooldown Viewer. Toggling this will overwrite existing |cFF8080FFLayout|r Settings.", 1, 1, 1, false) GameTooltip:Show() end)
-        AnchorToCooldownViewerToggle:SetCallback("OnLeave", function() GameTooltip:Hide() end)
-        AnchorToCooldownViewerToggle:SetRelativeWidth(0.25)
-        ColourContainer:AddChild(AnchorToCooldownViewerToggle)
-    end
-
-    GUIWidgets.CreateInformationTag(ColourContainer, "Foreground & Background Opacity can be set using the sliders.")
-
-    local ForegroundColourPicker = AG:Create("ColorPicker")
-    ForegroundColourPicker:SetLabel("Foreground Colour")
-    local R, G, B = unpack(HealthBarDB.Foreground)
-    ForegroundColourPicker:SetColor(R, G, B)
-    ForegroundColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) HealthBarDB.Foreground = {r, g, b} updateCallback() end)
-    ForegroundColourPicker:SetHasAlpha(false)
-    ForegroundColourPicker:SetRelativeWidth(0.25)
-    ForegroundColourPicker:SetDisabled(HealthBarDB.ColourByClass)
-    ColourContainer:AddChild(ForegroundColourPicker)
-    UUFGUI.FrameFGColourPicker = ForegroundColourPicker
-
-    local ForegroundColourByClassToggle = AG:Create("CheckBox")
-    ForegroundColourByClassToggle:SetLabel("Colour by Class / Reaction")
-    ForegroundColourByClassToggle:SetValue(HealthBarDB.ColourByClass)
-    ForegroundColourByClassToggle:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.ColourByClass = value UUFGUI.FrameFGColourPicker:SetDisabled(HealthBarDB.ColourByClass) updateCallback() end)
-    ForegroundColourByClassToggle:SetRelativeWidth(0.25)
-    ColourContainer:AddChild(ForegroundColourByClassToggle)
-
-    local ForegroundOpacitySlider = AG:Create("Slider")
-    ForegroundOpacitySlider:SetLabel("Foreground Opacity")
-    ForegroundOpacitySlider:SetValue(HealthBarDB.ForegroundOpacity)
-    ForegroundOpacitySlider:SetSliderValues(0, 1, 0.01)
-    ForegroundOpacitySlider:SetRelativeWidth(0.5)
-    ForegroundOpacitySlider:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.ForegroundOpacity = value updateCallback() end)
-    ForegroundOpacitySlider:SetIsPercent(true)
-    ColourContainer:AddChild(ForegroundOpacitySlider)
-
-    local BackgroundColourPicker = AG:Create("ColorPicker")
-    BackgroundColourPicker:SetLabel("Background Colour")
-    local R2, G2, B2 = unpack(HealthBarDB.Background)
-    BackgroundColourPicker:SetColor(R2, G2, B2)
-    BackgroundColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) HealthBarDB.Background = {r, g, b} updateCallback() end)
-    BackgroundColourPicker:SetHasAlpha(false)
-    BackgroundColourPicker:SetRelativeWidth(0.25)
-    BackgroundColourPicker:SetDisabled(HealthBarDB.ColourBackgroundByClass)
-    ColourContainer:AddChild(BackgroundColourPicker)
-    UUFGUI.FrameBGColourPicker = BackgroundColourPicker
-
-    local BackgroundColourByClassToggle = AG:Create("CheckBox")
-    BackgroundColourByClassToggle:SetLabel("Colour by Class / Reaction")
-    BackgroundColourByClassToggle:SetValue(HealthBarDB.ColourBackgroundByClass)
-    BackgroundColourByClassToggle:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.ColourBackgroundByClass = value UUFGUI.FrameBGColourPicker:SetDisabled(HealthBarDB.ColourBackgroundByClass) updateCallback() end)
-    BackgroundColourByClassToggle:SetRelativeWidth(0.25)
-    ColourContainer:AddChild(BackgroundColourByClassToggle)
-
-    local BackgroundOpacitySlider = AG:Create("Slider")
-    BackgroundOpacitySlider:SetLabel("Background Opacity")
-    BackgroundOpacitySlider:SetValue(HealthBarDB.BackgroundOpacity)
-    BackgroundOpacitySlider:SetSliderValues(0, 1, 0.01)
-    BackgroundOpacitySlider:SetRelativeWidth(0.5)
-    BackgroundOpacitySlider:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.BackgroundOpacity = value updateCallback() end)
-    BackgroundOpacitySlider:SetIsPercent(true)
-    ColourContainer:AddChild(BackgroundOpacitySlider)
-
-    if unit == "player" or unit == "target" or unit == "focus" then
-        local DispelHighlightContainer = GUIWidgets.CreateInlineGroup(containerParent, "Dispel Highlighting")
-
-        local EnableDispelHighlightingToggle = AG:Create("CheckBox")
-        EnableDispelHighlightingToggle:SetLabel("Enable Dispel Highlighting")
-        EnableDispelHighlightingToggle:SetValue(HealthBarDB.DispelHighlight.Enabled)
-        EnableDispelHighlightingToggle:SetRelativeWidth(0.5)
-        EnableDispelHighlightingToggle:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.DispelHighlight.Enabled = value updateCallback() end)
-        DispelHighlightContainer:AddChild(EnableDispelHighlightingToggle)
-
-        local DispelHighlightStyleDropdown = AG:Create("Dropdown")
-        DispelHighlightStyleDropdown:SetList({["HEALTHBAR"] = "Health Bar", ["GRADIENT"] = "Gradient" })
-        DispelHighlightStyleDropdown:SetLabel("Highlight Style")
-        DispelHighlightStyleDropdown:SetValue(HealthBarDB.DispelHighlight.Style)
-        DispelHighlightStyleDropdown:SetRelativeWidth(0.5)
-        DispelHighlightStyleDropdown:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.DispelHighlight.Style = value updateCallback() end)
-        DispelHighlightContainer:AddChild(DispelHighlightStyleDropdown)
-    end
-end
-
-local function CreateHealPredictionSettings(containerParent, unit, updateCallback)
-    local FrameDB = UUF.db.profile.Units[unit].Frame
-    local HealPredictionDB = UUF.db.profile.Units[unit].HealPrediction
-
-    local AbsorbSettings = GUIWidgets.CreateInlineGroup(containerParent, "Absorb Settings")
-
-    local ShowAbsorbToggle = AG:Create("CheckBox")
-    ShowAbsorbToggle:SetLabel("Show Absorbs")
-    ShowAbsorbToggle:SetValue(HealPredictionDB.Absorbs.Enabled)
-    ShowAbsorbToggle:SetCallback("OnValueChanged", function(_, _, value) HealPredictionDB.Absorbs.Enabled = value updateCallback() RefreshHealPredictionSettings() end)
-    ShowAbsorbToggle:SetRelativeWidth(0.33)
-    AbsorbSettings:AddChild(ShowAbsorbToggle)
-
-    local UseStripedTextureAbsorbToggle = AG:Create("CheckBox")
-    UseStripedTextureAbsorbToggle:SetLabel("Use Striped Texture")
-    UseStripedTextureAbsorbToggle:SetValue(HealPredictionDB.Absorbs.UseStripedTexture)
-    UseStripedTextureAbsorbToggle:SetCallback("OnValueChanged", function(_, _, value) HealPredictionDB.Absorbs.UseStripedTexture = value updateCallback() end)
-    UseStripedTextureAbsorbToggle:SetRelativeWidth(0.33)
-    AbsorbSettings:AddChild(UseStripedTextureAbsorbToggle)
-
-    local MatchParentHeightToggle = AG:Create("CheckBox")
-    MatchParentHeightToggle:SetLabel("Match Parent Height")
-    MatchParentHeightToggle:SetValue(HealPredictionDB.Absorbs.MatchParentHeight)
-    MatchParentHeightToggle:SetCallback("OnValueChanged", function(_, _, value) HealPredictionDB.Absorbs.MatchParentHeight = value updateCallback() RefreshHealPredictionSettings() end)
-    MatchParentHeightToggle:SetRelativeWidth(0.33)
-    AbsorbSettings:AddChild(MatchParentHeightToggle)
-
-    local AbsorbColourPicker = AG:Create("ColorPicker")
-    AbsorbColourPicker:SetLabel("Absorb Colour")
-    local R, G, B, A = unpack(HealPredictionDB.Absorbs.Colour)
-    AbsorbColourPicker:SetColor(R, G, B, A)
-    AbsorbColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) HealPredictionDB.Absorbs.Colour = {r, g, b, a} updateCallback() end)
-    AbsorbColourPicker:SetHasAlpha(true)
-    AbsorbColourPicker:SetRelativeWidth(0.33)
-    AbsorbSettings:AddChild(AbsorbColourPicker)
-
-    local AbsorbHeightSlider = AG:Create("Slider")
-    AbsorbHeightSlider:SetLabel("Height")
-    AbsorbHeightSlider:SetValue(HealPredictionDB.Absorbs.Height)
-    AbsorbHeightSlider:SetSliderValues(1, FrameDB.Height - 2, 0.1)
-    AbsorbHeightSlider:SetRelativeWidth(0.33)
-    AbsorbHeightSlider:SetCallback("OnValueChanged", function(_, _, value) HealPredictionDB.Absorbs.Height = value updateCallback() end)
-    AbsorbHeightSlider:SetDisabled(HealPredictionDB.Absorbs.MatchParentHeight or HealPredictionDB.Absorbs.Position == "ATTACH")
-    AbsorbSettings:AddChild(AbsorbHeightSlider)
-
-    local AbsorbPositionDropdown = AG:Create("Dropdown")
-    AbsorbPositionDropdown:SetList({["LEFT"] = "Left", ["RIGHT"] = "Right", ["ATTACH"] = "Attach To Missing Health"}, {"LEFT", "RIGHT", "ATTACH"})
-    AbsorbPositionDropdown:SetLabel("Position")
-    AbsorbPositionDropdown:SetValue(HealPredictionDB.Absorbs.Position)
-    AbsorbPositionDropdown:SetRelativeWidth(0.33)
-    AbsorbPositionDropdown:SetCallback("OnValueChanged", function(_, _, value) HealPredictionDB.Absorbs.Position = value updateCallback() RefreshHealPredictionSettings() end)
-    AbsorbSettings:AddChild(AbsorbPositionDropdown)
-
-    local HealAbsorbSettings = GUIWidgets.CreateInlineGroup(containerParent, "Heal Absorb Settings")
-    local ShowHealAbsorbToggle = AG:Create("CheckBox")
-    ShowHealAbsorbToggle:SetLabel("Show Heal Absorbs")
-    ShowHealAbsorbToggle:SetValue(HealPredictionDB.HealAbsorbs.Enabled)
-    ShowHealAbsorbToggle:SetCallback("OnValueChanged", function(_, _, value) HealPredictionDB.HealAbsorbs.Enabled = value updateCallback() RefreshHealPredictionSettings() end)
-    ShowHealAbsorbToggle:SetRelativeWidth(0.33)
-    HealAbsorbSettings:AddChild(ShowHealAbsorbToggle)
-
-    local UseStripedTextureHealAbsorbToggle = AG:Create("CheckBox")
-    UseStripedTextureHealAbsorbToggle:SetLabel("Use Striped Texture")
-    UseStripedTextureHealAbsorbToggle:SetValue(HealPredictionDB.HealAbsorbs.UseStripedTexture)
-    UseStripedTextureHealAbsorbToggle:SetCallback("OnValueChanged", function(_, _, value) HealPredictionDB.HealAbsorbs.UseStripedTexture = value updateCallback() end)
-    UseStripedTextureHealAbsorbToggle:SetRelativeWidth(0.33)
-    HealAbsorbSettings:AddChild(UseStripedTextureHealAbsorbToggle)
-
-    local MatchParentHeightHealAbsorbToggle = AG:Create("CheckBox")
-    MatchParentHeightHealAbsorbToggle:SetLabel("Match Parent Height")
-    MatchParentHeightHealAbsorbToggle:SetValue(HealPredictionDB.HealAbsorbs.MatchParentHeight)
-    MatchParentHeightHealAbsorbToggle:SetCallback("OnValueChanged", function(_, _, value) HealPredictionDB.HealAbsorbs.MatchParentHeight = value updateCallback() RefreshHealPredictionSettings() end)
-    MatchParentHeightHealAbsorbToggle:SetRelativeWidth(0.33)
-    HealAbsorbSettings:AddChild(MatchParentHeightHealAbsorbToggle)
-
-    local HealAbsorbColourPicker = AG:Create("ColorPicker")
-    HealAbsorbColourPicker:SetLabel("Heal Absorb Colour")
-    local R2, G2, B2, A2 = unpack(HealPredictionDB.HealAbsorbs.Colour)
-    HealAbsorbColourPicker:SetColor(R2, G2, B2, A2)
-    HealAbsorbColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) HealPredictionDB.HealAbsorbs.Colour = {r, g, b, a} updateCallback() end)
-    HealAbsorbColourPicker:SetHasAlpha(true)
-    HealAbsorbColourPicker:SetRelativeWidth(0.33)
-    HealAbsorbSettings:AddChild(HealAbsorbColourPicker)
-
-    local HealAbsorbHeightSlider = AG:Create("Slider")
-    HealAbsorbHeightSlider:SetLabel("Height")
-    HealAbsorbHeightSlider:SetValue(HealPredictionDB.HealAbsorbs.Height)
-    HealAbsorbHeightSlider:SetSliderValues(1, FrameDB.Height - 2, 0.1)
-    HealAbsorbHeightSlider:SetRelativeWidth(0.33)
-    HealAbsorbHeightSlider:SetCallback("OnValueChanged", function(_, _, value) HealPredictionDB.HealAbsorbs.Height = value updateCallback() end)
-    HealAbsorbHeightSlider:SetDisabled(HealPredictionDB.HealAbsorbs.MatchParentHeight or HealPredictionDB.HealAbsorbs.Position == "ATTACH")
-    HealAbsorbSettings:AddChild(HealAbsorbHeightSlider)
-
-    local HealAbsorbPositionDropdown = AG:Create("Dropdown")
-    HealAbsorbPositionDropdown:SetList({["LEFT"] = "Left", ["RIGHT"] = "Right", ["ATTACH"] = "Attach To Missing Health"}, {"LEFT", "RIGHT", "ATTACH"})
-    HealAbsorbPositionDropdown:SetLabel("Position")
-    HealAbsorbPositionDropdown:SetValue(HealPredictionDB.HealAbsorbs.Position)
-    HealAbsorbPositionDropdown:SetRelativeWidth(0.33)
-    HealAbsorbPositionDropdown:SetCallback("OnValueChanged", function(_, _, value) HealPredictionDB.HealAbsorbs.Position = value updateCallback() RefreshHealPredictionSettings() end)
-    HealAbsorbSettings:AddChild(HealAbsorbPositionDropdown)
-
-    function RefreshHealPredictionSettings()
-        GUIWidgets.DeepDisable(AbsorbSettings, not HealPredictionDB.Absorbs.Enabled, ShowAbsorbToggle)
-        GUIWidgets.DeepDisable(HealAbsorbSettings, not HealPredictionDB.HealAbsorbs.Enabled, ShowHealAbsorbToggle)
-        AbsorbHeightSlider:SetDisabled(HealPredictionDB.Absorbs.MatchParentHeight or HealPredictionDB.Absorbs.Position == "ATTACH")
-        HealAbsorbHeightSlider:SetDisabled(HealPredictionDB.HealAbsorbs.MatchParentHeight or HealPredictionDB.HealAbsorbs.Position == "ATTACH")
-    end
-
-    RefreshHealPredictionSettings()
-end
-
-local function CreateCastBarBarSettings(containerParent, unit, updateCallback)
-    local FrameDB = UUF.db.profile.Units[unit].Frame
-    local CastBarDB = UUF.db.profile.Units[unit].CastBar
-
-    local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Cast Bar Settings")
-
-    local Toggle = AG:Create("CheckBox")
-    Toggle:SetLabel("Enable |cFF8080FFCast Bar|r")
-    Toggle:SetValue(CastBarDB.Enabled)
+    local SeparatorDropdown = AG:Create("Dropdown")
+    SeparatorDropdown:SetList(UUF.SEPARATOR_TAGS[1], UUF.SEPARATOR_TAGS[2])
+    SeparatorDropdown:SetLabel("Tag Separator")
+    SeparatorDropdown:SetValue(UUF.db.profile.General.Separator)
+    SeparatorDropdown:SetRelativeWidth(0.33)
+    SeparatorDropdown:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.General.Separator = value UUF:UpdateUnitTags() end)
+    SeparatorDropdown:SetCallback("OnEnter", function() GameTooltip:SetOwner(SeparatorDropdown.frame, "ANCHOR_BOTTOM") GameTooltip:AddLine("The separator chosen here is only applied to custom tags which are combined. Such as |cFF8080FF[curhpperhp]|r or |cFF8080FF[curhpperhp:abbr]|r", 1, 1, 1) GameTooltip:Show() end)
+    SeparatorDropdown:SetCallback("OnLeave", function() GameTooltip:Hide() end)
+    TagContainer:AddChild(SeparatorDropdown)
     Toggle:SetCallback("OnValueChanged", function(_, _, value) CastBarDB.Enabled = value updateCallback() RefreshCastBarBarSettings() end)
     Toggle:SetRelativeWidth(0.33)
     LayoutContainer:AddChild(Toggle)
@@ -1306,13 +953,13 @@ local function CreateCastBarSettings(containerParent, unit)
         SaveSubTab(unit, "CastBar", CastBarTab)
         CastBarContainer:ReleaseChildren()
         if CastBarTab == "Bar" then
-            CreateCastBarBarSettings(CastBarContainer, unit, function() if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitCastBar(UUF[unit:upper()], unit) end end)
+            CreateCastBarBarSettings(CastBarContainer, unit, function() UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitCastBar(UUF[unit:upper()], unit) end) end)
         elseif CastBarTab == "Icon" then
-            CreateCastBarIconSettings(CastBarContainer, unit, function() if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitCastBar(UUF[unit:upper()], unit) end end)
+            CreateCastBarIconSettings(CastBarContainer, unit, function() UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitCastBar(UUF[unit:upper()], unit) end) end)
         elseif CastBarTab == "SpellName" then
-            CreateCastBarSpellNameTextSettings(CastBarContainer, unit, function() if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitCastBar(UUF[unit:upper()], unit) end end)
+            CreateCastBarSpellNameTextSettings(CastBarContainer, unit, function() UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitCastBar(UUF[unit:upper()], unit) end) end)
         elseif CastBarTab == "Duration" then
-            CreateCastBarDurationTextSettings(CastBarContainer, unit, function() if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitCastBar(UUF[unit:upper()], unit) end end)
+            CreateCastBarDurationTextSettings(CastBarContainer, unit, function() UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitCastBar(UUF[unit:upper()], unit) end) end)
         end
     end
 
@@ -1398,6 +1045,15 @@ local function CreatePowerBarSettings(containerParent, unit, updateCallback)
     ForegroundColourPicker:SetRelativeWidth(0.5)
     ForegroundColourPicker:SetDisabled(PowerBarDB.ColourByClass or PowerBarDB.ColourByType)
     ColourContainer:AddChild(ForegroundColourPicker)
+
+    if unit == "player" or unit == "pet" then
+        local ClassColourToggle = AG:Create("CheckBox")
+        ClassColourToggle:SetLabel("Use Class Colour")
+        ClassColourToggle:SetValue(CastBarDB.ColourByClass)
+        ClassColourToggle:SetCallback("OnValueChanged", function(_, _, value) CastBarDB.ColourByClass = value UUFGUI.ForegroundColourPicker:SetDisabled(CastBarDB.ColourByClass) updateCallback() end)
+        ClassColourToggle:SetRelativeWidth(0.33)
+        ColourContainer:AddChild(ClassColourToggle)
+    end
 
     local BackgroundColourPicker = AG:Create("ColorPicker")
     BackgroundColourPicker:SetLabel("Background Colour")
@@ -1795,7 +1451,7 @@ local function CreateRaidTargetMarkerSettings(containerParent, unit, updateCallb
     RefreshStatusGUI()
 end
 
-local function CreateLeaderAssistaintSettings(containerParent, unit, updateCallback)
+local function CreateLeaderAssistantSettings(containerParent, unit, updateCallback)
     local LeaderAssistantDB = UUF.db.profile.Units[unit].Indicators.LeaderAssistantIndicator
 
     local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Leader & Assistant Settings")
@@ -1862,7 +1518,74 @@ local function CreateLeaderAssistaintSettings(containerParent, unit, updateCallb
     RefreshStatusGUI()
 end
 
-local function CreateStatusSettings(containerParent, unit, statusDB, updateCallback)
+local function CreateGroupRoleIndicatorSettings(containerParent, unit, updateCallback)
+    local GroupRoleIndicatorDB = UUF.db.profile.Units[unit].Indicators.GroupRole
+
+    local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Group Role Indicator Settings")
+
+    local Toggle = AG:Create("CheckBox")
+    Toggle:SetLabel("Enable |cFF8080FFGroup Role|r Indicator")
+    Toggle:SetValue(GroupRoleIndicatorDB.Enabled)
+    Toggle:SetCallback("OnValueChanged", function(_, _, value) GroupRoleIndicatorDB.Enabled = value updateCallback() RefreshStatusGUI() end)
+    Toggle:SetRelativeWidth(1)
+    ToggleContainer:AddChild(Toggle)
+
+    local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
+
+    local AnchorFromDropdown = AG:Create("Dropdown")
+    AnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
+    AnchorFromDropdown:SetLabel("Anchor From")
+    AnchorFromDropdown:SetValue(GroupRoleIndicatorDB.Layout[1])
+    AnchorFromDropdown:SetRelativeWidth(0.5)
+    AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) GroupRoleIndicatorDB.Layout[1] = value updateCallback() end)
+    LayoutContainer:AddChild(AnchorFromDropdown)
+
+    local AnchorToDropdown = AG:Create("Dropdown")
+    AnchorToDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
+    AnchorToDropdown:SetLabel("Anchor To")
+    AnchorToDropdown:SetValue(GroupRoleIndicatorDB.Layout[2])
+    AnchorToDropdown:SetRelativeWidth(0.5)
+    AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) GroupRoleIndicatorDB.Layout[2] = value updateCallback() end)
+    LayoutContainer:AddChild(AnchorToDropdown)
+
+    local XPosSlider = AG:Create("Slider")
+    XPosSlider:SetLabel("X Position")
+    XPosSlider:SetValue(GroupRoleIndicatorDB.Layout[3])
+    XPosSlider:SetSliderValues(-1000, 1000, 0.1)
+    XPosSlider:SetRelativeWidth(0.33)
+    XPosSlider:SetCallback("OnValueChanged", function(_, _, value) GroupRoleIndicatorDB.Layout[3] = value updateCallback() end)
+    LayoutContainer:AddChild(XPosSlider)
+
+    local YPosSlider = AG:Create("Slider")
+    YPosSlider:SetLabel("Y Position")
+    YPosSlider:SetValue(GroupRoleIndicatorDB.Layout[4])
+    YPosSlider:SetSliderValues(-1000, 1000, 0.1)
+    YPosSlider:SetRelativeWidth(0.33)
+    YPosSlider:SetCallback("OnValueChanged", function(_, _, value) GroupRoleIndicatorDB.Layout[4] = value updateCallback() end)
+    LayoutContainer:AddChild(YPosSlider)
+
+    local SizeSlider = AG:Create("Slider")
+    SizeSlider:SetLabel("Size")
+    SizeSlider:SetValue(GroupRoleIndicatorDB.Size)
+    SizeSlider:SetSliderValues(8, 64, 1)
+    SizeSlider:SetRelativeWidth(0.33)
+    SizeSlider:SetCallback("OnValueChanged", function(_, _, value) GroupRoleIndicatorDB.Size = value updateCallback() end)
+    LayoutContainer:AddChild(SizeSlider)
+
+    function RefreshStatusGUI()
+        if GroupRoleIndicatorDB.Enabled then
+            GUIWidgets.DeepDisable(ToggleContainer, false, Toggle)
+            GUIWidgets.DeepDisable(LayoutContainer, false, Toggle)
+        else
+            GUIWidgets.DeepDisable(ToggleContainer, true, Toggle)
+            GUIWidgets.DeepDisable(LayoutContainer, true, Toggle)
+        end
+    end
+
+    RefreshStatusGUI()
+end
+
+local function CreateStatusSettings(containerParent, unit, statusDB, statusTitle, updateCallback)
     local StatusDB = UUF.db.profile.Units[unit].Indicators[statusDB]
 
     local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, statusDB .. " Settings")
@@ -1873,7 +1596,7 @@ local function CreateStatusSettings(containerParent, unit, statusDB, updateCallb
     end
 
     local Toggle = AG:Create("CheckBox")
-    Toggle:SetLabel("Enable |cFF8080FF"..statusDB.."|r Indicator")
+    Toggle:SetLabel("Enable |cFF8080FF"..statusTitle.."|r Indicator")
     Toggle:SetValue(StatusDB.Enabled)
     Toggle:SetCallback("OnValueChanged", function(_, _, value) StatusDB.Enabled = value updateCallback() RefreshStatusGUI() end)
     Toggle:SetRelativeWidth(0.5)
@@ -2164,17 +1887,19 @@ local function CreateIndicatorSettings(containerParent, unit)
         SaveSubTab(unit, "Indicators", IndicatorTab)
         IndicatorContainer:ReleaseChildren()
         if IndicatorTab == "RaidTargetMarker" then
-            CreateRaidTargetMarkerSettings(IndicatorContainer, unit, function() if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitRaidTargetMarker(UUF[unit:upper()], unit) end end)
+            CreateRaidTargetMarkerSettings(IndicatorContainer, unit, function() UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitRaidTargetMarker(UUF[unit:upper()], unit) end) end)
+        elseif IndicatorTab == "GroupRole" then
+            CreateStatusSettings(IndicatorContainer, unit, "GroupRole", "Group Role", function() UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitGroupRoleIndicator(UUF[unit:upper()], unit) end) end)
         elseif IndicatorTab == "LeaderAssistant" then
-            CreateLeaderAssistaintSettings(IndicatorContainer, unit, function() UUF:UpdateUnitLeaderAssistantIndicator(UUF[unit:upper()], unit) end)
+            CreateLeaderAssistantSettings(IndicatorContainer, unit, function() UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitLeaderAssistantIndicator(UUF[unit:upper()], unit) end) end)
         elseif IndicatorTab == "Resting" then
-            CreateStatusSettings(IndicatorContainer, unit, "Resting", function() UUF:UpdateUnitRestingIndicator(UUF[unit:upper()], unit) end)
+            CreateStatusSettings(IndicatorContainer, unit, "Resting", "Resting", function() UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitRestingIndicator(UUF[unit:upper()], unit) end) end)
         elseif IndicatorTab == "Combat" then
-            CreateStatusSettings(IndicatorContainer, unit, "Combat", function() UUF:UpdateUnitCombatIndicator(UUF[unit:upper()], unit) end)
+            CreateStatusSettings(IndicatorContainer, unit, "Combat", "Combat", function() UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitCombatIndicator(UUF[unit:upper()], unit) end) end)
         elseif IndicatorTab == "Mouseover" then
-            CreateMouseoverSettings(IndicatorContainer, unit, function() if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitMouseoverIndicator(UUF[unit:upper()], unit) end end)
+            CreateMouseoverSettings(IndicatorContainer, unit, function() UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitMouseoverIndicator(UUF[unit:upper()], unit) end) end)
         elseif IndicatorTab == "TargetIndicator" then
-            CreateTargetIndicatorSettings(IndicatorContainer, unit, function() if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitTargetGlowIndicator(UUF[unit:upper()], unit) end end)
+            CreateTargetIndicatorSettings(IndicatorContainer, unit, function() UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitTargetGlowIndicator(UUF[unit:upper()], unit) end) end)
         elseif IndicatorTab == "Totems" then
             -- CreateTotemsIndicatorSettings(IndicatorContainer, unit, function() UUF:UpdateUnitTotems(UUF[unit:upper()], unit) end)
         end
@@ -2200,6 +1925,14 @@ local function CreateIndicatorSettings(containerParent, unit)
             { text = "Mouseover", value = "Mouseover" },
             { text = "Target Indicator", value = "TargetIndicator" },
         })
+    elseif unit == "party" then
+        IndicatorContainerTabGroup:SetTabs({
+            { text = "Raid Target Marker", value = "RaidTargetMarker" },
+            { text = "Leader & Assistant", value = "LeaderAssistant" },
+            { text = "Group Role", value = "GroupRole" },
+            { text = "Mouseover", value = "Mouseover" },
+            { text = "Target Indicator", value = "TargetIndicator" },
+        })
     elseif unit == "targettarget" or unit == "focus" or unit == "focustarget" or unit == "pet" or unit == "boss" then
         IndicatorContainerTabGroup:SetTabs({
             { text = "Raid Target Marker", value = "RaidTargetMarker" },
@@ -2222,14 +1955,14 @@ local function CreateTagSetting(containerParent, unit, tagDB)
     EditBox:SetText(TagDB.Tag)
     EditBox:SetRelativeWidth(0.5)
     EditBox:DisableButton(true)
-    EditBox:SetCallback("OnEnterPressed", function(_, _, value) TagDB.Tag = value EditBox:SetText(TagDB.Tag) if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitTag(UUF[unit:upper()], unit, tagDB) end end)
+    EditBox:SetCallback("OnEnterPressed", function(_, _, value) TagDB.Tag = value EditBox:SetText(TagDB.Tag) UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitTag(UUF[unit:upper()], unit, tagDB) end) end)
     TagContainer:AddChild(EditBox)
 
     local ColourPicker = AG:Create("ColorPicker")
     ColourPicker:SetLabel("Colour")
     ColourPicker:SetColor(TagDB.Colour[1], TagDB.Colour[2], TagDB.Colour[3], 1)
     ColourPicker:SetFullWidth(true)
-    ColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) TagDB.Colour = {r, g, b} if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitTag(UUF[unit:upper()], unit, tagDB) end end)
+    ColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) TagDB.Colour = {r, g, b} UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitTag(UUF[unit:upper()], unit, tagDB) end) end)
     ColourPicker:SetHasAlpha(false)
     ColourPicker:SetRelativeWidth(0.5)
     TagContainer:AddChild(ColourPicker)
@@ -2241,7 +1974,7 @@ local function CreateTagSetting(containerParent, unit, tagDB)
     AnchorFromDropdown:SetLabel("Anchor From")
     AnchorFromDropdown:SetValue(TagDB.Layout[1])
     AnchorFromDropdown:SetRelativeWidth(0.5)
-    AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) TagDB.Layout[1] = value if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitTag(UUF[unit:upper()], unit, tagDB) end end)
+    AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) TagDB.Layout[1] = value UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitTag(UUF[unit:upper()], unit, tagDB) end) end)
     LayoutContainer:AddChild(AnchorFromDropdown)
 
     local AnchorToDropdown = AG:Create("Dropdown")
@@ -2249,7 +1982,7 @@ local function CreateTagSetting(containerParent, unit, tagDB)
     AnchorToDropdown:SetLabel("Anchor To")
     AnchorToDropdown:SetValue(TagDB.Layout[2])
     AnchorToDropdown:SetRelativeWidth(0.5)
-    AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) TagDB.Layout[2] = value if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitTag(UUF[unit:upper()], unit, tagDB) end end)
+    AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) TagDB.Layout[2] = value UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitTag(UUF[unit:upper()], unit, tagDB) end) end)
     LayoutContainer:AddChild(AnchorToDropdown)
 
     local XPosSlider = AG:Create("Slider")
@@ -2257,7 +1990,7 @@ local function CreateTagSetting(containerParent, unit, tagDB)
     XPosSlider:SetValue(TagDB.Layout[3])
     XPosSlider:SetSliderValues(-1000, 1000, 0.1)
     XPosSlider:SetRelativeWidth(0.33)
-    XPosSlider:SetCallback("OnValueChanged", function(_, _, value) TagDB.Layout[3] = value if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitTag(UUF[unit:upper()], unit, tagDB) end end)
+    XPosSlider:SetCallback("OnValueChanged", function(_, _, value) TagDB.Layout[3] = value UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitTag(UUF[unit:upper()], unit, tagDB) end) end)
     LayoutContainer:AddChild(XPosSlider)
 
     local YPosSlider = AG:Create("Slider")
@@ -2265,7 +1998,7 @@ local function CreateTagSetting(containerParent, unit, tagDB)
     YPosSlider:SetValue(TagDB.Layout[4])
     YPosSlider:SetSliderValues(-1000, 1000, 0.1)
     YPosSlider:SetRelativeWidth(0.33)
-    YPosSlider:SetCallback("OnValueChanged", function(_, _, value) TagDB.Layout[4] = value if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitTag(UUF[unit:upper()], unit, tagDB) end end)
+    YPosSlider:SetCallback("OnValueChanged", function(_, _, value) TagDB.Layout[4] = value UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitTag(UUF[unit:upper()], unit, tagDB) end) end)
     LayoutContainer:AddChild(YPosSlider)
 
     local FontSizeSlider = AG:Create("Slider")
@@ -2273,7 +2006,7 @@ local function CreateTagSetting(containerParent, unit, tagDB)
     FontSizeSlider:SetValue(TagDB.FontSize)
     FontSizeSlider:SetSliderValues(8, 64, 1)
     FontSizeSlider:SetRelativeWidth(0.33)
-    FontSizeSlider:SetCallback("OnValueChanged", function(_, _, value) TagDB.FontSize = value if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitTag(UUF[unit:upper()], unit, tagDB) end end)
+    FontSizeSlider:SetCallback("OnValueChanged", function(_, _, value) TagDB.FontSize = value UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitTag(UUF[unit:upper()], unit, tagDB) end) end)
     LayoutContainer:AddChild(FontSizeSlider)
 
     local TagSelectionContainer = GUIWidgets.CreateInlineGroup(containerParent, "Tag Selection")
@@ -2284,7 +2017,7 @@ local function CreateTagSetting(containerParent, unit, tagDB)
     HealthTagDropdown:SetLabel("Health Tags")
     HealthTagDropdown:SetValue(nil)
     HealthTagDropdown:SetRelativeWidth(0.5)
-    HealthTagDropdown:SetCallback("OnValueChanged", function(_, _, value) local currentTag = TagDB.Tag if currentTag and currentTag ~= "" then currentTag = currentTag .. "[" .. value .. "]" else currentTag = "[" .. value .. "]" end EditBox:SetText(currentTag) UUF.db.profile.Units[unit].Tags[tagDB].Tag = currentTag UUF:UpdateUnitTag(UUF[unit:upper()], unit, tagDB) HealthTagDropdown:SetValue(nil) end)
+    HealthTagDropdown:SetCallback("OnValueChanged", function(_, _, value) local currentTag = TagDB.Tag if currentTag and currentTag ~= "" then currentTag = currentTag .. "[" .. value .. "]" else currentTag = "[" .. value .. "]" end EditBox:SetText(currentTag) UUF.db.profile.Units[unit].Tags[tagDB].Tag = currentTag UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitTag(UUF[unit:upper()], unit, tagDB) end) HealthTagDropdown:SetValue(nil) end)
     TagSelectionContainer:AddChild(HealthTagDropdown)
 
     local PowerTagDropdown = AG:Create("Dropdown")
@@ -2292,7 +2025,7 @@ local function CreateTagSetting(containerParent, unit, tagDB)
     PowerTagDropdown:SetLabel("Power Tags")
     PowerTagDropdown:SetValue(nil)
     PowerTagDropdown:SetRelativeWidth(0.5)
-    PowerTagDropdown:SetCallback("OnValueChanged", function(_, _, value) local currentTag = TagDB.Tag if currentTag and currentTag ~= "" then currentTag = currentTag .. "[" .. value .. "]" else currentTag = "[" .. value .. "]" end EditBox:SetText(currentTag) UUF.db.profile.Units[unit].Tags[tagDB].Tag = currentTag if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitTag(UUF[unit:upper()], unit, tagDB) end PowerTagDropdown:SetValue(nil) end)
+    PowerTagDropdown:SetCallback("OnValueChanged", function(_, _, value) local currentTag = TagDB.Tag if currentTag and currentTag ~= "" then currentTag = currentTag .. "[" .. value .. "]" else currentTag = "[" .. value .. "]" end EditBox:SetText(currentTag) UUF.db.profile.Units[unit].Tags[tagDB].Tag = currentTag UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitTag(UUF[unit:upper()], unit, tagDB) end) PowerTagDropdown:SetValue(nil) end)
     TagSelectionContainer:AddChild(PowerTagDropdown)
 
     local NameTagDropdown = AG:Create("Dropdown")
@@ -2300,7 +2033,7 @@ local function CreateTagSetting(containerParent, unit, tagDB)
     NameTagDropdown:SetLabel("Name Tags")
     NameTagDropdown:SetValue(nil)
     NameTagDropdown:SetRelativeWidth(0.5)
-    NameTagDropdown:SetCallback("OnValueChanged", function(_, _, value) local currentTag = TagDB.Tag if currentTag and currentTag ~= "" then currentTag = currentTag .. "[" .. value .. "]" else currentTag = "[" .. value .. "]" end EditBox:SetText(currentTag) UUF.db.profile.Units[unit].Tags[tagDB].Tag = currentTag if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitTag(UUF[unit:upper()], unit, tagDB) end NameTagDropdown:SetValue(nil) end)
+    NameTagDropdown:SetCallback("OnValueChanged", function(_, _, value) local currentTag = TagDB.Tag if currentTag and currentTag ~= "" then currentTag = currentTag .. "[" .. value .. "]" else currentTag = "[" .. value .. "]" end EditBox:SetText(currentTag) UUF.db.profile.Units[unit].Tags[tagDB].Tag = currentTag UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitTag(UUF[unit:upper()], unit, tagDB) end) NameTagDropdown:SetValue(nil) end)
     TagSelectionContainer:AddChild(NameTagDropdown)
 
     local MiscTagDropdown = AG:Create("Dropdown")
@@ -2308,7 +2041,7 @@ local function CreateTagSetting(containerParent, unit, tagDB)
     MiscTagDropdown:SetLabel("Misc Tags")
     MiscTagDropdown:SetValue(nil)
     MiscTagDropdown:SetRelativeWidth(0.5)
-    MiscTagDropdown:SetCallback("OnValueChanged", function(_, _, value) local currentTag = TagDB.Tag if currentTag and currentTag ~= "" then currentTag = currentTag .. "[" .. value .. "]" else currentTag = "[" .. value .. "]" end EditBox:SetText(currentTag) UUF.db.profile.Units[unit].Tags[tagDB].Tag = currentTag if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitTag(UUF[unit:upper()], unit, tagDB) end MiscTagDropdown:SetValue(nil) end)
+    MiscTagDropdown:SetCallback("OnValueChanged", function(_, _, value) local currentTag = TagDB.Tag if currentTag and currentTag ~= "" then currentTag = currentTag .. "[" .. value .. "]" else currentTag = "[" .. value .. "]" end EditBox:SetText(currentTag) UUF.db.profile.Units[unit].Tags[tagDB].Tag = currentTag UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitTag(UUF[unit:upper()], unit, tagDB) end) MiscTagDropdown:SetValue(nil) end)
     MiscTagDropdown:SetDisabled(#UUF:FetchTagData("Misc") == 0)
     TagSelectionContainer:AddChild(MiscTagDropdown)
 
@@ -2349,88 +2082,52 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
     local Toggle = AG:Create("CheckBox")
     Toggle:SetLabel("Enable |cFF8080FF"..auraDB.."|r")
     Toggle:SetValue(AuraDB.Enabled)
-    Toggle:SetCallback("OnValueChanged", function(_, _, value) AuraDB.Enabled = value if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end RefreshAuraGUI() end)
+    Toggle:SetCallback("OnValueChanged", function(_, _, value) AuraDB.Enabled = value UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end) RefreshAuraGUI() end)
     Toggle:SetRelativeWidth(0.33)
     AuraContainer:AddChild(Toggle)
 
-    -- local OnlyShowPlayerToggle = AG:Create("CheckBox")
-    -- OnlyShowPlayerToggle:SetLabel("Only Show Player "..auraDB)
-    -- OnlyShowPlayerToggle:SetValue(AuraDB.OnlyShowPlayer)
-    -- OnlyShowPlayerToggle:SetCallback("OnValueChanged", function(_, _, value) AuraDB.OnlyShowPlayer = value if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end end)
-    -- OnlyShowPlayerToggle:SetRelativeWidth(0.33)
-    -- AuraContainer:AddChild(OnlyShowPlayerToggle)
+    local OnlyShowPlayerToggle = AG:Create("CheckBox")
+    OnlyShowPlayerToggle:SetLabel("Only Show Player "..auraDB)
+    OnlyShowPlayerToggle:SetValue(AuraDB.OnlyShowPlayer)
+    OnlyShowPlayerToggle:SetCallback("OnValueChanged", function(_, _, value) AuraDB.OnlyShowPlayer = value UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end) end)
+    OnlyShowPlayerToggle:SetRelativeWidth(0.33)
+    AuraContainer:AddChild(OnlyShowPlayerToggle)
 
-    -- local ShowTypeCheckbox = AG:Create("CheckBox")
-    -- ShowTypeCheckbox:SetLabel(auraDB .. " Type Border")
-    -- ShowTypeCheckbox:SetValue(AuraDB.ShowType)
-    -- ShowTypeCheckbox:SetCallback("OnValueChanged", function(_, _, value) AuraDB.ShowType = value if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end end)
-    -- ShowTypeCheckbox:SetRelativeWidth(0.33)
-    -- AuraContainer:AddChild(ShowTypeCheckbox)
+    local ShowTypeCheckbox = AG:Create("CheckBox")
+    ShowTypeCheckbox:SetLabel(auraDB .. " Type Border")
+    ShowTypeCheckbox:SetValue(AuraDB.ShowType)
+    ShowTypeCheckbox:SetCallback("OnValueChanged", function(_, _, value) AuraDB.ShowType = value UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end) end)
+    ShowTypeCheckbox:SetRelativeWidth(0.33)
+    AuraContainer:AddChild(ShowTypeCheckbox)
 
-    local auraBaseFilter = GetAuraBaseFilter(auraDB)
-    local auraFilterConfig = GetAuraFilterConfig(auraDB)
-    local auraFilterOrder = GetAuraFilterToggleOrder(auraDB)
-    local auraFilterSelections = ParseAuraFilterSelections(auraDB, AuraDB.Filter or auraBaseFilter)
-    local auraFilterToggles = {}
-    local isUpdatingAuraFilterToggles = false
-
-    local function UpdateAuraFilter()
-        local builtFilter = BuildAuraFilterString(auraBaseFilter, auraFilterSelections, auraFilterOrder)
-        AuraDB.Filter = EncodeAuraFilterStringForStorage(builtFilter)
+    local FilterDropdown = AG:Create("Dropdown")
+    if auraDB == "Buffs" then
+        FilterDropdown:SetList({
+            ["HELPFUL"] = "All",
+            ["HELPFUL|PLAYER"] = "Player",
+            ["HELPFUL|RAID"] = "Raid",
+            ["INCLUDE_NAME_PLATE_ONLY"] = "Nameplate",
+        })
+    else
+        FilterDropdown:SetList({
+            ["HARMFUL"] = "All",
+            ["HARMFUL|PLAYER"] = "Player",
+            ["HARMFUL|RAID"] = "Raid",
+            ["INCLUDE_NAME_PLATE_ONLY"] = "Nameplate",
+        })
+    end
+    FilterDropdown:SetLabel("Aura Filter")
+    FilterDropdown:SetValue(AuraDB.Filter or (auraDB == "Buffs" and "HELPFUL" or "HARMFUL"))
+    FilterDropdown:SetRelativeWidth(1.0)
+    FilterDropdown:SetCallback("OnValueChanged", function(_, _, value)
+        AuraDB.Filter = value
         if unit == "boss" then
             UUF:UpdateBossFrames()
         else
             UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB)
         end
-    end
-
-    local function RefreshAuraFilterToggles()
-        local selectedFilter = GetSelectedAuraFilter(auraFilterSelections, auraFilterOrder)
-        isUpdatingAuraFilterToggles = true
-        for _, filterType in ipairs(auraFilterOrder) do
-            local filterToggle = auraFilterToggles[filterType]
-            if filterToggle then
-                filterToggle:SetValue(auraFilterSelections[filterType] or false)
-                filterToggle:SetDisabled(selectedFilter and selectedFilter ~= filterType)
-            end
-        end
-        isUpdatingAuraFilterToggles = false
-    end
-
-    local normalizedAuraFilter = EncodeAuraFilterStringForStorage(BuildAuraFilterString(auraBaseFilter, auraFilterSelections, auraFilterOrder))
-    if AuraDB.Filter ~= normalizedAuraFilter then
-        AuraDB.Filter = normalizedAuraFilter
-        if unit == "boss" then
-            UUF:UpdateBossFrames()
-        else
-            UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB)
-        end
-    end
-
-    GUIWidgets.CreateHeader(AuraContainer, "Aura Filters")
-
-    for _, auraFilter in ipairs(auraFilterOrder) do
-        local filterType = auraFilter
-        local filterData = auraFilterConfig[filterType]
-        local FilterToggle = AG:Create("CheckBox")
-        FilterToggle:SetLabel(filterData.Title or filterType)
-        FilterToggle:SetDescription(filterData.Desc or "")
-        FilterToggle:SetValue(auraFilterSelections[filterType] or false)
-        FilterToggle:SetRelativeWidth(1.0)
-        FilterToggle:SetCallback("OnValueChanged", function(_, _, value)
-            if isUpdatingAuraFilterToggles then return end
-            if value then
-                SetSelectedAuraFilter(auraFilterSelections, auraFilterOrder, filterType)
-            else
-                auraFilterSelections[filterType] = nil
-            end
-            RefreshAuraFilterToggles()
-            UpdateAuraFilter()
-        end)
-        auraFilterToggles[filterType] = FilterToggle
-        AuraContainer:AddChild(FilterToggle)
-    end
-    RefreshAuraFilterToggles()
+    end)
+    AuraContainer:AddChild(FilterDropdown)
 
     local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
 
@@ -2439,7 +2136,7 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
     AnchorFromDropdown:SetLabel("Anchor From")
     AnchorFromDropdown:SetValue(AuraDB.Layout[1])
     AnchorFromDropdown:SetRelativeWidth(0.5)
-    AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) AuraDB.Layout[1] = value if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end end)
+    AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) AuraDB.Layout[1] = value UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end) end)
     LayoutContainer:AddChild(AnchorFromDropdown)
 
     local AnchorToDropdown = AG:Create("Dropdown")
@@ -2447,7 +2144,7 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
     AnchorToDropdown:SetLabel("Anchor To")
     AnchorToDropdown:SetValue(AuraDB.Layout[2])
     AnchorToDropdown:SetRelativeWidth(0.5)
-    AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) AuraDB.Layout[2] = value if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end end)
+    AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) AuraDB.Layout[2] = value UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end) end)
     LayoutContainer:AddChild(AnchorToDropdown)
 
     local XPosSlider = AG:Create("Slider")
@@ -2455,7 +2152,7 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
     XPosSlider:SetValue(AuraDB.Layout[3])
     XPosSlider:SetSliderValues(-1000, 1000, 0.1)
     XPosSlider:SetRelativeWidth(0.25)
-    XPosSlider:SetCallback("OnValueChanged", function(_, _, value) AuraDB.Layout[3] = value if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end end)
+    XPosSlider:SetCallback("OnValueChanged", function(_, _, value) AuraDB.Layout[3] = value UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end) end)
     LayoutContainer:AddChild(XPosSlider)
 
     local YPosSlider = AG:Create("Slider")
@@ -2463,7 +2160,7 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
     YPosSlider:SetValue(AuraDB.Layout[4])
     YPosSlider:SetSliderValues(-1000, 1000, 0.1)
     YPosSlider:SetRelativeWidth(0.25)
-    YPosSlider:SetCallback("OnValueChanged", function(_, _, value) AuraDB.Layout[4] = value if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end end)
+    YPosSlider:SetCallback("OnValueChanged", function(_, _, value) AuraDB.Layout[4] = value UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end) end)
     LayoutContainer:AddChild(YPosSlider)
 
     local SizeSlider = AG:Create("Slider")
@@ -2471,7 +2168,7 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
     SizeSlider:SetValue(AuraDB.Size)
     SizeSlider:SetSliderValues(8, 64, 1)
     SizeSlider:SetRelativeWidth(0.25)
-    SizeSlider:SetCallback("OnValueChanged", function(_, _, value) AuraDB.Size = value if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end end)
+    SizeSlider:SetCallback("OnValueChanged", function(_, _, value) AuraDB.Size = value UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end) end)
     LayoutContainer:AddChild(SizeSlider)
 
     local SpacingSlider = AG:Create("Slider")
@@ -2479,7 +2176,7 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
     SpacingSlider:SetValue(AuraDB.Layout[5])
     SpacingSlider:SetSliderValues(-5, 5, 1)
     SpacingSlider:SetRelativeWidth(0.25)
-    SpacingSlider:SetCallback("OnValueChanged", function(_, _, value) AuraDB.Layout[5] = value if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end end)
+    SpacingSlider:SetCallback("OnValueChanged", function(_, _, value) AuraDB.Layout[5] = value UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end) end)
     LayoutContainer:AddChild(SpacingSlider)
 
     GUIWidgets.CreateHeader(LayoutContainer, "Layout")
@@ -2489,7 +2186,7 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
     NumAurasSlider:SetValue(AuraDB.Num)
     NumAurasSlider:SetSliderValues(1, 24, 1)
     NumAurasSlider:SetRelativeWidth(0.5)
-    NumAurasSlider:SetCallback("OnValueChanged", function(_, _, value) AuraDB.Num = value if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end end)
+    NumAurasSlider:SetCallback("OnValueChanged", function(_, _, value) AuraDB.Num = value UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end) end)
     LayoutContainer:AddChild(NumAurasSlider)
 
     local PerRowSlider = AG:Create("Slider")
@@ -2497,7 +2194,7 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
     PerRowSlider:SetValue(AuraDB.Wrap)
     PerRowSlider:SetSliderValues(1, 24, 1)
     PerRowSlider:SetRelativeWidth(0.5)
-    PerRowSlider:SetCallback("OnValueChanged", function(_, _, value) AuraDB.Wrap = value if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end end)
+    PerRowSlider:SetCallback("OnValueChanged", function(_, _, value) AuraDB.Wrap = value UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end) end)
     LayoutContainer:AddChild(PerRowSlider)
 
     local GrowthDirectionDropdown = AG:Create("Dropdown")
@@ -2505,7 +2202,7 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
     GrowthDirectionDropdown:SetLabel("Growth Direction")
     GrowthDirectionDropdown:SetValue(AuraDB.GrowthDirection)
     GrowthDirectionDropdown:SetRelativeWidth(0.5)
-    GrowthDirectionDropdown:SetCallback("OnValueChanged", function(_, _, value) AuraDB.GrowthDirection = value if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end end)
+    GrowthDirectionDropdown:SetCallback("OnValueChanged", function(_, _, value) AuraDB.GrowthDirection = value UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end) end)
     LayoutContainer:AddChild(GrowthDirectionDropdown)
 
     local WrapDirectionDropdown = AG:Create("Dropdown")
@@ -2513,7 +2210,7 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
     WrapDirectionDropdown:SetLabel("Wrap Direction")
     WrapDirectionDropdown:SetValue(AuraDB.WrapDirection)
     WrapDirectionDropdown:SetRelativeWidth(0.5)
-    WrapDirectionDropdown:SetCallback("OnValueChanged", function(_, _, value) AuraDB.WrapDirection = value if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end end)
+    WrapDirectionDropdown:SetCallback("OnValueChanged", function(_, _, value) AuraDB.WrapDirection = value UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end) end)
     LayoutContainer:AddChild(WrapDirectionDropdown)
 
     local CountContainer = GUIWidgets.CreateInlineGroup(containerParent, "Count Settings")
@@ -2523,7 +2220,7 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
     CountAnchorFromDropdown:SetLabel("Anchor From")
     CountAnchorFromDropdown:SetValue(AuraDB.Count.Layout[1])
     CountAnchorFromDropdown:SetRelativeWidth(0.5)
-    CountAnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) AuraDB.Count.Layout[1] = value if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end end)
+    CountAnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) AuraDB.Count.Layout[1] = value UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end) end)
     CountContainer:AddChild(CountAnchorFromDropdown)
 
     local CountAnchorToDropdown = AG:Create("Dropdown")
@@ -2531,7 +2228,7 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
     CountAnchorToDropdown:SetLabel("Anchor To")
     CountAnchorToDropdown:SetValue(AuraDB.Count.Layout[2])
     CountAnchorToDropdown:SetRelativeWidth(0.5)
-    CountAnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) AuraDB.Count.Layout[2] = value if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end end)
+    CountAnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) AuraDB.Count.Layout[2] = value UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end) end)
     CountContainer:AddChild(CountAnchorToDropdown)
 
     local CountXPosSlider = AG:Create("Slider")
@@ -2539,7 +2236,7 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
     CountXPosSlider:SetValue(AuraDB.Count.Layout[3])
     CountXPosSlider:SetSliderValues(-1000, 1000, 0.1)
     CountXPosSlider:SetRelativeWidth(0.25)
-    CountXPosSlider:SetCallback("OnValueChanged", function(_, _, value) AuraDB.Count.Layout[3] = value if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end end)
+    CountXPosSlider:SetCallback("OnValueChanged", function(_, _, value) AuraDB.Count.Layout[3] = value UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end) end)
     CountContainer:AddChild(CountXPosSlider)
 
     local CountYPosSlider = AG:Create("Slider")
@@ -2547,7 +2244,7 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
     CountYPosSlider:SetValue(AuraDB.Count.Layout[4])
     CountYPosSlider:SetSliderValues(-1000, 1000, 0.1)
     CountYPosSlider:SetRelativeWidth(0.25)
-    CountYPosSlider:SetCallback("OnValueChanged", function(_, _, value) AuraDB.Count.Layout[4] = value if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end end)
+    CountYPosSlider:SetCallback("OnValueChanged", function(_, _, value) AuraDB.Count.Layout[4] = value UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end) end)
     CountContainer:AddChild(CountYPosSlider)
 
     local FontSizeSlider = AG:Create("Slider")
@@ -2555,13 +2252,13 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
     FontSizeSlider:SetValue(AuraDB.Count.FontSize)
     FontSizeSlider:SetSliderValues(8, 64, 1)
     FontSizeSlider:SetRelativeWidth(0.25)
-    FontSizeSlider:SetCallback("OnValueChanged", function(_, _, value) AuraDB.Count.FontSize = value if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end end)
+    FontSizeSlider:SetCallback("OnValueChanged", function(_, _, value) AuraDB.Count.FontSize = value UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end) end)
     CountContainer:AddChild(FontSizeSlider)
 
     local ColourPicker = AG:Create("ColorPicker")
     ColourPicker:SetLabel("Colour")
     ColourPicker:SetColor(AuraDB.Count.Colour[1], AuraDB.Count.Colour[2], AuraDB.Count.Colour[3], 1)
-    ColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) AuraDB.Count.Colour = {r, g, b} if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end end)
+    ColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) AuraDB.Count.Colour = {r, g, b} UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end) end)
     ColourPicker:SetHasAlpha(false)
     ColourPicker:SetRelativeWidth(0.25)
     CountContainer:AddChild(ColourPicker)
@@ -2571,7 +2268,6 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
             GUIWidgets.DeepDisable(AuraContainer, false, Toggle)
             GUIWidgets.DeepDisable(LayoutContainer, false, Toggle)
             GUIWidgets.DeepDisable(CountContainer, false, Toggle)
-            RefreshAuraFilterToggles()
         else
             GUIWidgets.DeepDisable(AuraContainer, true, Toggle)
             GUIWidgets.DeepDisable(LayoutContainer, true, Toggle)
@@ -2591,7 +2287,7 @@ local function CreateAuraSettings(containerParent, unit)
     local ColourPicker = AG:Create("ColorPicker")
     ColourPicker:SetLabel("Cooldown Text Colour")
     ColourPicker:SetColor(UUF.db.profile.Units[unit].Auras.AuraDuration.Colour[1], UUF.db.profile.Units[unit].Auras.AuraDuration.Colour[2], UUF.db.profile.Units[unit].Auras.AuraDuration.Colour[3], 1)
-    ColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) UUF.db.profile.Units[unit].Auras.AuraDuration.Colour = {r, g, b} if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, "AuraDuration") end end)
+    ColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) UUF.db.profile.Units[unit].Auras.AuraDuration.Colour = {r, g, b} UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitAuras(UUF[unit:upper()], unit, "AuraDuration") end) end)
     ColourPicker:SetHasAlpha(false)
     ColourPicker:SetRelativeWidth(0.5)
     AuraDurationContainer:AddChild(ColourPicker)
@@ -2599,7 +2295,7 @@ local function CreateAuraSettings(containerParent, unit)
     local ScaleByIconSizeCheckbox = AG:Create("CheckBox")
     ScaleByIconSizeCheckbox:SetLabel("Scale Cooldown Text By Icon Size")
     ScaleByIconSizeCheckbox:SetValue(UUF.db.profile.Units[unit].Auras.AuraDuration.ScaleByIconSize)
-    ScaleByIconSizeCheckbox:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.Units[unit].Auras.AuraDuration.ScaleByIconSize = value if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, "AuraDuration") end RefreshFontSizeSlider() end)
+    ScaleByIconSizeCheckbox:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.Units[unit].Auras.AuraDuration.ScaleByIconSize = value UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitAuras(UUF[unit:upper()], unit, "AuraDuration") end) RefreshFontSizeSlider() end)
     ScaleByIconSizeCheckbox:SetRelativeWidth(0.5)
     AuraDurationContainer:AddChild(ScaleByIconSizeCheckbox)
 
@@ -2608,7 +2304,7 @@ local function CreateAuraSettings(containerParent, unit)
     AnchorFromDropdown:SetLabel("Anchor From")
     AnchorFromDropdown:SetValue(UUF.db.profile.Units[unit].Auras.AuraDuration.Layout[1])
     AnchorFromDropdown:SetRelativeWidth(0.5)
-    AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.Units[unit].Auras.AuraDuration.Layout[1] = value if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, "AuraDuration") end end)
+    AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.Units[unit].Auras.AuraDuration.Layout[1] = value UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitAuras(UUF[unit:upper()], unit, "AuraDuration") end) end)
     AuraDurationContainer:AddChild(AnchorFromDropdown)
 
     local AnchorToDropdown = AG:Create("Dropdown")
@@ -2616,7 +2312,7 @@ local function CreateAuraSettings(containerParent, unit)
     AnchorToDropdown:SetLabel("Anchor To")
     AnchorToDropdown:SetValue(UUF.db.profile.Units[unit].Auras.AuraDuration.Layout[2])
     AnchorToDropdown:SetRelativeWidth(0.5)
-    AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.Units[unit].Auras.AuraDuration.Layout[2] = value if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, "AuraDuration") end end)
+    AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.Units[unit].Auras.AuraDuration.Layout[2] = value UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitAuras(UUF[unit:upper()], unit, "AuraDuration") end) end)
     AuraDurationContainer:AddChild(AnchorToDropdown)
 
     local XPosSlider = AG:Create("Slider")
@@ -2624,7 +2320,7 @@ local function CreateAuraSettings(containerParent, unit)
     XPosSlider:SetValue(UUF.db.profile.Units[unit].Auras.AuraDuration.Layout[3])
     XPosSlider:SetSliderValues(-1000, 1000, 0.1)
     XPosSlider:SetRelativeWidth(0.33)
-    XPosSlider:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.Units[unit].Auras.AuraDuration.Layout[3] = value if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, "AuraDuration") end end)
+    XPosSlider:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.Units[unit].Auras.AuraDuration.Layout[3] = value UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitAuras(UUF[unit:upper()], unit, "AuraDuration") end) end)
     AuraDurationContainer:AddChild(XPosSlider)
 
     local YPosSlider = AG:Create("Slider")
@@ -2632,7 +2328,7 @@ local function CreateAuraSettings(containerParent, unit)
     YPosSlider:SetValue(UUF.db.profile.Units[unit].Auras.AuraDuration.Layout[4])
     YPosSlider:SetSliderValues(-1000, 1000, 0.1)
     YPosSlider:SetRelativeWidth(0.33)
-    YPosSlider:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.Units[unit].Auras.AuraDuration.Layout[4] = value if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, "AuraDuration") end end)
+    YPosSlider:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.Units[unit].Auras.AuraDuration.Layout[4] = value UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitAuras(UUF[unit:upper()], unit, "AuraDuration") end) end)
     AuraDurationContainer:AddChild(YPosSlider)
 
     local FontSizeSlider = AG:Create("Slider")
@@ -2640,7 +2336,7 @@ local function CreateAuraSettings(containerParent, unit)
     FontSizeSlider:SetValue(UUF.db.profile.Units[unit].Auras.AuraDuration.FontSize)
     FontSizeSlider:SetSliderValues(8, 64, 1)
     FontSizeSlider:SetRelativeWidth(0.33)
-    FontSizeSlider:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.Units[unit].Auras.AuraDuration.FontSize = value if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, "AuraDuration") end end)
+    FontSizeSlider:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.Units[unit].Auras.AuraDuration.FontSize = value UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitAuras(UUF[unit:upper()], unit, "AuraDuration") end) end)
     FontSizeSlider:SetDisabled(UUF.db.profile.Units[unit].Auras.AuraDuration.ScaleByIconSize)
     AuraDurationContainer:AddChild(FontSizeSlider)
 
@@ -2668,7 +2364,7 @@ local function CreateAuraSettings(containerParent, unit)
         elseif AuraTab == "Debuffs" then
             CreateSpecificAuraSettings(AuraContainer, unit, "Debuffs")
         end
-        C_Timer.After(0.001, RefreshFontSizeSlider)
+        UUF:ScheduleTimer("RefreshFontSize", 0.001, RefreshFontSizeSlider)
         containerParent:DoLayout()
     end
 
@@ -2854,34 +2550,60 @@ local function CreateUnitSettings(containerParent, unit)
     EnableUnitFrameToggle:SetDisabled(UUF.db.profile.Units[unit].Enabled)
     containerParent:AddChild(EnableUnitFrameToggle)
 
+    if unit == "party" then
+        local HidePlayerToggle = AG:Create("CheckBox")
+        HidePlayerToggle:SetLabel("Hide |cFFFFCC00Player|r in Party Frames")
+        HidePlayerToggle:SetValue(UUF.db.profile.Units[unit].HidePlayer)
+        HidePlayerToggle:SetCallback("OnValueChanged", function(_, _, value)
+            UUF.db.profile.Units[unit].HidePlayer = value
+            UUF:LayoutPartyFrames()
+        end)
+        HidePlayerToggle:SetRelativeWidth(0.5)
+        containerParent:AddChild(HidePlayerToggle)
+
+        local SortOrderDropdown = AG:Create("Dropdown")
+        SortOrderDropdown:SetLabel("Sort Order")
+        SortOrderDropdown:SetList({
+            ["DEFAULT"] = "Default",
+            ["ROLE"] = "By Role (Tank > Healer > DPS)"
+        })
+        SortOrderDropdown:SetValue(UUF.db.profile.Units[unit].SortOrder or "DEFAULT")
+        SortOrderDropdown:SetCallback("OnValueChanged", function(_, _, value)
+            UUF.db.profile.Units[unit].SortOrder = value
+            UUF:LayoutPartyFrames()
+        end)
+        SortOrderDropdown:SetRelativeWidth(0.5)
+        containerParent:AddChild(SortOrderDropdown)
+    end
+
     local function SelectUnitTab(SubContainer, _, UnitTab)
         if not lastSelectedUnitTabs[unit] then lastSelectedUnitTabs[unit] = {} end
         lastSelectedUnitTabs[unit].mainTab = UnitTab
         SubContainer:ReleaseChildren()
         if UnitTab == "Frame" then
-            CreateFrameSettings(SubContainer, unit, UUF.db.profile.Units[unit].Frame.AnchorParent and true or false, function() if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitFrame(UUF[unit:upper()], unit) end end)
+            GUIUnits:CreateFrameSettings(SubContainer, unit, UUF.db.profile.Units[unit].Frame.AnchorParent and true or false, function() UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitFrame(UUF[unit:upper()], unit) end) end)
         elseif UnitTab == "HealPrediction" then
-            CreateHealPredictionSettings(SubContainer, unit, function() if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitHealPrediction(UUF[unit:upper()], unit) end end)
+            GUIUnits:CreateHealPredictionSettings(SubContainer, unit, function() UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitHealPrediction(UUF[unit:upper()], unit) end) end)
         elseif UnitTab == "Auras" then
-            CreateAuraSettings(SubContainer, unit)
+            GUIUnits:CreateAuraSettings(SubContainer, unit)
         elseif UnitTab == "PowerBar" then
-            CreatePowerBarSettings(SubContainer, unit, function() if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitPowerBar(UUF[unit:upper()], unit) end end)
+            GUIUnits:CreatePowerBarSettings(SubContainer, unit, function() UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitPowerBar(UUF[unit:upper()], unit) end) end)
         elseif UnitTab == "SecondaryPowerBar" then
-            CreateSecondaryPowerBarSettings(SubContainer, unit, function() UUF:UpdateUnitSecondaryPowerBar(UUF[unit:upper()], unit) end)
+            GUIUnits:CreateSecondaryPowerBarSettings(SubContainer, unit, function() UUF:UpdateUnitSecondaryPowerBar(UUF[unit:upper()], unit) end)
         elseif UnitTab == "AlternativePowerBar" then
-            CreateAlternativePowerBarSettings(SubContainer, unit, function() if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAlternativePowerBar(UUF[unit:upper()], unit) end end)
+            GUIUnits:CreateAlternativePowerBarSettings(SubContainer, unit, function() UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitAlternativePowerBar(UUF[unit:upper()], unit) end) end)
         elseif UnitTab == "CastBar" then
-            CreateCastBarSettings(SubContainer, unit)
+            GUIUnits:CreateCastBarSettings(SubContainer, unit)
         elseif UnitTab == "Portrait" then
-            CreatePortraitSettings(SubContainer, unit, function() if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitPortrait(UUF[unit:upper()], unit) end end)
+            GUIUnits:CreatePortraitSettings(SubContainer, unit, function() UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitPortrait(UUF[unit:upper()], unit) end) end)
         elseif UnitTab == "Indicators" then
-            CreateIndicatorSettings(SubContainer, unit)
+            GUIUnits:CreateIndicatorSettings(SubContainer, unit)
         elseif UnitTab == "Tags" then
-            CreateTagsSettings(SubContainer, unit)
+            GUIUnits:CreateTagsSettings(SubContainer, unit)
         end
         if UnitTab == "Auras" then EnableAurasTestMode(unit) else DisableAurasTestMode(unit) end
         if UnitTab == "CastBar" then EnableCastBarTestMode(unit) else DisableCastBarTestMode(unit) end
-        containerParent:DoLayout()
+        SubContainer:DoLayout()
     end
 
     local SubContainerTabGroup = AG:Create("TabGroup")
@@ -2938,251 +2660,6 @@ local function CreateUnitSettings(containerParent, unit)
     containerParent:AddChild(SubContainerTabGroup)
 
     containerParent:DoLayout()
-end
-
-local function CreateTagSettings(containerParent)
-
-    local function DrawTagContainer(TagContainer, TagGroup)
-        local TagsList, TagOrder = UUF:FetchTagData(TagGroup)[1], UUF:FetchTagData(TagGroup)[2]
-
-        local SortedTagsList = {}
-        for _, tag in ipairs(TagOrder) do
-            if TagsList[tag] then
-                SortedTagsList[tag] = TagsList[tag]
-            end
-        end
-
-        for _, Tag in ipairs(TagOrder) do
-            local Desc = SortedTagsList[Tag]
-            local TagDesc = AG:Create("Label")
-            TagDesc:SetText(Desc)
-            TagDesc:SetFont(STANDARD_TEXT_FONT, 12, "OUTLINE")
-            TagDesc:SetRelativeWidth(0.5)
-            TagContainer:AddChild(TagDesc)
-
-            local TagValue = AG:Create("EditBox")
-            TagValue:SetText("[" .. Tag .. "]")
-            TagValue:SetCallback("OnTextChanged", function(widget, event, value) TagValue:ClearFocus() TagValue:SetText("[" .. Tag .. "]") end)
-            TagValue:SetRelativeWidth(0.5)
-            TagContainer:AddChild(TagValue)
-        end
-    end
-
-    local function SelectedGroup(TagContainer, _, TagGroup)
-        TagContainer:ReleaseChildren()
-        if TagGroup == "Health" then
-            DrawTagContainer(TagContainer, "Health")
-        elseif TagGroup == "Name" then
-            DrawTagContainer(TagContainer, "Name")
-        elseif TagGroup == "Power" then
-            DrawTagContainer(TagContainer, "Power")
-        elseif TagGroup == "Misc" then
-            DrawTagContainer(TagContainer, "Misc")
-        end
-        TagContainer:DoLayout()
-    end
-
-    local GUIContainerTabGroup = AG:Create("TabGroup")
-    GUIContainerTabGroup:SetLayout("Flow")
-    GUIContainerTabGroup:SetTabs({
-        { text = "Health", value = "Health" },
-        { text = "Name", value = "Name" },
-        { text = "Power", value = "Power" },
-        { text = "Miscellaneous", value = "Misc" },
-    })
-    GUIContainerTabGroup:SetCallback("OnGroupSelected", SelectedGroup)
-    GUIContainerTabGroup:SelectTab("Health")
-    GUIContainerTabGroup:SetFullWidth(true)
-    containerParent:AddChild(GUIContainerTabGroup)
-    containerParent:DoLayout()
-end
-
-local function CreateProfileSettings(containerParent)
-    local profileKeys = {}
-    local specProfilesList = {}
-    local numSpecs = GetNumSpecializations()
-
-    local ProfileContainer = GUIWidgets.CreateInlineGroup(containerParent, "Profile Management")
-
-    local ActiveProfileHeading = AG:Create("Heading")
-    ActiveProfileHeading:SetFullWidth(true)
-    ProfileContainer:AddChild(ActiveProfileHeading)
-
-    local function RefreshProfiles()
-        wipe(profileKeys)
-        local tmp = {}
-        for _, name in ipairs(UUF.db:GetProfiles(tmp, true)) do profileKeys[name] = name end
-        local profilesToDelete = {}
-        for k, v in pairs(profileKeys) do profilesToDelete[k] = v end
-        profilesToDelete[UUF.db:GetCurrentProfile()] = nil
-        SelectProfileDropdown:SetList(profileKeys)
-        CopyFromProfileDropdown:SetList(profileKeys)
-        GlobalProfileDropdown:SetList(profileKeys)
-        DeleteProfileDropdown:SetList(profilesToDelete)
-        for i = 1, numSpecs do
-            specProfilesList[i]:SetList(profileKeys)
-            specProfilesList[i]:SetValue(UUF.db:GetDualSpecProfile(i))
-        end
-        SelectProfileDropdown:SetValue(UUF.db:GetCurrentProfile())
-        CopyFromProfileDropdown:SetValue(nil)
-        DeleteProfileDropdown:SetValue(nil)
-        if not next(profilesToDelete) then
-            DeleteProfileDropdown:SetDisabled(true)
-        else
-            DeleteProfileDropdown:SetDisabled(false)
-        end
-        ResetProfileButton:SetText("Reset |cFF8080FF" .. UUF.db:GetCurrentProfile() .. "|r Profile")
-        local isUsingGlobal = UUF.db.global.UseGlobalProfile
-        ActiveProfileHeading:SetText( "Active Profile: |cFFFFFFFF" .. UUF.db:GetCurrentProfile() .. (isUsingGlobal and " (|cFFFFCC00Global|r)" or "") .. "|r" )
-        if UUF.db:IsDualSpecEnabled() then
-            SelectProfileDropdown:SetDisabled(true)
-            CopyFromProfileDropdown:SetDisabled(true)
-            GlobalProfileDropdown:SetDisabled(true)
-            DeleteProfileDropdown:SetDisabled(true)
-            UseGlobalProfileToggle:SetDisabled(true)
-            GlobalProfileDropdown:SetDisabled(true)
-        else
-            SelectProfileDropdown:SetDisabled(isUsingGlobal)
-            CopyFromProfileDropdown:SetDisabled(isUsingGlobal)
-            GlobalProfileDropdown:SetDisabled(not isUsingGlobal)
-            DeleteProfileDropdown:SetDisabled(isUsingGlobal or not next(profilesToDelete))
-            UseGlobalProfileToggle:SetDisabled(false)
-            GlobalProfileDropdown:SetDisabled(not isUsingGlobal)
-        end
-    end
-
-    UUFG.RefreshProfiles = RefreshProfiles -- Exposed for Share.lua
-
-    SelectProfileDropdown = AG:Create("Dropdown")
-    SelectProfileDropdown:SetLabel("Select...")
-    SelectProfileDropdown:SetRelativeWidth(0.25)
-    SelectProfileDropdown:SetCallback("OnValueChanged", function(_, _, value) UUF.db:SetProfile(value) UUF:SetUIScale() UUF:UpdateAllUnitFrames() RefreshProfiles() end)
-    ProfileContainer:AddChild(SelectProfileDropdown)
-
-    CopyFromProfileDropdown = AG:Create("Dropdown")
-    CopyFromProfileDropdown:SetLabel("Copy From...")
-    CopyFromProfileDropdown:SetRelativeWidth(0.25)
-    CopyFromProfileDropdown:SetCallback("OnValueChanged", function(_, _, value) UUF:CreatePrompt("Copy Profile", "Are you sure you want to copy from |cFF8080FF" .. value .. "|r?\nThis will |cFFFF4040overwrite|r your current profile settings.", function() UUF.db:CopyProfile(value) UUF:SetUIScale() UUF:UpdateAllUnitFrames() RefreshProfiles() end) end)
-    ProfileContainer:AddChild(CopyFromProfileDropdown)
-
-    DeleteProfileDropdown = AG:Create("Dropdown")
-    DeleteProfileDropdown:SetLabel("Delete...")
-    DeleteProfileDropdown:SetRelativeWidth(0.25)
-    DeleteProfileDropdown:SetCallback("OnValueChanged", function(_, _, value) if value ~= UUF.db:GetCurrentProfile() then UUF:CreatePrompt("Delete Profile", "Are you sure you want to delete |cFF8080FF" .. value .. "|r?", function() UUF.db:DeleteProfile(value) UUF:UpdateAllUnitFrames() RefreshProfiles() end) end end)
-    ProfileContainer:AddChild(DeleteProfileDropdown)
-
-    ResetProfileButton = AG:Create("Button")
-    ResetProfileButton:SetText("Reset |cFF8080FF" .. UUF.db:GetCurrentProfile() .. "|r Profile")
-    ResetProfileButton:SetRelativeWidth(0.25)
-    ResetProfileButton:SetCallback("OnClick", function() UUF.db:ResetProfile() UUF:ResolveLSM() UUF:SetUIScale() UUF:UpdateAllUnitFrames() RefreshProfiles() end)
-    ProfileContainer:AddChild(ResetProfileButton)
-
-    local CreateProfileEditBox = AG:Create("EditBox")
-    CreateProfileEditBox:SetLabel("Profile Name:")
-    CreateProfileEditBox:SetText("")
-    CreateProfileEditBox:SetRelativeWidth(0.5)
-    CreateProfileEditBox:DisableButton(true)
-    CreateProfileEditBox:SetCallback("OnEnterPressed", function() CreateProfileEditBox:ClearFocus() end)
-    ProfileContainer:AddChild(CreateProfileEditBox)
-
-    local CreateProfileButton = AG:Create("Button")
-    CreateProfileButton:SetText("Create Profile")
-    CreateProfileButton:SetRelativeWidth(0.5)
-    CreateProfileButton:SetCallback("OnClick", function() local profileName = strtrim(CreateProfileEditBox:GetText() or "") if profileName ~= "" then UUF.db:SetProfile(profileName) UUF:SetUIScale() UUF:UpdateAllUnitFrames() RefreshProfiles() CreateProfileEditBox:SetText("") end end)
-    ProfileContainer:AddChild(CreateProfileButton)
-
-    local GlobalProfileHeading = AG:Create("Heading")
-    GlobalProfileHeading:SetText("Global Profile Settings")
-    GlobalProfileHeading:SetFullWidth(true)
-    ProfileContainer:AddChild(GlobalProfileHeading)
-
-    GUIWidgets.CreateInformationTag(ProfileContainer, "If |cFF8080FFUse Global Profile Settings|r is enabled, the profile selected below will be used as your active profile.\nThis is useful if you want to use the same profile across multiple characters.")
-
-    UseGlobalProfileToggle = AG:Create("CheckBox")
-    UseGlobalProfileToggle:SetLabel("Use Global Profile Settings")
-    UseGlobalProfileToggle:SetValue(UUF.db.global.UseGlobalProfile)
-    UseGlobalProfileToggle:SetRelativeWidth(0.5)
-    UseGlobalProfileToggle:SetCallback("OnValueChanged", function(_, _, value) RefreshProfiles() UUF.db.global.UseGlobalProfile = value if value and UUF.db.global.GlobalProfile and UUF.db.global.GlobalProfile ~= "" then UUF.db:SetProfile(UUF.db.global.GlobalProfile) UUF:SetUIScale() end GlobalProfileDropdown:SetDisabled(not value) for _, child in ipairs(ProfileContainer.children) do if child ~= UseGlobalProfileToggle and child ~= GlobalProfileDropdown then GUIWidgets.DeepDisable(child, value) end end UUF:UpdateAllUnitFrames() RefreshProfiles() end)
-    ProfileContainer:AddChild(UseGlobalProfileToggle)
-
-    GlobalProfileDropdown = AG:Create("Dropdown")
-    GlobalProfileDropdown:SetLabel("Global Profile...")
-    GlobalProfileDropdown:SetRelativeWidth(0.5)
-    GlobalProfileDropdown:SetList(profileKeys)
-    GlobalProfileDropdown:SetValue(UUF.db.global.GlobalProfile)
-    GlobalProfileDropdown:SetCallback("OnValueChanged", function(_, _, value) UUF.db:SetProfile(value) UUF.db.global.GlobalProfile = value UUF:SetUIScale() UUF:UpdateAllUnitFrames() RefreshProfiles() end)
-    ProfileContainer:AddChild(GlobalProfileDropdown)
-
-    local SpecProfileContainer = GUIWidgets.CreateInlineGroup(ProfileContainer, "Specialization Profiles")
-
-    local UseDualSpecializationToggle = AG:Create("CheckBox")
-    UseDualSpecializationToggle:SetLabel("Enable Specialization Profiles")
-    UseDualSpecializationToggle:SetValue(UUF.db:IsDualSpecEnabled())
-    UseDualSpecializationToggle:SetRelativeWidth(1)
-    UseDualSpecializationToggle:SetCallback("OnValueChanged", function(_, _, value) UUF.db:SetDualSpecEnabled(value) for i = 1, numSpecs do specProfilesList[i]:SetDisabled(not value) end UUF:UpdateAllUnitFrames() RefreshProfiles() end)
-    UseDualSpecializationToggle:SetDisabled(UUF.db.global.UseGlobalProfile)
-    SpecProfileContainer:AddChild(UseDualSpecializationToggle)
-
-    for i = 1, numSpecs do
-        local _, specName = GetSpecializationInfo(i)
-        specProfilesList[i] = AG:Create("Dropdown")
-        specProfilesList[i]:SetLabel(string.format("%s", specName or ("Spec %d"):format(i)))
-        specProfilesList[i]:SetList(profileKeys)
-        specProfilesList[i]:SetCallback("OnValueChanged", function(widget, event, value) UUF.db:SetDualSpecProfile(value, i) end)
-        specProfilesList[i]:SetRelativeWidth(numSpecs == 2 and 0.5 or numSpecs == 3 and 0.33 or 0.25)
-        specProfilesList[i]:SetDisabled(not UUF.db:IsDualSpecEnabled() or UUF.db.global.UseGlobalProfile)
-        SpecProfileContainer:AddChild(specProfilesList[i])
-    end
-
-    RefreshProfiles()
-
-    local SharingContainer = GUIWidgets.CreateInlineGroup(containerParent, "Profile Sharing")
-
-    local ExportingHeading = AG:Create("Heading")
-    ExportingHeading:SetText("Exporting")
-    ExportingHeading:SetFullWidth(true)
-    SharingContainer:AddChild(ExportingHeading)
-
-    GUIWidgets.CreateInformationTag(SharingContainer, "You can export your profile by pressing |cFF8080FFExport Profile|r button below & share the string with other |cFF8080FFUnhalted|r Unit Frame users.")
-
-    local ExportingEditBox = AG:Create("EditBox")
-    ExportingEditBox:SetLabel("Export String...")
-    ExportingEditBox:SetText("")
-    ExportingEditBox:SetRelativeWidth(0.7)
-    ExportingEditBox:DisableButton(true)
-    ExportingEditBox:SetCallback("OnEnterPressed", function() ExportingEditBox:ClearFocus() end)
-    ExportingEditBox:SetCallback("OnTextChanged", function() ExportingEditBox:ClearFocus() end)
-    SharingContainer:AddChild(ExportingEditBox)
-
-    local ExportProfileButton = AG:Create("Button")
-    ExportProfileButton:SetText("Export Profile")
-    ExportProfileButton:SetRelativeWidth(0.3)
-    ExportProfileButton:SetCallback("OnClick", function() ExportingEditBox:SetText(UUF:ExportSavedVariables()) ExportingEditBox:HighlightText() ExportingEditBox:SetFocus() end)
-    SharingContainer:AddChild(ExportProfileButton)
-
-    local ImportingHeading = AG:Create("Heading")
-    ImportingHeading:SetText("Importing")
-    ImportingHeading:SetFullWidth(true)
-    SharingContainer:AddChild(ImportingHeading)
-
-    GUIWidgets.CreateInformationTag(SharingContainer, "If you have an exported string, paste it in the |cFF8080FFImport String|r box below & press |cFF8080FFImport Profile|r.")
-
-    local ImportingEditBox = AG:Create("EditBox")
-    ImportingEditBox:SetLabel("Import String...")
-    ImportingEditBox:SetText("")
-    ImportingEditBox:SetRelativeWidth(0.7)
-    ImportingEditBox:DisableButton(true)
-    ImportingEditBox:SetCallback("OnEnterPressed", function() ImportingEditBox:ClearFocus() end)
-    ImportingEditBox:SetCallback("OnTextChanged", function() ImportingEditBox:ClearFocus() end)
-    SharingContainer:AddChild(ImportingEditBox)
-
-    local ImportProfileButton = AG:Create("Button")
-    ImportProfileButton:SetText("Import Profile")
-    ImportProfileButton:SetRelativeWidth(0.3)
-    ImportProfileButton:SetCallback("OnClick", function() if ImportingEditBox:GetText() ~= "" then UUF:ImportSavedVariables(ImportingEditBox:GetText()) ImportingEditBox:SetText("") end end)
-    SharingContainer:AddChild(ImportProfileButton)
-    GlobalProfileDropdown:SetDisabled(not UUF.db.global.UseGlobalProfile)
-    if UUF.db.global.UseGlobalProfile then for _, child in ipairs(ProfileContainer.children) do if child ~= UseGlobalProfileToggle and child ~= GlobalProfileDropdown then GUIWidgets.DeepDisable(child, true) end end end
 end
 
 function UUF:CreateGUI()
@@ -3245,8 +2722,8 @@ function UUF:CreateGUI()
         if MainTab == "General" then
             local ScrollFrame = GUIWidgets.CreateScrollFrame(Wrapper)
 
-            CreateUIScaleSettings(ScrollFrame)
-            CreateColourSettings(ScrollFrame)
+            GUIGeneral:BuildUIScaleSettings(ScrollFrame)
+            GUIGeneral:BuildColourSettings(ScrollFrame)
 
             local SupportMeContainer = AG:Create("InlineGroup")
             SupportMeContainer:SetTitle("|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Emotes\\peepoLove.png:18:18|t  How To Support " .. UUF.PRETTY_ADDON_NAME .. " Development")
@@ -3318,7 +2795,7 @@ function UUF:CreateGUI()
         elseif MainTab == "Global" then
             local ScrollFrame = GUIWidgets.CreateScrollFrame(Wrapper)
 
-            CreateGlobalSettings(ScrollFrame)
+            GUIGeneral:BuildGlobalSettings(ScrollFrame)
 
             ScrollFrame:DoLayout()
         elseif MainTab == "Player" then
@@ -3357,6 +2834,12 @@ function UUF:CreateGUI()
             CreateUnitSettings(ScrollFrame, "focustarget")
 
             ScrollFrame:DoLayout()
+        elseif MainTab == "Party" then
+            local ScrollFrame = GUIWidgets.CreateScrollFrame(Wrapper)
+
+            CreateUnitSettings(ScrollFrame, "party")
+
+            ScrollFrame:DoLayout()
         elseif MainTab == "Boss" then
             local ScrollFrame = GUIWidgets.CreateScrollFrame(Wrapper)
 
@@ -3365,16 +2848,17 @@ function UUF:CreateGUI()
             ScrollFrame:DoLayout()
         elseif MainTab == "Tags" then
             local ScrollFrame = GUIWidgets.CreateScrollFrame(Wrapper)
-            CreateTagSettings(ScrollFrame)
+            GUITabTags:BuildTagSettings(ScrollFrame)
             ScrollFrame:DoLayout()
         elseif MainTab == "Profiles" then
             local ScrollFrame = GUIWidgets.CreateScrollFrame(Wrapper)
-
-            CreateProfileSettings(ScrollFrame)
-
+            GUITabProfiles:BuildProfileSettings(ScrollFrame)
             ScrollFrame:DoLayout()
         end
-        if MainTab == "Boss" then EnableBossFramesTestMode() else DisableBossFramesTestMode() end
+        if MainTab == "Boss" then EnableBossFramesTestMode()
+        else DisableBossFramesTestMode() end
+        if MainTab == "Party" then EnablePartyFramesTestMode()
+        else DisablePartyFramesTestMode() end
         GenerateSupportText(Container)
     end
 
@@ -3390,6 +2874,7 @@ function UUF:CreateGUI()
         { text = "Pet", value = "Pet"},
         { text = "Focus", value = "Focus"},
         { text = "Focus Target", value = "FocusTarget"},
+        { text = "Party", value = "Party"},
         { text = "Boss", value = "Boss"},
         { text = "Tags", value = "Tags"},
         { text = "Profiles", value = "Profiles"},

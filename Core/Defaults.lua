@@ -80,16 +80,6 @@ local Defaults = {
             LDB = {},  -- LibDataBroker icon position storage
         },
         EditModeLayouts = {},
-        GUI = {
-            ExpandedNodes = {},
-            LastSelectedNode = nil,
-            SearchHistory = {},
-            ConfigClipboard = nil,
-            ComparisonMode = false,
-            ComparisonUnitA = nil,
-            ComparisonUnitB = nil,
-            Presets = {},
-        },
         Units = {
             player = {
                 Enabled = true,
@@ -1509,7 +1499,7 @@ local Defaults = {
                     BackgroundMultiplier = 0.75,
                 },
                 CastBar = {
-                    Enabled = true,
+                    Enabled = false,
                     Width = 150,
                     Height = 16,
                     Layout = {"TOPLEFT", "BOTTOMLEFT", 0, -1},
