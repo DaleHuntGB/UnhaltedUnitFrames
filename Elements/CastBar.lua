@@ -32,7 +32,16 @@ function UUF:CreateUnitCastBar(unitFrame, unit)
     CastBar:SetPoint("TOPLEFT", CastBarContainer, "TOPLEFT", 1, -1)
     CastBar:SetPoint("BOTTOMRIGHT", CastBarContainer, "BOTTOMRIGHT", -1, 1)
     CastBar:SetFrameLevel(CastBarContainer:GetFrameLevel() + 1)
-    CastBar:SetStatusBarColor(unpack(CastBarDB.Foreground))
+    if CastBarDB.ColourByClass then
+        local unitForClass = unit == "pet" and "player" or unit
+        local unitClass = select(2, UnitClass(unitForClass))
+        local unitColor = RAID_CLASS_COLORS[unitClass]
+        if unitColor then
+            CastBar:SetStatusBarColor(unitColor.r, unitColor.g, unitColor.b, CastBarDB.ForegroundOpacity)
+        end
+    else
+        CastBar:SetStatusBarColor(unpack(CastBarDB.Foreground))
+    end
 
     CastBar.Background = CastBar:CreateTexture(nil, "BACKGROUND")
     CastBar.Background:SetAllPoints(CastBar)
@@ -182,7 +191,16 @@ function UUF:UpdateUnitCastBar(unitFrame, unit)
             if CastBarContainer then CastBarContainer:SetHeight(CastBarDB.Height) end
             unitFrame.Castbar:SetStatusBarTexture(UUF.Media.Foreground)
             unitFrame.Castbar.Background:SetTexture(UUF.Media.Background)
-            unitFrame.Castbar:SetStatusBarColor(unpack(CastBarDB.Foreground))
+            if CastBarDB.ColourByClass then
+                local unitForClass = unit == "pet" and "player" or unit
+                local unitClass = select(2, UnitClass(unitForClass))
+                local unitColor = RAID_CLASS_COLORS[unitClass]
+                if unitColor then
+                    unitFrame.Castbar:SetStatusBarColor(unitColor.r, unitColor.g, unitColor.b, CastBarDB.ForegroundOpacity)
+                end
+            else
+                unitFrame.Castbar:SetStatusBarColor(unpack(CastBarDB.Foreground))
+            end
             unitFrame.Castbar.Background:SetVertexColor(unpack(CastBarDB.Background))
 
             if unitFrame.Castbar.NotInterruptibleOverlay then
@@ -293,7 +311,16 @@ function UUF:CreateTestCastBar(unitFrame, unit)
                 self:SetValue(self.testValue)
                 unitFrame.Castbar.Time:SetText(string.format("%.1f", (self.testValue / 1000) * 5))
             end)
-            unitFrame.Castbar:SetStatusBarColor(unpack(CastBarDB.Foreground))
+            if CastBarDB.ColourByClass then
+                local unitForClass = unit == "pet" and "player" or unit
+                local unitClass = select(2, UnitClass(unitForClass))
+                local unitColor = RAID_CLASS_COLORS[unitClass]
+                if unitColor then
+                    unitFrame.Castbar:SetStatusBarColor(unitColor.r, unitColor.g, unitColor.b, CastBarDB.ForegroundOpacity)
+                end
+            else
+                unitFrame.Castbar:SetStatusBarColor(unpack(CastBarDB.Foreground))
+            end
             if unitFrame.Castbar.NotInterruptibleOverlay then
                 unitFrame.Castbar.NotInterruptibleOverlay:SetAlpha(0)
             end
