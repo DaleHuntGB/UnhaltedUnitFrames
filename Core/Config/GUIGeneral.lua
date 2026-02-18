@@ -555,4 +555,19 @@ function GUIGeneral:BuildColourSettings(containerParent)
     containerParent:DoLayout()
 end
 
+function GUIGeneral:BuildFontSettings(containerParent)
+    CreateFontSettings(containerParent)
+    containerParent:DoLayout()
+end
+
+function GUIGeneral:BuildTextureSettings(containerParent)
+    CreateTextureSettings(containerParent)
+    containerParent:DoLayout()
+end
+
+function GUIGeneral:BuildRangeSettings(containerParent)
+    CreateRangeSettings(containerParent)
+    containerParent:DoLayout()
+end
+
 return GUIGeneral

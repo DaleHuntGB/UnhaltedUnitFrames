@@ -4,6 +4,9 @@
     <Script file="Globals.lua"/>
     <Script file="LDB.lua"/>
     <Script file="Helpers.lua"/>
+    <Script file="Config/GUIBridge.lua"/>
+    <Script file="Config/GUILayout.lua"/>
+    <Script file="Config/GUITreeFallback.lua"/>
     <Script file="TestEnvironment.lua"/>
 	<Script file="UnitFrame.lua"/>
 
@@ -15,6 +18,13 @@
     <Script file="Config/GUIUnits.lua"/>
     <Script file="Config/GUITabProfiles.lua"/>
     <Script file="Config/GUITabTags.lua"/>
+    <Script file="Config/GUICredits.lua"/>
+    <!-- Phase 4 Components: Search, Bulk Ops, Presets, Comparison, Keyboard Nav -->
+    <Script file="Config/GUIHelpers.lua"/>
+    <Script file="Config/GUISearch.lua"/>
+    <Script file="Config/GUIToolbar.lua"/>
+    <Script file="Config/GUIPresets.lua"/>
+    <Script file="Config/GUIComparison.lua"/>
     <Script file="Config/GUI.lua"/>
     <Script file="Config/Share.lua"/>
     <Script file="Config/TagsDatabase.lua"/>

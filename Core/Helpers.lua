@@ -168,3 +168,40 @@ function UUF:StyleAuraButton(button, unit, auraType, isInitialStyle)
         end)
     end
 end
+--- Reset unit configuration to defaults
+function UUF:ResetUnitToDefaults(unit)
+    if not unit then return false end
+    
+    local normalizedUnit = UUF:GetNormalizedUnit(unit)
+    local defaultConfig = UUF:GetDefaultDB().profile.Units[normalizedUnit]
+    
+    if not defaultConfig then return false end
+    
+    -- Replace with deep copy of defaults
+    local copy = {}
+    for k, v in pairs(defaultConfig) do
+        if type(v) == "table" then
+            copy[k] = UUF:DeepCopyTable(v)
+        else
+            copy[k] = v
+        end
+    end
+    UUF.db.profile.Units[normalizedUnit] = copy
+    
+    return true
+end
+
+--- Deep copy a table (for config operations)
+function UUF:DeepCopyTable(tbl)
+    if type(tbl) ~= "table" then return tbl end
+    
+    local copy = {}
+    for k, v in pairs(tbl) do
+        if type(v) == "table" then
+            copy[k] = UUF:DeepCopyTable(v)
+        else
+            copy[k] = v
+        end
+    end
+    return copy
+end

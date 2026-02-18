@@ -2,8 +2,9 @@
 ## Interface: 120000, 120001
 ## Version: @project-version@
 ## Author: |cFF8080FFUnhalted|r
-## Notes: Replacement Unit Frames for Blizzard. Focused on performance, customization & a complete out of the box experience.
+## Notes: Replacement Unit Frames for Blizzard. Focused on performance, customization & a complete out of the box experience. See Credits in settings for proper attribution to libraries and frameworks.
 ## SavedVariables: UUFDB
+## OptionalDeps: AbstractFramework
 ## Category-enUS: |cFF8080FFUnhalted|r Development
 ## IconTexture: Interface\AddOns\UnhaltedUnitFrames\Media\Textures\Logo.tga
 ## X-oUF: UnhaltedUnitFrames
