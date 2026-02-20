@@ -81,6 +81,7 @@
 - Use `UUF:QueueOrRun` for protected operations during combat lockdown (see [Core/Core.lua](../Core/Core.lua)).
 - Layout is stored in `UnitDB.Frame.Layout` arrays and applied in [Core/UnitFrame.lua](../Core/UnitFrame.lua); keep layout arrays consistent.
 - Media is resolved through `UUF.Media` populated by `UUF:ResolveLSM()` in [Core/Globals.lua](../Core/Globals.lua).
+- **Heal prediction visuals:** Absorb bars use the `Shield-Overlay` texture with optional overshield glows and incoming heals support; configure via [Elements/HealPrediction.lua](../Elements/HealPrediction.lua), GUI in [Core/Config/GUIUnits.lua](../Core/Config/GUIUnits.lua), defaults in [Core/Defaults.lua](../Core/Defaults.lua).
 - **Change detection best practices:**
   - Always use `StampChanged()` before expensive style operations (buttons, textures, fonts)
   - Always use `SetPointIfChanged()` for frame positioning to avoid redundant API calls

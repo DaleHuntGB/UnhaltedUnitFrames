@@ -1,13 +1,35 @@
 # UUF Enhancement Work Summary
 
-**Session: Budget-Aware Update Tuning (Session 125)**  
+**Session: Absorb Overlay + Incoming Heals (Session 126)**  
 **Date: February 19, 2026**  
-**Status: Complete ✅ - Coalescing and Batching Tuned**  
-**Recent Work: 15 minutes | Performance Tuning**
+**Status: Complete ✅ - New Heal Prediction Style**  
+**Recent Work: 25 minutes | UI Feature Work**
 
 ---
 
-## 📋 Latest Work: Budget-Aware Update Tuning (Feb 19, 2026) ✅
+## 📋 Latest Work: Absorb Overlay + Incoming Heals (Feb 19, 2026) ✅
+
+### **Overview**
+Replaced striped absorb textures with a MiniOvershields-style overlay bar and overshield glow, and enabled incoming heal bars (all/player/other). Updated HealPrediction element creation/update flow, new GUI controls, and defaults across all unit types.
+
+### **Files Modified:**
+
+| File | Lines | Description |
+|------|-------|-------------|
+| [Elements/HealPrediction.lua](./Elements/HealPrediction.lua) | 1-230 | Added overlay absorb texture + glow handling and incoming heal bars for oUF HealthPrediction |
+| [Core/Config/GUIUnits.lua](./Core/Config/GUIUnits.lua) | 430-600 | Replaced striped texture toggles with overlay/glow controls and added incoming heal settings |
+| [Core/Defaults.lua](./Core/Defaults.lua) | 100-1850 | Updated HealPrediction defaults for overlay/glow and incoming heals across all units |
+| [.github/copilot-instructions.md](./.github/copilot-instructions.md) | 70-120 | Documented new absorb overlay/incoming heal prediction conventions |
+
+### **Performance Impact:**
+- No significant impact expected; overlay textures reuse existing status bar updates
+
+### **Risk Level:** LOW
+- Visual-only changes with existing oUF prediction pipeline
+
+---
+
+## 📋 Previous Work: Budget-Aware Update Tuning (Feb 19, 2026) ✅
 
 ### **Overview**
 Tightened coalescing delays for high-frequency health/power/auras, increased dirty batching under load by shrinking batch sizes and stretching processing intervals, and added budget-aware early-outs in UpdateUnitFrame to skip low-priority updates when frame time is tight.

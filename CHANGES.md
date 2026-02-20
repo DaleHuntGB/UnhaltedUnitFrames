@@ -4,6 +4,17 @@ All notable changes to this project are documented here, organized chronological
 
 ---
 
+## Session 126 - Absorb Overlay + Incoming Heals (February 19, 2026)
+
+### 19:20:00 - Replace Striped Absorbs With Overlay Style
+**File(s):** [Elements/HealPrediction.lua](./Elements/HealPrediction.lua) (Lines: 1-230), [Core/Config/GUIUnits.lua](./Core/Config/GUIUnits.lua) (Lines: 430-600), [Core/Defaults.lua](./Core/Defaults.lua) (Lines: 100-1850), [.github/copilot-instructions.md](./.github/copilot-instructions.md) (Lines: 70-120)  
+**Change:** Added MiniOvershields-style absorb overlays with overshield glows and enabled incoming heal bars with new GUI controls  
+**Explanation:** Absorb bars now use the Shield-Overlay texture and optional overshield glow, replacing striped bar settings. Incoming heals are exposed (all/player/other) and configured via new Heal Prediction controls, with defaults updated across all units.  
+**Performance Impact:** No significant impact expected — uses existing oUF prediction updates with lightweight overlay textures  
+**Risk Level:** Low — visual updates and configuration changes only  
+**Validation:** /reload → enable incoming heals → apply absorb shield → verify overlay + glow alignment across player/target/party  
+**Date/Time:** 2026-02-19 19:20:00
+
 ## Session 125 - Budget-Aware Update Tuning (February 19, 2026)
 
 ### 18:52:00 - Tighten Coalescing and Dirty Batching Under Load

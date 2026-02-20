@@ -441,6 +441,24 @@ function GUIUnits:CreateHealPredictionSettings(containerParent, unit, updateCall
     local FrameDB = UUF.db.profile.Units[unit].Frame
     local HealPredictionDB = UUF.db.profile.Units[unit].HealPrediction
 
+    HealPredictionDB.Absorbs.ShowGlow = HealPredictionDB.Absorbs.ShowGlow ~= false
+    HealPredictionDB.Absorbs.OverlayOpacity = HealPredictionDB.Absorbs.OverlayOpacity or 0.5
+    HealPredictionDB.HealAbsorbs.ShowGlow = HealPredictionDB.HealAbsorbs.ShowGlow ~= false
+    HealPredictionDB.HealAbsorbs.OverlayOpacity = HealPredictionDB.HealAbsorbs.OverlayOpacity or 0.5
+
+    if not HealPredictionDB.IncomingHeals then
+        HealPredictionDB.IncomingHeals = {
+            Enabled = true,
+            Split = true,
+            ColourAll = {0/255, 255/255, 0/255, 0.25},
+            ColourPlayer = {0/255, 255/255, 0/255, 0.4},
+            ColourOther = {0/255, 179/255, 0/255, 0.3},
+            Position = "ATTACH",
+            Height = FrameDB.Height - 2,
+            Overflow = 1.05,
+        }
+    end
+
     local AbsorbSettings = GUIWidgets.CreateInlineGroup(containerParent, "Absorb Settings")
 
     local ShowAbsorbToggle = AG:Create("CheckBox")
@@ -450,12 +468,21 @@ function GUIUnits:CreateHealPredictionSettings(containerParent, unit, updateCall
     ShowAbsorbToggle:SetRelativeWidth(0.5)
     AbsorbSettings:AddChild(ShowAbsorbToggle)
 
-    local UseStripedTextureAbsorbToggle = AG:Create("CheckBox")
-    UseStripedTextureAbsorbToggle:SetLabel("Use Striped Texture")
-    UseStripedTextureAbsorbToggle:SetValue(HealPredictionDB.Absorbs.UseStripedTexture)
-    UseStripedTextureAbsorbToggle:SetCallback("OnValueChanged", function(_, _, value) HealPredictionDB.Absorbs.UseStripedTexture = value updateCallback() end)
-    UseStripedTextureAbsorbToggle:SetRelativeWidth(0.5)
-    AbsorbSettings:AddChild(UseStripedTextureAbsorbToggle)
+    local ShowAbsorbGlowToggle = AG:Create("CheckBox")
+    ShowAbsorbGlowToggle:SetLabel("Show Over-Absorb Glow")
+    ShowAbsorbGlowToggle:SetValue(HealPredictionDB.Absorbs.ShowGlow)
+    ShowAbsorbGlowToggle:SetCallback("OnValueChanged", function(_, _, value) HealPredictionDB.Absorbs.ShowGlow = value updateCallback() end)
+    ShowAbsorbGlowToggle:SetRelativeWidth(0.5)
+    AbsorbSettings:AddChild(ShowAbsorbGlowToggle)
+
+    local AbsorbOverlayOpacitySlider = AG:Create("Slider")
+    AbsorbOverlayOpacitySlider:SetLabel("Overlay Opacity")
+    AbsorbOverlayOpacitySlider:SetValue(HealPredictionDB.Absorbs.OverlayOpacity)
+    AbsorbOverlayOpacitySlider:SetSliderValues(0, 1, 0.01)
+    AbsorbOverlayOpacitySlider:SetRelativeWidth(0.5)
+    AbsorbOverlayOpacitySlider:SetCallback("OnValueChanged", function(_, _, value) HealPredictionDB.Absorbs.OverlayOpacity = value updateCallback() end)
+    AbsorbOverlayOpacitySlider:SetIsPercent(true)
+    AbsorbSettings:AddChild(AbsorbOverlayOpacitySlider)
 
     local AbsorbColourPicker = AG:Create("ColorPicker")
     AbsorbColourPicker:SetLabel("Absorb Colour")
@@ -490,12 +517,21 @@ function GUIUnits:CreateHealPredictionSettings(containerParent, unit, updateCall
     ShowHealAbsorbToggle:SetRelativeWidth(0.5)
     HealAbsorbSettings:AddChild(ShowHealAbsorbToggle)
 
-    local UseStripedTextureHealAbsorbToggle = AG:Create("CheckBox")
-    UseStripedTextureHealAbsorbToggle:SetLabel("Use Striped Texture")
-    UseStripedTextureHealAbsorbToggle:SetValue(HealPredictionDB.HealAbsorbs.UseStripedTexture)
-    UseStripedTextureHealAbsorbToggle:SetCallback("OnValueChanged", function(_, _, value) HealPredictionDB.HealAbsorbs.UseStripedTexture = value updateCallback() end)
-    UseStripedTextureHealAbsorbToggle:SetRelativeWidth(0.5)
-    HealAbsorbSettings:AddChild(UseStripedTextureHealAbsorbToggle)
+    local ShowHealAbsorbGlowToggle = AG:Create("CheckBox")
+    ShowHealAbsorbGlowToggle:SetLabel("Show Over-Heal Absorb Glow")
+    ShowHealAbsorbGlowToggle:SetValue(HealPredictionDB.HealAbsorbs.ShowGlow)
+    ShowHealAbsorbGlowToggle:SetCallback("OnValueChanged", function(_, _, value) HealPredictionDB.HealAbsorbs.ShowGlow = value updateCallback() end)
+    ShowHealAbsorbGlowToggle:SetRelativeWidth(0.5)
+    HealAbsorbSettings:AddChild(ShowHealAbsorbGlowToggle)
+
+    local HealAbsorbOverlayOpacitySlider = AG:Create("Slider")
+    HealAbsorbOverlayOpacitySlider:SetLabel("Overlay Opacity")
+    HealAbsorbOverlayOpacitySlider:SetValue(HealPredictionDB.HealAbsorbs.OverlayOpacity)
+    HealAbsorbOverlayOpacitySlider:SetSliderValues(0, 1, 0.01)
+    HealAbsorbOverlayOpacitySlider:SetRelativeWidth(0.5)
+    HealAbsorbOverlayOpacitySlider:SetCallback("OnValueChanged", function(_, _, value) HealPredictionDB.HealAbsorbs.OverlayOpacity = value updateCallback() end)
+    HealAbsorbOverlayOpacitySlider:SetIsPercent(true)
+    HealAbsorbSettings:AddChild(HealAbsorbOverlayOpacitySlider)
 
     local HealAbsorbColourPicker = AG:Create("ColorPicker")
     HealAbsorbColourPicker:SetLabel("Heal Absorb Colour")
@@ -522,9 +558,73 @@ function GUIUnits:CreateHealPredictionSettings(containerParent, unit, updateCall
     HealAbsorbPositionDropdown:SetCallback("OnValueChanged", function(_, _, value) HealPredictionDB.HealAbsorbs.Position = value updateCallback() end)
     HealAbsorbSettings:AddChild(HealAbsorbPositionDropdown)
 
+    local IncomingHealsSettings = GUIWidgets.CreateInlineGroup(containerParent, "Incoming Heals")
+
+    local ShowIncomingHealsToggle = AG:Create("CheckBox")
+    ShowIncomingHealsToggle:SetLabel("Show Incoming Heals")
+    ShowIncomingHealsToggle:SetValue(HealPredictionDB.IncomingHeals.Enabled)
+    ShowIncomingHealsToggle:SetCallback("OnValueChanged", function(_, _, value) HealPredictionDB.IncomingHeals.Enabled = value updateCallback() RefreshHealPredictionSettings() end)
+    ShowIncomingHealsToggle:SetRelativeWidth(0.5)
+    IncomingHealsSettings:AddChild(ShowIncomingHealsToggle)
+
+    local SplitIncomingHealsToggle = AG:Create("CheckBox")
+    SplitIncomingHealsToggle:SetLabel("Split Player/Other")
+    SplitIncomingHealsToggle:SetValue(HealPredictionDB.IncomingHeals.Split)
+    SplitIncomingHealsToggle:SetCallback("OnValueChanged", function(_, _, value) HealPredictionDB.IncomingHeals.Split = value updateCallback() RefreshHealPredictionSettings() end)
+    SplitIncomingHealsToggle:SetRelativeWidth(0.5)
+    IncomingHealsSettings:AddChild(SplitIncomingHealsToggle)
+
+    local IncomingAllColourPicker = AG:Create("ColorPicker")
+    IncomingAllColourPicker:SetLabel("All Heals Colour")
+    local R3, G3, B3, A3 = unpack(HealPredictionDB.IncomingHeals.ColourAll)
+    IncomingAllColourPicker:SetColor(R3, G3, B3, A3)
+    IncomingAllColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) HealPredictionDB.IncomingHeals.ColourAll = {r, g, b, a} updateCallback() end)
+    IncomingAllColourPicker:SetHasAlpha(true)
+    IncomingAllColourPicker:SetRelativeWidth(0.33)
+    IncomingHealsSettings:AddChild(IncomingAllColourPicker)
+
+    local IncomingPlayerColourPicker = AG:Create("ColorPicker")
+    IncomingPlayerColourPicker:SetLabel("Player Heals Colour")
+    local R4, G4, B4, A4 = unpack(HealPredictionDB.IncomingHeals.ColourPlayer)
+    IncomingPlayerColourPicker:SetColor(R4, G4, B4, A4)
+    IncomingPlayerColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) HealPredictionDB.IncomingHeals.ColourPlayer = {r, g, b, a} updateCallback() end)
+    IncomingPlayerColourPicker:SetHasAlpha(true)
+    IncomingPlayerColourPicker:SetRelativeWidth(0.33)
+    IncomingHealsSettings:AddChild(IncomingPlayerColourPicker)
+
+    local IncomingOtherColourPicker = AG:Create("ColorPicker")
+    IncomingOtherColourPicker:SetLabel("Other Heals Colour")
+    local R5, G5, B5, A5 = unpack(HealPredictionDB.IncomingHeals.ColourOther)
+    IncomingOtherColourPicker:SetColor(R5, G5, B5, A5)
+    IncomingOtherColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) HealPredictionDB.IncomingHeals.ColourOther = {r, g, b, a} updateCallback() end)
+    IncomingOtherColourPicker:SetHasAlpha(true)
+    IncomingOtherColourPicker:SetRelativeWidth(0.33)
+    IncomingHealsSettings:AddChild(IncomingOtherColourPicker)
+
+    local IncomingHeightSlider = AG:Create("Slider")
+    IncomingHeightSlider:SetLabel("Height")
+    IncomingHeightSlider:SetValue(HealPredictionDB.IncomingHeals.Height)
+    IncomingHeightSlider:SetSliderValues(1, FrameDB.Height - 2, 0.1)
+    IncomingHeightSlider:SetRelativeWidth(0.33)
+    IncomingHeightSlider:SetCallback("OnValueChanged", function(_, _, value) HealPredictionDB.IncomingHeals.Height = value updateCallback() end)
+    IncomingHealsSettings:AddChild(IncomingHeightSlider)
+
+    local IncomingPositionDropdown = AG:Create("Dropdown")
+    IncomingPositionDropdown:SetList({["LEFT"] = "Left", ["RIGHT"] = "Right", ["ATTACH"] = "Attach To Missing Health"}, {"LEFT", "RIGHT", "ATTACH"})
+    IncomingPositionDropdown:SetLabel("Position")
+    IncomingPositionDropdown:SetValue(HealPredictionDB.IncomingHeals.Position)
+    IncomingPositionDropdown:SetRelativeWidth(0.33)
+    IncomingPositionDropdown:SetCallback("OnValueChanged", function(_, _, value) HealPredictionDB.IncomingHeals.Position = value updateCallback() end)
+    IncomingHealsSettings:AddChild(IncomingPositionDropdown)
+
     local function RefreshHealPredictionSettings()
         GUIWidgets.DeepDisable(AbsorbSettings, not HealPredictionDB.Absorbs.Enabled, ShowAbsorbToggle)
         GUIWidgets.DeepDisable(HealAbsorbSettings, not HealPredictionDB.HealAbsorbs.Enabled, ShowHealAbsorbToggle)
+        GUIWidgets.DeepDisable(IncomingHealsSettings, not HealPredictionDB.IncomingHeals.Enabled, ShowIncomingHealsToggle)
+
+        IncomingAllColourPicker:SetDisabled(HealPredictionDB.IncomingHeals.Split)
+        IncomingPlayerColourPicker:SetDisabled(not HealPredictionDB.IncomingHeals.Split)
+        IncomingOtherColourPicker:SetDisabled(not HealPredictionDB.IncomingHeals.Split)
     end
 
     RefreshHealPredictionSettings()
