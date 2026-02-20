@@ -55,7 +55,7 @@ function UUF:UpdateUnitPvPClassificationIndicator(unitFrame, unit)
     if unitFrame.PvPClassification then
         UUF:QueueOrRun(function()
             unitFrame.PvPClassification:SetSize(PvPDB.Size, PvPDB.Size)
-            unitFrame.PvPClassification:SetPoint(PvPDB.Layout[1], unitFrame, PvPDB.Layout[2], PvPDB.Layout[3], PvPDB.Layout[4])
+            UUF:SetPointIfChanged(unitFrame.PvPClassification, PvPDB.Layout[1], unitFrame, PvPDB.Layout[2], PvPDB.Layout[3], PvPDB.Layout[4])
             unitFrame.PvPClassification:SetFrameStrata(PvPDB.FrameStrata)
             unitFrame.PvPClassification:Show()
         end)

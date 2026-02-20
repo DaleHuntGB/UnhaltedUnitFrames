@@ -41,7 +41,7 @@ function UUF:UpdateUnitRestingIndicator(unitFrame, unit)
             -- Texture operations can be safely done during combat without causing taint
             unitFrame.RestingIndicator:ClearAllPoints()
             unitFrame.RestingIndicator:SetSize(RestingDB.Size, RestingDB.Size)
-            unitFrame.RestingIndicator:SetPoint(RestingDB.Layout[1], unitFrame.HighLevelContainer, RestingDB.Layout[2], RestingDB.Layout[3], RestingDB.Layout[4])
+            UUF:SetPointIfChanged(unitFrame.RestingIndicator, RestingDB.Layout[1], unitFrame.HighLevelContainer, RestingDB.Layout[2], RestingDB.Layout[3], RestingDB.Layout[4])
             if RestingDB.Texture == "DEFAULT" then
                 unitFrame.RestingIndicator:SetTexture([[Interface\CharacterFrame\UI-StateIcon]])
                 unitFrame.RestingIndicator:SetTexCoord(0, 0.5, 0, 0.421875)

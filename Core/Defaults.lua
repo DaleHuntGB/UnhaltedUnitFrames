@@ -1946,6 +1946,34 @@ local Defaults = {
                     },
                 }
             },
+        },
+        Debug = {
+            enabled = false,           -- Master debug output toggle
+            showPanel = false,         -- Show debug panel on startup
+            timestamp = true,          -- Add timestamps to messages
+            maxMessages = 500,         -- Max messages to keep in buffer
+            colors = {
+                critical = "|cFFFF0000",  -- Red for errors
+                info = "|cFF00B0F7",      -- Blue for info (UUF color)
+                debug = "|cFF888888",     -- Gray for debug
+            },
+            systems = {
+                FramePoolManager = false,
+                EventCoalescer = false,
+                DirtyFlagManager = false,
+                CoalescingIntegration = false,
+                DirtyPriorityOptimizer = false,
+                PerformanceProfiler = false,
+                Validator = false,
+                IndicatorPooling = false,
+                ReactiveConfig = false,
+                PerformanceDashboard = false,
+                FrameTimeBudget = false,
+            },
+            panel = {
+                x = 0,
+                y = 0,
+            }
         }
     },
 }

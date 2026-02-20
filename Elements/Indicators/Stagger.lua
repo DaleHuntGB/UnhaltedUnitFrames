@@ -52,7 +52,7 @@ function UUF:UpdateUnitStagger(unitFrame, unit)
     if unitFrame.Stagger then
         UUF:QueueOrRun(function()
             unitFrame.Stagger:SetSize(StaggerDB.Width, StaggerDB.Height)
-            unitFrame.Stagger:SetPoint(StaggerDB.Layout[1], unitFrame, StaggerDB.Layout[2], StaggerDB.Layout[3], StaggerDB.Layout[4])
+            UUF:SetPointIfChanged(unitFrame.Stagger, StaggerDB.Layout[1], unitFrame, StaggerDB.Layout[2], StaggerDB.Layout[3], StaggerDB.Layout[4])
             unitFrame.Stagger:SetStatusBarTexture(UUF.Media.Foreground)
             unitFrame.Stagger:SetFrameStrata(StaggerDB.FrameStrata)
             unitFrame.Stagger:SetStatusBarColor(StaggerDB.Foreground[1], StaggerDB.Foreground[2], StaggerDB.Foreground[3], StaggerDB.ForegroundOpacity)

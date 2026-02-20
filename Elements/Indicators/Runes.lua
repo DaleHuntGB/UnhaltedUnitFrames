@@ -45,7 +45,7 @@ function UUF:UpdateUnitRunes(unitFrame, unit)
     if unitFrame.Runes then
         UUF:QueueOrRun(function()
             unitFrame.Runes:SetSize(RunesDB.Width, RunesDB.Height)
-            unitFrame.Runes:SetPoint(RunesDB.Layout[1], unitFrame, RunesDB.Layout[2], RunesDB.Layout[3], RunesDB.Layout[4])
+            UUF:SetPointIfChanged(unitFrame.Runes, RunesDB.Layout[1], unitFrame, RunesDB.Layout[2], RunesDB.Layout[3], RunesDB.Layout[4])
             unitFrame.Runes:SetFrameStrata(RunesDB.FrameStrata)
             unitFrame.Runes:Show()
         end)

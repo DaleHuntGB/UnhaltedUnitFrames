@@ -1,5 +1,8 @@
 local _, UUF = ...
 
+-- PERF LOCALS: Localize frequently-called globals for faster access
+local CreateFrame = CreateFrame
+
 function UUF:CreateUnitPowerBar(unitFrame, unit)
     local FrameDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Frame
     local PowerBarDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].PowerBar
@@ -67,19 +70,19 @@ function UUF:UpdateUnitPowerBar(unitFrame, unit)
             local pw = unitFrame.Power
             UUF:QueueOrRun(function()
                 pw:ClearAllPoints()
-                pw:SetPoint("BOTTOMLEFT", unitFrame.Container, "BOTTOMLEFT", 1, 1)
+                UUF:SetPointIfChanged(pw, "BOTTOMLEFT", unitFrame.Container, "BOTTOMLEFT", 1, 1)
                 pw:SetSize(unitFrame:GetWidth() - 2, PowerBarDB.Height)
                 if pw.Background then
                     pw.Background:ClearAllPoints()
-                    pw.Background:SetPoint("BOTTOMLEFT", unitFrame.Container, "BOTTOMLEFT", 1, 1)
+                    UUF:SetPointIfChanged(pw.Background, "BOTTOMLEFT", unitFrame.Container, "BOTTOMLEFT", 1, 1)
                     pw.Background:SetSize(unitFrame:GetWidth() - 2, PowerBarDB.Height)
                     pw.Background:SetTexture(UUF.Media.Background)
                     pw.Background:SetVertexColor(PowerBarDB.Background[1], PowerBarDB.Background[2], PowerBarDB.Background[3], PowerBarDB.Background[4] or 1)
                 end
                 if pw.PowerBarBorder then
                     pw.PowerBarBorder:ClearAllPoints()
-                    pw.PowerBarBorder:SetPoint("TOPLEFT", pw, "TOPLEFT", 0, 1)
-                    pw.PowerBarBorder:SetPoint("TOPRIGHT", pw, "TOPRIGHT", 0, 1)
+                    UUF:SetPointIfChanged(pw.PowerBarBorder, "TOPLEFT", pw, "TOPLEFT", 0, 1)
+                    UUF:SetPointIfChanged(pw.PowerBarBorder, "TOPRIGHT", pw, "TOPRIGHT", 0, 1)
                 end
                 pw:SetStatusBarColor(PowerBarDB.Foreground[1], PowerBarDB.Foreground[2], PowerBarDB.Foreground[3], PowerBarDB.Foreground[4] or 1)
                 pw:SetStatusBarTexture(UUF.Media.Foreground)

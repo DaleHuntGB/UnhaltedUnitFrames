@@ -1,5 +1,9 @@
 local _, UUF = ...
 local oUF = UUF.oUF
+
+-- Expose UUF globally for slash commands and /run access
+_G.UUF = UUF
+
 UUFG = UUFG or {}
 UUF.AURA_TEST_MODE = false
 UUF.CASTBAR_TEST_MODE = false
@@ -9,11 +13,22 @@ UUF.MAX_BOSS_FRAMES = 5
 UUF.PARTY_TEST_MODE = false
 UUF.PARTY_FRAMES = {}
 UUF.MAX_PARTY_MEMBERS = 5
+UUF.Units = {}  -- Frame lookup table for CoalescingIntegration/DirtyFlagManager
 
 UUF.LSM = LibStub("LibSharedMedia-3.0")
 UUF.LDS = LibStub("LibDualSpec-1.0")
 UUF.AG = LibStub("AceGUI-3.0")
 UUF.LD = LibStub("LibDispel-1.0")
+
+-- PERF LOCALS: Localize frequently-called globals for faster access
+local CreateFrame = CreateFrame
+local InCombatLockdown = InCombatLockdown
+local GetPhysicalScreenSize = GetPhysicalScreenSize
+local UnitClass = UnitClass
+local UnitIsPlayer, UnitInPartyIsAI = UnitIsPlayer, UnitInPartyIsAI
+local UnitReaction = UnitReaction
+local pairs, type, select = pairs, type, select
+
 UUF.BACKDROP = { bgFile = "Interface\\Buttons\\WHITE8X8", edgeFile = "Interface\\Buttons\\WHITE8X8", edgeSize = 1, insets = {left = 0, right = 0, top = 0, bottom = 0} }
 UUF.INFOBUTTON = "|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\InfoButton.png:16:16|t "
 UUF.ADDON_NAME = C_AddOns.GetAddOnMetadata("UnhaltedUnitFrames", "Title")
@@ -258,6 +273,44 @@ local function SetupSlashCommands()
     -- RL command
     SLASH_UUFRELOAD1 = "/rl"
     SlashCmdList["UUFRELOAD"] = function() C_UI.Reload() end
+    
+    -- Debug command
+    SLASH_UUFDEBUG1 = "/uufdebug"
+    SlashCmdList["UUFDEBUG"] = function(msg)
+        if not UUF.DebugPanel or not UUF.DebugOutput then return end
+        
+        local cmd = msg and msg:lower() or ""
+        
+        if cmd == "" then
+            -- Toggle visibility
+            UUF.DebugPanel:Toggle()
+        elseif cmd == "on" or cmd == "enable" then
+            UUF.DebugOutput:SetEnabled(true)
+            UUF.DebugPanel:Show()
+        elseif cmd == "off" or cmd == "disable" then
+            UUF.DebugOutput:SetEnabled(false)
+            UUF.DebugPanel:Hide()
+        elseif cmd == "clear" then
+            UUF.DebugOutput:Clear()
+            print("|cFF00B0F7Debug Console: Cleared|r")
+        elseif cmd == "export" then
+            local text = UUF.DebugOutput:ExportAsText()
+            if text ~= "" then
+                print("|cFF00B0F7Debug output exported - create a text frame or paste in chat|r")
+                StaticPopupDialogs["UUF_DEBUG_EXPORT"] = {
+                    text = "Debug Output:",
+                    button1 = "Close",
+                    timeout = 0,
+                    whileDead = true,
+                    hideOnEscape = true,
+                }
+                StaticPopup_Show("UUF_DEBUG_EXPORT")
+            end
+        else
+            -- Toggle specific system
+            UUF.DebugOutput:ToggleSystem(msg)
+        end
+    end
 end
 
 function UUF:SetUIScale()

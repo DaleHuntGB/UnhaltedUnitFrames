@@ -1,13 +1,31 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlGUIS:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
-	<Script file="Core.lua"/>
-    <Script file="Defaults.lua"/>
+	<Script file="Defaults.lua"/>
     <Script file="Globals.lua"/>
+    <Script file="Architecture.lua"/>
+	<Script file="Core.lua"/>
     <Script file="LDB.lua"/>
     <Script file="Helpers.lua"/>
+    <Script file="Utilities.lua"/>    <Script file="DebugOutput.lua"/>
+    <Script file="DebugPanel.lua"/>    <Script file="ConfigResolver.lua"/>
+    <Script file="FramePoolManager.lua"/>
+    <Script file="Validator.lua"/>
+    <Script file="IndicatorPooling.lua"/>
+    <Script file="ReactiveConfig.lua"/>
+    <Script file="EventCoalescer.lua"/>
+    <Script file="FrameTimeBudget.lua"/>
+    <Script file="DirtyFlagManager.lua"/>
+    <Script file="PerformanceDashboard.lua"/>
+    <Script file="CoalescingIntegration.lua"/>
+    <Script file="DirtyPriorityOptimizer.lua"/>
+    <Script file="MLOptimizer.lua"/>
+    <Script file="PerformanceProfiler.lua"/>
+    <Script file="PerformancePresets.lua"/>
     <Script file="TestEnvironment.lua"/>
 	<Script file="UnitFrame.lua"/>
 
     <Script file="Config/GUIWidgets.lua"/>
+    <Script file="Config/GUILayout.lua"/>
+    <Script file="Config/GUIIntegration.lua"/>
     <Script file="Config/GUIGeneral.lua"/>
     <Script file="Config/GUIFrameMover.lua"/>
     <Script file="Config/GUIMacros.lua"/>

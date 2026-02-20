@@ -1,6 +1,12 @@
 local _, UUF = ...
 local oUF = UUF.oUF
 
+-- PERF LOCALS: Localize frequently-called globals for faster access
+local InCombatLockdown = InCombatLockdown
+local CreateFrame = CreateFrame
+local RegisterUnitWatch, UnregisterUnitWatch = RegisterUnitWatch, UnregisterUnitWatch
+local pairs, type = pairs, type
+
 local function ApplyScripts(unitFrame)
     unitFrame:RegisterForClicks("AnyUp")
     unitFrame:SetAttribute("*type1", "target")
@@ -336,9 +342,20 @@ function UUF:LayoutBossFrames()
 end
 
 function UUF:SpawnUnitFrame(unit)
-    local UnitDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)]
+    local normalizedUnit = UUF:GetNormalizedUnit(unit)
+    local UnitDB = UUF.db.profile.Units[normalizedUnit]
+    
+    if unit == "pet" then
+        if UUF.DebugOutput then
+            UUF.DebugOutput:Output("Pet Frame Spawn", string.format("SpawnUnitFrame called for 'pet' unit. UnitDB=%s, Enabled=%s", tostring(UnitDB ~= nil), UnitDB and tostring(UnitDB.Enabled) or "N/A"), UUF.DebugOutput.TIER_DEBUG)
+        end
+    end
+    
     if not UnitDB or not UnitDB.Enabled then
         if UnitDB and UnitDB.ForceHideBlizzard then oUF:DisableBlizzard(unit) end
+        if unit == "pet" and UUF.DebugOutput then
+            UUF.DebugOutput:Output("Pet Frame Spawn", string.format("Early return - UnitDB=%s, Enabled=%s", tostring(UnitDB ~= nil), UnitDB and tostring(UnitDB.Enabled) or "N/A"), UUF.DebugOutput.TIER_CRITICAL)
+        end
         return
     end
     local FrameDB = UnitDB.Frame
@@ -348,11 +365,15 @@ function UUF:SpawnUnitFrame(unit)
 
     if unit == "boss" then
         for i = 1, UUF.MAX_BOSS_FRAMES do
-            UUF[unit:upper() .. i] = oUF:Spawn(unit .. i, UUF:FetchFrameName(unit .. i))
-            UUF[unit:upper() .. i]:SetSize(FrameDB.Width, FrameDB.Height)
-            UUF[unit:upper() .. i].UUFLayoutUnit = "boss"
-            UUF.BOSS_FRAMES[i] = UUF[unit:upper() .. i]
-            UUF[unit:upper() .. i]:SetFrameStrata(FrameDB.FrameStrata)
+            local bossFrame = oUF:Spawn(unit .. i, UUF:FetchFrameName(unit .. i))
+            UUF[unit:upper() .. i] = bossFrame
+            UUF.Units[unit .. i] = bossFrame  -- Populate Units table
+            bossFrame:SetSize(FrameDB.Width, FrameDB.Height)
+            bossFrame.UUFLayoutUnit = "boss"
+            bossFrame.UUFUnitConfig = UnitDB  -- Cache config on frame for element access
+            bossFrame.UUFNormalizedUnit = "boss"
+            UUF.BOSS_FRAMES[i] = bossFrame
+            bossFrame:SetFrameStrata(FrameDB.FrameStrata)
             UUF:RegisterTargetGlowIndicatorFrame(UUF:FetchFrameName(unit .. i), unit .. i)
             UUF:RegisterRangeFrame(UUF:FetchFrameName(unit .. i), unit .. i)
         end
@@ -367,32 +388,69 @@ function UUF:SpawnUnitFrame(unit)
                 local partyIndex = HidePlayer and i or (i - 1)
                 spawnUnit = partyIndex > 0 and ("party" .. partyIndex) or "player"
             end
-            UUF[unit:upper() .. i] = oUF:Spawn(spawnUnit, UUF:FetchFrameName(unit .. i))
-            UUF[unit:upper() .. i]:SetSize(FrameDB.Width, FrameDB.Height)
-            UUF[unit:upper() .. i].UUFLayoutUnit = "party"
-            UUF.PARTY_FRAMES[i] = UUF[unit:upper() .. i]
+            local partyFrame = oUF:Spawn(spawnUnit, UUF:FetchFrameName(unit .. i))
+            UUF[unit:upper() .. i] = partyFrame
+            UUF.Units[spawnUnit] = partyFrame  -- Populate Units table (handles player or party1-party4)
+            partyFrame:SetSize(FrameDB.Width, FrameDB.Height)
+            partyFrame.UUFLayoutUnit = "party"
+            partyFrame.UUFUnitConfig = UnitDB  -- Cache config on frame for element access
+            partyFrame.UUFNormalizedUnit = "party"
+            UUF.PARTY_FRAMES[i] = partyFrame
             UUF:RegisterTargetGlowIndicatorFrame(UUF:FetchFrameName(unit .. i), unit .. i)
-            UUF[unit:upper() .. i]:SetFrameStrata(FrameDB.FrameStrata)
-            if spawnUnit == "player" then UUF:RegisterDispelHighlightEvents(UUF[unit:upper() .. i], spawnUnit)
-            else UUF:RegisterDispelHighlightEvents(UUF[unit:upper() .. i], "party" .. (i - 1)) end
+            partyFrame:SetFrameStrata(FrameDB.FrameStrata)
+            if spawnUnit == "player" then UUF:RegisterDispelHighlightEvents(partyFrame, spawnUnit)
+            else UUF:RegisterDispelHighlightEvents(partyFrame, "party" .. (i - 1)) end
         end
         UUF:LayoutPartyFrames()
     else
-        UUF[unit:upper()] = oUF:Spawn(unit, UUF:FetchFrameName(unit))
+        local singleFrame = oUF:Spawn(unit, UUF:FetchFrameName(unit))
+        
+        if not singleFrame then
+            if UUF.DebugOutput then
+                UUF.DebugOutput:Output("Frame Spawn Error", string.format("oUF:Spawn failed for unit '%s'! Frame is nil!", unit), UUF.DebugOutput.TIER_CRITICAL)
+            end
+            return
+        end
+        
+        UUF[unit:upper()] = singleFrame
+        UUF.Units[unit] = singleFrame  -- Populate Units table
+        singleFrame.UUFUnitConfig = UnitDB  -- Cache config on frame for element access
+        singleFrame.UUFNormalizedUnit = unit
         UUF:RegisterTargetGlowIndicatorFrame(UUF:FetchFrameName(unit), unit)
-        UUF[unit:upper()]:SetFrameStrata(FrameDB.FrameStrata)
-        if unit == "player" or unit == "target" or unit == "focus" then UUF:RegisterDispelHighlightEvents(UUF[unit:upper()], unit) end
+        singleFrame:SetFrameStrata(FrameDB.FrameStrata)
+        if unit == "player" or unit == "target" or unit == "focus" then UUF:RegisterDispelHighlightEvents(singleFrame, unit) end
+        
+        if unit == "pet" then
+            -- CRITICAL: oUF:Spawn() internally calls RegisterUnitWatch(object) which sets up
+            -- a secure state driver that shows/hides the frame based on unit existence.
+            -- For pet frames (especially Warlock demons), this state driver clears anchor points
+            -- during transitions, causing the frame to lose its position.
+            -- We must unregister it and manage visibility ourselves.
+            UUF:QueueOrRun(function()
+                UnregisterUnitWatch(singleFrame)
+            end)
+            
+            if UUF.DebugOutput then
+                UUF.DebugOutput:Output("Pet Frame Spawn", string.format("Pet frame spawned and UnitWatch unregistered. Frame=%s", tostring(singleFrame)), UUF.DebugOutput.TIER_INFO)
+            end
+        end
     end
 
     if unit == "player" or unit == "target" then
         local parentFrame = UUF.db.profile.Units[unit].HealthBar.AnchorToCooldownViewer and _G["UUF_CDMAnchor"] or UIParent
         local layout = UUF:GetLayoutForUnit(UUF:GetNormalizedUnit(unit)) or FrameDB.Layout
-        UUF[unit:upper()]:SetPoint(layout[1], parentFrame, layout[2], layout[3], layout[4])
+        UUF:SetPointIfChanged(UUF[unit:upper()], layout[1], parentFrame, layout[2], layout[3], layout[4])
         UUF[unit:upper()]:SetSize(FrameDB.Width, FrameDB.Height)
     elseif unit == "targettarget" or unit == "focus" or unit == "focustarget" or unit == "pet" then
         local parentFrame = _G[UUF.db.profile.Units[unit].Frame.AnchorParent] or UIParent
         local layout = UUF:GetLayoutForUnit(UUF:GetNormalizedUnit(unit)) or FrameDB.Layout
-        UUF[unit:upper()]:SetPoint(layout[1], parentFrame, layout[2], layout[3], layout[4])
+        if unit == "pet" then
+            -- For pet frame, use ClearAllPoints + SetPoint to ensure clean anchoring
+            UUF[unit:upper()]:ClearAllPoints()
+            UUF[unit:upper()]:SetPoint(layout[1], parentFrame, layout[2], layout[3], layout[4])
+        else
+            UUF:SetPointIfChanged(UUF[unit:upper()], layout[1], parentFrame, layout[2], layout[3], layout[4])
+        end
         UUF[unit:upper()]:SetSize(FrameDB.Width, FrameDB.Height)
     end
     if unit ~= "player" then UUF:RegisterRangeFrame(UUF:FetchFrameName(unit), unit) end
@@ -412,6 +470,17 @@ function UUF:SpawnUnitFrame(unit)
                     UUF[unit:upper() .. i]:Show()
                 end)
             end
+        elseif unit == "pet" then
+            -- Pet visibility managed manually via UpdatePetFrameVisibility
+            -- oUF's RegisterUnitWatch was already unregistered above
+            UUF:QueueOrRun(function()
+                -- Show if pet exists at spawn time
+                if UnitExists("pet") or UnitExists("playerpet") then
+                    UUF[unit:upper()]:Show()
+                else
+                    UUF[unit:upper()]:Hide()
+                end
+            end)
         else
             UUF:QueueOrRun(function()
                 RegisterUnitWatch(UUF[unit:upper()])
@@ -433,6 +502,12 @@ function UUF:SpawnUnitFrame(unit)
                     UUF[unit:upper() .. i]:Hide()
                 end)
             end
+        elseif unit == "pet" then
+            -- Ensure pet frame is unregistered when disabled
+            UUF:QueueOrRun(function()
+                UnregisterUnitWatch(UUF[unit:upper()])
+                UUF[unit:upper()]:Hide()
+            end)
         else
             UUF:QueueOrRun(function()
                 UnregisterUnitWatch(UUF[unit:upper()])
@@ -444,38 +519,126 @@ function UUF:SpawnUnitFrame(unit)
     return UUF[unit:upper()]
 end
 
+function UUF:UpdatePetFrameVisibility()
+    if not UUF.PET then return end
+    
+    local petDB = UUF.db.profile.Units.pet
+    if not petDB then return end
+    
+    -- If pet frame is disabled, hide it
+    if not petDB.Enabled then
+        if UUF.PET:IsVisible() then UUF.PET:Hide() end
+        return
+    end
+    
+    local petExists = UnitExists("pet") or UnitExists("playerpet")
+    
+    if petExists then
+        -- Ensure anchors are always set (RegisterUnitWatch may have cleared them)
+        local petLayout = petDB.Frame.Layout
+        local anchorParentName = petDB.Frame.AnchorParent
+        local petAnchorParent = _G[anchorParentName] or UIParent
+        
+        local needsAnchor = false
+        local px, py = UUF.PET:GetCenter()
+        if not px or not py then
+            needsAnchor = true
+        end
+        
+        if needsAnchor then
+            UUF.PET:ClearAllPoints()
+            UUF.PET:SetPoint(petLayout[1], petAnchorParent, petLayout[2], petLayout[3], petLayout[4])
+        end
+        
+        if not UUF.PET:IsVisible() then
+            UUF.PET:Show()
+        end
+    else
+        if UUF.PET:IsVisible() then
+            UUF.PET:Hide()
+        end
+    end
+end
+
+function UUF:UpdatePartyFrameVisibility()
+    if not UUF.db or not UUF.db.profile or not UUF.db.profile.Units.party or not UUF.db.profile.Units.party.Enabled then
+        return
+    end
+    
+    -- Check each party frame and ensure it shows if the unit exists
+    -- This is needed for Delves where NPC companions might not properly register with RegisterUnitWatch
+    for i = 1, UUF.MAX_PARTY_MEMBERS do
+        local partyFrame = UUF["PARTY" .. i]
+        if not partyFrame then return end
+        
+        local unitToCheck
+        if i == 1 and not UUF.db.profile.Units.party.HidePlayer then
+            unitToCheck = "player"
+        else
+            local partyIndex = UUF.db.profile.Units.party.HidePlayer and i or (i - 1)
+            if partyIndex > 0 then
+                unitToCheck = "party" .. partyIndex
+            else
+                unitToCheck = "player"
+            end
+        end
+        
+        -- Ensure party frame shows if the unit exists
+        if unitToCheck and UnitExists(unitToCheck) then
+            if not partyFrame:IsVisible() then
+                partyFrame:Show()
+            end
+        else
+            if partyFrame:IsVisible() and i > 1 then
+                -- Only hide if not the player frame (player frame should always be visible when enabled)
+                partyFrame:Hide()
+            end
+        end
+    end
+end
+
 function UUF:UpdateUnitFrame(unitFrame, unit)
     if not unitFrame or not unit then return end
     local normalizedUnit = UUF:GetNormalizedUnit(unit)
     local UnitDB = UUF.db.profile.Units[normalizedUnit]
+    local budget = UUF.FrameTimeBudget
+    local allowMedium = true
+    local allowLow = true
+
+    if budget then
+        allowMedium = budget:CanAfford(budget.PRIORITY_MEDIUM, 1.0)
+        allowLow = budget:CanAfford(budget.PRIORITY_LOW, 1.0)
+    end
     if normalizedUnit ~= "targettarget" and normalizedUnit ~= "focustarget" then UUF:UpdateUnitCastBar(unitFrame, unit) end
     UUF:UpdateUnitHealthBar(unitFrame, unit)
-    UUF:UpdateUnitHealPrediction(unitFrame, unit)
-    if unit ~= "targettarget" and unit ~= "focustarget" then UUF:UpdateUnitPortrait(unitFrame, unit) end
+    if allowMedium then
+        UUF:UpdateUnitHealPrediction(unitFrame, unit)
+    end
+    if allowLow and unit ~= "targettarget" and unit ~= "focustarget" then UUF:UpdateUnitPortrait(unitFrame, unit) end
     UUF:UpdateUnitPowerBar(unitFrame, unit)
-    if unit == "player" then UUF:UpdateUnitAlternativePowerBar(unitFrame, unit) end
-    if unit == "player" then UUF:UpdateUnitSecondaryPowerBar(unitFrame, unit) end
-    UUF:UpdateUnitRaidTargetMarker(unitFrame, unit)
-    if (unit == "player" or unit == "target" or normalizedUnit == "party") and UUF.UpdateUnitLeaderAssistantIndicator then
+    if allowMedium and unit == "player" then UUF:UpdateUnitAlternativePowerBar(unitFrame, unit) end
+    if allowMedium and unit == "player" then UUF:UpdateUnitSecondaryPowerBar(unitFrame, unit) end
+    if allowLow then UUF:UpdateUnitRaidTargetMarker(unitFrame, unit) end
+    if allowMedium and (unit == "player" or unit == "target" or normalizedUnit == "party") and UUF.UpdateUnitLeaderAssistantIndicator then
         UUF:UpdateUnitLeaderAssistantIndicator(unitFrame, unit)
     end
-    if normalizedUnit == "party" then UUF:UpdateUnitGroupRoleIndicator(unitFrame, unit) end
-    if unit == "player" or unit == "target" then UUF:UpdateUnitCombatIndicator(unitFrame, unit) end
-    if unit == "player" or unit == "target" then UUF:UpdateUnitPvPIndicator(unitFrame, unit) end
-    if unit == "player" then UUF:UpdateUnitRestingIndicator(unitFrame, unit) end
+    if allowMedium and normalizedUnit == "party" then UUF:UpdateUnitGroupRoleIndicator(unitFrame, unit) end
+    if allowLow and (unit == "player" or unit == "target") then UUF:UpdateUnitCombatIndicator(unitFrame, unit) end
+    if allowLow and (unit == "player" or unit == "target") then UUF:UpdateUnitPvPIndicator(unitFrame, unit) end
+    if allowLow and unit == "player" then UUF:UpdateUnitRestingIndicator(unitFrame, unit) end
     -- if unit == "player" then UUF:UpdateUnitTotems(unitFrame, unit) end
-    UUF:UpdateUnitMouseoverIndicator(unitFrame, unit)
-    UUF:UpdateUnitTargetGlowIndicator(unitFrame, unit)
+    if allowLow then UUF:UpdateUnitMouseoverIndicator(unitFrame, unit) end
+    if allowLow then UUF:UpdateUnitTargetGlowIndicator(unitFrame, unit) end
     UUF:UpdateUnitRunes(unitFrame, unit)
     UUF:UpdateUnitStagger(unitFrame, unit)
     UUF:UpdateUnitThreatIndicator(unitFrame, unit)
-    UUF:UpdateUnitResurrectIndicator(unitFrame, unit)
-    UUF:UpdateUnitSummonIndicator(unitFrame, unit)
-    UUF:UpdateUnitQuestIndicator(unitFrame, unit)
-    UUF:UpdateUnitPvPClassificationIndicator(unitFrame, unit)
+    if allowLow then UUF:UpdateUnitResurrectIndicator(unitFrame, unit) end
+    if allowLow then UUF:UpdateUnitSummonIndicator(unitFrame, unit) end
+    if allowLow then UUF:UpdateUnitQuestIndicator(unitFrame, unit) end
+    if allowLow then UUF:UpdateUnitPvPClassificationIndicator(unitFrame, unit) end
     UUF:UpdateUnitPowerPrediction(unitFrame, unit)
-    UUF:UpdateUnitAuras(unitFrame, unit)
-    UUF:UpdateUnitTagsForUnit(unit)
+    if allowMedium then UUF:UpdateUnitAuras(unitFrame, unit) end
+    if allowMedium then UUF:UpdateUnitTagsForUnit(unit) end
     UUF:QueueOrRun(function()
         unitFrame:SetFrameStrata(UnitDB.Frame.FrameStrata)
     end)
@@ -545,5 +708,23 @@ function UUF:ToggleUnitFrameVisibility(unit)
     local unitFrame = UUF[UnitKey]
     if not unitFrame then return end
     local enabled = UnitDB.Enabled
-    UUF:QueueOrRun(function() (enabled and RegisterUnitWatch or UnregisterUnitWatch)(unitFrame) unitFrame:SetShown(enabled) end)
+    
+    -- Handle pet frames separately since they don't use RegisterUnitWatch
+    if unit == "pet" then
+        UUF:QueueOrRun(function()
+            if enabled then
+                unitFrame:Show()
+            else
+                unitFrame:Hide()
+            end
+        end)
+        -- Update visibility to handle Warlock demons
+        C_Timer.After(0.1, function()
+            if UUF.UpdatePetFrameVisibility then
+                UUF:UpdatePetFrameVisibility()
+            end
+        end)
+    else
+        UUF:QueueOrRun(function() (enabled and RegisterUnitWatch or UnregisterUnitWatch)(unitFrame) unitFrame:SetShown(enabled) end)
+    end
 end

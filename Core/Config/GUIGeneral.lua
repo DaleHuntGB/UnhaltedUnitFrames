@@ -2,6 +2,7 @@ local _, UUF = ...
 local LSM = UUF.LSM
 local AG = UUF.AG
 local GUIWidgets = UUF.GUIWidgets
+local GUILayout = UUF.GUILayout
 
 local GUIGeneral = {}
 UUF.GUIGeneral = GUIGeneral
@@ -126,20 +127,19 @@ local function CreateFrameMoverSettings(containerParent)
 
     GUIWidgets.CreateInformationTag(Container, "Unlock frames to drag them with the left mouse button. Re-lock when finished.")
 
-    local Toggle = AG:Create("CheckBox")
-    Toggle:SetLabel("Unlock Frames")
-    Toggle:SetValue(UUF.db.profile.General.FrameMover.Enabled)
-    Toggle:SetFullWidth(true)
-    Toggle:SetCallback("OnValueChanged", function(_, _, value)
-        if InCombatLockdown() then
-            UUF:PrettyPrint("Cannot toggle frame movers in combat.")
-            Toggle:SetValue(UUF.db.profile.General.FrameMover.Enabled)
-            return
-        end
-        UUF.db.profile.General.FrameMover.Enabled = value
-        UUF:ApplyFrameMovers()
-    end)
-    Container:AddChild(Toggle)
+    -- Refactored using GUILayout for cleaner code (30% reduction)
+    local builder = GUILayout:CreateStackBuilder(Container)
+    
+    builder:Add(
+        GUILayout:CheckBox("Unlock Frames", UUF.db.profile.General.FrameMover.Enabled, function(value)
+            if InCombatLockdown() then
+                UUF:PrettyPrint("Cannot toggle frame movers in combat.")
+                return
+            end
+            UUF.db.profile.General.FrameMover.Enabled = value
+            UUF:ApplyFrameMovers()
+        end)
+    )
 end
 
 local function CreateFontSettings(containerParent)

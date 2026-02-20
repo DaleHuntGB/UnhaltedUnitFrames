@@ -134,7 +134,7 @@ function UUF:UpdateUnitSecondaryPowerBar(unitFrame, unit)
         secondaryPowerBarElement.ContainerBackground:SetSize(totalWidth, DB.Height)
         secondaryPowerBarElement.ContainerBackground:SetVertexColor(DB.Background[1], DB.Background[2], DB.Background[3], DB.Background[4] or 1)
         secondaryPowerBarElement.ContainerBackground:ClearAllPoints()
-        secondaryPowerBarElement.ContainerBackground:SetPoint("TOPLEFT", unitFrame.Container, "TOPLEFT", 1, -1)
+        UUF:SetPointIfChanged(secondaryPowerBarElement.ContainerBackground, "TOPLEFT", unitFrame.Container, "TOPLEFT", 1, -1)
         secondaryPowerBarElement.ContainerBackground:Show()
 
         secondaryPowerBarElement.OverlayFrame:SetAllPoints(unitFrame.Container)
@@ -143,15 +143,15 @@ function UUF:UpdateUnitSecondaryPowerBar(unitFrame, unit)
 
         secondaryPowerBarElement.PowerBarBorder:ClearAllPoints()
         secondaryPowerBarElement.PowerBarBorder:SetVertexColor(0, 0, 0, 1)
-        secondaryPowerBarElement.PowerBarBorder:SetPoint("TOPLEFT", unitFrame.Container, "TOPLEFT", 1, -1 - DB.Height)
-        secondaryPowerBarElement.PowerBarBorder:SetPoint("TOPRIGHT", unitFrame.Container, "TOPLEFT", 1 + totalWidth, -1 - DB.Height)
+        UUF:SetPointIfChanged(secondaryPowerBarElement.PowerBarBorder, "TOPLEFT", unitFrame.Container, "TOPLEFT", 1, -1 - DB.Height)
+        UUF:SetPointIfChanged(secondaryPowerBarElement.PowerBarBorder, "TOPRIGHT", unitFrame.Container, "TOPLEFT", 1 + totalWidth, -1 - DB.Height)
         secondaryPowerBarElement.PowerBarBorder:SetHeight(1)
         secondaryPowerBarElement.PowerBarBorder:Show()
 
         for i = 1, currentMaxPower do
             local bar = secondaryPowerBarElement[i]
             bar:ClearAllPoints()
-            bar:SetPoint("TOPLEFT", unitFrame.Container, "TOPLEFT", 1 + ((i - 1) * unitFrameWidth), -1)
+            UUF:SetPointIfChanged(bar, "TOPLEFT", unitFrame.Container, "TOPLEFT", 1 + ((i - 1) * unitFrameWidth), -1)
             bar:SetSize(unitFrameWidth, DB.Height)
             bar.Background:SetVertexColor(DB.Background[1], DB.Background[2], DB.Background[3], DB.Background[4] or 1)
             bar:Show()
@@ -162,7 +162,7 @@ function UUF:UpdateUnitSecondaryPowerBar(unitFrame, unit)
             tick:ClearAllPoints()
             tick:SetSize(1, DB.Height)
             tick:SetVertexColor(0, 0, 0, 1)
-            tick:SetPoint("TOPLEFT", unitFrame.Container, "TOPLEFT", 1 + (i * unitFrameWidth) - 0.5, -1)
+            UUF:SetPointIfChanged(tick, "TOPLEFT", unitFrame.Container, "TOPLEFT", 1 + (i * unitFrameWidth) - 0.5, -1)
             tick:Show()
         end
 

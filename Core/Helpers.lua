@@ -1,5 +1,13 @@
 local _, UUF = ...
 
+-- PERF LOCALS: Localize frequently-called globals for faster access
+local UnitClassification = UnitClassification
+local UnitRace = UnitRace
+local UnitFactionGroup = UnitFactionGroup
+local UnitClass = UnitClass
+local CreateFrame = CreateFrame
+local select, type, pairs = select, type, pairs
+
 --- Get unit classification safely, guarding against secret values during combat
 function UUF:GetSafeUnitClassification(unit)
     local classification = UnitClassification(unit)
@@ -167,4 +175,81 @@ function UUF:StyleAuraButton(button, unit, auraType, isInitialStyle)
             auraOverlay:SetTexCoord(0, 1, 0, 1)
         end)
     end
+end
+
+--- Stamp-based change detection: returns true only if any argument value changed since last call
+-- Caches previous values on the object, eliminating redundant UI updates when nothing changed
+-- Usage: if UUF:StampChanged(button, "auraStyle", unit, auraType, configDB) then ... apply styling ... end
+function UUF:StampChanged(obj, key, ...)
+    if not obj then return true end
+    
+    local cache = obj._uufStampCache
+    if not cache then
+        cache = {}
+        obj._uufStampCache = cache
+    end
+    
+    local stamp = cache[key]
+    local n = select("#", ...)
+    
+    -- First time: no previous stamp
+    if not stamp then
+        stamp = { n = n }
+        cache[key] = stamp
+        for i = 1, n do stamp[i] = select(i, ...) end
+        return true
+    end
+    
+    -- Check if argument count changed
+    if stamp.n ~= n then
+        stamp.n = n
+        for i = 1, n do stamp[i] = select(i, ...) end
+        for i = n + 1, #stamp do stamp[i] = nil end
+        return true
+    end
+    
+    -- Check if any argument value changed
+    for i = 1, n do
+        local v = select(i, ...)
+        if stamp[i] ~= v then
+            for j = 1, n do stamp[j] = select(j, ...) end
+            return true
+        end
+    end
+    
+    return false  -- No change detected
+end
+
+--- Conditionally set frame point only if anchor/position changed
+-- Skips redundant SetPoint calls when position hasn't changed, improving performance
+-- Usage: UUF:SetPointIfChanged(indicator, "TOP", frame, "BOTTOM", 0, -2)
+function UUF:SetPointIfChanged(frame, point, relativeTo, relativePoint, xOfs, yOfs)
+    if not frame then return end
+    
+    xOfs = xOfs or 0
+    yOfs = yOfs or 0
+    
+    -- Check if frame has any anchor points at all (ClearAllPoints may have been called externally)
+    local hasPoints = frame.GetNumPoints and frame:GetNumPoints() > 0
+    
+    -- Return early if position hasn't changed AND frame still has its anchors
+    if hasPoints
+        and frame._uufLastPoint == point
+        and frame._uufLastRel == relativeTo
+        and frame._uufLastRelPoint == relativePoint
+        and frame._uufLastX == xOfs
+        and frame._uufLastY == yOfs then
+        return
+    end
+    
+    -- Apply the new position
+    frame:ClearAllPoints()
+    frame:SetPoint(point, relativeTo, relativePoint, xOfs, yOfs)
+    
+    -- Cache for next call
+    frame._uufLastPoint = point
+    frame._uufLastRel = relativeTo
+    frame._uufLastRelPoint = relativePoint
+    frame._uufLastX = xOfs
+    frame._uufLastY = yOfs
 end

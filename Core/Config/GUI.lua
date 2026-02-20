@@ -964,14 +964,14 @@ local function CreateCastBarSettings(containerParent, unit)
     end
 
     local CastBarTabGroup = AG:Create("TabGroup")
-    CastBarTabGroup:SetLayout("Flow")
-    CastBarTabGroup:SetFullWidth(true)
     CastBarTabGroup:SetTabs({
         {text = "Bar", value = "Bar"},
         {text = "Icon" , value = "Icon"},
         {text = "Text: |cFFFFFFFFSpell Name|r", value = "SpellName"},
         {text = "Text: |cFFFFFFFFDuration|r", value = "Duration"},
     })
+    CastBarTabGroup:SetLayout("Flow")
+    CastBarTabGroup:SetFullWidth(true)
     CastBarTabGroup:SetCallback("OnGroupSelected", SelectCastBarTab)
     CastBarTabGroup:SelectTab(GetSavedSubTab(unit, "CastBar", "Bar"))
     containerParent:AddChild(CastBarTabGroup)
@@ -1906,8 +1906,6 @@ local function CreateIndicatorSettings(containerParent, unit)
     end
 
     local IndicatorContainerTabGroup = AG:Create("TabGroup")
-    IndicatorContainerTabGroup:SetLayout("Flow")
-    IndicatorContainerTabGroup:SetFullWidth(true)
     if unit == "player" then
         IndicatorContainerTabGroup:SetTabs({
             { text = "Raid Target Marker", value = "RaidTargetMarker" },
@@ -1940,6 +1938,8 @@ local function CreateIndicatorSettings(containerParent, unit)
             { text = "Target Indicator", value = "TargetIndicator" },
         })
     end
+    IndicatorContainerTabGroup:SetLayout("Flow")
+    IndicatorContainerTabGroup:SetFullWidth(true)
     IndicatorContainerTabGroup:SetCallback("OnGroupSelected", SelectIndicatorTab)
     IndicatorContainerTabGroup:SelectTab(GetSavedSubTab(unit, "Indicators", "RaidTargetMarker"))
     containerParent:AddChild(IndicatorContainerTabGroup)
@@ -2058,8 +2058,6 @@ local function CreateTagsSettings(containerParent, unit)
     end
 
     local TagContainerTabGroup = AG:Create("TabGroup")
-    TagContainerTabGroup:SetLayout("Flow")
-    TagContainerTabGroup:SetFullWidth(true)
     TagContainerTabGroup:SetTabs({
         { text = "Tag One", value = "TagOne"},
         { text = "Tag Two", value = "TagTwo"},
@@ -2067,6 +2065,8 @@ local function CreateTagsSettings(containerParent, unit)
         { text = "Tag Four", value = "TagFour"},
         { text = "Tag Five", value = "TagFive"},
     })
+    TagContainerTabGroup:SetLayout("Flow")
+    TagContainerTabGroup:SetFullWidth(true)
     TagContainerTabGroup:SetCallback("OnGroupSelected", SelectTagTab)
     TagContainerTabGroup:SelectTab(GetSavedSubTab(unit, "Tags", "TagOne"))
     containerParent:AddChild(TagContainerTabGroup)
@@ -2369,9 +2369,9 @@ local function CreateAuraSettings(containerParent, unit)
     end
 
     local AuraContainerTabGroup = AG:Create("TabGroup")
+    AuraContainerTabGroup:SetTabs({ { text = "Buffs", value = "Buffs"}, { text = "Debuffs", value = "Debuffs"}, })
     AuraContainerTabGroup:SetLayout("Flow")
     AuraContainerTabGroup:SetFullWidth(true)
-    AuraContainerTabGroup:SetTabs({ { text = "Buffs", value = "Buffs"}, { text = "Debuffs", value = "Debuffs"}, })
     AuraContainerTabGroup:SetCallback("OnGroupSelected", SelectAuraTab)
     AuraContainerTabGroup:SelectTab(GetSavedSubTab(unit, "Auras", "Buffs"))
     containerParent:AddChild(AuraContainerTabGroup)
@@ -2607,8 +2607,6 @@ local function CreateUnitSettings(containerParent, unit)
     end
 
     local SubContainerTabGroup = AG:Create("TabGroup")
-    SubContainerTabGroup:SetLayout("Flow")
-    SubContainerTabGroup:SetFullWidth(true)
     if unit == "player" and UUF:RequiresAlternativePowerBar() then
         SubContainerTabGroup:SetTabs({
             { text = "Frame", value = "Frame"},
@@ -2655,6 +2653,8 @@ local function CreateUnitSettings(containerParent, unit)
             { text = "Tags", value = "Tags"},
         })
     end
+    SubContainerTabGroup:SetLayout("Flow")
+    SubContainerTabGroup:SetFullWidth(true)
     SubContainerTabGroup:SetCallback("OnGroupSelected", SelectUnitTab)
     SubContainerTabGroup:SelectTab(GetSavedMainTab(unit, "Frame"))
     containerParent:AddChild(SubContainerTabGroup)
@@ -2863,8 +2863,6 @@ function UUF:CreateGUI()
     end
 
     local ContainerTabGroup = AG:Create("TabGroup")
-    ContainerTabGroup:SetLayout("Flow")
-    ContainerTabGroup:SetFullWidth(true)
     ContainerTabGroup:SetTabs({
         { text = "General", value = "General"},
         { text = "Global", value = "Global"},
@@ -2879,6 +2877,8 @@ function UUF:CreateGUI()
         { text = "Tags", value = "Tags"},
         { text = "Profiles", value = "Profiles"},
     })
+    ContainerTabGroup:SetLayout("Flow")
+    ContainerTabGroup:SetFullWidth(true)
     ContainerTabGroup:SetCallback("OnGroupSelected", SelectTab)
     ContainerTabGroup:SelectTab("General")
     Container:AddChild(ContainerTabGroup)

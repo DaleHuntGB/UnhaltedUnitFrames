@@ -1,8 +1,39 @@
 local _, UUF = ...
 
+-- PERF LOCALS: Localize frequently-called globals for faster access
+local CreateFrame = CreateFrame
+local UnitHealthMissing = UnitHealthMissing
+local UnitClass = UnitClass
+local select = select
+
+-- Performance Optimization: ConfigResolver Integration
+-- Use ConfigResolver for config access with automatic fallback chain
+local ConfigResolver = nil  -- Lazy-load when first needed
+
+local function GetConfig(path, unit, default)
+    if not ConfigResolver and UUF.ConfigResolver then
+        ConfigResolver = UUF.ConfigResolver
+    end
+    
+    if ConfigResolver then
+        return ConfigResolver:Resolve(path, unit, default)
+    else
+        -- Fallback to direct access if ConfigResolver not available
+        return default
+    end
+end
+
 function UUF:CreateUnitHealthBar(unitFrame, unit)
-    local FrameDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Frame
-    local HealthBarDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].HealthBar
+    local normalizedUnit = UUF:GetNormalizedUnit(unit)
+    local FrameDB = UUF.db.profile.Units[normalizedUnit].Frame
+    local HealthBarDB = UUF.db.profile.Units[normalizedUnit].HealthBar
+    
+    -- ConfigResolver integration: Use resolved values with fallback
+    local barWidth = GetConfig("Frame.Width", unit, FrameDB.Width)
+    local barHeight = GetConfig("Frame.Height", unit, FrameDB.Height)
+    local bgOpacity = GetConfig("HealthBar.BackgroundOpacity", unit, HealthBarDB.BackgroundOpacity)
+    local fgOpacity = GetConfig("HealthBar.ForegroundOpacity", unit, HealthBarDB.ForegroundOpacity)
+    
     local unitContainer = unitFrame.Container
     local frameName = unitFrame:GetName() or UUF:FetchFrameName(unit)
 
@@ -10,18 +41,18 @@ function UUF:CreateUnitHealthBar(unitFrame, unit)
         if not unitFrame.HealthBackground then
             unitFrame.HealthBackground = CreateFrame("StatusBar", frameName .. "_HealthBackground", unitContainer)
             unitFrame.HealthBackground:SetPoint("TOPLEFT", unitContainer, "TOPLEFT", 1, -1)
-            unitFrame.HealthBackground:SetSize(FrameDB.Width - 2, FrameDB.Height - 2)
+            unitFrame.HealthBackground:SetSize(barWidth - 2, barHeight - 2)
             unitFrame.HealthBackground:SetStatusBarTexture(UUF.Media.Background)
             unitFrame.HealthBackground:SetFrameLevel(unitContainer:GetFrameLevel() + 1)
-            unitFrame.HealthBackground:SetStatusBarColor(HealthBarDB.Background[1], HealthBarDB.Background[2], HealthBarDB.Background[3], HealthBarDB.BackgroundOpacity)
+            unitFrame.HealthBackground:SetStatusBarColor(HealthBarDB.Background[1], HealthBarDB.Background[2], HealthBarDB.Background[3], bgOpacity)
         end
 
         local HealthBar = CreateFrame("StatusBar", frameName .. "_HealthBar", unitContainer)
         HealthBar:SetPoint("TOPLEFT", unitContainer, "TOPLEFT", 1, -1)
-        HealthBar:SetSize(FrameDB.Width - 2, FrameDB.Height - 2)
+        HealthBar:SetSize(barWidth - 2, barHeight - 2)
         HealthBar:SetStatusBarTexture(UUF.Media.Foreground)
         HealthBar:SetFrameLevel(unitContainer:GetFrameLevel() + 2)
-        HealthBar:SetStatusBarColor(HealthBarDB.Foreground[1], HealthBarDB.Foreground[2], HealthBarDB.Foreground[3], HealthBarDB.ForegroundOpacity)
+        HealthBar:SetStatusBarColor(HealthBarDB.Foreground[1], HealthBarDB.Foreground[2], HealthBarDB.Foreground[3], fgOpacity)
         HealthBar.colorClass = HealthBarDB.ColourByClass
         HealthBar.colorReaction = HealthBarDB.ColourByClass
         HealthBar.colorTapped = HealthBarDB.ColourWhenTapped
@@ -70,11 +101,11 @@ function UUF:UpdateUnitHealthBar(unitFrame, unit)
             unitFrame:SetSize(FrameDB.Width, FrameDB.Height)
             if unit == "player" or unit == "target" then
                 local parentFrame = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].HealthBar.AnchorToCooldownViewer and _G["UUF_CDMAnchor"] or UIParent
-                UUF[unit:upper()]:SetPoint(FrameDB.Layout[1], parentFrame, FrameDB.Layout[2], FrameDB.Layout[3], FrameDB.Layout[4])
+                UUF:SetPointIfChanged(UUF[unit:upper()], FrameDB.Layout[1], parentFrame, FrameDB.Layout[2], FrameDB.Layout[3], FrameDB.Layout[4])
                 UUF[unit:upper()]:SetSize(FrameDB.Width, FrameDB.Height)
             elseif unit == "targettarget" or unit == "focus" or unit == "focustarget" or unit == "pet" then
                 local parentFrame = _G[UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Frame.AnchorParent] or UIParent
-                UUF[unit:upper()]:SetPoint(FrameDB.Layout[1], parentFrame, FrameDB.Layout[2], FrameDB.Layout[3], FrameDB.Layout[4])
+                UUF:SetPointIfChanged(UUF[unit:upper()], FrameDB.Layout[1], parentFrame, FrameDB.Layout[2], FrameDB.Layout[3], FrameDB.Layout[4])
                 UUF[unit:upper()]:SetSize(FrameDB.Width, FrameDB.Height)
             end
         end)

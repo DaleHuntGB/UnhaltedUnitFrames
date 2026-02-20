@@ -44,7 +44,7 @@ function UUF:UpdateUnitTag(unitFrame, unit, tagDB)
         end
         UUF:QueueOrRun(function()
             unitFrame.Tags[tagDB]:ClearAllPoints()
-            unitFrame.Tags[tagDB]:SetPoint(TagDB.Layout[1], unitFrame.HighLevelContainer, TagDB.Layout[2], TagDB.Layout[3], TagDB.Layout[4])
+            UUF:SetPointIfChanged(unitFrame.Tags[tagDB], TagDB.Layout[1], unitFrame.HighLevelContainer, TagDB.Layout[2], TagDB.Layout[3], TagDB.Layout[4])
         end)
         unitFrame.Tags[tagDB]:SetJustifyH(UUF:SetJustification(TagDB.Layout[1]))
         if not inTestMode then

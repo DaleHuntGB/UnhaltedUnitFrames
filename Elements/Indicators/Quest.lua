@@ -55,7 +55,7 @@ function UUF:UpdateUnitQuestIndicator(unitFrame, unit)
     if unitFrame.QuestIndicator then
         UUF:QueueOrRun(function()
             unitFrame.QuestIndicator:SetSize(QuestDB.Size, QuestDB.Size)
-            unitFrame.QuestIndicator:SetPoint(QuestDB.Layout[1], unitFrame, QuestDB.Layout[2], QuestDB.Layout[3], QuestDB.Layout[4])
+            UUF:SetPointIfChanged(unitFrame.QuestIndicator, QuestDB.Layout[1], unitFrame, QuestDB.Layout[2], QuestDB.Layout[3], QuestDB.Layout[4])
             unitFrame.QuestIndicator:SetFrameStrata(QuestDB.FrameStrata)
             unitFrame.QuestIndicator:Show()
         end)

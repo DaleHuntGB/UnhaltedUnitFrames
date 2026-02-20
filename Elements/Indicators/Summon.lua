@@ -49,7 +49,7 @@ function UUF:UpdateUnitSummonIndicator(unitFrame, unit)
     if unitFrame.SummonIndicator then
         UUF:QueueOrRun(function()
             unitFrame.SummonIndicator:SetSize(SummonDB.Size, SummonDB.Size)
-            unitFrame.SummonIndicator:SetPoint(SummonDB.Layout[1], unitFrame, SummonDB.Layout[2], SummonDB.Layout[3], SummonDB.Layout[4])
+            UUF:SetPointIfChanged(unitFrame.SummonIndicator, SummonDB.Layout[1], unitFrame, SummonDB.Layout[2], SummonDB.Layout[3], SummonDB.Layout[4])
             unitFrame.SummonIndicator:SetFrameStrata(SummonDB.FrameStrata)
             unitFrame.SummonIndicator:Show()
         end)

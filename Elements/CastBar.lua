@@ -1,5 +1,20 @@
 local _, UUF = ...
 
+-- =========================================================================
+-- PERF LOCALS (core runtime)
+--  - Reduce global table lookups in high-frequency event/render paths
+--  - Secret-safe: localizing function references only (no value comparisons)
+-- =========================================================================
+local type, tostring, tonumber, select = type, tostring, tonumber, select
+local pairs, ipairs, next = pairs, ipairs, next
+local math_min, math_max, math_floor = math.min, math.max, math.floor
+local string_format, string_match, string_sub = string.format, string.match, string.sub
+
+local UnitCastingInfo, UnitChannelInfo = UnitCastingInfo, UnitChannelInfo
+local UnitIsDeadOrGhost, UnitIsConnected = UnitIsDeadOrGhost, UnitIsConnected
+local InCombatLockdown, GetTime = InCombatLockdown, GetTime
+local CreateFrame, GetUnitEmpowerStageCount = CreateFrame, GetUnitEmpowerStageCount
+
 local function ShortenCastName(text, maxChars)
     if not text then return "" end
     if maxChars and maxChars > 0 then

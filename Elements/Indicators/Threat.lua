@@ -50,7 +50,7 @@ function UUF:UpdateUnitThreatIndicator(unitFrame, unit)
     if unitFrame.ThreatIndicator then
         UUF:QueueOrRun(function()
             unitFrame.ThreatIndicator:SetSize(ThreatDB.Size, ThreatDB.Size)
-            unitFrame.ThreatIndicator:SetPoint(ThreatDB.Layout[1], unitFrame, ThreatDB.Layout[2], ThreatDB.Layout[3], ThreatDB.Layout[4])
+            UUF:SetPointIfChanged(unitFrame.ThreatIndicator, ThreatDB.Layout[1], unitFrame, ThreatDB.Layout[2], ThreatDB.Layout[3], ThreatDB.Layout[4])
             unitFrame.ThreatIndicator:SetFrameStrata(ThreatDB.FrameStrata)
             unitFrame.ThreatIndicator.Texture:SetVertexColor(ThreatDB.Colour[1], ThreatDB.Colour[2], ThreatDB.Colour[3], ThreatDB.Opacity)
             unitFrame.ThreatIndicator:Show()

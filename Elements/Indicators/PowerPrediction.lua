@@ -58,7 +58,7 @@ function UUF:UpdateUnitPowerPrediction(unitFrame, unit)
     if unitFrame.PowerPrediction then
         UUF:QueueOrRun(function()
             unitFrame.PowerPrediction:SetSize(PowerPredDB.Width, PowerPredDB.Height)
-            unitFrame.PowerPrediction:SetPoint(PowerPredDB.Layout[1], unitFrame, PowerPredDB.Layout[2], PowerPredDB.Layout[3], PowerPredDB.Layout[4])
+            UUF:SetPointIfChanged(unitFrame.PowerPrediction, PowerPredDB.Layout[1], unitFrame, PowerPredDB.Layout[2], PowerPredDB.Layout[3], PowerPredDB.Layout[4])
             unitFrame.PowerPrediction:SetFrameStrata(PowerPredDB.FrameStrata)
             
             local color = PowerPredDB.Colour or {1, 1, 0}

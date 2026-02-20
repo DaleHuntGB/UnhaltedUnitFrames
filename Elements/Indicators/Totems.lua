@@ -105,8 +105,9 @@ function UUF:UpdateUnitTotems(unitFrame, unit)
                 local Totem = unitFrame.Totems[index]
                 UUF:QueueOrRun(function()
                     Totem:SetSize(TotemsDB.Size, TotemsDB.Size)
-                    Totem:ClearAllPoints()
-                    Totem:SetPoint(anchorFrom, unitFrame, anchorTo, xOffset, yOffset)
+                    if UUF:SetPointIfChanged(Totem, anchorFrom, unitFrame, anchorTo, xOffset, yOffset) then
+                        Totem:ClearAllPoints()
+                    end
                 end)
                 ApplyAuraDuration(Totem.Cooldown, unit)
             end

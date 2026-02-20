@@ -49,7 +49,7 @@ function UUF:UpdateUnitResurrectIndicator(unitFrame, unit)
     if unitFrame.ResurrectIndicator then
         UUF:QueueOrRun(function()
             unitFrame.ResurrectIndicator:SetSize(ResurrectDB.Size, ResurrectDB.Size)
-            unitFrame.ResurrectIndicator:SetPoint(ResurrectDB.Layout[1], unitFrame, ResurrectDB.Layout[2], ResurrectDB.Layout[3], ResurrectDB.Layout[4])
+            UUF:SetPointIfChanged(unitFrame.ResurrectIndicator, ResurrectDB.Layout[1], unitFrame, ResurrectDB.Layout[2], ResurrectDB.Layout[3], ResurrectDB.Layout[4])
             unitFrame.ResurrectIndicator:SetFrameStrata(ResurrectDB.FrameStrata)
             unitFrame.ResurrectIndicator:Show()
         end)
