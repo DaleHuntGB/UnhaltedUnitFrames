@@ -38,6 +38,7 @@ local _learningData = {
 
 -- Priority recommendations
 local _recommendations = {}
+DirtyPriorityOptimizer._learningData = _learningData
 
 -- Configuration
 local LEARNING_WINDOW = 300  -- 5 minutes
@@ -207,6 +208,7 @@ function DirtyPriorityOptimizer:ResetLearning()
 		inCombatUpdates = 0,
 		outOfCombatUpdates = 0,
 	}
+	DirtyPriorityOptimizer._learningData = _learningData
 	_recommendations = {}
 	print("|cFF00B0F7DirtyPriorityOptimizer: Learning data reset|r")
 end

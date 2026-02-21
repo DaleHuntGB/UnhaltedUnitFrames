@@ -1,5 +1,11 @@
 local _, UUF = ...
 local oUF = UUF.oUF
+local IsSecretValue = issecretvalue or function() return false end
+
+UUF.DispelHighlightEvtFrames = UUF.DispelHighlightEvtFrames or {}
+
+local DISPEL_HIGHLIGHT_COALESCE_EVENT = "UUF_DISPEL_HIGHLIGHT_UPDATE"
+local dispelEventFrame
 
 local dispelTypeMap = {
     Magic = oUF.Enum.DispelType.Magic,
@@ -8,6 +14,45 @@ local dispelTypeMap = {
     Poison = oUF.Enum.DispelType.Poison,
     Bleed = oUF.Enum.DispelType.Bleed,
 }
+
+local function ProcessDispelHighlightUpdates(event, unit)
+    local onlyUnit = (event == "UNIT_AURA") and unit or nil
+
+    for i = #UUF.DispelHighlightEvtFrames, 1, -1 do
+        local data = UUF.DispelHighlightEvtFrames[i]
+        if not data or not data.frame then
+            table.remove(UUF.DispelHighlightEvtFrames, i)
+        else
+            if not onlyUnit or data.unit == onlyUnit then
+                UUF:UpdateUnitDispelState(data.frame, data.unit)
+            end
+        end
+    end
+end
+
+local function EnsureDispelHighlightDispatcher()
+    if dispelEventFrame then return end
+
+    dispelEventFrame = CreateFrame("Frame")
+    dispelEventFrame:RegisterEvent("UNIT_AURA")
+    dispelEventFrame:RegisterEvent("SPELLS_CHANGED")
+    dispelEventFrame:RegisterEvent("TRAIT_CONFIG_UPDATED")
+    dispelEventFrame:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
+    dispelEventFrame:RegisterEvent("PLAYER_TALENT_UPDATE")
+    dispelEventFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
+
+    if UUF.EventCoalescer then
+        UUF.EventCoalescer:CoalesceEvent(DISPEL_HIGHLIGHT_COALESCE_EVENT, 0.05, ProcessDispelHighlightUpdates, 2)
+    end
+
+    dispelEventFrame:SetScript("OnEvent", function(_, event, ...)
+        if UUF.EventCoalescer then
+            UUF.EventCoalescer:QueueEvent(DISPEL_HIGHLIGHT_COALESCE_EVENT, event, ...)
+        else
+            ProcessDispelHighlightUpdates(event, ...)
+        end
+    end)
+end
 
 function UUF:UpdateDispelColorCurve(unitFrame)
     if not unitFrame.dispelColorCurve then return end
@@ -113,7 +158,7 @@ function UUF:UpdateUnitDispelState(unitFrame, unit)
     local hasDispelType = false
     for _, dispelKey in ipairs({"Magic", "Curse", "Disease", "Poison", "Bleed"}) do
         local value = dispelList[dispelKey]
-        if not issecretvalue(value) and value then
+        if not IsSecretValue(value) and value then
             hasDispelType = true
             break
         end
@@ -143,22 +188,39 @@ end
 function UUF:RegisterDispelHighlightEvents(unitFrame, unit)
     if not unitFrame.DispelHighlight then return end
     if not UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].HealthBar.DispelHighlight.Enabled then return end
+    if not unitFrame or not unit then return end
 
-    if not unitFrame.DispelHighlightHandler then
-        unitFrame.DispelHighlightHandler = CreateFrame("Frame")
-        unitFrame.DispelHighlightHandler:SetScript("OnEvent", function(self, event, ...) UUF:UpdateUnitDispelState(unitFrame, unit) end)
+    EnsureDispelHighlightDispatcher()
+
+    for i = #UUF.DispelHighlightEvtFrames, 1, -1 do
+        local data = UUF.DispelHighlightEvtFrames[i]
+        if not data or not data.frame then
+            table.remove(UUF.DispelHighlightEvtFrames, i)
+        elseif data.frame == unitFrame then
+            data.unit = unit
+            UUF:UpdateUnitDispelState(unitFrame, unit)
+            return
+        end
     end
 
-    unitFrame.DispelHighlightHandler:RegisterUnitEvent("UNIT_AURA", unit)
-    unitFrame.DispelHighlightHandler:RegisterEvent("SPELLS_CHANGED")
-    unitFrame.DispelHighlightHandler:RegisterEvent("TRAIT_CONFIG_UPDATED")
-    unitFrame.DispelHighlightHandler:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
-    unitFrame.DispelHighlightHandler:RegisterEvent("PLAYER_TALENT_UPDATE")
-    unitFrame.DispelHighlightHandler:RegisterEvent("PLAYER_TARGET_CHANGED")
+    table.insert(UUF.DispelHighlightEvtFrames, { frame = unitFrame, unit = unit })
+    UUF:UpdateUnitDispelState(unitFrame, unit)
 end
 
 function UUF:UnregisterDispelHighlightEvents(unitFrame)
-    if not unitFrame.DispelHighlightHandler then return end
+    if not unitFrame then return end
 
-    unitFrame.DispelHighlightHandler:UnregisterAllEvents()
+    for i = #UUF.DispelHighlightEvtFrames, 1, -1 do
+        local data = UUF.DispelHighlightEvtFrames[i]
+        if not data or data.frame == unitFrame then
+            table.remove(UUF.DispelHighlightEvtFrames, i)
+        end
+    end
+
+    -- Backward compatibility cleanup if old per-frame handlers exist.
+    if unitFrame.DispelHighlightHandler then
+        unitFrame.DispelHighlightHandler:UnregisterAllEvents()
+        unitFrame.DispelHighlightHandler:SetScript("OnEvent", nil)
+        unitFrame.DispelHighlightHandler = nil
+    end
 end

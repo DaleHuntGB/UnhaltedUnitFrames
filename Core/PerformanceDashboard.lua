@@ -206,6 +206,37 @@ local function GetDirtyFlagStats()
 	return stats
 end
 
+local function GetMLStats()
+	local stats = {
+		available = false,
+		patterns = 0,
+		delaysLearned = 0,
+		currentSequenceLength = 0,
+		context = {
+			inCombat = false,
+			instanceType = "unknown",
+			groupSize = 0,
+		},
+	}
+
+	if UUF.MLOptimizer and UUF.MLOptimizer.GetStats then
+		local ok, mlStats = pcall(UUF.MLOptimizer.GetStats, UUF.MLOptimizer)
+		if ok and type(mlStats) == "table" then
+			stats.available = true
+			stats.patterns = mlStats.patterns or 0
+			stats.delaysLearned = mlStats.delaysLearned or 0
+			stats.currentSequenceLength = mlStats.currentSequenceLength or 0
+			if type(mlStats.context) == "table" then
+				stats.context.inCombat = mlStats.context.inCombat == true
+				stats.context.instanceType = mlStats.context.instanceType or "unknown"
+				stats.context.groupSize = mlStats.context.groupSize or 0
+			end
+		end
+	end
+
+	return stats
+end
+
 --[[----------------------------------------------------------------------------
 	Display Update
 ----------------------------------------------------------------------------]]--
@@ -234,6 +265,7 @@ local function UpdateDisplay()
 	local poolStats = GetPoolStats()
 	local eventStats = GetEventStats()
 	local dirtyStats = GetDirtyFlagStats()
+	local mlStats = GetMLStats()
 	
 	-- Build display text
 	local lines = {}
@@ -275,6 +307,21 @@ local function UpdateDisplay()
 		table.insert(lines, string.format("Total Invalidations: |cFF00FF00%s|r", FormatNumber(dirtyStats.invalidations)))
 		table.insert(lines, "")
 	end
+
+	-- ML optimizer stats (/uufml stats)
+	if mlStats.available then
+		table.insert(lines, "|cFFFFD700=== ML Optimizer ===|r")
+		table.insert(lines, string.format("Patterns Learned: |cFF00FF00%d|r", mlStats.patterns))
+		table.insert(lines, string.format("Adaptive Delays: |cFFFFFF00%d|r", mlStats.delaysLearned))
+		table.insert(lines, string.format("Current Sequence: |cFFAAAAAA%d|r", mlStats.currentSequenceLength))
+		table.insert(lines, string.format(
+			"Context: |cFFAAAAAA%s (%s, %d members)|r",
+			mlStats.context.inCombat and "In Combat" or "Out of Combat",
+			mlStats.context.instanceType,
+			mlStats.context.groupSize
+		))
+		table.insert(lines, "")
+	end
 	
 	-- System status
 	table.insert(lines, "|cFFFFD700=== System Status ===|r")
@@ -283,6 +330,7 @@ local function UpdateDisplay()
 	table.insert(lines, string.format("IndicatorPooling: %s", UUF.IndicatorPooling and "|cFF00FF00Active|r" or "|cFFFF0000Inactive|r"))
 	table.insert(lines, string.format("EventCoalescer: %s", UUF.EventCoalescer and "|cFF00FF00Active|r" or "|cFFFF0000Inactive|r"))
 	table.insert(lines, string.format("DirtyFlags: %s", UUF.DirtyFlagManager and "|cFF00FF00Active|r" or "|cFFFF0000Inactive|r"))
+	table.insert(lines, string.format("MLOptimizer: %s", UUF.MLOptimizer and "|cFF00FF00Active|r" or "|cFFFF0000Inactive|r"))
 	table.insert(lines, string.format("ReactiveConfig: %s", UUF.ReactiveConfig and "|cFF00FF00Active|r" or "|cFFFF0000Inactive|r"))
 	table.insert(lines, "")
 	

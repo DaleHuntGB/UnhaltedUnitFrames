@@ -671,7 +671,7 @@ function UUF:UpdatePartyFrames()
     UUF:LayoutPartyFrames()
 end
 
-function UUF:UpdateAllUnitFrames()
+function UUF:_UpdateAllUnitFramesNow()
     for unit, _ in pairs(UUF.db.profile.Units) do
         if unit == "party" then
             UUF:UpdatePartyFrames()
@@ -681,6 +681,29 @@ function UUF:UpdateAllUnitFrames()
             UUF:UpdateUnitFrame(UUF[unit:upper()], unit)
         end
     end
+end
+
+function UUF:UpdateAllUnitFrames(forceImmediate)
+    if forceImmediate == true then
+        if UUF._updateAllUnitFramesHandle then
+            UUF:CancelTimer(UUF._updateAllUnitFramesHandle)
+            UUF._updateAllUnitFramesHandle = nil
+        end
+        UUF._updateAllUnitFramesQueued = false
+        UUF:_UpdateAllUnitFramesNow()
+        return
+    end
+
+    if UUF._updateAllUnitFramesQueued then
+        return
+    end
+
+    UUF._updateAllUnitFramesQueued = true
+    UUF._updateAllUnitFramesHandle = UUF:ScheduleTimer("UpdateAllUnitFrames", 0.03, function()
+        UUF._updateAllUnitFramesQueued = false
+        UUF._updateAllUnitFramesHandle = nil
+        UUF:_UpdateAllUnitFramesNow()
+    end)
 end
 
 function UUF:ToggleUnitFrameVisibility(unit)

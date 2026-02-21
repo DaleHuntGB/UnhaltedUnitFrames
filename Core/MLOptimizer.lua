@@ -27,10 +27,12 @@ UUF.MLOptimizer = MLOptimizer
 
 -- PERF LOCALS
 local GetTime = GetTime
+local GetNetStats = GetNetStats
 local InCombatLockdown = InCombatLockdown
 local IsInInstance = IsInInstance
 local GetNumGroupMembers = GetNumGroupMembers
 local GetFramerate = GetFramerate
+local C_Timer = C_Timer
 local pairs, ipairs = pairs, ipairs
 local math_exp, math_tanh = math.exp, math.tanh
 local math_random, math_min, math_max = math.random, math.min, math.max
@@ -113,8 +115,7 @@ end
 
 -- Activation derivative for backpropagation
 local function SigmoidDerivative(x)
-	local s = Sigmoid(x)
-	return s * (1 - s)
+	return x * (1 - x)
 end
 
 --[[----------------------------------------------------------------------------
@@ -128,6 +129,7 @@ local _patterns = {
 	currentSequence = {},
 	maxSequenceLength = 10,
 	minPatternLength = 3,
+	lastSignature = nil,
 }
 
 -- Content type tracking
@@ -202,7 +204,12 @@ function MLOptimizer:TrackPattern(eventName, reason)
 	
 	-- Try to match or learn pattern
 	if #_patterns.currentSequence >= _patterns.minPatternLength then
-		self:AnalyzePattern()
+		local signature = self:AnalyzePattern()
+		if _patterns.lastSignature and _patterns.library[_patterns.lastSignature] then
+			local prevPattern = _patterns.library[_patterns.lastSignature]
+			prevPattern.predictions[eventName] = (prevPattern.predictions[eventName] or 0) + 1
+		end
+		_patterns.lastSignature = signature
 	end
 end
 
@@ -231,13 +238,7 @@ function MLOptimizer:AnalyzePattern()
 	_patterns.library[signature].occurrences = _patterns.library[signature].occurrences + 1
 	_patterns.library[signature].lastSeen = GetTime()
 	
-	-- If we have a next event in history, learn it
-	local nextIdx = len + 1
-	if _patterns.sequences[#_patterns.sequences] and _patterns.sequences[#_patterns.sequences][nextIdx] then
-		local nextEvent = _patterns.sequences[#_patterns.sequences][nextIdx].event
-		_patterns.library[signature].predictions[nextEvent] = 
-			(_patterns.library[signature].predictions[nextEvent] or 0) + 1
-	end
+	return signature
 end
 
 --- Predict next likely events based on current pattern
@@ -294,6 +295,17 @@ local _delayLearning = {
 		UNIT_THREAT_LIST_UPDATE = 0.1,
 		UNIT_PORTRAIT_UPDATE = 0.2,
 	},
+}
+
+local _hooks = {
+	dirtyFlags = false,
+	coalescer = false,
+	unitFrames = false,
+}
+
+local _tickers = {
+	context = nil,
+	delayAdjust = nil,
 }
 
 --- Learn optimal delay for an event based on context
@@ -467,14 +479,13 @@ function MLOptimizer:ExtractFeatures(eventName, reason)
 	local contentType = 0
 	if not inInstance then
 		contentType = 0  -- World
-	else if instanceType == "party" then
+	elseif instanceType == "party" then
 			contentType = 0.5  -- 5-man dungeon
 		elseif instanceType == "raid" then
 			contentType = 1.0  -- Raid
 		elseif instanceType == "pvp" or instanceType == "arena" then
 			contentType = 0.75  -- PvP
 		end
-	end
 	
 	-- FPS (normalized 30-144)
 	local fps = math_min(1, math_max(0, (GetFramerate() - 30) / 114))
@@ -509,7 +520,7 @@ function MLOptimizer:Predict(eventName, reason)
 	-- Interpret outputs
 	return {
 		priority = math_max(1, math_min(5, math.floor(outputs[OUTPUTS.priority] * 5) + 1)),
-		coalesceDelay = outputs[OUTPUTS.coalescDelay] * 0.2,  -- 0-200ms
+		coalesceDelay = outputs[OUTPUTS.coalesceDelay] * 0.2,  -- 0-200ms
 		preload = outputs[OUTPUTS.preloadLikelihood] > 0.5,
 	}
 end
@@ -641,7 +652,7 @@ end
 
 --- Integrate with DirtyFlagManager for pattern tracking
 function MLOptimizer:IntegrateWithDirtyFlags()
-	if not UUF.DirtyFlagManager then
+	if _hooks.dirtyFlags or not UUF.DirtyFlagManager then
 		return false
 	end
 	
@@ -670,13 +681,15 @@ function MLOptimizer:IntegrateWithDirtyFlags()
 		-- Call original
 		return originalMarkDirty(self, frame, reason, priority)
 	end
+
+	_hooks.dirtyFlags = true
 	
 	return true
 end
 
 --- Integrate with EventCoalescer for adaptive delays
 function MLOptimizer:IntegrateWithEventCoalescer()
-	if not UUF.EventCoalescer then
+	if _hooks.coalescer or not UUF.EventCoalescer then
 		return false
 	end
 	
@@ -718,33 +731,67 @@ function MLOptimizer:IntegrateWithEventCoalescer()
 	end
 	
 	-- Create periodic delay adjuster
-	C_Timer.NewTicker(5, function()
-		-- Get all coalesced events using public API
-		local coalescedEvents = UUF.EventCoalescer:GetCoalescedEvents()
-		
-		if not coalescedEvents or #coalescedEvents == 0 then
-			return
-		end
-		
-		-- Adjust delays based on learned optimal values
-		for i = 1, #coalescedEvents do
-			local eventName = coalescedEvents[i]
-			local optimalDelay = UUF.MLOptimizer:GetOptimalDelay(eventName)
-			local currentDelay = UUF.EventCoalescer:GetEventDelay(eventName)
+	if not _tickers.delayAdjust then
+		_tickers.delayAdjust = C_Timer.NewTicker(5, function()
+			UUF.MLOptimizer:UpdateContext()
+			-- Get all coalesced events using public API
+			local coalescedEvents = UUF.EventCoalescer:GetCoalescedEvents()
 			
-			if optimalDelay and math.abs(currentDelay - optimalDelay) > 0.01 then
-				-- Update delay using public API
-				UUF.EventCoalescer:SetEventDelay(eventName, optimalDelay)
+			if not coalescedEvents or #coalescedEvents == 0 then
+				return
+			end
+			
+			-- Adjust delays based on learned optimal values
+			for i = 1, #coalescedEvents do
+				local eventName = coalescedEvents[i]
+				local optimalDelay = UUF.MLOptimizer:GetOptimalDelay(eventName)
+				local currentDelay = UUF.EventCoalescer:GetEventDelay(eventName)
 				
-				if UUF.DebugOutput then
-					UUF.DebugOutput:Output("MLOptimizer", 
-						string.format("Adaptive delay adjustment: %s → %.0fms", eventName, optimalDelay * 1000),
-						UUF.DebugOutput.TIER_DEBUG)
+				if optimalDelay and math.abs(currentDelay - optimalDelay) > 0.01 then
+					-- Update delay using public API
+					UUF.EventCoalescer:SetEventDelay(eventName, optimalDelay)
+					
+					if UUF.DebugOutput then
+						UUF.DebugOutput:Output("MLOptimizer", 
+							string.format("Adaptive delay adjustment: %s → %.0fms", eventName, optimalDelay * 1000),
+							UUF.DebugOutput.TIER_DEBUG)
+					end
 				end
 			end
-		end
-	end)
+		end)
+	end
+
+	_hooks.coalescer = true
 	
+	return true
+end
+
+--- Integrate with full unit frame updates to learn from critical path latency
+function MLOptimizer:IntegrateWithUnitFrameUpdates()
+	if _hooks.unitFrames or type(UUF._UpdateAllUnitFramesNow) ~= "function" then
+		return false
+	end
+
+	local originalUpdateAllNow = UUF._UpdateAllUnitFramesNow
+	UUF._UpdateAllUnitFramesNow = function(self, ...)
+		local startTime = GetTime()
+		if UUF.MLOptimizer then
+			UUF.MLOptimizer:TrackPattern("UPDATE_ALL_UNIT_FRAMES", "UUF:_UpdateAllUnitFramesNow")
+		end
+
+		local result = originalUpdateAllNow(self, ...)
+		local elapsed = GetTime() - startTime
+
+		if UUF.MLOptimizer then
+			local success = elapsed <= 0.008
+			local syntheticDelay = math_min(0.2, math_max(0.01, elapsed * 2))
+			UUF.MLOptimizer:LearnDelay("UPDATE_ALL_UNIT_FRAMES", syntheticDelay, success)
+		end
+
+		return result
+	end
+
+	_hooks.unitFrames = true
 	return true
 end
 
@@ -756,11 +803,14 @@ function MLOptimizer:Init()
 	-- Integrate with existing systems
 	self:IntegrateWithDirtyFlags()
 	self:IntegrateWithEventCoalescer()
+	self:IntegrateWithUnitFrameUpdates()
 	
 	-- Create periodic context updater
-	C_Timer.NewTicker(1, function()
-		self:UpdateContext()
-	end)
+	if not _tickers.context then
+		_tickers.context = C_Timer.NewTicker(1, function()
+			self:UpdateContext()
+		end)
+	end
 	
 	if UUF.DebugOutput then
 		UUF.DebugOutput:Output("MLOptimizer", "Advanced ML optimizer initialized (neural network ready)", UUF.DebugOutput.TIER_INFO)

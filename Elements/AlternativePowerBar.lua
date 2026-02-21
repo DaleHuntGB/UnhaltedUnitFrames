@@ -6,6 +6,8 @@ local ALTERNATIVE_POWER_BAR_EVENTS = {
     "UNIT_DISPLAYPOWER",
 }
 local IsSecretValue = issecretvalue or function() return false end
+local ALT_POWER_COALESCE_EVENT = "UUF_ALT_POWER_BAR_UPDATE"
+local altPowerCoalesceRegistered = false
 
 local function ResolveSecondaryPowerType(unit)
     if GetUnitSecondaryPowerInfo then
@@ -15,6 +17,29 @@ local function ResolveSecondaryPowerType(unit)
         end
     end
     return Enum.PowerType.Mana
+end
+
+local function ApplyAlternativePowerBarColor(AlternativePowerBar)
+    if not AlternativePowerBar or not AlternativePowerBar.Status or not UUF or not UUF.db then return end
+    local unit = AlternativePowerBar.unit
+    if not unit then return end
+    local UUFDB = UUF.db.profile
+    local AlternativePowerBarDB = UUFDB.Units[UUF:GetNormalizedUnit(unit)].AlternativePowerBar
+    if not AlternativePowerBarDB then return end
+
+    if AlternativePowerBarDB.ColourByType then
+        local powerColour = UUFDB.General.Colours.Power[AlternativePowerBar.powerType or 0]
+        if powerColour then
+            AlternativePowerBar.Status:SetStatusBarColor(powerColour[1], powerColour[2], powerColour[3], powerColour[4])
+        end
+    else
+        AlternativePowerBar.Status:SetStatusBarColor(
+            AlternativePowerBarDB.Foreground[1],
+            AlternativePowerBarDB.Foreground[2],
+            AlternativePowerBarDB.Foreground[3],
+            AlternativePowerBarDB.Foreground[4]
+        )
+    end
 end
 
 local function UpdateUnitPowerBarValues(unitFrame, event, unit)
@@ -27,6 +52,55 @@ local function UpdateUnitPowerBarValues(unitFrame, event, unit)
     unitFrame.Status:SetValue(value)
 end
 
+local function EnsureAltPowerCoalescer()
+    if altPowerCoalesceRegistered then return end
+    if not UUF.EventCoalescer then return end
+
+    UUF.EventCoalescer:CoalesceEvent(ALT_POWER_COALESCE_EVENT, 0.03, function(frameCastBar, event, unit)
+        if not frameCastBar then return end
+        if event == "UNIT_DISPLAYPOWER" then
+            frameCastBar.powerType = ResolveSecondaryPowerType(frameCastBar.unit)
+            ApplyAlternativePowerBarColor(frameCastBar)
+        end
+        UpdateUnitPowerBarValues(frameCastBar, event, unit)
+    end, 2)
+
+    altPowerCoalesceRegistered = true
+end
+
+local function AlternativePowerBarOnEvent(self, event, unit)
+    if UUF.EventCoalescer then
+        EnsureAltPowerCoalescer()
+        UUF.EventCoalescer:QueueEvent(ALT_POWER_COALESCE_EVENT, self, event, unit)
+    else
+        if event == "UNIT_DISPLAYPOWER" then
+            self.powerType = ResolveSecondaryPowerType(self.unit)
+            ApplyAlternativePowerBarColor(self)
+        end
+        UpdateUnitPowerBarValues(self, event, unit)
+    end
+end
+
+local function ConfigureAlternativePowerBarEvents(AlternativePowerBar, enabled, unit)
+    if not AlternativePowerBar then return end
+
+    if enabled then
+        if AlternativePowerBar._eventsRegistered and AlternativePowerBar.unit == unit then
+            return
+        end
+        AlternativePowerBar:UnregisterAllEvents()
+        AlternativePowerBar:RegisterEvent("PLAYER_ENTERING_WORLD")
+        for _, event in ipairs(ALTERNATIVE_POWER_BAR_EVENTS) do
+            AlternativePowerBar:RegisterUnitEvent(event, unit)
+        end
+        AlternativePowerBar:SetScript("OnEvent", AlternativePowerBarOnEvent)
+        AlternativePowerBar._eventsRegistered = true
+    else
+        AlternativePowerBar:UnregisterAllEvents()
+        AlternativePowerBar:SetScript("OnEvent", nil)
+        AlternativePowerBar._eventsRegistered = false
+    end
+end
 
 function UUF:CreateUnitAlternativePowerBar(unitFrame, unit)
     local UUFDB = UUF.db.profile
@@ -55,12 +129,7 @@ function UUF:CreateUnitAlternativePowerBar(unitFrame, unit)
     AlternativePowerBar.unit = unit
     AlternativePowerBar.powerType = ResolveSecondaryPowerType(unit)
 
-    if AlternativePowerBarDB.ColourByType then
-        local powerColour = UUFDB.General.Colours.Power[AlternativePowerBar.powerType or 0]
-        if powerColour then AlternativePowerBar.Status:SetStatusBarColor(powerColour[1], powerColour[2], powerColour[3], powerColour[4]) end
-    else
-        AlternativePowerBar.Status:SetStatusBarColor(AlternativePowerBarDB.Foreground[1], AlternativePowerBarDB.Foreground[2], AlternativePowerBarDB.Foreground[3], AlternativePowerBarDB.Foreground[4])
-    end
+    ApplyAlternativePowerBarColor(AlternativePowerBar)
 
     if AlternativePowerBarDB.Inverse then
         AlternativePowerBar.Status:SetReverseFill(true)
@@ -70,16 +139,11 @@ function UUF:CreateUnitAlternativePowerBar(unitFrame, unit)
 
     if AlternativePowerBarDB.Enabled and UUF:RequiresAlternativePowerBar() then
         UUF:QueueOrRun(function() AlternativePowerBar:Show() end)
-        AlternativePowerBar:RegisterEvent("PLAYER_ENTERING_WORLD")
-        for _, event in ipairs(ALTERNATIVE_POWER_BAR_EVENTS) do
-            AlternativePowerBar:RegisterUnitEvent(event, unit)
-        end
-        AlternativePowerBar:SetScript("OnEvent", UpdateUnitPowerBarValues)
+        ConfigureAlternativePowerBarEvents(AlternativePowerBar, true, unit)
         UpdateUnitPowerBarValues(AlternativePowerBar)
     else
         UUF:QueueOrRun(function() AlternativePowerBar:Hide() end)
-        AlternativePowerBar:UnregisterAllEvents()
-        AlternativePowerBar:SetScript("OnEvent", nil)
+        ConfigureAlternativePowerBarEvents(AlternativePowerBar, false, unit)
     end
 
     unitFrame.AlternativePowerBar = AlternativePowerBar
@@ -105,12 +169,7 @@ function UUF:UpdateUnitAlternativePowerBar(unitFrame, unit)
     end)
     AlternativePowerBar.powerType = ResolveSecondaryPowerType(unit)
 
-    if AlternativePowerBarDB.ColourByType then
-        local powerColour = UUFDB.General.Colours.Power[AlternativePowerBar.powerType or 0]
-        if powerColour then AlternativePowerBar.Status:SetStatusBarColor(powerColour[1], powerColour[2], powerColour[3], powerColour[4]) end
-    else
-        AlternativePowerBar.Status:SetStatusBarColor(AlternativePowerBarDB.Foreground[1], AlternativePowerBarDB.Foreground[2], AlternativePowerBarDB.Foreground[3], AlternativePowerBarDB.Foreground[4])
-    end
+    ApplyAlternativePowerBarColor(AlternativePowerBar)
 
     if AlternativePowerBarDB.Inverse then
         AlternativePowerBar.Status:SetReverseFill(true)
@@ -120,15 +179,10 @@ function UUF:UpdateUnitAlternativePowerBar(unitFrame, unit)
 
     if AlternativePowerBarDB.Enabled and UUF:RequiresAlternativePowerBar() then
         UUF:QueueOrRun(function() AlternativePowerBar:Show() end)
-        AlternativePowerBar:RegisterEvent("PLAYER_ENTERING_WORLD")
-        for _, event in ipairs(ALTERNATIVE_POWER_BAR_EVENTS) do
-            AlternativePowerBar:RegisterUnitEvent(event, unit)
-        end
-        AlternativePowerBar:SetScript("OnEvent", UpdateUnitPowerBarValues)
+        ConfigureAlternativePowerBarEvents(AlternativePowerBar, true, unit)
         UpdateUnitPowerBarValues(AlternativePowerBar)
     else
         UUF:QueueOrRun(function() AlternativePowerBar:Hide() end)
-        AlternativePowerBar:UnregisterAllEvents()
-        AlternativePowerBar:SetScript("OnEvent", nil)
+        ConfigureAlternativePowerBarEvents(AlternativePowerBar, false, unit)
     end
 end

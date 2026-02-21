@@ -261,13 +261,32 @@ spellUpdateFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
 spellUpdateFrame:RegisterEvent("SPELLS_CHANGED")
 spellUpdateFrame:SetScript("OnEvent", UpdateActiveSpells)
 
+local RANGE_COALESCE_EVENT = "UUF_RANGE_FRAME_UPDATE"
+
+local function ProcessRangeFrameUpdates()
+    for i = #UUF.RangeEvtFrames, 1, -1 do
+        local frameData = UUF.RangeEvtFrames[i]
+        if not frameData or not frameData.frame then
+            table.remove(UUF.RangeEvtFrames, i)
+        else
+            UUF:UpdateRangeAlpha(frameData.frame, frameData.unit)
+        end
+    end
+end
+
+if UUF.EventCoalescer then
+    UUF.EventCoalescer:CoalesceEvent(RANGE_COALESCE_EVENT, 0.05, ProcessRangeFrameUpdates, 3)
+end
+
 local RangeEventFrame = CreateFrame("Frame")
 RangeEventFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
 RangeEventFrame:RegisterEvent("UNIT_TARGET")
 RangeEventFrame:RegisterEvent("SPELL_UPDATE_COOLDOWN")
 RangeEventFrame:SetScript("OnEvent", function()
-    for _, frameData in ipairs(UUF.RangeEvtFrames) do
-        UUF:UpdateRangeAlpha(frameData.frame, frameData.unit)
+    if UUF.EventCoalescer then
+        UUF.EventCoalescer:QueueEvent(RANGE_COALESCE_EVENT)
+    else
+        ProcessRangeFrameUpdates()
     end
 end)
 

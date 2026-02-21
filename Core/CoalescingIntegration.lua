@@ -66,6 +66,13 @@ local EVENT_COALESCE_CONFIG = {
 	-- Note: Cast start/stop/failed are NOT coalesced (instant feedback required)
 }
 
+-- Events that do not pass a unit token as first argument.
+-- Route these to known unit frames so coalescing still marks relevant frames dirty.
+local NON_UNIT_EVENT_TARGETS = {
+	PLAYER_TOTEM_UPDATE = { "player" },
+	RUNE_POWER_UPDATE = { "player" },
+}
+
 -- Statistics
 local _stats = {
 	appliedEvents = 0,
@@ -168,6 +175,22 @@ function CoalescingIntegration:_CreateBatchedHandler(eventName, priority)
 					"coalesced:" .. eventName,
 					priority
 				)
+				return
+			end
+		end
+
+		-- Fallback for events that do not provide unitToken (or if token isn't tracked).
+		local fallbackUnits = NON_UNIT_EVENT_TARGETS[eventName]
+		if fallbackUnits then
+			for i = 1, #fallbackUnits do
+				local frame = UUF.Units[fallbackUnits[i]]
+				if frame and frame.unit then
+					UUF.DirtyFlagManager:MarkDirty(
+						frame,
+						"coalesced:" .. eventName,
+						priority
+					)
+				end
 			end
 		end
 	end

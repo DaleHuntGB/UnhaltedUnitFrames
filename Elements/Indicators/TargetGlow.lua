@@ -1,15 +1,34 @@
 local _, UUF = ...
 UUF.TargetHighlightEvtFrames = {}
+local TARGET_GLOW_COALESCE_EVENT = "UUF_TARGET_GLOW_UPDATE"
+
+local function ProcessTargetGlowUpdates()
+    for i = #UUF.TargetHighlightEvtFrames, 1, -1 do
+        local frameData = UUF.TargetHighlightEvtFrames[i]
+        if not frameData or not frameData.frame then
+            table.remove(UUF.TargetHighlightEvtFrames, i)
+        else
+            local frame, unit = frameData.frame, frameData.unit
+            if UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Indicators.Target.Enabled then
+                UUF:UpdateTargetGlowIndicator(frame, unit)
+            end
+        end
+    end
+end
+
+if UUF.EventCoalescer then
+    -- Keep target feedback responsive while avoiding UNIT_TARGET burst spam.
+    UUF.EventCoalescer:CoalesceEvent(TARGET_GLOW_COALESCE_EVENT, 0.03, ProcessTargetGlowUpdates, 2)
+end
 
 local unitIsTargetEvtFrame = CreateFrame("Frame")
 unitIsTargetEvtFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
 unitIsTargetEvtFrame:RegisterEvent("UNIT_TARGET")
 unitIsTargetEvtFrame:SetScript("OnEvent", function()
-    for _, frameData in ipairs(UUF.TargetHighlightEvtFrames) do
-        local frame, unit = frameData.frame, frameData.unit
-        if UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Indicators.Target.Enabled then
-            UUF:UpdateTargetGlowIndicator(frame, unit)
-        end
+    if UUF.EventCoalescer then
+        UUF.EventCoalescer:QueueEvent(TARGET_GLOW_COALESCE_EVENT)
+    else
+        ProcessTargetGlowUpdates()
     end
 end)
 
@@ -54,6 +73,22 @@ function UUF:RegisterTargetGlowIndicatorFrame(frameName, unit)
         if UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Indicators.Target then
             local unitFrame = type(frameName) == "table" and frameName or _G[frameName]
             local DB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)]
+
+            for i = #UUF.TargetHighlightEvtFrames, 1, -1 do
+                local data = UUF.TargetHighlightEvtFrames[i]
+                if not data or not data.frame then
+                    table.remove(UUF.TargetHighlightEvtFrames, i)
+                elseif data.frame == unitFrame then
+                    data.unit = unit
+                    if DB and DB.Indicators.Target and DB.Indicators.Target.Enabled then
+                        UUF:UpdateTargetGlowIndicator(unitFrame, unit)
+                    else
+                        unitFrame.TargetIndicator:SetAlpha(0)
+                    end
+                    return
+                end
+            end
+
             table.insert(UUF.TargetHighlightEvtFrames, { frame = unitFrame, unit = unit })
             if DB and DB.Indicators.Target and DB.Indicators.Target.Enabled then
                 UUF:UpdateTargetGlowIndicator(unitFrame, unit)
