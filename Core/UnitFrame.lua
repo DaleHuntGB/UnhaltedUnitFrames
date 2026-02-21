@@ -1,6 +1,38 @@
 local _, UUF = ...
 local oUF = UUF.oUF
 
+local pendingCombatLayoutUpdates = {}
+local combatLayoutUpdateFrame
+
+local function FlushPendingCombatLayoutUpdates()
+    if InCombatLockdown() then return end
+
+    for unit in pairs(pendingCombatLayoutUpdates) do
+        local frame = UUF[unit:upper()]
+        if frame then
+            UUF:UpdateUnitFrame(frame, unit)
+        end
+        pendingCombatLayoutUpdates[unit] = nil
+    end
+
+    if combatLayoutUpdateFrame then
+        combatLayoutUpdateFrame:UnregisterEvent("PLAYER_REGEN_ENABLED")
+    end
+end
+
+function UUF:QueueCombatLayoutUpdate(unit)
+    if not unit then return end
+
+    pendingCombatLayoutUpdates[unit] = true
+
+    if not combatLayoutUpdateFrame then
+        combatLayoutUpdateFrame = CreateFrame("Frame")
+        combatLayoutUpdateFrame:SetScript("OnEvent", FlushPendingCombatLayoutUpdates)
+    end
+
+    combatLayoutUpdateFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
+end
+
 local function ApplyScripts(unitFrame)
     unitFrame:RegisterForClicks("AnyUp")
     unitFrame:SetAttribute("*type1", "target")
