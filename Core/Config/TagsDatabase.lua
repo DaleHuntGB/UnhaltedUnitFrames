@@ -29,9 +29,9 @@ function UUFG:AddTag(tagString, tagEvents, tagMethod, tagType, tagDescription)
 end
 
 local Tags = {
-    ["curhp:abbr"] = "UNIT_HEALTH UNIT_MAXHEALTH",
-    ["curhpperhp"] = "UNIT_HEALTH UNIT_MAXHEALTH",
-    ["curhpperhp:abbr"] = "UNIT_HEALTH UNIT_MAXHEALTH",
+    ["curhp:abbr"] = "UNIT_HEALTH UNIT_MAXHEALTH UNIT_ABSORB_AMOUNT_CHANGED",
+    ["curhpperhp"] = "UNIT_HEALTH UNIT_MAXHEALTH UNIT_ABSORB_AMOUNT_CHANGED",
+    ["curhpperhp:abbr"] = "UNIT_HEALTH UNIT_MAXHEALTH UNIT_ABSORB_AMOUNT_CHANGED",
     ["absorbs"] = "UNIT_ABSORB_AMOUNT_CHANGED",
     ["absorbs:abbr"] = "UNIT_ABSORB_AMOUNT_CHANGED",
     ["absorbs:truncate"] = "UNIT_ABSORB_AMOUNT_CHANGED",
@@ -177,6 +177,33 @@ local function AbbreviateValue(value)
     end
 end
 
+local function FetchAbsorbText(unit, useAbbrev)
+    if not unit or not UnitExists(unit) then return nil end
+    if type(UnitGetTotalAbsorbs) ~= "function" then return nil end
+
+    if C_StringUtil and C_StringUtil.TruncateWhenZero then
+        local ok, txt = pcall(C_StringUtil.TruncateWhenZero, UnitGetTotalAbsorbs(unit))
+        if ok and txt and not issecretvalue(txt) and txt ~= "" then
+            return txt
+        end
+    end
+
+    local absorbValue = UnitGetTotalAbsorbs(unit)
+    if useAbbrev then
+        local ok, txt = pcall(AbbreviateValue, absorbValue)
+        if ok and txt and not issecretvalue(txt) then
+            return txt
+        end
+    end
+
+    local ok, txt = pcall(tostring, absorbValue)
+    if ok and txt and not issecretvalue(txt) then
+        return txt
+    end
+
+    return nil
+end
+
 for tagString, tagEvents in pairs(Tags) do
     oUF.Tags.Events[tagString] = (oUF.Tags.Events[tagString] and (oUF.Tags.Events[tagString] .. " ") or "") .. tagEvents
 end
@@ -198,6 +225,10 @@ oUF.Tags.Methods["curhp:abbr"] = function(unit)
     if unitStatus then
         return unitStatus
     else
+        local absorbText = FetchAbsorbText(unit, true)
+        if absorbText then
+            return string.format("%s (%s)", AbbreviateValue(unitHealth), absorbText)
+        end
         return string.format("%s", AbbreviateValue(unitHealth))
     end
 end
@@ -211,14 +242,19 @@ oUF.Tags.Methods["curhpperhp"] = function(unit)
     if unitStatus then
         return unitStatus
     else
+        local absorbText = FetchAbsorbText(unit, false)
         if UUF.SEPARATOR == "[]" then
-            return string.format("%s [%.0f%%]", unitHealth, unitHealthPercent)
+            local baseText = string.format("%s [%.0f%%]", unitHealth, unitHealthPercent)
+            return absorbText and string.format("%s (%s)", baseText, absorbText) or baseText
         elseif UUF.SEPARATOR == "()" then
-            return string.format("%s (%.0f%%)", unitHealth, unitHealthPercent)
+            local baseText = string.format("%s (%.0f%%)", unitHealth, unitHealthPercent)
+            return absorbText and string.format("%s (%s)", baseText, absorbText) or baseText
         elseif UUF.SEPARATOR == " " then
-            return string.format("%s %.0f%%", unitHealth, unitHealthPercent)
+            local baseText = string.format("%s %.0f%%", unitHealth, unitHealthPercent)
+            return absorbText and string.format("%s (%s)", baseText, absorbText) or baseText
         else
-            return string.format("%s %s %.0f%%", unitHealth, UUF.SEPARATOR, unitHealthPercent)
+            local baseText = string.format("%s %s %.0f%%", unitHealth, UUF.SEPARATOR, unitHealthPercent)
+            return absorbText and string.format("%s (%s)", baseText, absorbText) or baseText
         end
     end
 end
@@ -232,14 +268,19 @@ oUF.Tags.Methods["curhpperhp:abbr"] = function(unit)
     if unitStatus then
         return unitStatus
     else
+        local absorbText = FetchAbsorbText(unit, true)
         if UUF.SEPARATOR == "[]" then
-            return string.format("%s [%.0f%%]", AbbreviateValue(unitHealth), unitHealthPercent)
+            local baseText = string.format("%s [%.0f%%]", AbbreviateValue(unitHealth), unitHealthPercent)
+            return absorbText and string.format("%s (%s)", baseText, absorbText) or baseText
         elseif UUF.SEPARATOR == "()" then
-            return string.format("%s (%.0f%%)", AbbreviateValue(unitHealth), unitHealthPercent)
+            local baseText = string.format("%s (%.0f%%)", AbbreviateValue(unitHealth), unitHealthPercent)
+            return absorbText and string.format("%s (%s)", baseText, absorbText) or baseText
         elseif UUF.SEPARATOR == " " then
-            return string.format("%s %.0f%%", AbbreviateValue(unitHealth), unitHealthPercent)
+            local baseText = string.format("%s %.0f%%", AbbreviateValue(unitHealth), unitHealthPercent)
+            return absorbText and string.format("%s (%s)", baseText, absorbText) or baseText
         else
-            return string.format("%s %s %.0f%%", AbbreviateValue(unitHealth), UUF.SEPARATOR, unitHealthPercent)
+            local baseText = string.format("%s %s %.0f%%", AbbreviateValue(unitHealth), UUF.SEPARATOR, unitHealthPercent)
+            return absorbText and string.format("%s (%s)", baseText, absorbText) or baseText
         end
     end
 end
@@ -437,7 +478,7 @@ end
 oUF.Tags.Methods["smartlevel"] = function(unit)
     if not unit or not UnitExists(unit) then return "" end
     local unitLevel = UnitLevel(unit) or "??"
-    local classification = UnitClassification(unit)
+    local classification = UUF:GetSafeUnitClassification(unit)
     if classification == "elite" then
         return unitLevel .. "*"
     elseif classification == "rareelite" then

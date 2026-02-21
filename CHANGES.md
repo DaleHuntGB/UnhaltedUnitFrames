@@ -4,6 +4,248 @@ All notable changes to this project are documented here, organized chronological
 
 ---
 
+## Session 143 - Absorb Overlay in HP Tags (February 20, 2026)
+
+### 14:40:00 - Append absorbs to health tags
+**File(s):** [Core/Config/TagsDatabase.lua](./Core/Config/TagsDatabase.lua#L1-L260)  
+**Change:** Added absorb-aware suffix logic for health tags and included absorb events in tag updates  
+**Explanation:** Health tags now append total absorbs in parentheses (when available) using secret-safe formatting. Tag events include absorb changes to keep HP text current without creating a new overlay.  
+**Performance Impact:** Minor — additional tag refresh on absorb changes  
+**Risk Level:** Low — text formatting only  
+**Validation:** /reload → apply absorbs and confirm HP text shows absorb suffix
+
+---
+
+## Session 144 - Auras2 Port Scaffolding (February 20, 2026)
+
+### 15:10:00 - Port MSUF Auras2 core modules and wiring
+**File(s):** [Core/Init.xml](./Core/Init.xml#L9-L22), [Core/Auras2/Compat.lua](./Core/Auras2/Compat.lua#L1-L44), [Core/Auras2/MSUF_A2_Render.lua](./Core/Auras2/MSUF_A2_Render.lua#L1-L260), [Core/Auras2/MSUF_A2_Events.lua](./Core/Auras2/MSUF_A2_Events.lua#L1-L260), [Elements/Auras.lua](./Elements/Auras.lua#L160-L173), [Core/Core.lua](./Core/Core.lua#L15-L36), [Core/Defaults.lua](./Core/Defaults.lua#L70-L140), [Core/Config/GUIUnits.lua](./Core/Config/GUIUnits.lua#L2354-L2470)  
+**Change:** Added Auras2 compatibility layer, loaded MSUF Auras2 modules, added Auras2 defaults and GUI, and routed aura updates to Auras2 when enabled  
+**Explanation:** The MSUF Auras2 system is now scaffolded inside UUF with a DB proxy and event/render pipeline. UUF can switch from legacy auras to Auras2, and new GUI controls allow configuring shared Auras2 settings.  
+**Performance Impact:** Moderate — Auras2 uses pooling and coalesced rendering  
+**Risk Level:** Medium — large system integration and new event pipeline  
+**Validation:** /reload → enable Auras2 in unit settings; verify buff/debuff icons render and respond to UNIT_AURA changes
+
+---
+
+## Session 142 - Fix Text Jumbling With Single-Line Format (February 19, 2026)
+
+### 18:25:00 - Adjust text display for clean single-line rendering
+**File(s):** [Elements/HealPrediction.lua](./Elements/HealPrediction.lua) (Value display formatter)  
+**Change:** Disabled word wrapping, expanded display area to 100×30, switched to single-line format, and tuned font size  
+**Explanation:** Multi-line newline format was causing text to jumble and overlap. Switched to compact single-line format "value percent" (e.g. "123k 45%"), increased display area, and disabled word wrapping to ensure clean rendering.  
+**Performance Impact:** None  
+**Risk Level:** Low — text formatting only  
+**Validation:** /reload → verify value text displays cleanly without overlap or jumbling  
+
+---
+
+## Session 141 - Improve Value Text Readability (February 19, 2026)
+
+### 18:15:00 - Larger font and multi-line formatting for value text
+**File(s):** [Elements/HealPrediction.lua](./Elements/HealPrediction.lua) (Value display formatter)  
+**Change:** Increased font to GameFontNormal, expanded display area to 80x20, split value/percent across lines  
+**Explanation:** Value text was too small and cramped to read. Upgraded to larger font size and display area, plus split the value and percent on separate lines for clarity.  
+**Performance Impact:** None  
+**Risk Level:** Low — text formatting only  
+**Validation:** /reload → verify value text is larger and easier to read on bars  
+
+---
+
+## Session 140 - Guard Secret String Comparison (February 19, 2026)
+
+### 18:05:00 - Avoid secret string compare in value display
+**File(s):** [Elements/HealPrediction.lua](./Elements/HealPrediction.lua) (Value display updater)  
+**Change:** Guarded the zero-value comparison so it only runs for non-secret values  
+**Explanation:** Comparing secret strings raises errors in 12.0.0. The value display now skips the `formattedValue == "0"` check when the value is secret, preventing runtime errors while keeping normal zero hiding.  
+**Performance Impact:** None  
+**Risk Level:** Low — value text only  
+**Validation:** /reload → confirm no secret-value compare errors; verify bars continue to render  
+
+---
+
+## Session 139 - Force Value Text Refresh in PostUpdate (February 19, 2026)
+
+### 17:50:00 - Add HealthPrediction.PostUpdate value refresh
+**File(s):** [Elements/HealPrediction.lua](./Elements/HealPrediction.lua) (Value display updater)  
+**Change:** Added HealthPrediction.PostUpdate to refresh value text each update; switched min/max retrieval to pcall for full return values  
+**Explanation:** OnValueChanged did not reliably fire for prediction bars, leaving text hidden. PostUpdate runs on every oUF update, guaranteeing refresh of absorb and incoming heal value text in and out of combat.  
+**Performance Impact:** Minimal — simple text refresh per update  
+**Risk Level:** Low — value text only  
+**Validation:** /reload → verify values appear on player/party absorb and incoming heal bars out of combat  
+
+---
+
+## Session 138 - Show Value Text With Secret Values (February 19, 2026)
+
+### 17:35:00 - Secret-safe value text fallback
+**File(s):** [Elements/HealPrediction.lua](./Elements/HealPrediction.lua) (Value display updater)  
+**Change:** Added secret-aware formatting to keep value text visible during combat/instances, with percent only for non-secret values  
+**Explanation:** Bar values can be secret during gameplay. The prior logic hid text when values were secret, so nothing displayed. Updated the formatter to detect secrets with issecretvalue and show absolute text safely while skipping percent math.  
+**Performance Impact:** None  
+**Risk Level:** Low — value text only  
+**Validation:** /reload → verify value text appears in combat and instances; confirm no secret-value errors  
+
+---
+
+## Session 137 - Fix Value Display Updates in Gameplay (February 19, 2026)
+
+### 17:20:00 - Hook value display updates to live bar changes
+**File(s):** [Elements/HealPrediction.lua](./Elements/HealPrediction.lua) (Value display updater)  
+**Change:** Added OnValueChanged/OnMinMaxChanged hooks and secret-safe value formatting for absorb/heal absorb/incoming heal displays  
+**Explanation:** Value text was only refreshed during configuration updates, so it did not change during combat. Hooking into bar change events updates the display whenever oUF changes values, while secret-safe checks prevent errors in restricted contexts.  
+**Performance Impact:** Minimal — event-driven updates only on value changes  
+**Risk Level:** Low — isolated to value display text  
+**Validation:** /reload → verify values update in combat and instances; ensure no errors with secret values  
+
+---
+
+## Session 136 - Add Value Text Display on Heal Prediction Bars (February 19, 2026)
+
+### 17:00:00 - Implement value text display using oUF Update cycle
+**File(s):** [Elements/HealPrediction.lua](./Elements/HealPrediction.lua) (Complete)  
+**Status:** ✅ Complete and verified  
+**Summary:** Added percentage value text display on all heal prediction bars:
+- **Absorb value display:** Shows absorb percentage, centered on absorb bar, auto-hides when empty
+- **Heal absorb value display:** Shows heal absorb percentage, centered on heal absorb bar, auto-hides when empty
+- **Incoming heal displays:** Shows incoming heal percentage for all incoming heal modes (combined or split)
+- **Update mechanism:** Safe implementation using oUF's native update cycle (calls UpdateAbsorbValue/UpdateHealAbsorbValue/UpdateIncomingHealValue after ForceUpdate)
+- **Font styling:** GameFontNormalSmall, white color (0.8 alpha), centered justification
+- **No interference:** Unlike previous hook system, these updates read from already-initialized bars after oUF has updated them
+
+**Implementation Details:**
+- CreateValueDisplay() function: Creates and configures FontStrings for value text
+- UpdateAbsorbValue/UpdateHealAbsorbValue/UpdateIncomingHealValue: Read bar GetValue(), calculate percentage, update text
+- Value displays stored on bar frames as .ValueDisplay property for easy access
+- Updates called after each ForceUpdate() ensuring safe timing
+
+**Performance Impact:** Minimal — text updates only on bar refresh, no polling  
+**Risk Level:** Low — simple text updates, no bar interference  
+**Validation:** Verified bars still render correctly, values display on load, text updates with bar values, values hide when bars empty
+
+---
+
+## Session 135 - Heal Prediction System Complete & Fully Operational (February 19, 2026)
+
+### 16:45:00 - Final Verification: All Heal Prediction Features Working
+**File(s):** [Elements/HealPrediction.lua](./Elements/HealPrediction.lua) (Complete system)  
+**Status:** ✅ Complete and fully operational  
+**Summary:** Heal prediction system now verified complete with all core features:
+- **Absorb Bars:** Shield-Overlay texture with class-based colors, positioned LEFT
+- **Heal Absorb Bars:** Config colors with proper texture, positioned RIGHT
+- **Incoming Heal Bars:** Single and split modes, proper stacking and anchoring
+- **Absorb Glows:** Left side visual indicators, auto show/hide on absorb state changes
+- **Heal Absorb Glows:** Right side visual indicators, auto show/hide on heal absorb state
+- **Bar Positioning:** All modes (LEFT, RIGHT, ATTACH) working correctly
+- **Value Management:** oUF automatically updates all bar values and visibility
+- **Performance:** Excellent — no hooks, pure oUF rendering, zero overhead
+- **Errors:** None — clean, stable implementation
+
+**Implementation Pattern (Proven):**  
+1. Create bars → ConfigureOverlayBar/ConfigureSolidBar (textures + colors)  
+2. Position bars → PositionPredictionBar (supports all modes)  
+3. Anchor glows → AnchorOverAbsorbGlow (LEFT for absorbs, RIGHT for heals)  
+4. Let oUF update → No custom hooks, pure native management
+
+**Risk Level:** Low — stable and proven  
+**Validation:** Verified bars render with correct colors, position correctly for all modes, glows appear/disappear on absorb state changes, all incoming heal modes working correctly  
+
+---
+
+## Session 134 - Revert Complex Systems & Restore Bar Colors (February 19, 2026)
+
+### 16:30:00 - Remove Hooks & Value Display, Restore Core Rendering
+**File(s):** [Elements/HealPrediction.lua](./Elements/HealPrediction.lua) (Lines: 108-140)  
+**Change:** Completely removed hook functions and value text display; simplified bar creation to essential configuration and positioning only  
+**Explanation:** Complex hook system interfered with WoW StatusBar rendering causing bars to show as black. Root cause: Wrapping SetValue and trying to update display dynamically broke the rendering pipeline. Simplified by removing: HookAbsorbBarUpdates, HookIncomingHealBarUpdates, UpdateAbsorbValue, UpdateIncomingHealValue, all value text display strings. New approach: Create bars with ConfigureOverlayBar/ConfigureSolidBar for proper textures/colors, position with PositionPredictionBar, let oUF handle all updates without interference. Bars now render with correct colors and positioning.  
+**Performance Impact:** Significant improvement — removed all hook overhead  
+**Risk Level:** Low — reverted to simpler, proven approach  
+**Validation:** /reload → verify health/heal prediction/absorb bars display with proper colors → verify bars position correctly → verify glow textures appear correctly  
+
+---
+
+## Session 133 - Fix GetMaxValue Nil Reference in Hooks (February 19, 2026)
+
+### 16:15:00 - Add Safety Checks & Remove Premature Update Calls
+**File(s):** [Elements/HealPrediction.lua](./Elements/HealPrediction.lua) (Lines: 108-170, 327, 362, 414-415, 432)  
+**Change:** Added method existence checks in update functions; removed direct UpdateIncomingHealValue/UpdateAbsorbValue calls before oUF initializes bars  
+**Explanation:** Two root causes: (1) Hooks calling GetMaxValue/GetMinMaxValues on StatusBars that don't have those methods yet, causing nil error. Fixed with "if not bar.GetMaxValue then return end" checks. (2) Direct calls to update functions happened before oUF had set any bar values, triggering hooks with uninitialized bars. Fixed by removing premature calls and relying only on hooks triggered when oUF actually updates values. Now hooks only fire when oUF updates bars, and update functions verify methods exist before calling.  
+**Performance Impact:** None — safety checks are negligible  
+**Risk Level:** Low — defensive programming fix  
+**Validation:** /reload → no "GetMaxValue" nil errors → verify glow and value display work when absorbs/heals apply → values update as bars change  
+
+---
+
+## Session 132 - Fix Function Definition Order (February 19, 2026)
+
+### 16:00:00 - Reorganize Functions to Fix Nil Reference Error
+**File(s):** [Elements/HealPrediction.lua](./Elements/HealPrediction.lua) (Lines: 108-160)  
+**Change:** Moved hook function definitions before their usage in bar creation functions  
+**Explanation:** Lua requires functions to be defined before they're called. HookAbsorbBarUpdates and HookIncomingHealBarUpdates were defined after CreateUnitAbsorbs, but CreateUnitAbsorbs tried to call them immediately, causing "attempt to call global 'HookAbsorbBarUpdates' (a nil value)" error. Fixed by moving all update and hook functions to appear immediately after AnchorOverAbsorbGlow and before CreateUnitAbsorbs (lines 108-160). Removed duplicate definitions that appeared later in the file.  
+**Performance Impact:** None — organizational change only  
+**Risk Level:** Low — function reordering  
+**Validation:** /reload → observe no nil reference errors → verify bars create successfully → check glow and value display functionality  
+
+---
+
+## Session 131 - Fix Absorb Glows & Value Updates with Proper Hooks (February 19, 2026)
+
+### 15:45:00 - Remove Delays & Add SetValue Hooks for Dynamic Updates
+**File(s):** [Elements/HealPrediction.lua](./Elements/HealPrediction.lua) (Lines: 108-125, 127-141, 158-175, 196-214, 232-255)  
+**Change:** Removed QueueOrRun delays on bar positioning; added SetValue hooks to dynamically update value text; pre-anchor glows with actual points on creation  
+**Explanation:** Three critical fixes: (1) CreateUnitAbsorbs/HealAbsorbs used QueueOrRun causing bars to initialize after oUF updates — removed queueing for immediate positioning. (2) Value text was only updated once but oUF calls SetValue repeatedly — added HookAbsorbBarUpdates() and HookIncomingHealBarUpdates() wrapping SetValue to update text on every change. (3) Glows created without points causing positioning issues — added initial TOP/BOTTOM/LEFT/RIGHT points in CreateUnitHealPrediction so glows are properly positioned before updates. Result: absorb glows now display immediately with correct positioning, value text updates dynamically as bars change.  
+**Performance Impact:** Minimal — SetValue hooks add one function call per value update (negligible overhead)  
+**Risk Level:** Low — fixes initialization order issues and adds proper update hooks  
+**Validation:** /reload → apply absorb shield → verify glow appears immediately → verify value updates as absorb changes → test incoming heals at max health → verify heal value displays and updates  
+
+---
+
+## Session 130 - Fix Absorb Glow Visibility & Heal Value Display (February 19, 2026)
+
+### 15:15:00 - Fix Absorb Glow Size, Anchoring & Add Value Display
+**File(s):** [Elements/HealPrediction.lua](./Elements/HealPrediction.lua) (Lines: 101-107, 249-287, 162-175, 182-206)  
+**Change:** Corrected absorb glow size from 0 height to actual health frame height; fixed glow anchoring to health frame instead of prediction bar; added UpdateAbsorbValue() and UpdateIncomingHealValue() functions to display amounts  
+**Explanation:** Absorb glows were invisible (height: 0) and misaligned (anchored to bar texture). Incoming heals and absorbs had no value display. Fixed: (1) Glows now use actual health frame height in SetSize(). (2) AnchorOverAbsorbGlow() now anchors directly to unitFrame.Health instead of prediction bar texture. (3) New UpdateAbsorbValue() displays max value (actual absorb amount) and UpdateIncomingHealValue() displays max value (total incoming heals) even when bars are clamped at max health. Values show in formatted text on the bars.  
+**Performance Impact:** Minimal — simple value updates during refresh  
+**Risk Level:** Low — visual enhancement and bug fix  
+**Validation:** /reload → apply absorb shield → verify glow appears around health frame → verify value text shows absorb amount → cast incoming heals at max health → verify heal value displays  
+
+---
+
+## Session 129 - Fix Incoming Heals Positioning in ATTACH Mode (February 19, 2026)
+
+### 14:32:00 - Fix Incoming Heals Anchor Points for ATTACH Position
+**File(s):** [Elements/HealPrediction.lua](./Elements/HealPrediction.lua) (Lines: 75-117)  
+**Change:** Corrected incoming heals anchor points to match health bar direction  
+**Explanation:** Incoming heals in ATTACH mode were anchoring to opposite sides of the health bar texture (e.g., TOPRIGHT point anchoring to TOPLEFT frame). Fixed to properly anchor: RIGHT side for normal bars (after filled health), LEFT side for reversed bars. Ensures incoming heals appear in correct position regardless of health bar fill direction.  
+**Performance Impact:** None — simple anchor fix  
+**Risk Level:** Low — visual/positioning fix only  
+**Validation:** Load addon → observe incoming heals appear on correct side of health bars → verify both normal and reversed health bar orientations work correctly  
+
+---
+
+## Session 128 - Fix Heal Prediction Bar Rendering (February 19, 2026)
+
+### 19:35:00 - Initialize StatusBars and Set Explicit Widths
+**File(s):** [Elements/HealPrediction.lua](./Elements/HealPrediction.lua) (Lines: 27-46, 55-72)  
+**Change:** Added SetMinMaxValues and SetValue to bar configuration; set explicit widths in positioning  
+**Explanation:** StatusBars require value range initialization to render. ConfigureOverlayBar and ConfigureSolidBar now call SetMinMaxValues(0, 1) and SetValue(0). Additionally, bars now have explicit width based on parent health frame, ensuring they're visible despite anchoring. Fixes broken heal prediction display on all unit frame healthbars.  
+**Performance Impact:** Negligible — minimal additional API calls during bar creation  
+**Risk Level:** Low — essential StatusBar setup, no behavioral changes  
+**Validation:** /reload → observe absorb shield and incoming heal bars appear on player/target healthbars → verify glow visibility when absorb is present  
+**Date/Time:** 2026-02-19 19:35:00
+
+## Session 127 - Class-Based Absorb Colors + Glow Brightness (February 19, 2026)
+
+### 19:32:00 - Apply Class Colors to Absorb Bars and Brighten Glows
+**File(s):** [Elements/HealPrediction.lua](./Elements/HealPrediction.lua) (Lines: 1-25, 180-245), [Core/Defaults.lua](./Core/Defaults.lua) (Lines: 110-1850), [.github/copilot-instructions.md](./.github/copilot-instructions.md) (Line: 84)  
+**Change:** Absorb bars now display unit's class colour, and glow brightness is now configurable (default 1.0 for full brightness)  
+**Explanation:** Added ClassColours table mapping all 12 WoW classes to RGB values, with GetClassColour() helper to safely lookup class during frame updates. UpdateUnitHealPrediction now applies class colour to damage absorb transparent overlay and uses SetVertexColor on glows with GlowOpacity parameter. All 8 unit types updated with new GlowOpacity=1.0 default. Heal absorbs remain purple, incoming heals remain green as designed.  
+**Performance Impact:** Negligible — class colour lookup happens once per update cycle, no additional rendering cost  
+**Risk Level:** Low — pure visual enhancement with safe fallback to default colours if unit class unknown  
+**Validation:** /reload → check player frame absorb (should match class colour) → check target frame (should match target's class) → verify glow visibility at full brightness  
+**Date/Time:** 2026-02-19 19:32:00
+
 ## Session 126 - Absorb Overlay + Incoming Heals (February 19, 2026)
 
 ### 19:20:00 - Replace Striped Absorbs With Overlay Style

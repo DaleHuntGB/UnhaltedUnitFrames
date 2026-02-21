@@ -6,6 +6,7 @@ local InCombatLockdown = InCombatLockdown
 local CreateFrame = CreateFrame
 local RegisterUnitWatch, UnregisterUnitWatch = RegisterUnitWatch, UnregisterUnitWatch
 local pairs, type = pairs, type
+local IsSecretValue = issecretvalue or function() return false end
 
 local function ApplyScripts(unitFrame)
     unitFrame:RegisterForClicks("AnyUp")
@@ -280,10 +281,10 @@ local RoleSortOrder = { TANK = 1, HEALER = 2, DAMAGER = 3, NONE = 4 }
 
 local function SortPartyFramesByRole(a, b)
     local roleA = UnitGroupRolesAssigned(a.unit)
-    if issecretvalue(roleA) then roleA = nil end
+    if IsSecretValue(roleA) then roleA = nil end
     roleA = roleA or "NONE"
     local roleB = UnitGroupRolesAssigned(b.unit)
-    if issecretvalue(roleB) then roleB = nil end
+    if IsSecretValue(roleB) then roleB = nil end
     roleB = roleB or "NONE"
     return RoleSortOrder[roleA] < RoleSortOrder[roleB]
 end
@@ -565,11 +566,18 @@ function UUF:UpdatePartyFrameVisibility()
         return
     end
     
+    -- Skip visibility checks when in test mode (test frames use fake units that won't exist in-game)
+    if UUF.PARTY_TEST_MODE then
+        return
+    end
+    
     -- Check each party frame and ensure it shows if the unit exists
     -- This is needed for Delves where NPC companions might not properly register with RegisterUnitWatch
     for i = 1, UUF.MAX_PARTY_MEMBERS do
         local partyFrame = UUF["PARTY" .. i]
-        if not partyFrame then return end
+        if not partyFrame then
+            break
+        end
         
         local unitToCheck
         if i == 1 and not UUF.db.profile.Units.party.HidePlayer then
@@ -654,7 +662,10 @@ end
 
 function UUF:UpdatePartyFrames()
     for i in pairs(UUF.PARTY_FRAMES) do
-        UUF:UpdateUnitFrame(UUF["PARTY"..i], "party"..i)
+        local frame = UUF["PARTY"..i]
+        if frame and frame.unit then
+            UUF:UpdateUnitFrame(frame, frame.unit)
+        end
     end
     UUF:CreateTestPartyFrames()
     UUF:LayoutPartyFrames()
@@ -662,7 +673,11 @@ end
 
 function UUF:UpdateAllUnitFrames()
     for unit, _ in pairs(UUF.db.profile.Units) do
-        if UUF[unit:upper()] then
+        if unit == "party" then
+            UUF:UpdatePartyFrames()
+        elseif unit == "boss" then
+            UUF:UpdateBossFrames()
+        elseif UUF[unit:upper()] then
             UUF:UpdateUnitFrame(UUF[unit:upper()], unit)
         end
     end

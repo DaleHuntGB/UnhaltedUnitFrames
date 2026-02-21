@@ -1,5 +1,47 @@
 # Project Guidelines
 
+## API Verification Workflow
+**CRITICAL: Always verify WoW APIs against the local wow-ui-source repository before planning or implementing any code changes.**
+
+### Before Any Code Planning or Changes:
+1. **Check Local Reference:** Review the latest API implementation in `d:\Games\World of Warcraft\_retail_\Interface\_Working\wow-ui-source`
+   - File path: `wow-ui-source/Interface/AddOns/Blizzard_*/` (Blizzard reference UI code)
+   - Verify C_* namespace functions, widget types, and event payloads
+   - Look for undocumented parameters, return values, or behavioral changes
+
+2. **Update Repository if Outdated:**
+   - Run: `/run UUF.DebugOutput:Output("APICheck", "Checking wow-ui-source for updates...", 1)`
+   - Navigate to: `d:\Games\World of Warcraft\_retail_\Interface\_Working\wow-ui-source`
+   - Check git status: `git status`
+   - Get latest: `git fetch origin && git pull` (uses branch: live)
+   - Verify update: `git log --oneline -5` (should show current date if updated)
+
+3. **Cross-Reference Before Implementation:**
+   - Compare proposed API usage against `wow-ui-source/Interface/AddOns/Blizzard_*/` code
+   - Verify parameter order, return value unpacking, availability in current patch
+   - Check for secret values (WoW 12.0.0+) that require special handling
+   - Note any deprecated or renamed functions
+
+4. **Document API Findings:**
+   - Record function signature and parameters from wow-ui-source references
+   - Note any version-specific behavior or restrictions
+   - Link to specific Blizzard reference UI file and line numbers in code comments
+   - Example comment: `-- Per Blizzard_CastingBar line 142: UnitChannelInfo returns 8 values in this order: name, text, texture, startTime, endTime, isTradeSkill, notInterruptible, spellID`
+
+### Why This Matters:
+- **Accuracy:** Blizzard reference UI is the source of truth for WoW API behavior
+- **Unpacking Errors:** Wrong parameter order causes "attempt to perform arithmetic on boolean" type errors
+- **Version Compatibility:** API changes between patches must be caught early
+- **Secret Values:** Some return values are secret in 12.0.0+ and need special handling
+- **Undocumented Features:** Many Blizzard APIs have quirks only visible in reference code
+
+### Common Pitfalls Fixed by This Workflow:
+- ❌ UnitChannelInfo unpacking with wrong underscore count (causes boolean arithmetic error)
+- ❌ Using deprecated C_* apis without checking wow-ui-source
+- ❌ Assuming parameter order without verifying in Blizzard code
+- ❌ Missing return value unpacking (only taking first value when multiple available)
+- ❌ Not handling secret values in 12.0.0+ properly
+
 ## Code Style
 - **Lua 5.1 ONLY:** WoW uses Lua 5.1 - do NOT use Lua 5.2+ syntax (no `goto`, no `\z`, no `0x` hex floats, no `//` comments)
   - ❌ FORBIDDEN: `goto label`, `::label::`, `\z` escape sequences, hexadecimal floats (`0x1.8p3`)
@@ -31,6 +73,7 @@
   - Safe API: `GetCastingInfoSafe()`, `GetChannelInfoSafe()`
   - Format: `FormatDuration()`, `FormatNumber()`, `FormatPercent()`
   - Layout: `LayoutColumn()` with chainable Row(), MoveY(), At(), Reset()
+  - Channel Ticks: `GetChannelTicks(spellID)` returns tick timings for spell channel visualization
 - **Debug output:** Use `UUF.DebugOutput` for all diagnostic messages instead of print() (see [Core/DebugOutput.lua](../Core/DebugOutput.lua)):
   - API: `UUF.DebugOutput:Output(systemName, message, tier)` where tier is TIER_CRITICAL/TIER_INFO/TIER_DEBUG
   - Three tiers: Critical (chat + panel), Info (panel optional), Debug (system-specific)
@@ -73,6 +116,14 @@
   - [ARCHITECTURE_GUIDE.md](../ARCHITECTURE_GUIDE.md): Comprehensive architecture reference with examples
   - [ARCHITECTURE_EXAMPLES.lua](../ARCHITECTURE_EXAMPLES.lua): Before/after integration patterns
   - [ULTIMATE_PERFORMANCE_SYSTEMS.md](../ULTIMATE_PERFORMANCE_SYSTEMS.md): Phase 4c systems reference
+- **CastBar Enhancements** ([Elements/CastBarEnhancements.lua](../Elements/CastBarEnhancements.lua)): Visual indicators for casting
+  - **Timer Direction:** Arrow/text/bar indicator showing cast progression direction
+  - **Channel Ticks:** Visual tick markers for channel ability timing (uses `UUF:GetChannelTicks(spellID)` from ChannelingTicks table)
+  - **Empower Stages:** Stage indicators for empowered abilities (lines/fills/boxes)
+  - **Latency Indicator:** Shows player latency and interrupt window threshold
+  - **Performance Fallback:** Disables expensive features in large groups (threshold configurable)
+  - **Initialization:** `UUF:EnhanceCastBar()` creates elements on cast start, `UUF:UpdateCastBarEnhancements()` updates per-frame
+  - **ChannelingTicks:** `UUF.ChannelingTicks` table maps spell IDs to tick arrays (milliseconds); `UUF:GetChannelTicks(spellID)` returns ticks with fallback to DEFAULT
 
 ## Build and Test
 - No build/test commands are documented in this repo.
@@ -81,7 +132,7 @@
 - Use `UUF:QueueOrRun` for protected operations during combat lockdown (see [Core/Core.lua](../Core/Core.lua)).
 - Layout is stored in `UnitDB.Frame.Layout` arrays and applied in [Core/UnitFrame.lua](../Core/UnitFrame.lua); keep layout arrays consistent.
 - Media is resolved through `UUF.Media` populated by `UUF:ResolveLSM()` in [Core/Globals.lua](../Core/Globals.lua).
-- **Heal prediction visuals:** Absorb bars use the `Shield-Overlay` texture with optional overshield glows and incoming heals support; configure via [Elements/HealPrediction.lua](../Elements/HealPrediction.lua), GUI in [Core/Config/GUIUnits.lua](../Core/Config/GUIUnits.lua), defaults in [Core/Defaults.lua](../Core/Defaults.lua).
+- **Heal prediction visuals:** Absorb bars use `Shield-Overlay` texture with class-based coloring (damage absorbs match unit's class colour), optional overshield glows (1.0 default opacity, configurable), and incoming heals support (all/player/other split); configure via [Elements/HealPrediction.lua](../Elements/HealPrediction.lua), GUI in [Core/Config/GUIUnits.lua](../Core/Config/GUIUnits.lua), defaults in [Core/Defaults.lua](../Core/Defaults.lua). Class colours defined in HealPrediction.lua LocalClassColours table (all 12 classes mapped).
 - **Change detection best practices:**
   - Always use `StampChanged()` before expensive style operations (buttons, textures, fonts)
   - Always use `SetPointIfChanged()` for frame positioning to avoid redundant API calls
@@ -232,16 +283,7 @@
 
 ## Change Documentation
 After completing any bug fix, feature work, or development change, update project documentation:
-## Bug Fixes ([BUG_FIXES.md](../BUG_FIXES.md))
-- For each bug fix that is reported by BugGrabber or DevForge formatting with begins with [ERROR], add an entry in the following format:
 
-```markdown
-**[BUG SUMMARY]**
-**File(s):** [File Path](link) (Line: XX)
-**Change:** Brief one-line description of the fix
-**Explanation:** 1-2 sentence explanation of what the bug was and how it was fixed
-**Date/Time:** YYYY-MM-DD HH:MM:SS
-```
 ### Work Summary Updates ([WORK_SUMMARY.md](../WORK_SUMMARY.md))
 - Add a new session section with the date and status
 - Document files modified with specific line ranges and descriptions
@@ -250,45 +292,6 @@ After completing any bug fix, feature work, or development change, update projec
 - Summarize overall status of the session (e.g., "All errors resolved ✅")
 - For feature additions, include a brief user-facing description of the new functionality unless the feature needs detailed explanation (in which case, add a new section describing the feature in detail)
 - Do not include updates if the user supplys a bug report Containing [ERROR] in the message, as those should be reserved for actual bug fixes. Instead, focus on documenting new features, architectural changes, or other development work that does not directly relate to fixing a reported error.
-
-### Change Log Updates ([CHANGES.md](../CHANGES.md))
-- Do not include updates if the user supplys a bug report Containing [ERROR] in the message, as those should be reserved for actual bug fixes. Instead, focus on documenting new features, architectural changes, or other development work that does not directly relate to fixing a reported error.
-- Add entries in the following format:
-
-```markdown
-### HH:MM:SS - [CHANGE SUMMARY]
-**File(s):** [File Path](link) (Line: XX)  
-**Change:** Brief one-line description  
-**Explanation:** 1-2 sentence explanation of what changed and why  
-**Date/Time:** YYYY-MM-DD HH:MM:SS
-```
-
-Example:
-```markdown
-### 01:10:24 - Fix Varargs Error in Architecture.lua
-**File(s):** [Core/Architecture.lua](./Core/Architecture.lua) (Line: 329)  
-**Change:** Changed `issecurevariable(..., val)` to proper type checking for userdata  
-**Explanation:** Lua 5.1 varargs cannot be used outside vararg functions; simplified to use type checking compatible with WoW 12.0.0 secret values  
-**Date/Time:** 2026-02-19 01:10:24
-```
-- Include any new git commits in the log with a brief description of the change and link to the commit if possible.
-- For performance impact, provide estimates (e.g., "No significant impact", "Minor increase in CPU usage during combat", etc.) based on the nature of the change.
-- For risk level, categorize as "Low", "Medium", or "High" based on potential for introducing bugs or performance issues, and describe the validation approach (e.g., "Tested in raid environment with combat logging enabled").
-- For feature additions, include a brief user-facing description of the new functionality unless the feature needs detailed explanation (in which case, add a new section describing the feature in detail).
-
-**Key Points:**
-- Include timestamp (HH:MM:SS format)
-- List all modified files with line numbers
-- Keep explanation concise but complete
-- Use file links for traceability
-- Update both WORK_SUMMARY.md and CHANGES.md for every change
-- Group related changes under a single session if completed within the same minute
-- Summarize overall status of the session (e.g., "All errors resolved ✅")
-- Avoid including deleted code in documentation; focus on what was changed/added.
-- For performance impact, provide estimates (e.g., "No significant impact", "Minor increase in CPU usage during combat", etc.) based on the nature of the change.
-- For risk level, categorize as "Low", "Medium", or "High" based on potential for introducing bugs or performance issues, and describe the validation approach (e.g., "Tested in raid environment with combat logging enabled").
-- For feature additions, include a brief user-facing description of the new functionality unless the feature needs detailed explanation (in which case, add a new section describing the feature in detail)
-- Do not include code blocks or specific code snippets in the change log; focus on high-level descriptions of what was changed and why.
 
 ### Self-Updating Documentation Guidelines
 When introducing new features, systems, libraries, or architectural changes, **automatically update this copilot-instructions.md file** to reflect the changes:
@@ -332,7 +335,6 @@ When introducing new features, systems, libraries, or architectural changes, **a
 **When in doubt:**
 - Check ARCHITECTURE_GUIDE.md for detailed system documentation
 - Review WORK_SUMMARY.md for recent session changes
-- Look at CHANGES.md for chronological feature history
 - Validate against existing patterns in the codebase
 
 This ensures future AI assistants and developers have accurate, up-to-date guidance reflecting the current state of the addon architecture and best practices.

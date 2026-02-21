@@ -1,0 +1,101 @@
+# C_ Namespace → Skill Lookup
+
+> **Parent skill:** [wow-api-index](../SKILL.md)
+
+Quick lookup table mapping every `C_` namespace to the domain skill that
+documents it. Use this when you know the namespace but not which skill covers it.
+
+| C_ Namespace | Skill |
+|-------------|-------|
+| `C_AccountStore` | wow-api-currency-economy |
+| `C_AchievementInfo` | wow-api-achievements |
+| `C_ActionBar` | wow-api-spells-abilities |
+| `C_AddOns` | wow-addon-structure |
+| `C_AlliedRaces` | wow-api-misc-systems |
+| `C_AreaPoiInfo` | wow-api-map-navigation |
+| `C_AssistedCombat` | wow-api-spells-abilities |
+| `C_AuctionHouse` | wow-api-currency-economy |
+| `C_Bank` | wow-api-items-inventory |
+| `C_BarberShop` | wow-api-transmog |
+| `C_BattleNet` | wow-api-social-chat |
+| `C_Build` | wow-api-settings-system |
+| `C_Calendar` | wow-api-calendar-events |
+| `C_CampaignInfo` | wow-api-quests |
+| `C_CatalogShop` | wow-api-currency-economy |
+| `C_ChallengeMode` | wow-api-encounters |
+| `C_ChatInfo` | wow-api-social-chat |
+| `C_ChromieTime` | wow-api-misc-systems |
+| `C_ClassTalents` | wow-api-talents |
+| `C_Club` | wow-api-social-chat |
+| `C_ClubFinder` | wow-api-social-chat |
+| `C_CombatLog` | wow-api-combat |
+| `C_Commentator` | wow-api-combat |
+| `C_ConsoleScriptCollection` | wow-api-misc-systems |
+| `C_Container` | wow-api-items-inventory |
+| `C_ContentTracking` | wow-api-quests |
+| `C_CooldownViewer` | wow-api-spells-abilities |
+| `C_CraftingOrders` | wow-api-professions |
+| `C_CurrencyInfo` | wow-api-currency-economy |
+| `C_DateAndTime` | wow-api-settings-system |
+| `C_DeathRecap` | wow-api-unit-player |
+| `C_DyeColor` | wow-api-transmog |
+| `C_EncounterJournal` | wow-api-encounters |
+| `C_EncounterTimeline` | wow-api-encounters |
+| `C_EventScheduler` | wow-api-calendar-events |
+| `C_EventToastManager` | wow-api-widget |
+| `C_EventUtils` | wow-api-events |
+| `C_ExternalEventURL` | wow-api-misc-systems |
+| `C_FrameManager` | wow-api-widget |
+| `C_FriendList` | wow-api-social-chat |
+| `C_InstanceEncounter` | wow-api-encounters |
+| `C_InstanceLeaver` | wow-api-encounters |
+| `C_Item` | wow-api-items-inventory |
+| `C_LFGInfo` | wow-api-group-lfg |
+| `C_LFGList` | wow-api-group-lfg |
+| `C_Log` | wow-api-misc-systems |
+| `C_Loot` | wow-api-items-inventory |
+| `C_LossOfControl` | wow-api-combat |
+| `C_MajorFactions` | wow-api-reputation |
+| `C_MountJournal` | wow-api-collections |
+| `C_NeighborhoodInitiative` | wow-api-housing |
+| `C_PartyInfo` | wow-api-group-lfg |
+| `C_PerksProgram` | wow-api-currency-economy |
+| `C_PetBattles` | wow-api-collections |
+| `C_PetJournal` | wow-api-collections |
+| `C_PlayerInfo` | wow-api-unit-player |
+| `C_PvP` | wow-api-pvp |
+| `C_QuestInfoSystem` | wow-api-quests |
+| `C_QuestLog` | wow-api-quests |
+| `C_QuestOffer` | wow-api-quests |
+| `C_ReportSystem` | wow-api-misc-systems |
+| `C_Reputation` | wow-api-reputation |
+| `C_ResearchInfo` | wow-api-misc-systems |
+| `C_RestrictedActions` | wow-api-lua-environment |
+| `C_Secrets` | wow-api-combat |
+| `C_SettingsUtil` | wow-api-settings-system |
+| `C_SocialQueue` | wow-api-group-lfg |
+| `C_Sound` | wow-api-settings-system |
+| `C_Spell` | wow-api-spells-abilities |
+| `C_SpellBook` | wow-api-spells-abilities |
+| `C_SpellDiminish` | wow-api-spells-abilities |
+| `C_SpecializationInfo` | wow-api-talents |
+| `C_StableInfo` | wow-api-collections |
+| `C_SummonInfo` | wow-api-unit-player |
+| `C_System` | wow-api-widget |
+| `C_TaxiMap` | wow-api-map-navigation |
+| `C_Timer` | wow-api-lua-environment |
+| `C_TooltipInfo` | wow-api-misc-systems |
+| `C_ToyBoxInfo` | wow-api-collections |
+| `C_TradeSkillUI` | wow-api-professions |
+| `C_Traits` | wow-api-talents |
+| `C_TransmogCollection` | wow-api-transmog |
+| `C_TransmogOutfitInfo` | wow-api-transmog |
+| `C_TransmogSets` | wow-api-transmog |
+| `C_Tutorial` | wow-api-misc-systems |
+| `C_UIColor` | wow-api-widget |
+| `C_UIWidgetManager` | wow-api-widget |
+| `C_UnitAuras` | wow-api-unit-player |
+| `C_VoiceChat` | wow-api-social-chat |
+| `C_WeeklyRewards` | wow-api-weekly-rewards |
+| `C_WowTokenUI` | wow-api-currency-economy |
+| `C_XMLUtil` | wow-api-widget |

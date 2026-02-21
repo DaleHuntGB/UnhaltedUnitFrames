@@ -8,6 +8,7 @@ local _, UUF = ...
 -- =========================================================================
 
 local Utilities = {}
+local IsSecretValue = issecretvalue or function() return false end
 
 -- =========================================================================
 -- Configuration Value Helpers (SavedVariables + Global Fallback)
@@ -107,7 +108,7 @@ function Utilities.GetCastingInfoSafe(unit)
         = pcall(UnitCastingInfo, unit)
 
     if not ok then return nil end
-    if issecretvalue(castName) then return nil end
+    if IsSecretValue(castName) then return nil end
 
     return castName, text, texture, startTime, endTime, isTradeSkill, castID, isInterrupted, spellID
 end
@@ -120,7 +121,7 @@ function Utilities.GetChannelInfoSafe(unit)
         = pcall(UnitChannelInfo, unit)
 
     if not ok then return nil end
-    if issecretvalue(channelName) then return nil end
+    if IsSecretValue(channelName) then return nil end
 
     return channelName, text, texture, startTime, endTime, isTradeSkill, notInterruptible
 end

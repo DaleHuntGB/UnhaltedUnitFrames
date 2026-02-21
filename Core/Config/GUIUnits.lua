@@ -103,6 +103,32 @@ local function UpdateMultiFrameUnit(unit, updateFunc)
     end
 end
 
+-- Update a specific tag for all frames in a multi-frame unit group
+local function UpdateTagForMultiFrameUnit(unit, tagDB)
+    if unit == "boss" then
+        for i = 1, 5 do
+            local bossFrame = UUF["BOSS"..i]
+            if bossFrame then
+                UUF:UpdateUnitTag(bossFrame, "boss"..i, tagDB)
+            end
+        end
+        UUF:LayoutBossFrames()
+    elseif unit == "party" then
+        for i in pairs(UUF.PARTY_FRAMES or {}) do
+            local partyFrame = UUF["PARTY"..i]
+            if partyFrame then
+                UUF:UpdateUnitTag(partyFrame, "party"..i, tagDB)
+            end
+        end
+        UUF:LayoutPartyFrames()
+    else
+        local frame = UUF[unit:upper()]
+        if frame then
+            UUF:UpdateUnitTag(frame, unit, tagDB)
+        end
+    end
+end
+
 -- ============================== PUBLIC MODULE FUNCTIONS ==============================
 
 -- Main unit settings panel builder (core enable/disable + unit-specific options)
@@ -509,6 +535,27 @@ function GUIUnits:CreateHealPredictionSettings(containerParent, unit, updateCall
     AbsorbPositionDropdown:SetCallback("OnValueChanged", function(_, _, value) HealPredictionDB.Absorbs.Position = value updateCallback() end)
     AbsorbSettings:AddChild(AbsorbPositionDropdown)
 
+    HealPredictionDB.Absorbs.Texture = HealPredictionDB.Absorbs.Texture or "Blizzard"
+    local LSM = LibStub("LibSharedMedia-3.0")
+    local textureList = LSM:HashTable("statusbar")
+    local textureOrder = {}
+    for name in pairs(textureList) do
+        table.insert(textureOrder, name)
+    end
+    table.sort(textureOrder)
+    local textureMap = {}
+    for _, name in ipairs(textureOrder) do
+        textureMap[name] = name
+    end
+
+    local AbsorbTextureDropdown = AG:Create("Dropdown")
+    AbsorbTextureDropdown:SetLabel("Texture")
+    AbsorbTextureDropdown:SetList(textureMap, textureOrder)
+    AbsorbTextureDropdown:SetValue(HealPredictionDB.Absorbs.Texture)
+    AbsorbTextureDropdown:SetRelativeWidth(0.33)
+    AbsorbTextureDropdown:SetCallback("OnValueChanged", function(_, _, value) HealPredictionDB.Absorbs.Texture = value updateCallback() end)
+    AbsorbSettings:AddChild(AbsorbTextureDropdown)
+
     local HealAbsorbSettings = GUIWidgets.CreateInlineGroup(containerParent, "Heal Absorb Settings")
     local ShowHealAbsorbToggle = AG:Create("CheckBox")
     ShowHealAbsorbToggle:SetLabel("Show Heal Absorbs")
@@ -557,6 +604,15 @@ function GUIUnits:CreateHealPredictionSettings(containerParent, unit, updateCall
     HealAbsorbPositionDropdown:SetRelativeWidth(0.33)
     HealAbsorbPositionDropdown:SetCallback("OnValueChanged", function(_, _, value) HealPredictionDB.HealAbsorbs.Position = value updateCallback() end)
     HealAbsorbSettings:AddChild(HealAbsorbPositionDropdown)
+
+    HealPredictionDB.HealAbsorbs.Texture = HealPredictionDB.HealAbsorbs.Texture or "Blizzard"
+    local HealAbsorbTextureDropdown = AG:Create("Dropdown")
+    HealAbsorbTextureDropdown:SetLabel("Texture")
+    HealAbsorbTextureDropdown:SetList(textureMap, textureOrder)
+    HealAbsorbTextureDropdown:SetValue(HealPredictionDB.HealAbsorbs.Texture)
+    HealAbsorbTextureDropdown:SetRelativeWidth(0.33)
+    HealAbsorbTextureDropdown:SetCallback("OnValueChanged", function(_, _, value) HealPredictionDB.HealAbsorbs.Texture = value updateCallback() end)
+    HealAbsorbSettings:AddChild(HealAbsorbTextureDropdown)
 
     local IncomingHealsSettings = GUIWidgets.CreateInlineGroup(containerParent, "Incoming Heals")
 
@@ -983,7 +1039,198 @@ function GUIUnits:CreateCastBarDurationTextSettings(containerParent, unit, updat
     RefreshCastBarDurationSettings()
 end
 
--- CastBar coordinator: TabGroup for Bar/Icon/SpellName/Duration
+-- CastBar subpanel: Enhancements (Timer Direction, Channel Ticks, Empower Stages, Latency feedback, Performance)
+function GUIUnits:CreateCastBarEnhancementsSettings(containerParent, unit, updateCallback)
+    local RefreshEnhancementsGUI
+    local CastBarDB = UUF.db.profile.Units[unit].CastBar
+
+    local EnhancementsContainer = AG:Create("SimpleGroup")
+    EnhancementsContainer:SetLayout("Flow")
+    containerParent:AddChild(EnhancementsContainer)
+
+    -- ==== ROW 1: TIMER DIRECTION & CHANNEL TICKS (side by side) ====
+    local TimerDirGroup = GUIWidgets.CreateInlineGroup(EnhancementsContainer, "Timer Direction")
+    TimerDirGroup:SetRelativeWidth(0.48)
+    
+    local TimerDirToggle = AG:Create("CheckBox")
+    TimerDirToggle:SetLabel("Enable Timer Direction")
+    TimerDirToggle:SetValue(CastBarDB.TimerDirection.Enabled)
+    TimerDirToggle:SetCallback("OnValueChanged", function(_, _, value) CastBarDB.TimerDirection.Enabled = value updateCallback() RefreshEnhancementsGUI() end)
+    TimerDirToggle:SetRelativeWidth(1.0)
+    TimerDirGroup:AddChild(TimerDirToggle)
+    
+    local TimerDirTypeDropdown = AG:Create("Dropdown")
+    TimerDirTypeDropdown:SetList({["ARROW"] = "Arrow", ["TEXT"] = "Text", ["BAR"] = "Bar"})
+    TimerDirTypeDropdown:SetLabel("Timer Display Type")
+    TimerDirTypeDropdown:SetValue(CastBarDB.TimerDirection.Type)
+    TimerDirTypeDropdown:SetCallback("OnValueChanged", function(_, _, value) CastBarDB.TimerDirection.Type = value updateCallback() end)
+    TimerDirTypeDropdown:SetRelativeWidth(1.0)
+    TimerDirGroup:AddChild(TimerDirTypeDropdown)
+
+    local TimerDirColour = CastBarDB.TimerDirection.Colour or {1, 1, 1, 1}
+    local TimerDirColourPicker = AG:Create("ColorPicker")
+    TimerDirColourPicker:SetLabel("Timer Direction Color")
+    TimerDirColourPicker:SetColor(TimerDirColour[1], TimerDirColour[2], TimerDirColour[3], TimerDirColour[4])
+    TimerDirColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) CastBarDB.TimerDirection.Colour = {r, g, b, a} updateCallback() end)
+    TimerDirColourPicker:SetRelativeWidth(1.0)
+    TimerDirGroup:AddChild(TimerDirColourPicker)
+
+    -- ==== CHANNEL TICKS (right of Timer Direction) ====
+    local ChannelTicksGroup = GUIWidgets.CreateInlineGroup(EnhancementsContainer, "Channel Ticks")
+    ChannelTicksGroup:SetRelativeWidth(0.48)
+    
+    local ChannelTicksToggle = AG:Create("CheckBox")
+    ChannelTicksToggle:SetLabel("Enable Channel Tick Markers")
+    ChannelTicksToggle:SetValue(CastBarDB.ChannelTicks.Enabled)
+    ChannelTicksToggle:SetCallback("OnValueChanged", function(_, _, value) CastBarDB.ChannelTicks.Enabled = value updateCallback() RefreshEnhancementsGUI() end)
+    ChannelTicksToggle:SetRelativeWidth(1.0)
+    ChannelTicksGroup:AddChild(ChannelTicksToggle)
+
+    local TickColour = CastBarDB.ChannelTicks.Colour or {0.5, 1, 0.5, 1}
+    local ChannelTicksColourPicker = AG:Create("ColorPicker")
+    ChannelTicksColourPicker:SetLabel("Tick Color")
+    ChannelTicksColourPicker:SetColor(TickColour[1], TickColour[2], TickColour[3], TickColour[4])
+    ChannelTicksColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) CastBarDB.ChannelTicks.Colour = {r, g, b, a} updateCallback() end)
+    ChannelTicksColourPicker:SetRelativeWidth(0.5)
+    ChannelTicksGroup:AddChild(ChannelTicksColourPicker)
+
+    local ChannelTicksOpacitySlider = AG:Create("Slider")
+    ChannelTicksOpacitySlider:SetLabel("Tick Opacity")
+    ChannelTicksOpacitySlider:SetValue(CastBarDB.ChannelTicks.Opacity or 0.8)
+    ChannelTicksOpacitySlider:SetSliderValues(0, 1, 0.05)
+    ChannelTicksOpacitySlider:SetCallback("OnValueChanged", function(_, _, value) CastBarDB.ChannelTicks.Opacity = value updateCallback() end)
+    ChannelTicksOpacitySlider:SetRelativeWidth(0.5)
+    ChannelTicksGroup:AddChild(ChannelTicksOpacitySlider)
+
+    local ChannelTicksWidthSlider = AG:Create("Slider")
+    ChannelTicksWidthSlider:SetLabel("Tick Width")
+    ChannelTicksWidthSlider:SetValue(CastBarDB.ChannelTicks.Width or 8)
+    ChannelTicksWidthSlider:SetSliderValues(2, 20, 1)
+    ChannelTicksWidthSlider:SetCallback("OnValueChanged", function(_, _, value) CastBarDB.ChannelTicks.Width = value updateCallback() end)
+    ChannelTicksWidthSlider:SetRelativeWidth(0.5)
+    ChannelTicksGroup:AddChild(ChannelTicksWidthSlider)
+
+    local ChannelTicksHeightSlider = AG:Create("Slider")
+    ChannelTicksHeightSlider:SetLabel("Tick Height")
+    ChannelTicksHeightSlider:SetValue(CastBarDB.ChannelTicks.Height or 28)
+    ChannelTicksHeightSlider:SetSliderValues(10, 50, 1)
+    ChannelTicksHeightSlider:SetCallback("OnValueChanged", function(_, _, value) CastBarDB.ChannelTicks.Height = value updateCallback() end)
+    ChannelTicksHeightSlider:SetRelativeWidth(0.5)
+    ChannelTicksGroup:AddChild(ChannelTicksHeightSlider)
+
+    -- ==== ROW 2: EMPOWER STAGES & LATENCY INDICATOR (side by side) ====
+    local EmpowerGroup = GUIWidgets.CreateInlineGroup(EnhancementsContainer, "Empower Stage Visuals")
+    EmpowerGroup:SetRelativeWidth(0.48)
+    
+    local EmpowerToggle = AG:Create("CheckBox")
+    EmpowerToggle:SetLabel("Enable Empower Stage Indicators")
+    EmpowerToggle:SetValue(CastBarDB.EmpowerStages.Enabled)
+    EmpowerToggle:SetCallback("OnValueChanged", function(_, _, value) CastBarDB.EmpowerStages.Enabled = value updateCallback() RefreshEnhancementsGUI() end)
+    EmpowerToggle:SetRelativeWidth(1.0)
+    EmpowerGroup:AddChild(EmpowerToggle)
+
+    local EmpowerStyleDropdown = AG:Create("Dropdown")
+    EmpowerStyleDropdown:SetList({["LINES"] = "Lines", ["FILLS"] = "Fills", ["BOXES"] = "Boxes"})
+    EmpowerStyleDropdown:SetLabel("Stage Display Style")
+    EmpowerStyleDropdown:SetValue(CastBarDB.EmpowerStages.Style or "LINES")
+    EmpowerStyleDropdown:SetCallback("OnValueChanged", function(_, _, value) CastBarDB.EmpowerStages.Style = value updateCallback() end)
+    EmpowerStyleDropdown:SetRelativeWidth(1.0)
+    EmpowerGroup:AddChild(EmpowerStyleDropdown)
+
+    local EmpowerColour = CastBarDB.EmpowerStages.Colour or {1, 1, 0, 1}
+    local EmpowerColourPicker = AG:Create("ColorPicker")
+    EmpowerColourPicker:SetLabel("Stage Marker Color")
+    EmpowerColourPicker:SetColor(EmpowerColour[1], EmpowerColour[2], EmpowerColour[3], EmpowerColour[4])
+    EmpowerColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) CastBarDB.EmpowerStages.Colour = {r, g, b, a} updateCallback() end)
+    EmpowerColourPicker:SetRelativeWidth(1.0)
+    EmpowerGroup:AddChild(EmpowerColourPicker)
+
+    local EmpowerWidthSlider = AG:Create("Slider")
+    EmpowerWidthSlider:SetLabel("Indicator Width")
+    EmpowerWidthSlider:SetValue(CastBarDB.EmpowerStages.Width or 4)
+    EmpowerWidthSlider:SetSliderValues(2, 20, 1)
+    EmpowerWidthSlider:SetCallback("OnValueChanged", function(_, _, value) CastBarDB.EmpowerStages.Width = value updateCallback() end)
+    EmpowerWidthSlider:SetRelativeWidth(0.5)
+    EmpowerGroup:AddChild(EmpowerWidthSlider)
+
+    local EmpowerHeightSlider = AG:Create("Slider")
+    EmpowerHeightSlider:SetLabel("Indicator Height")
+    EmpowerHeightSlider:SetValue(CastBarDB.EmpowerStages.Height or 24)
+    EmpowerHeightSlider:SetSliderValues(10, 50, 1)
+    EmpowerHeightSlider:SetCallback("OnValueChanged", function(_, _, value) CastBarDB.EmpowerStages.Height = value updateCallback() end)
+    EmpowerHeightSlider:SetRelativeWidth(0.5)
+    EmpowerGroup:AddChild(EmpowerHeightSlider)
+
+    -- ==== LATENCY INDICATOR (right of Empower) ====
+    local LatencyGroup = GUIWidgets.CreateInlineGroup(EnhancementsContainer, "Latency Indicator")
+    LatencyGroup:SetRelativeWidth(0.48)
+    
+    local LatencyToggle = AG:Create("CheckBox")
+    LatencyToggle:SetLabel("Enable Latency Display")
+    LatencyToggle:SetValue(CastBarDB.LatencyIndicator.Enabled)
+    LatencyToggle:SetCallback("OnValueChanged", function(_, _, value) CastBarDB.LatencyIndicator.Enabled = value updateCallback() RefreshEnhancementsGUI() end)
+    LatencyToggle:SetRelativeWidth(0.5)
+    LatencyGroup:AddChild(LatencyToggle)
+
+    local LatencyShowValueToggle = AG:Create("CheckBox")
+    LatencyShowValueToggle:SetLabel("Show Latency Value")
+    LatencyShowValueToggle:SetValue(CastBarDB.LatencyIndicator.ShowValue)
+    LatencyShowValueToggle:SetCallback("OnValueChanged", function(_, _, value) CastBarDB.LatencyIndicator.ShowValue = value updateCallback() end)
+    LatencyShowValueToggle:SetRelativeWidth(0.5)
+    LatencyGroup:AddChild(LatencyShowValueToggle)
+
+    local HighLatencyThreshold = AG:Create("Slider")
+    HighLatencyThreshold:SetLabel("High Latency Threshold (ms)")
+    HighLatencyThreshold:SetValue(CastBarDB.LatencyIndicator.HighLatencyThreshold or 150)
+    HighLatencyThreshold:SetSliderValues(50, 500, 10)
+    HighLatencyThreshold:SetCallback("OnValueChanged", function(_, _, value) CastBarDB.LatencyIndicator.HighLatencyThreshold = value updateCallback() end)
+    HighLatencyThreshold:SetRelativeWidth(1.0)
+    LatencyGroup:AddChild(HighLatencyThreshold)
+
+    -- ==== ROW 3: PERFORMANCE SETTINGS (full width) ====
+    local PerfGroup = GUIWidgets.CreateInlineGroup(EnhancementsContainer, "Performance Settings")
+    PerfGroup:SetRelativeWidth(1.0)
+    
+    local SimplifyToggle = AG:Create("CheckBox")
+    SimplifyToggle:SetLabel("Simplify For Large Groups")
+    SimplifyToggle:SetValue(CastBarDB.Performance.SimplifyForLargeGroups)
+    SimplifyToggle:SetCallback("OnValueChanged", function(_, _, value) CastBarDB.Performance.SimplifyForLargeGroups = value updateCallback() RefreshEnhancementsGUI() end)
+    SimplifyToggle:SetRelativeWidth(0.5)
+    PerfGroup:AddChild(SimplifyToggle)
+
+    local GroupSizeThreshold = AG:Create("Slider")
+    GroupSizeThreshold:SetLabel("Group Size Threshold")
+    GroupSizeThreshold:SetValue(CastBarDB.Performance.GroupSizeThreshold or 15)
+    GroupSizeThreshold:SetSliderValues(5, 40, 1)
+    GroupSizeThreshold:SetCallback("OnValueChanged", function(_, _, value) CastBarDB.Performance.GroupSizeThreshold = value updateCallback() end)
+    GroupSizeThreshold:SetRelativeWidth(0.5)
+    PerfGroup:AddChild(GroupSizeThreshold)
+
+    -- Refresh logic
+    RefreshEnhancementsGUI = function()
+        TimerDirTypeDropdown:SetDisabled(not CastBarDB.TimerDirection.Enabled)
+        TimerDirColourPicker:SetDisabled(not CastBarDB.TimerDirection.Enabled)
+        
+        ChannelTicksColourPicker:SetDisabled(not CastBarDB.ChannelTicks.Enabled)
+        ChannelTicksOpacitySlider:SetDisabled(not CastBarDB.ChannelTicks.Enabled)
+        ChannelTicksWidthSlider:SetDisabled(not CastBarDB.ChannelTicks.Enabled)
+        ChannelTicksHeightSlider:SetDisabled(not CastBarDB.ChannelTicks.Enabled)
+        
+        EmpowerStyleDropdown:SetDisabled(not CastBarDB.EmpowerStages.Enabled)
+        EmpowerColourPicker:SetDisabled(not CastBarDB.EmpowerStages.Enabled)
+        EmpowerWidthSlider:SetDisabled(not CastBarDB.EmpowerStages.Enabled)
+        EmpowerHeightSlider:SetDisabled(not CastBarDB.EmpowerStages.Enabled)
+        
+        LatencyShowValueToggle:SetDisabled(not CastBarDB.LatencyIndicator.Enabled)
+        HighLatencyThreshold:SetDisabled(not CastBarDB.LatencyIndicator.Enabled)
+        
+        GroupSizeThreshold:SetDisabled(not CastBarDB.Performance.SimplifyForLargeGroups)
+    end
+
+    RefreshEnhancementsGUI()
+end
+
+-- CastBar coordinator: TabGroup for Bar/Icon/SpellName/Duration/Enhancements
 function GUIUnits:CreateCastBarSettings(containerParent, unit)
     local function SelectCastBarTab(CastBarContainer, _, CastBarTab)
         SaveSubTab(unit, "CastBar", CastBarTab)
@@ -996,6 +1243,8 @@ function GUIUnits:CreateCastBarSettings(containerParent, unit)
             GUIUnits:CreateCastBarSpellNameTextSettings(CastBarContainer, unit, function() UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitCastBar(UUF[unit:upper()], unit) end) end)
         elseif CastBarTab == "Duration" then
             GUIUnits:CreateCastBarDurationTextSettings(CastBarContainer, unit, function() UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitCastBar(UUF[unit:upper()], unit) end) end)
+        elseif CastBarTab == "Enhancements" then
+            GUIUnits:CreateCastBarEnhancementsSettings(CastBarContainer, unit, function() UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitCastBar(UUF[unit:upper()], unit) end) end)
         end
     end
 
@@ -1007,6 +1256,7 @@ function GUIUnits:CreateCastBarSettings(containerParent, unit)
         {text = "Icon" , value = "Icon"},
         {text = "Text: |cFFFFFFFFSpell Name|r", value = "SpellName"},
         {text = "Text: |cFFFFFFFFDuration|r", value = "Duration"},
+        {text = "Enhancements", value = "Enhancements"},
     })
     CastBarTabGroup:SetCallback("OnGroupSelected", SelectCastBarTab)
     CastBarTabGroup:SelectTab(GetSavedSubTab(unit, "CastBar", "Bar"))
@@ -1151,7 +1401,6 @@ function GUIUnits:CreateSecondaryPowerBarSettings(containerParent, unit, updateC
     BackgroundColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) SecondaryPowerBarDB.Background = {r, g, b, a} updateCallback() end)
     BackgroundColourPicker:SetHasAlpha(true)
     BackgroundColourPicker:SetRelativeWidth(0.5)
-    BackgroundColourPicker:SetDisabled(SecondaryPowerBarDB.ColourBackgroundByType)
     ColourContainer:AddChild(BackgroundColourPicker)
 
     local function RefreshSecondaryPowerBarGUI()
@@ -1979,14 +2228,14 @@ function GUIUnits:CreateTagSetting(containerParent, unit, tagDB)
     EditBox:SetText(TagDB.Tag)
     EditBox:SetRelativeWidth(0.5)
     EditBox:DisableButton(true)
-    EditBox:SetCallback("OnEnterPressed", function(_, _, value) TagDB.Tag = value EditBox:SetText(TagDB.Tag) UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitTag(UUF[unit:upper()], unit, tagDB) end) end)
+    EditBox:SetCallback("OnEnterPressed", function(_, _, value) TagDB.Tag = value EditBox:SetText(TagDB.Tag) UpdateTagForMultiFrameUnit(unit, tagDB) end)
     TagContainer:AddChild(EditBox)
 
     local ColourPicker = AG:Create("ColorPicker")
     ColourPicker:SetLabel("Colour")
     ColourPicker:SetColor(TagDB.Colour[1], TagDB.Colour[2], TagDB.Colour[3], 1)
     ColourPicker:SetFullWidth(true)
-    ColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) TagDB.Colour = {r, g, b} UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitTag(UUF[unit:upper()], unit, tagDB) end) end)
+    ColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) TagDB.Colour = {r, g, b} UpdateTagForMultiFrameUnit(unit, tagDB) end)
     ColourPicker:SetHasAlpha(false)
     ColourPicker:SetRelativeWidth(0.5)
     TagContainer:AddChild(ColourPicker)
@@ -1998,7 +2247,7 @@ function GUIUnits:CreateTagSetting(containerParent, unit, tagDB)
     AnchorFromDropdown:SetLabel("Anchor From")
     AnchorFromDropdown:SetValue(TagDB.Layout[1])
     AnchorFromDropdown:SetRelativeWidth(0.5)
-    AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) TagDB.Layout[1] = value UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitTag(UUF[unit:upper()], unit, tagDB) end) end)
+    AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) TagDB.Layout[1] = value UpdateTagForMultiFrameUnit(unit, tagDB) end)
     LayoutContainer:AddChild(AnchorFromDropdown)
 
     local AnchorToDropdown = AG:Create("Dropdown")
@@ -2006,7 +2255,7 @@ function GUIUnits:CreateTagSetting(containerParent, unit, tagDB)
     AnchorToDropdown:SetLabel("Anchor To")
     AnchorToDropdown:SetValue(TagDB.Layout[2])
     AnchorToDropdown:SetRelativeWidth(0.5)
-    AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) TagDB.Layout[2] = value UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitTag(UUF[unit:upper()], unit, tagDB) end) end)
+    AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) TagDB.Layout[2] = value UpdateTagForMultiFrameUnit(unit, tagDB) end)
     LayoutContainer:AddChild(AnchorToDropdown)
 
     local XPosSlider = AG:Create("Slider")
@@ -2014,7 +2263,7 @@ function GUIUnits:CreateTagSetting(containerParent, unit, tagDB)
     XPosSlider:SetValue(TagDB.Layout[3])
     XPosSlider:SetSliderValues(-1000, 1000, 0.1)
     XPosSlider:SetRelativeWidth(0.33)
-    XPosSlider:SetCallback("OnValueChanged", function(_, _, value) TagDB.Layout[3] = value UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitTag(UUF[unit:upper()], unit, tagDB) end) end)
+    XPosSlider:SetCallback("OnValueChanged", function(_, _, value) TagDB.Layout[3] = value UpdateTagForMultiFrameUnit(unit, tagDB) end)
     LayoutContainer:AddChild(XPosSlider)
 
     local YPosSlider = AG:Create("Slider")
@@ -2022,7 +2271,7 @@ function GUIUnits:CreateTagSetting(containerParent, unit, tagDB)
     YPosSlider:SetValue(TagDB.Layout[4])
     YPosSlider:SetSliderValues(-1000, 1000, 0.1)
     YPosSlider:SetRelativeWidth(0.33)
-    YPosSlider:SetCallback("OnValueChanged", function(_, _, value) TagDB.Layout[4] = value UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitTag(UUF[unit:upper()], unit, tagDB) end) end)
+    YPosSlider:SetCallback("OnValueChanged", function(_, _, value) TagDB.Layout[4] = value UpdateTagForMultiFrameUnit(unit, tagDB) end)
     LayoutContainer:AddChild(YPosSlider)
 
     local FontSizeSlider = AG:Create("Slider")
@@ -2030,7 +2279,7 @@ function GUIUnits:CreateTagSetting(containerParent, unit, tagDB)
     FontSizeSlider:SetValue(TagDB.FontSize)
     FontSizeSlider:SetSliderValues(8, 64, 1)
     FontSizeSlider:SetRelativeWidth(0.33)
-    FontSizeSlider:SetCallback("OnValueChanged", function(_, _, value) TagDB.FontSize = value UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitTag(UUF[unit:upper()], unit, tagDB) end) end)
+    FontSizeSlider:SetCallback("OnValueChanged", function(_, _, value) TagDB.FontSize = value UpdateTagForMultiFrameUnit(unit, tagDB) end)
     LayoutContainer:AddChild(FontSizeSlider)
 
     local TagSelectionContainer = GUIWidgets.CreateInlineGroup(containerParent, "Tag Selection")
@@ -2041,7 +2290,7 @@ function GUIUnits:CreateTagSetting(containerParent, unit, tagDB)
     HealthTagDropdown:SetLabel("Health Tags")
     HealthTagDropdown:SetValue(nil)
     HealthTagDropdown:SetRelativeWidth(0.5)
-    HealthTagDropdown:SetCallback("OnValueChanged", function(_, _, value) local currentTag = TagDB.Tag if currentTag and currentTag ~= "" then currentTag = currentTag .. "[" .. value .. "]" else currentTag = "[" .. value .. "]" end EditBox:SetText(currentTag) UUF.db.profile.Units[unit].Tags[tagDB].Tag = currentTag UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitTag(UUF[unit:upper()], unit, tagDB) end) HealthTagDropdown:SetValue(nil) end)
+    HealthTagDropdown:SetCallback("OnValueChanged", function(_, _, value) local currentTag = TagDB.Tag if currentTag and currentTag ~= "" then currentTag = currentTag .. "[" .. value .. "]" else currentTag = "[" .. value .. "]" end EditBox:SetText(currentTag) UUF.db.profile.Units[unit].Tags[tagDB].Tag = currentTag UpdateTagForMultiFrameUnit(unit, tagDB) HealthTagDropdown:SetValue(nil) end)
     TagSelectionContainer:AddChild(HealthTagDropdown)
 
     local PowerTagDropdown = AG:Create("Dropdown")
@@ -2049,7 +2298,7 @@ function GUIUnits:CreateTagSetting(containerParent, unit, tagDB)
     PowerTagDropdown:SetLabel("Power Tags")
     PowerTagDropdown:SetValue(nil)
     PowerTagDropdown:SetRelativeWidth(0.5)
-    PowerTagDropdown:SetCallback("OnValueChanged", function(_, _, value) local currentTag = TagDB.Tag if currentTag and currentTag ~= "" then currentTag = currentTag .. "[" .. value .. "]" else currentTag = "[" .. value .. "]" end EditBox:SetText(currentTag) UUF.db.profile.Units[unit].Tags[tagDB].Tag = currentTag UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitTag(UUF[unit:upper()], unit, tagDB) end) PowerTagDropdown:SetValue(nil) end)
+    PowerTagDropdown:SetCallback("OnValueChanged", function(_, _, value) local currentTag = TagDB.Tag if currentTag and currentTag ~= "" then currentTag = currentTag .. "[" .. value .. "]" else currentTag = "[" .. value .. "]" end EditBox:SetText(currentTag) UUF.db.profile.Units[unit].Tags[tagDB].Tag = currentTag UpdateTagForMultiFrameUnit(unit, tagDB) PowerTagDropdown:SetValue(nil) end)
     TagSelectionContainer:AddChild(PowerTagDropdown)
 
     local NameTagDropdown = AG:Create("Dropdown")
@@ -2057,7 +2306,7 @@ function GUIUnits:CreateTagSetting(containerParent, unit, tagDB)
     NameTagDropdown:SetLabel("Name Tags")
     NameTagDropdown:SetValue(nil)
     NameTagDropdown:SetRelativeWidth(0.5)
-    NameTagDropdown:SetCallback("OnValueChanged", function(_, _, value) local currentTag = TagDB.Tag if currentTag and currentTag ~= "" then currentTag = currentTag .. "[" .. value .. "]" else currentTag = "[" .. value .. "]" end EditBox:SetText(currentTag) UUF.db.profile.Units[unit].Tags[tagDB].Tag = currentTag UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitTag(UUF[unit:upper()], unit, tagDB) end) NameTagDropdown:SetValue(nil) end)
+    NameTagDropdown:SetCallback("OnValueChanged", function(_, _, value) local currentTag = TagDB.Tag if currentTag and currentTag ~= "" then currentTag = currentTag .. "[" .. value .. "]" else currentTag = "[" .. value .. "]" end EditBox:SetText(currentTag) UUF.db.profile.Units[unit].Tags[tagDB].Tag = currentTag UpdateTagForMultiFrameUnit(unit, tagDB) NameTagDropdown:SetValue(nil) end)
     TagSelectionContainer:AddChild(NameTagDropdown)
 
     local MiscTagDropdown = AG:Create("Dropdown")
@@ -2065,7 +2314,7 @@ function GUIUnits:CreateTagSetting(containerParent, unit, tagDB)
     MiscTagDropdown:SetLabel("Misc Tags")
     MiscTagDropdown:SetValue(nil)
     MiscTagDropdown:SetRelativeWidth(0.5)
-    MiscTagDropdown:SetCallback("OnValueChanged", function(_, _, value) local currentTag = TagDB.Tag if currentTag and currentTag ~= "" then currentTag = currentTag .. "[" .. value .. "]" else currentTag = "[" .. value .. "]" end EditBox:SetText(currentTag) UUF.db.profile.Units[unit].Tags[tagDB].Tag = currentTag UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitTag(UUF[unit:upper()], unit, tagDB) end) MiscTagDropdown:SetValue(nil) end)
+    MiscTagDropdown:SetCallback("OnValueChanged", function(_, _, value) local currentTag = TagDB.Tag if currentTag and currentTag ~= "" then currentTag = currentTag .. "[" .. value .. "]" else currentTag = "[" .. value .. "]" end EditBox:SetText(currentTag) UUF.db.profile.Units[unit].Tags[tagDB].Tag = currentTag UpdateTagForMultiFrameUnit(unit, tagDB) MiscTagDropdown:SetValue(nil) end)
     MiscTagDropdown:SetDisabled(#UUF:FetchTagData("Misc") == 0)
     TagSelectionContainer:AddChild(MiscTagDropdown)
 
@@ -2322,23 +2571,97 @@ end
 -- Aura coordinator: TabGroup for Buffs/Debuffs
 function GUIUnits:CreateAuraSettings(containerParent, unit, updateCallback)
     local AurasDB = UUF.db.profile.Units[unit].Auras
-    
+    local AuraDurationContainer = GUIWidgets.CreateInlineGroup(containerParent, "Aura Duration Settings")
+
+    local ColourPicker = AG:Create("ColorPicker")
+    ColourPicker:SetLabel("Cooldown Text Colour")
+    ColourPicker:SetColor(UUF.db.profile.Units[unit].Auras.AuraDuration.Colour[1], UUF.db.profile.Units[unit].Auras.AuraDuration.Colour[2], UUF.db.profile.Units[unit].Auras.AuraDuration.Colour[3], 1)
+    ColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) UUF.db.profile.Units[unit].Auras.AuraDuration.Colour = {r, g, b} UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitAuras(UUF[unit:upper()], unit, "AuraDuration") end) end)
+    ColourPicker:SetHasAlpha(false)
+    ColourPicker:SetRelativeWidth(0.5)
+    AuraDurationContainer:AddChild(ColourPicker)
+
+    local ScaleByIconSizeCheckbox = AG:Create("CheckBox")
+    ScaleByIconSizeCheckbox:SetLabel("Scale Cooldown Text By Icon Size")
+    ScaleByIconSizeCheckbox:SetValue(UUF.db.profile.Units[unit].Auras.AuraDuration.ScaleByIconSize)
+    ScaleByIconSizeCheckbox:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.Units[unit].Auras.AuraDuration.ScaleByIconSize = value UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitAuras(UUF[unit:upper()], unit, "AuraDuration") end) RefreshFontSizeSlider() end)
+    ScaleByIconSizeCheckbox:SetRelativeWidth(0.5)
+    AuraDurationContainer:AddChild(ScaleByIconSizeCheckbox)
+
+    local AnchorFromDropdown = AG:Create("Dropdown")
+    AnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
+    AnchorFromDropdown:SetLabel("Anchor From")
+    AnchorFromDropdown:SetValue(UUF.db.profile.Units[unit].Auras.AuraDuration.Layout[1])
+    AnchorFromDropdown:SetRelativeWidth(0.5)
+    AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.Units[unit].Auras.AuraDuration.Layout[1] = value UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitAuras(UUF[unit:upper()], unit, "AuraDuration") end) end)
+    AuraDurationContainer:AddChild(AnchorFromDropdown)
+
+    local AnchorToDropdown = AG:Create("Dropdown")
+    AnchorToDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
+    AnchorToDropdown:SetLabel("Anchor To")
+    AnchorToDropdown:SetValue(UUF.db.profile.Units[unit].Auras.AuraDuration.Layout[2])
+    AnchorToDropdown:SetRelativeWidth(0.5)
+    AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.Units[unit].Auras.AuraDuration.Layout[2] = value UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitAuras(UUF[unit:upper()], unit, "AuraDuration") end) end)
+    AuraDurationContainer:AddChild(AnchorToDropdown)
+
+    local XPosSlider = AG:Create("Slider")
+    XPosSlider:SetLabel("X Position")
+    XPosSlider:SetValue(UUF.db.profile.Units[unit].Auras.AuraDuration.Layout[3])
+    XPosSlider:SetSliderValues(-1000, 1000, 0.1)
+    XPosSlider:SetRelativeWidth(0.33)
+    XPosSlider:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.Units[unit].Auras.AuraDuration.Layout[3] = value UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitAuras(UUF[unit:upper()], unit, "AuraDuration") end) end)
+    AuraDurationContainer:AddChild(XPosSlider)
+
+    local YPosSlider = AG:Create("Slider")
+    YPosSlider:SetLabel("Y Position")
+    YPosSlider:SetValue(UUF.db.profile.Units[unit].Auras.AuraDuration.Layout[4])
+    YPosSlider:SetSliderValues(-1000, 1000, 0.1)
+    YPosSlider:SetRelativeWidth(0.33)
+    YPosSlider:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.Units[unit].Auras.AuraDuration.Layout[4] = value UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitAuras(UUF[unit:upper()], unit, "AuraDuration") end) end)
+    AuraDurationContainer:AddChild(YPosSlider)
+
+    local FontSizeSlider = AG:Create("Slider")
+    FontSizeSlider:SetLabel("Font Size")
+    FontSizeSlider:SetValue(UUF.db.profile.Units[unit].Auras.AuraDuration.FontSize)
+    FontSizeSlider:SetSliderValues(8, 64, 1)
+    FontSizeSlider:SetRelativeWidth(0.33)
+    FontSizeSlider:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.Units[unit].Auras.AuraDuration.FontSize = value UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitAuras(UUF[unit:upper()], unit, "AuraDuration") end) end)
+    FontSizeSlider:SetDisabled(UUF.db.profile.Units[unit].Auras.AuraDuration.ScaleByIconSize)
+    AuraDurationContainer:AddChild(FontSizeSlider)
+
+    local FrameStrataDropdown = AG:Create("Dropdown")
+    FrameStrataDropdown:SetList(FrameStrataList[1], FrameStrataList[2])
+    FrameStrataDropdown:SetLabel("Frame Strata")
+    FrameStrataDropdown:SetValue(AurasDB.FrameStrata)
+    FrameStrataDropdown:SetRelativeWidth(1)
+    FrameStrataDropdown:SetCallback("OnValueChanged", function(_, _, value) AurasDB.FrameStrata = value UUF:UpdateUnitAurasStrata(unit) end)
+    containerParent:AddChild(FrameStrataDropdown)
+
+    function RefreshFontSizeSlider()
+        if UUF.db.profile.Units[unit].Auras.AuraDuration.ScaleByIconSize then
+            FontSizeSlider:SetDisabled(true)
+        else
+            FontSizeSlider:SetDisabled(false)
+        end
+    end
+
     local function SelectAuraTab(AuraContainer, _, AuraTab)
         SaveSubTab(unit, "Auras", AuraTab)
         AuraContainer:ReleaseChildren()
         GUIUnits:CreateSpecificAuraSettings(AuraContainer, unit, AuraTab)
+        UUF:ScheduleTimer("RefreshFontSize", 0.001, RefreshFontSizeSlider)
+        containerParent:DoLayout()
     end
 
-    local AuraTabGroup = AG:Create("TabGroup")
-    AuraTabGroup:SetLayout("Flow")
-    AuraTabGroup:SetFullWidth(true)
-    AuraTabGroup:SetTabs({
-        {text = "Buffs", value = "Buffs"},
-        {text = "Debuffs", value = "Debuffs"},
-    })
-    AuraTabGroup:SetCallback("OnGroupSelected", SelectAuraTab)
-    AuraTabGroup:SelectTab(GetSavedSubTab(unit, "Auras", "Buffs"))
-    containerParent:AddChild(AuraTabGroup)
+    local AuraContainerTabGroup = AG:Create("TabGroup")
+    AuraContainerTabGroup:SetTabs({ { text = "Buffs", value = "Buffs"}, { text = "Debuffs", value = "Debuffs"}, })
+    AuraContainerTabGroup:SetLayout("Flow")
+    AuraContainerTabGroup:SetFullWidth(true)
+    AuraContainerTabGroup:SetCallback("OnGroupSelected", SelectAuraTab)
+    AuraContainerTabGroup:SelectTab(GetSavedSubTab(unit, "Auras", "Buffs"))
+    containerParent:AddChild(AuraContainerTabGroup)
+
+    containerParent:DoLayout()
 end
 
 -- Return module

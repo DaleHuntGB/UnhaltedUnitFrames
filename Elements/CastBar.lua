@@ -13,7 +13,7 @@ local string_format, string_match, string_sub = string.format, string.match, str
 local UnitCastingInfo, UnitChannelInfo = UnitCastingInfo, UnitChannelInfo
 local UnitIsDeadOrGhost, UnitIsConnected = UnitIsDeadOrGhost, UnitIsConnected
 local InCombatLockdown, GetTime = InCombatLockdown, GetTime
-local CreateFrame, GetUnitEmpowerStageCount = CreateFrame, GetUnitEmpowerStageCount
+local CreateFrame = CreateFrame
 
 local function ShortenCastName(text, maxChars)
     if not text then return "" end
@@ -165,11 +165,83 @@ function UUF:CreateUnitCastBar(unitFrame, unit)
             end
 
             UpdateNotInterruptibleOverlay(frameCastBar)
+            
+            -- Initialize enhancements on cast start
+            UUF:EnhanceCastBar(frameCastBar, CastBarDB, unit)
+            frameCastBar._enhancementActive = true
+            
+            -- Hook OnUpdate for enhancement updates during cast (don't replace oUF's handler!)
+            -- Keep a single hook and gate updates by _enhancementActive.
+            if not frameCastBar._enhancementUpdateHook then
+                frameCastBar._enhancementUpdateHook = function(self)
+                    if self._enhancementActive then
+                        UUF:UpdateCastBarEnhancements(self, CastBarDB, unit)
+                    end
+                end
+                frameCastBar:HookScript("OnUpdate", frameCastBar._enhancementUpdateHook)
+            end
+            
             CastBarContainer:Show()
         end
 
         unitFrame.Castbar.PostCastInterruptible = function(frameCastBar)
             UpdateNotInterruptibleOverlay(frameCastBar)
+        end
+        
+        -- Shared cleanup function for all cast end events
+        local function CleanupCastBarEnhancements(frameCastBar, reason)
+            -- Debug output
+            if UUF.DebugOutput then
+                UUF.DebugOutput:Output("CastBar", "Cleaning up enhancements: " .. (reason or "unknown"), 2)
+            end
+            
+            -- Keep oUF's OnUpdate intact; just disable enhancement updates.
+            frameCastBar._enhancementActive = false
+            
+            -- Hide all enhancement elements immediately
+            if frameCastBar._TimerDirection then 
+                frameCastBar._TimerDirection:Hide() 
+            end
+            if frameCastBar._ChannelTicks then
+                for _, tick in pairs(frameCastBar._ChannelTicks) do
+                    if tick then 
+                        tick:Hide() 
+                    end
+                end
+            end
+            if frameCastBar._EmpowerStages then
+                for _, stage in pairs(frameCastBar._EmpowerStages) do
+                    if stage then 
+                        stage:Hide()
+                    end
+                end
+            end
+            if frameCastBar._LatencyIndicator then 
+                frameCastBar._LatencyIndicator:Hide()
+                frameCastBar._LatencyIndicator:SetText("")
+            end
+            
+            -- Reset castbar holdTime to prevent lingering
+            if frameCastBar.holdTime then
+                frameCastBar.holdTime = 0
+            end
+        end
+        
+        unitFrame.Castbar.PostCastStop = function(frameCastBar, empowerComplete)
+            CleanupCastBarEnhancements(frameCastBar, "PostCastStop")
+        end
+        
+        unitFrame.Castbar.PostCastFail = function(frameCastBar)
+            CleanupCastBarEnhancements(frameCastBar, "PostCastFail")
+        end
+
+        -- Backward-compat alias (not used by oUF castbar callbacks).
+        unitFrame.Castbar.PostCastFailed = function(frameCastBar)
+            CleanupCastBarEnhancements(frameCastBar, "PostCastFailed")
+        end
+        
+        unitFrame.Castbar.PostCastInterrupted = function(frameCastBar, interruptedBy)
+            CleanupCastBarEnhancements(frameCastBar, "PostCastInterrupted")
         end
         if SpellNameDB.Enabled then unitFrame.Castbar.Text:SetAlpha(1) else unitFrame.Castbar.Text:SetAlpha(0) end
         if DurationDB.Enabled then unitFrame.Castbar.Time:SetAlpha(1) else unitFrame.Castbar.Time:SetAlpha(0) end
@@ -329,6 +401,9 @@ function UUF:CreateTestCastBar(unitFrame, unit)
                 if self.testValue >= 1000 then self.testValue = 0 end
                 self:SetValue(self.testValue)
                 unitFrame.Castbar.Time:SetText(string.format("%.1f", (self.testValue / 1000) * 5))
+                
+                -- Update enhancements during cast
+                UUF:UpdateCastBarEnhancements(self, CastBarDB, unit)
             end)
             if CastBarDB.ColourByClass then
                 local unitForClass = unit == "pet" and "player" or unit

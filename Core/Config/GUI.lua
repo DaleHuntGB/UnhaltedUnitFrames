@@ -2280,105 +2280,6 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
     containerParent:DoLayout()
 end
 
-local function CreateAuraSettings(containerParent, unit)
-    local AurasDB = UUF.db.profile.Units[unit].Auras
-    local AuraDurationContainer = GUIWidgets.CreateInlineGroup(containerParent, "Aura Duration Settings")
-
-    local ColourPicker = AG:Create("ColorPicker")
-    ColourPicker:SetLabel("Cooldown Text Colour")
-    ColourPicker:SetColor(UUF.db.profile.Units[unit].Auras.AuraDuration.Colour[1], UUF.db.profile.Units[unit].Auras.AuraDuration.Colour[2], UUF.db.profile.Units[unit].Auras.AuraDuration.Colour[3], 1)
-    ColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) UUF.db.profile.Units[unit].Auras.AuraDuration.Colour = {r, g, b} UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitAuras(UUF[unit:upper()], unit, "AuraDuration") end) end)
-    ColourPicker:SetHasAlpha(false)
-    ColourPicker:SetRelativeWidth(0.5)
-    AuraDurationContainer:AddChild(ColourPicker)
-
-    local ScaleByIconSizeCheckbox = AG:Create("CheckBox")
-    ScaleByIconSizeCheckbox:SetLabel("Scale Cooldown Text By Icon Size")
-    ScaleByIconSizeCheckbox:SetValue(UUF.db.profile.Units[unit].Auras.AuraDuration.ScaleByIconSize)
-    ScaleByIconSizeCheckbox:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.Units[unit].Auras.AuraDuration.ScaleByIconSize = value UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitAuras(UUF[unit:upper()], unit, "AuraDuration") end) RefreshFontSizeSlider() end)
-    ScaleByIconSizeCheckbox:SetRelativeWidth(0.5)
-    AuraDurationContainer:AddChild(ScaleByIconSizeCheckbox)
-
-    local AnchorFromDropdown = AG:Create("Dropdown")
-    AnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
-    AnchorFromDropdown:SetLabel("Anchor From")
-    AnchorFromDropdown:SetValue(UUF.db.profile.Units[unit].Auras.AuraDuration.Layout[1])
-    AnchorFromDropdown:SetRelativeWidth(0.5)
-    AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.Units[unit].Auras.AuraDuration.Layout[1] = value UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitAuras(UUF[unit:upper()], unit, "AuraDuration") end) end)
-    AuraDurationContainer:AddChild(AnchorFromDropdown)
-
-    local AnchorToDropdown = AG:Create("Dropdown")
-    AnchorToDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
-    AnchorToDropdown:SetLabel("Anchor To")
-    AnchorToDropdown:SetValue(UUF.db.profile.Units[unit].Auras.AuraDuration.Layout[2])
-    AnchorToDropdown:SetRelativeWidth(0.5)
-    AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.Units[unit].Auras.AuraDuration.Layout[2] = value UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitAuras(UUF[unit:upper()], unit, "AuraDuration") end) end)
-    AuraDurationContainer:AddChild(AnchorToDropdown)
-
-    local XPosSlider = AG:Create("Slider")
-    XPosSlider:SetLabel("X Position")
-    XPosSlider:SetValue(UUF.db.profile.Units[unit].Auras.AuraDuration.Layout[3])
-    XPosSlider:SetSliderValues(-1000, 1000, 0.1)
-    XPosSlider:SetRelativeWidth(0.33)
-    XPosSlider:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.Units[unit].Auras.AuraDuration.Layout[3] = value UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitAuras(UUF[unit:upper()], unit, "AuraDuration") end) end)
-    AuraDurationContainer:AddChild(XPosSlider)
-
-    local YPosSlider = AG:Create("Slider")
-    YPosSlider:SetLabel("Y Position")
-    YPosSlider:SetValue(UUF.db.profile.Units[unit].Auras.AuraDuration.Layout[4])
-    YPosSlider:SetSliderValues(-1000, 1000, 0.1)
-    YPosSlider:SetRelativeWidth(0.33)
-    YPosSlider:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.Units[unit].Auras.AuraDuration.Layout[4] = value UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitAuras(UUF[unit:upper()], unit, "AuraDuration") end) end)
-    AuraDurationContainer:AddChild(YPosSlider)
-
-    local FontSizeSlider = AG:Create("Slider")
-    FontSizeSlider:SetLabel("Font Size")
-    FontSizeSlider:SetValue(UUF.db.profile.Units[unit].Auras.AuraDuration.FontSize)
-    FontSizeSlider:SetSliderValues(8, 64, 1)
-    FontSizeSlider:SetRelativeWidth(0.33)
-    FontSizeSlider:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.Units[unit].Auras.AuraDuration.FontSize = value UpdateMultiFrameUnit(unit, function() UUF:UpdateUnitAuras(UUF[unit:upper()], unit, "AuraDuration") end) end)
-    FontSizeSlider:SetDisabled(UUF.db.profile.Units[unit].Auras.AuraDuration.ScaleByIconSize)
-    AuraDurationContainer:AddChild(FontSizeSlider)
-
-    local FrameStrataDropdown = AG:Create("Dropdown")
-    FrameStrataDropdown:SetList(FrameStrataList[1], FrameStrataList[2])
-    FrameStrataDropdown:SetLabel("Frame Strata")
-    FrameStrataDropdown:SetValue(AurasDB.FrameStrata)
-    FrameStrataDropdown:SetRelativeWidth(1)
-    FrameStrataDropdown:SetCallback("OnValueChanged", function(_, _, value) AurasDB.FrameStrata = value UUF:UpdateUnitAurasStrata(unit) end)
-    containerParent:AddChild(FrameStrataDropdown)
-
-    function RefreshFontSizeSlider()
-        if UUF.db.profile.Units[unit].Auras.AuraDuration.ScaleByIconSize then
-            FontSizeSlider:SetDisabled(true)
-        else
-            FontSizeSlider:SetDisabled(false)
-        end
-    end
-
-    local function SelectAuraTab(AuraContainer, _, AuraTab)
-        SaveSubTab(unit, "Auras", AuraTab)
-        AuraContainer:ReleaseChildren()
-        if AuraTab == "Buffs" then
-            CreateSpecificAuraSettings(AuraContainer, unit, "Buffs")
-        elseif AuraTab == "Debuffs" then
-            CreateSpecificAuraSettings(AuraContainer, unit, "Debuffs")
-        end
-        UUF:ScheduleTimer("RefreshFontSize", 0.001, RefreshFontSizeSlider)
-        containerParent:DoLayout()
-    end
-
-    local AuraContainerTabGroup = AG:Create("TabGroup")
-    AuraContainerTabGroup:SetTabs({ { text = "Buffs", value = "Buffs"}, { text = "Debuffs", value = "Debuffs"}, })
-    AuraContainerTabGroup:SetLayout("Flow")
-    AuraContainerTabGroup:SetFullWidth(true)
-    AuraContainerTabGroup:SetCallback("OnGroupSelected", SelectAuraTab)
-    AuraContainerTabGroup:SelectTab(GetSavedSubTab(unit, "Auras", "Buffs"))
-    containerParent:AddChild(AuraContainerTabGroup)
-
-    containerParent:DoLayout()
-end
-
 local function CreateAuraDurationSettings(containerParent)
     local AuraDurationContainer = GUIWidgets.CreateInlineGroup(containerParent, "Aura Duration Settings")
 
@@ -2671,9 +2572,9 @@ function UUF:CreateGUI()
     Container = AG:Create("Frame")
     Container:SetTitle(UUF.PRETTY_ADDON_NAME)
     Container:SetLayout("Fill")
-    Container:SetWidth(900)
-    Container:SetHeight(600)
-    Container:EnableResize(false)
+    Container:SetWidth(1000)
+    Container:SetHeight(800)
+    Container:EnableResize(true)
     Container:SetCallback("OnClose", function(widget)
         if UUF.FrameMoverButton then
             UUF.FrameMoverButton:Hide()

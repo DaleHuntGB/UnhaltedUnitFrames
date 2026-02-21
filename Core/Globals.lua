@@ -96,7 +96,55 @@ UUF.StatusTextures = {
     },
 }
 
+-- =========================================================================
+-- CHANNELING TICKS
+-- Maps spell IDs to their channel tick timings for visual indicators
+-- Each entry is an array of tick times (in milliseconds) during the channel
+-- =========================================================================
+UUF.ChannelingTicks = {
+    -- Priest: Power Word: Solace / Shadow Mend Channels
+    [588] = {100, 200, 300, 400},      -- Inner Fire (placeholder ticks)
+    [15407] = {100, 200, 300, 400},    -- Mind Blast (placeholder)
+    -- Warlock: Drain Life / Drain Soul / Drain Mana
+    [234153] = {100, 200, 300, 400},   -- Drain Life (placeholder)
+    -- Mage: Evocation / Blizzard
+    [12051] = {100, 200, 300, 400},    -- Evocation (placeholder)
+    -- Generic fallback: evenly spaced ticks every 100ms
+    ["DEFAULT"] = {100, 200, 300, 400}, -- Default: 4 ticks at 100ms intervals
+}
+
+function UUF:GetChannelTicks(spellID)
+    if UUF.ChannelingTicks[spellID] then
+        return UUF.ChannelingTicks[spellID]
+    end
+    return UUF.ChannelingTicks["DEFAULT"]
+end
+
 function UUF:PrettyPrint(MSG) print(UUF.ADDON_NAME .. ":|r " .. MSG) end
+
+function UUF:PrintAuraPoolStats()
+    if not UUF.FramePoolManager then
+        UUF:PrettyPrint("FramePoolManager is not available.")
+        return
+    end
+
+    local allStats = UUF.FramePoolManager:GetAllPoolStats()
+    local pool = allStats and allStats["AuraButton"]
+    if not pool then
+        UUF:PrettyPrint("AuraButton pool not initialized yet.")
+        return
+    end
+
+    UUF:PrettyPrint(string.format(
+        "AuraButton Pool -> Active: %d, Pooled: %d, Total: %d, Acquired: %d, Released: %d, Peak Active: %d",
+        pool.active or 0,
+        pool.inactive or 0,
+        pool.total or 0,
+        pool.acquired or 0,
+        pool.released or 0,
+        pool.maxActive or 0
+    ))
+end
 
 function UUF:FetchFrameName(unit)
     local UnitToFrame = {
@@ -231,8 +279,8 @@ end
 local function SetupSlashCommands()
     local AceAddon = LibStub("AceAddon-3.0")
     local addon = AceAddon:GetAddon("UnhaltedUnitFrames")
-    
-    addon:RegisterChatCommand("uuf", function(input)
+
+    local function HandleMainSlashCommand(input)
         local command = strtrim((input or ""):lower())
         if command == "unlock" then
             UUF:SetFrameMoverEnabled(true)
@@ -240,33 +288,16 @@ local function SetupSlashCommands()
         elseif command == "lock" then
             UUF:SetFrameMoverEnabled(false)
             return
-        end
-        UUF:CreateGUI()
-    end)
-    
-    addon:RegisterChatCommand("unhaltedunitframes", function(input)
-        local command = strtrim((input or ""):lower())
-        if command == "unlock" then
-            UUF:SetFrameMoverEnabled(true)
-            return
-        elseif command == "lock" then
-            UUF:SetFrameMoverEnabled(false)
+        elseif command == "aurapool" or command == "pool" or command == "apool" then
+            UUF:PrintAuraPoolStats()
             return
         end
         UUF:CreateGUI()
-    end)
-    
-    addon:RegisterChatCommand("uf", function(input)
-        local command = strtrim((input or ""):lower())
-        if command == "unlock" then
-            UUF:SetFrameMoverEnabled(true)
-            return
-        elseif command == "lock" then
-            UUF:SetFrameMoverEnabled(false)
-            return
-        end
-        UUF:CreateGUI()
-    end)
+    end
+
+    addon:RegisterChatCommand("uuf", HandleMainSlashCommand)
+    addon:RegisterChatCommand("unhaltedunitframes", HandleMainSlashCommand)
+    addon:RegisterChatCommand("uf", HandleMainSlashCommand)
     
     UUF:PrettyPrint("'|cFF8080FF/uuf|r' for in-game configuration.")
 

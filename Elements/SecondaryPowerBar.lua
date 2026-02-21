@@ -1,6 +1,7 @@
 local _, UUF = ...
 
 local UpdateSecondaryPowerBarEventFrame = CreateFrame("Frame")
+local secondaryPowerRefreshHandle
 UpdateSecondaryPowerBarEventFrame:RegisterEvent("TRAIT_CONFIG_UPDATED")
 UpdateSecondaryPowerBarEventFrame:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
 UpdateSecondaryPowerBarEventFrame:RegisterEvent("UPDATE_SHAPESHIFT_FORM")
@@ -10,7 +11,12 @@ UpdateSecondaryPowerBarEventFrame:SetScript("OnEvent", function(self, event, ...
         local unit = ...
         if unit ~= "player" then return end
     end
-    UUF:ScheduleTimer("SecondaryPowerBar", 0.1, function()
+    if secondaryPowerRefreshHandle then
+        UUF:CancelTimer(secondaryPowerRefreshHandle)
+        secondaryPowerRefreshHandle = nil
+    end
+    secondaryPowerRefreshHandle = UUF:ScheduleTimer("SecondaryPowerBar", 0.1, function()
+        secondaryPowerRefreshHandle = nil
         if UUF.PLAYER then
             UUF:UpdateUnitSecondaryPowerBar(UUF.PLAYER, "player")
         end

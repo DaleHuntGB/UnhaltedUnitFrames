@@ -1,5 +1,6 @@
 local _, UUF = ...
 local isRetail = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
+local IsSecretValue = issecretvalue or function() return false end
 
 UUF.RangeEvtFrames = {}
 
@@ -228,11 +229,11 @@ local activeSpells = {
 }
 
 local function NotSecretValue(value)
-    return issecretvalue(value) == false
+    return IsSecretValue(value) == false
 end
 
 local function SafeBool(value)
-    if issecretvalue(value) then
+    if IsSecretValue(value) then
         return nil
     end
     return value
@@ -351,6 +352,23 @@ function UUF:RegisterRangeFrame(frameName, unit)
     local frame = type(frameName) == "table" and frameName or _G[frameName]
     if not frame then return end
 
+    -- Remove stale/missing frame entries and avoid duplicate registration.
+    for i = #UUF.RangeEvtFrames, 1, -1 do
+        local data = UUF.RangeEvtFrames[i]
+        if not data or not data.frame or not data.frame.GetObjectType then
+            table.remove(UUF.RangeEvtFrames, i)
+        elseif data.frame == frame then
+            data.unit = unit
+            if UUF.db.profile.General.Range.Enabled then
+                frame.Range = UUF.db.profile.General.Range
+            else
+                frame.Range = nil
+            end
+            UUF:UpdateRangeAlpha(frame, unit)
+            return
+        end
+    end
+
     table.insert(UUF.RangeEvtFrames, { frame = frame, unit = unit })
 
     if UUF.db.profile.General.Range.Enabled then
@@ -372,7 +390,7 @@ function UUF:UpdateRangeAlpha(frame, unit)
     local RangeDB = UUF.db.profile.General.Range
     if not RangeDB or not RangeDB.Enabled then frame:SetAlpha(1) return end
     local unitExists = UnitExists(unit)
-    if issecretvalue(unitExists) then unitExists = true end
+    if IsSecretValue(unitExists) then unitExists = true end
     if not frame:IsVisible() or not unit or unitExists == false then return end
     if unit == "player" then frame:SetAlpha(1) return end
 

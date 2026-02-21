@@ -85,6 +85,17 @@ function UUF:CreateTestBossFrames()
         for i, BossFrame in ipairs(UUF.BOSS_FRAMES) do
             BossFrame:SetAttribute("unit", nil)
             UnregisterUnitWatch(BossFrame)
+            
+            -- Prevent oUF from managing visibility during test mode via OnHide handler
+            if not BossFrame._TestModeHideBlocker then
+                BossFrame:SetScript("OnHide", function(self)
+                    if UUF.BOSS_TEST_MODE then
+                        self:Show()
+                    end
+                end)
+                BossFrame._TestModeHideBlocker = true
+            end
+            
             if BossDB.Enabled then BossFrame:Show() else BossFrame:Hide() end
 
             BossFrame:SetFrameStrata(BossDB.Frame.FrameStrata)
@@ -372,6 +383,12 @@ function UUF:CreateTestBossFrames()
         end
     else
         for i, BossFrame in ipairs(UUF.BOSS_FRAMES) do
+            -- Clear test mode blocker to let oUF manage visibility normally
+            if BossFrame._TestModeHideBlocker then
+                BossFrame:SetScript("OnHide", nil)
+                BossFrame._TestModeHideBlocker = nil
+            end
+            
             BossFrame:SetAttribute("unit", "boss" .. i)
             RegisterUnitWatch(BossFrame)
             for j = 1, (BossFrame.BuffContainer and BossFrame.BuffContainer.maxFake or 0) do
@@ -407,9 +424,20 @@ function UUF:CreateTestPartyFrames()
 
         for i, PartyFrame in ipairs(UUF.PARTY_FRAMES) do
             local data = PartyTestData[i]
+            local testUnit = GetDefaultPartyUnit(i)
 
-            PartyFrame:SetAttribute("unit", "player")
-            UnregisterUnitWatch(PartyFrame)
+            -- Set unit for element updates
+            PartyFrame:SetAttribute("unit", testUnit)
+
+            -- Prevent oUF from managing visibility during test mode via OnHide handler
+            if not PartyFrame._TestModeHideBlocker then
+                PartyFrame:SetScript("OnHide", function(self)
+                    if UUF.PARTY_TEST_MODE then
+                        self:Show()
+                    end
+                end)
+                PartyFrame._TestModeHideBlocker = true
+            end
 
             if PartyDB.Enabled and i <= maxFrames then
                 PartyFrame:Show()
@@ -445,7 +473,14 @@ function UUF:CreateTestPartyFrames()
             end
         end
     else
+        -- Restore normal behavior: remove test mode handlers
         for i, PartyFrame in ipairs(UUF.PARTY_FRAMES) do
+            if PartyFrame._TestModeHideBlocker then
+                -- Clear the OnHide script to let oUF manage visibility normally
+                PartyFrame:SetScript("OnHide", nil)
+                PartyFrame._TestModeHideBlocker = nil
+            end
+            
             local unit = GetDefaultPartyUnit(i)
             PartyFrame:SetAttribute("unit", unit)
             RegisterUnitWatch(PartyFrame)
