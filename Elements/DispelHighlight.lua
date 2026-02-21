@@ -48,7 +48,10 @@ local function EnsureDispelHighlightDispatcher()
 
     dispelEventFrame:SetScript("OnEvent", function(_, event, ...)
         if UUF.EventCoalescer then
-            UUF.EventCoalescer:QueueEvent(DISPEL_HIGHLIGHT_COALESCE_EVENT, event, ...)
+            local accepted = UUF.EventCoalescer:QueueEvent(DISPEL_HIGHLIGHT_COALESCE_EVENT, event, ...)
+            if not accepted then
+                ProcessDispelHighlightUpdates(event, ...)
+            end
         else
             ProcessDispelHighlightUpdates(event, ...)
         end

@@ -176,18 +176,23 @@ local function GetEventStats()
 	local stats = {
 		coalesced = 0,
 		dispatched = 0,
+		rejected = 0,
 		savingsPercent = 0,
 		avgBatchSize = 0,
 		maxBatchSize = 0,
 		dispatchRatio = 0,
+		rejectRatio = 0,
 	}
 	
 	if UUF.EventCoalescer then
 		local coalescerStats = UUF.EventCoalescer:GetStats()
 		stats.coalesced = coalescerStats.totalCoalesced or 0
 		stats.dispatched = coalescerStats.totalDispatched or 0
+		stats.rejected = coalescerStats.totalRejected or 0
 		stats.savingsPercent = coalescerStats.savingsPercent or 0
 		stats.dispatchRatio = stats.coalesced > 0 and (stats.dispatched / stats.coalesced) or 0
+		local totalQueueAttempts = stats.coalesced + stats.rejected
+		stats.rejectRatio = totalQueueAttempts > 0 and (stats.rejected / totalQueueAttempts) or 0
 
 		local batchCount = 0
 		local batchTotal = 0
@@ -314,9 +319,11 @@ local function UpdateDisplay()
 		table.insert(lines, "|cFFFFD700=== Event Coalescing ===|r")
 		table.insert(lines, string.format("Events Coalesced: |cFF00FF00%s|r", FormatNumber(eventStats.coalesced)))
 		table.insert(lines, string.format("Batches Dispatched: |cFFFFFF00%s|r", FormatNumber(eventStats.dispatched)))
+		table.insert(lines, string.format("Queue Rejected: |cFFFF8800%s|r", FormatNumber(eventStats.rejected)))
 		table.insert(lines, string.format("CPU Savings: |cFF00FF00%.1f%%|r", eventStats.savingsPercent))
 		table.insert(lines, string.format("Avg/Max Batch Size: |cFF00FF00%.2f|r / |cFFFFFF00%d|r", eventStats.avgBatchSize, eventStats.maxBatchSize))
 		table.insert(lines, string.format("Dispatch Ratio: |cFFAAAAAA%.3f|r", eventStats.dispatchRatio))
+		table.insert(lines, string.format("Reject Ratio: |cFFAAAAAA%.3f|r", eventStats.rejectRatio))
 		table.insert(lines, "")
 	end
 	
@@ -486,6 +493,7 @@ function PerformanceDashboard:PrintStats()
 			print(string.format("Event Coalescing: |cFF00FF00%.1f%%|r saved (%d events, %d batches)",
 				stats.savingsPercent or 0, stats.totalCoalesced or 0, stats.totalDispatched or 0))
 			print(string.format("Batch Size: avg |cFF00FF00%.2f|r, max |cFFFFFF00%d|r", avgBatchSize, batchMax))
+			print(string.format("Queue Rejected: |cFFFF8800%d|r", stats.totalRejected or 0))
 		end
 	end
 end

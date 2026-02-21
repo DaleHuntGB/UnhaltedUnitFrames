@@ -64,6 +64,7 @@ local function EnsureAltPowerCoalescer()
         end
         UpdateUnitPowerBarValues(frameCastBar, event, unit)
     end, 2)
+    UUF.EventCoalescer:SetEventDelay(ALT_POWER_COALESCE_EVENT, 0.05)
 
     altPowerCoalesceRegistered = true
 end
@@ -71,7 +72,14 @@ end
 local function AlternativePowerBarOnEvent(self, event, unit)
     if UUF.EventCoalescer then
         EnsureAltPowerCoalescer()
-        UUF.EventCoalescer:QueueEvent(ALT_POWER_COALESCE_EVENT, self, event, unit)
+        local accepted = UUF.EventCoalescer:QueueEvent(ALT_POWER_COALESCE_EVENT, self, event, unit)
+        if not accepted then
+            if event == "UNIT_DISPLAYPOWER" then
+                self.powerType = ResolveSecondaryPowerType(self.unit)
+                ApplyAlternativePowerBarColor(self)
+            end
+            UpdateUnitPowerBarValues(self, event, unit)
+        end
     else
         if event == "UNIT_DISPLAYPOWER" then
             self.powerType = ResolveSecondaryPowerType(self.unit)

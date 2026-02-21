@@ -1076,13 +1076,14 @@ function MLOptimizer:IntegrateWithEventCoalescer()
 	-- Hook QueueEvent to track coalesced events for pattern learning
 	local originalQueueEvent = UUF.EventCoalescer.QueueEvent
 	UUF.EventCoalescer.QueueEvent = function(self, eventName, ...)
-		-- Track event in pattern sequence
-		if eventName and UUF.MLOptimizer then
+		-- Call original first; only learn from accepted coalesced queues.
+		local accepted = originalQueueEvent(self, eventName, ...)
+
+		if accepted and eventName and UUF.MLOptimizer then
 			UUF.MLOptimizer:TrackPattern(eventName, "EventCoalescer:" .. eventName)
 		end
-		
-		-- Call original
-		return originalQueueEvent(self, eventName, ...)
+
+		return accepted
 	end
 	
 	-- Hook _DispatchCoalesced to track delay success

@@ -197,9 +197,11 @@ function PerformanceProfiler:Analyze()
 		coalescer = {
 			totalCoalesced = 0,
 			totalDispatched = 0,
+			totalRejected = 0,
 			savingsPercent = 0,
 			avgBatchSize = 0,
 			maxBatchSize = 0,
+			rejectRatio = 0,
 		},
 		bottlenecks = {},
 		recommendations = {},
@@ -240,7 +242,10 @@ function PerformanceProfiler:Analyze()
 		if ok and type(coalescerStats) == "table" then
 			analysis.coalescer.totalCoalesced = math.max(analysis.coalescer.totalCoalesced, coalescerStats.totalCoalesced or 0)
 			analysis.coalescer.totalDispatched = math.max(analysis.coalescer.totalDispatched, coalescerStats.totalDispatched or 0)
+			analysis.coalescer.totalRejected = coalescerStats.totalRejected or 0
 			analysis.coalescer.savingsPercent = coalescerStats.savingsPercent or analysis.coalescer.savingsPercent
+			local totalQueueAttempts = analysis.coalescer.totalCoalesced + analysis.coalescer.totalRejected
+			analysis.coalescer.rejectRatio = totalQueueAttempts > 0 and (analysis.coalescer.totalRejected / totalQueueAttempts) or 0
 
 			local batchCount = 0
 			local batchTotal = 0
@@ -392,6 +397,22 @@ function PerformanceProfiler:_GenerateRecommendations(analysis)
 						analysis.coalescer.avgBatchSize),
 				})
 			end
+
+			if analysis.coalescer.totalRejected > 0 and analysis.coalescer.rejectRatio > 0.02 then
+				table.insert(recommendations, {
+					category = "events",
+					priority = "medium",
+					message = string.format("Queue rejection ratio is %.1f%% (%d rejected). Check custom coalesced event registration timing and fallback paths.",
+						analysis.coalescer.rejectRatio * 100, analysis.coalescer.totalRejected),
+				})
+			end
+		elseif coalescedCount > 0 and analysis.coalescer.totalDispatched > 0 then
+			table.insert(recommendations, {
+				category = "events",
+				priority = "low",
+				message = string.format("Coalescing is active (%d queued, %d dispatched). Expand coalescing coverage for remaining hot non-coalesced paths before adding new systems.",
+					coalescedCount, analysis.coalescer.totalDispatched),
+			})
 		else
 			table.insert(recommendations, {
 				category = "events",
@@ -449,6 +470,8 @@ function PerformanceProfiler:PrintAnalysis()
 
 		UUF.DebugOutput:Output("PerformanceProfiler", "Coalescer Batch Metrics:", UUF.DebugOutput.TIER_INFO)
 		UUF.DebugOutput:Output("PerformanceProfiler", string.format("  Batches Dispatched: %d", analysis.coalescer.totalDispatched), UUF.DebugOutput.TIER_INFO)
+		UUF.DebugOutput:Output("PerformanceProfiler", string.format("  Queue Rejected: %d (%.2f%%)",
+			analysis.coalescer.totalRejected, analysis.coalescer.rejectRatio * 100), UUF.DebugOutput.TIER_INFO)
 		UUF.DebugOutput:Output("PerformanceProfiler", string.format("  Avg/Max Batch Size: %.2f / %d",
 			analysis.coalescer.avgBatchSize, analysis.coalescer.maxBatchSize), UUF.DebugOutput.TIER_INFO)
 		UUF.DebugOutput:Output("PerformanceProfiler", string.format("  Coalescer Savings: %.1f%%", analysis.coalescer.savingsPercent), UUF.DebugOutput.TIER_INFO)
@@ -571,8 +594,11 @@ function PerformanceProfiler:_HookSystems()
 		if not _hooks.coalescerQueueEvent then
 			_hooks.coalescerQueueEvent = UUF.EventCoalescer.QueueEvent
 			UUF.EventCoalescer.QueueEvent = function(self, eventName, ...)
-				PerformanceProfiler:RecordEvent(EVENT_TYPES.EVENT_COALESCED, { event = eventName })
-				return _hooks.coalescerQueueEvent(self, eventName, ...)
+				local accepted = _hooks.coalescerQueueEvent(self, eventName, ...)
+				if accepted then
+					PerformanceProfiler:RecordEvent(EVENT_TYPES.EVENT_COALESCED, { event = eventName })
+				end
+				return accepted
 			end
 		end
 

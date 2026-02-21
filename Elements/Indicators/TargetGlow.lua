@@ -1,6 +1,7 @@
 local _, UUF = ...
 UUF.TargetHighlightEvtFrames = {}
 local TARGET_GLOW_COALESCE_EVENT = "UUF_TARGET_GLOW_UPDATE"
+local targetGlowCoalesceRegistered = false
 
 local function ProcessTargetGlowUpdates()
     for i = #UUF.TargetHighlightEvtFrames, 1, -1 do
@@ -16,9 +17,17 @@ local function ProcessTargetGlowUpdates()
     end
 end
 
-if UUF.EventCoalescer then
+local function EnsureTargetGlowCoalescer()
+    if targetGlowCoalesceRegistered or not UUF.EventCoalescer then
+        return
+    end
     -- Keep target feedback responsive while avoiding UNIT_TARGET burst spam.
     UUF.EventCoalescer:CoalesceEvent(TARGET_GLOW_COALESCE_EVENT, 0.05, ProcessTargetGlowUpdates, 2)
+    targetGlowCoalesceRegistered = true
+end
+
+if UUF.EventCoalescer then
+    EnsureTargetGlowCoalescer()
 end
 
 local unitIsTargetEvtFrame = CreateFrame("Frame")
@@ -26,7 +35,11 @@ unitIsTargetEvtFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
 unitIsTargetEvtFrame:RegisterEvent("UNIT_TARGET")
 unitIsTargetEvtFrame:SetScript("OnEvent", function()
     if UUF.EventCoalescer then
-        UUF.EventCoalescer:QueueEvent(TARGET_GLOW_COALESCE_EVENT)
+        EnsureTargetGlowCoalescer()
+        local accepted = UUF.EventCoalescer:QueueEvent(TARGET_GLOW_COALESCE_EVENT)
+        if not accepted then
+            ProcessTargetGlowUpdates()
+        end
     else
         ProcessTargetGlowUpdates()
     end

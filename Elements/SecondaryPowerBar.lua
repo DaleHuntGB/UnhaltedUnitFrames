@@ -2,6 +2,46 @@ local _, UUF = ...
 
 local UpdateSecondaryPowerBarEventFrame = CreateFrame("Frame")
 local secondaryPowerRefreshHandle
+local secondaryPowerCoalesceRegistered = false
+local SECONDARY_POWER_COALESCE_EVENT = "UUF_SECONDARY_POWER_REFRESH"
+
+local function RefreshSecondaryPowerBar()
+    if UUF.PLAYER then
+        UUF:UpdateUnitSecondaryPowerBar(UUF.PLAYER, "player")
+    end
+end
+
+local function EnsureSecondaryPowerCoalescer()
+    if secondaryPowerCoalesceRegistered or not UUF.EventCoalescer then
+        return
+    end
+    UUF.EventCoalescer:CoalesceEvent(SECONDARY_POWER_COALESCE_EVENT, 0.08, function()
+        RefreshSecondaryPowerBar()
+    end, 2)
+    UUF.EventCoalescer:SetEventDelay(SECONDARY_POWER_COALESCE_EVENT, 0.08)
+    secondaryPowerCoalesceRegistered = true
+end
+
+local function ScheduleSecondaryPowerRefresh()
+    if UUF.EventCoalescer then
+        EnsureSecondaryPowerCoalescer()
+        local accepted = UUF.EventCoalescer:QueueEvent(SECONDARY_POWER_COALESCE_EVENT)
+        if accepted then
+            return
+        end
+    end
+
+    -- Fallback path if coalescer is unavailable.
+    if secondaryPowerRefreshHandle then
+        UUF:CancelTimer(secondaryPowerRefreshHandle)
+        secondaryPowerRefreshHandle = nil
+    end
+    secondaryPowerRefreshHandle = UUF:ScheduleTimer("SecondaryPowerBar", 0.1, function()
+        secondaryPowerRefreshHandle = nil
+        RefreshSecondaryPowerBar()
+    end)
+end
+
 UpdateSecondaryPowerBarEventFrame:RegisterEvent("TRAIT_CONFIG_UPDATED")
 UpdateSecondaryPowerBarEventFrame:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
 UpdateSecondaryPowerBarEventFrame:RegisterEvent("UPDATE_SHAPESHIFT_FORM")
@@ -11,16 +51,7 @@ UpdateSecondaryPowerBarEventFrame:SetScript("OnEvent", function(self, event, ...
         local unit = ...
         if unit ~= "player" then return end
     end
-    if secondaryPowerRefreshHandle then
-        UUF:CancelTimer(secondaryPowerRefreshHandle)
-        secondaryPowerRefreshHandle = nil
-    end
-    secondaryPowerRefreshHandle = UUF:ScheduleTimer("SecondaryPowerBar", 0.1, function()
-        secondaryPowerRefreshHandle = nil
-        if UUF.PLAYER then
-            UUF:UpdateUnitSecondaryPowerBar(UUF.PLAYER, "player")
-        end
-    end)
+    ScheduleSecondaryPowerRefresh()
 end)
 
 function UUF:IsRunePower()

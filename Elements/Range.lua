@@ -262,6 +262,7 @@ spellUpdateFrame:RegisterEvent("SPELLS_CHANGED")
 spellUpdateFrame:SetScript("OnEvent", UpdateActiveSpells)
 
 local RANGE_COALESCE_EVENT = "UUF_RANGE_FRAME_UPDATE"
+local rangeCoalesceRegistered = false
 
 local function ProcessRangeFrameUpdates()
     for i = #UUF.RangeEvtFrames, 1, -1 do
@@ -274,9 +275,17 @@ local function ProcessRangeFrameUpdates()
     end
 end
 
-if UUF.EventCoalescer then
+local function EnsureRangeCoalescer()
+    if rangeCoalesceRegistered or not UUF.EventCoalescer then
+        return
+    end
     UUF.EventCoalescer:CoalesceEvent(RANGE_COALESCE_EVENT, 0.10, ProcessRangeFrameUpdates, 3)
     UUF.EventCoalescer:SetEventDelay(RANGE_COALESCE_EVENT, 0.10)
+    rangeCoalesceRegistered = true
+end
+
+if UUF.EventCoalescer then
+    EnsureRangeCoalescer()
 end
 
 local RangeEventFrame = CreateFrame("Frame")
@@ -285,7 +294,11 @@ RangeEventFrame:RegisterEvent("UNIT_TARGET")
 RangeEventFrame:RegisterEvent("SPELL_UPDATE_COOLDOWN")
 RangeEventFrame:SetScript("OnEvent", function()
     if UUF.EventCoalescer then
-        UUF.EventCoalescer:QueueEvent(RANGE_COALESCE_EVENT)
+        EnsureRangeCoalescer()
+        local accepted = UUF.EventCoalescer:QueueEvent(RANGE_COALESCE_EVENT)
+        if not accepted then
+            ProcessRangeFrameUpdates()
+        end
     else
         ProcessRangeFrameUpdates()
     end

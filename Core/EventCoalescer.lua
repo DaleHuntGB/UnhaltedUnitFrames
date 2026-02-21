@@ -49,7 +49,9 @@ local PRIORITY_LOW = 4
 local _stats = {
 	totalCoalesced = 0,        -- Total events coalesced
 	totalDispatched = 0,       -- Total batches dispatched
+	totalRejected = 0,         -- QueueEvent calls rejected (event not registered)
 	eventCounts = {},          -- Per-event coalesce counts
+	rejectedCounts = {},       -- Per-event rejected queue counts
 	batchSizes = {},           -- Per-event batch size tracking [eventName] = { min, max, total, count }
 	budgetDefers = 0,          -- Times dispatch deferred due to budget
 	emergencyFlushes = 0,      -- Times CRITICAL priority forced immediate dispatch
@@ -132,7 +134,9 @@ function EventCoalescer:QueueEvent(eventName, ...)
 	local eventData = _coalescedEvents[eventName]
 	if not eventData then
 		-- Not a coalesced event, ignore
-		return
+		_stats.totalRejected = _stats.totalRejected + 1
+		_stats.rejectedCounts[eventName] = (_stats.rejectedCounts[eventName] or 0) + 1
+		return false
 	end
 
 	-- Ensure per-event stats buckets exist (important after ResetStats()).
@@ -157,7 +161,7 @@ function EventCoalescer:QueueEvent(eventName, ...)
 	if eventData.priority == PRIORITY_CRITICAL then
 		_stats.emergencyFlushes = _stats.emergencyFlushes + 1
 		self:_DispatchCoalesced(eventName)
-		return
+		return true
 	end
 	
 	-- Check if we should dispatch now
@@ -176,6 +180,8 @@ function EventCoalescer:QueueEvent(eventName, ...)
 			end)
 		end
 	end
+
+	return true
 end
 
 --- Force immediate dispatch of all pending coalesced events
@@ -191,10 +197,12 @@ function EventCoalescer:GetStats()
 	local result = {
 		totalCoalesced = _stats.totalCoalesced,
 		totalDispatched = _stats.totalDispatched,
+		totalRejected = _stats.totalRejected,
 		budgetDefers = _stats.budgetDefers,
 		emergencyFlushes = _stats.emergencyFlushes,
 		savingsPercent = 0,
 		eventCounts = {},
+		rejectedCounts = {},
 		batchSizes = {},
 	}
 	
@@ -207,6 +215,11 @@ function EventCoalescer:GetStats()
 	-- Copy event counts
 	for eventName, count in pairs(_stats.eventCounts) do
 		result.eventCounts[eventName] = count
+	end
+
+	-- Copy rejection counts
+	for eventName, count in pairs(_stats.rejectedCounts) do
+		result.rejectedCounts[eventName] = count
 	end
 	
 	-- Copy batch size stats with averages
@@ -228,6 +241,7 @@ function EventCoalescer:PrintStats()
 	print("|cFF00B0F7=== Event Coalescing Statistics ===|r")
 	print(string.format("Total Events Coalesced: %d", stats.totalCoalesced))
 	print(string.format("Total Batches Dispatched: %d", stats.totalDispatched))
+	print(string.format("Total Queue Rejected: %d", stats.totalRejected or 0))
 	print(string.format("CPU Savings: %.1f%%", stats.savingsPercent))
 	print(string.format("Budget Defers: %d", stats.budgetDefers))
 	print(string.format("Emergency Flushes (CRITICAL): %d", stats.emergencyFlushes))
@@ -250,9 +264,11 @@ end
 function EventCoalescer:ResetStats()
 	_stats.totalCoalesced = 0
 	_stats.totalDispatched = 0
+	_stats.totalRejected = 0
 	_stats.budgetDefers = 0
 	_stats.emergencyFlushes = 0
 	_stats.eventCounts = {}
+	_stats.rejectedCounts = {}
 	_stats.batchSizes = {}
 end
 

@@ -94,6 +94,7 @@ local _stats = {
 }
 
 local _initialized = false
+local _batchedHandlers = {}
 
 --[[----------------------------------------------------------------------------
 	Public API
@@ -123,6 +124,7 @@ function CoalescingIntegration:ApplyToAllElements()
 	-- Register each high-frequency event with EventCoalescer
 	for eventName, config in pairs(EVENT_COALESCE_CONFIG) do
 		local handler = self:_CreateBatchedHandler(eventName, config.priority)
+		_batchedHandlers[eventName] = handler
 		
 		-- Register the coalesced event with EventCoalescer with correct priority
 		-- This wraps the handler with debouncing logic
@@ -230,7 +232,14 @@ function CoalescingIntegration:_CreateEventDispatcher()
 					return
 				end
 			end
-			UUF.EventCoalescer:QueueEvent(eventName, ...)
+			local accepted = UUF.EventCoalescer:QueueEvent(eventName, ...)
+			if not accepted then
+				-- Race-safe fallback if event fired before coalescer registration applied.
+				local handler = _batchedHandlers[eventName]
+				if handler then
+					handler(...)
+				end
+			end
 		end
 	end)
 	
