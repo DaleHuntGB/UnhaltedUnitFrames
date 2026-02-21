@@ -302,6 +302,42 @@ local _delayLearning = {
 	},
 }
 
+-- Per-event adaptive delay safety clamps.
+-- Keeps ML tuning in sensible ranges for responsiveness and stability.
+local _delayClampPolicy = {
+	UNIT_HEALTH = { min = 0.05, max = 0.14 },
+	UNIT_POWER_UPDATE = { min = 0.05, max = 0.12 },
+	UNIT_AURA = { min = 0.06, max = 0.14 },
+	UNIT_THREAT_LIST_UPDATE = { min = 0.08, max = 0.2 },
+	UNIT_THREAT_SITUATION_UPDATE = { min = 0.08, max = 0.2 },
+	UNIT_PORTRAIT_UPDATE = { min = 0.12, max = 0.3 },
+	UNIT_MODEL_CHANGED = { min = 0.12, max = 0.3 },
+
+	UUF_RANGE_FRAME_UPDATE = { min = 0.06, max = 0.14 },
+	UUF_DISPEL_HIGHLIGHT_UPDATE = { min = 0.06, max = 0.14 },
+	UUF_TARGET_GLOW_UPDATE = { min = 0.03, max = 0.12 },
+	UUF_ALT_POWER_BAR_UPDATE = { min = 0.04, max = 0.12 },
+	UUF_SECONDARY_POWER_REFRESH = { min = 0.06, max = 0.16 },
+
+	UPDATE_ALL_UNIT_FRAMES = { min = 0.01, max = 0.08 },
+}
+
+local function GetDelayClamp(eventName)
+	local policy = _delayClampPolicy[eventName]
+	if policy then
+		return policy.min, policy.max
+	end
+
+	local defaultDelay = _delayLearning.defaultDelays[eventName]
+	if defaultDelay then
+		local minDelay = math_max(0.01, defaultDelay * 0.7)
+		local maxDelay = math_min(0.3, defaultDelay * 2.5)
+		return minDelay, maxDelay
+	end
+
+	return 0.01, 0.2
+end
+
 local _hooks = {
 	dirtyFlags = false,
 	coalescer = false,
@@ -547,6 +583,8 @@ local function SerializeDelayLearning()
 		end
 		if type(eventName) == "string" and type(contexts) == "table" then
 			out[eventName] = {}
+			local minDelay, maxDelay = GetDelayClamp(eventName)
+			local fallbackDelay = _delayLearning.defaultDelays[eventName] or minDelay
 			local contextCount = 0
 			for contentType, data in pairs(contexts) do
 				if contextCount >= MAX_PERSIST_CONTEXTS then
@@ -554,7 +592,7 @@ local function SerializeDelayLearning()
 				end
 				if type(contentType) == "string" and type(data) == "table" then
 					out[eventName][contentType] = {
-						delay = Clamp(data.delay, 0.01, 0.2, 0.05),
+						delay = Clamp(data.delay, minDelay, maxDelay, fallbackDelay),
 						samples = math_max(0, math.floor((data.samples or 0) + 0.5)),
 						successCount = math_max(0, math.floor((data.successCount or 0) + 0.5)),
 						fps = Clamp(data.fps, 0, 500, 60),
@@ -583,6 +621,8 @@ local function ApplyDelayState(delayState)
 		end
 		if type(eventName) == "string" and type(contexts) == "table" then
 			loaded[eventName] = {}
+			local minDelay, maxDelay = GetDelayClamp(eventName)
+			local fallbackDelay = _delayLearning.defaultDelays[eventName] or minDelay
 			local contextCount = 0
 			for contentType, data in pairs(contexts) do
 				if contextCount >= MAX_PERSIST_CONTEXTS then
@@ -595,7 +635,7 @@ local function ApplyDelayState(delayState)
 						successCount = samples
 					end
 					loaded[eventName][contentType] = {
-						delay = Clamp(data.delay, 0.01, 0.2, 0.05),
+						delay = Clamp(data.delay, minDelay, maxDelay, fallbackDelay),
 						samples = samples,
 						successCount = successCount,
 						fps = Clamp(data.fps, 0, 500, 60),
@@ -618,6 +658,9 @@ end
 -- @param success boolean - Whether update was smooth (no FPS drop)
 function MLOptimizer:LearnDelay(eventName, delay, success)
 	local contentType = _context.instanceType
+	local minDelay, maxDelay = GetDelayClamp(eventName)
+	local fallbackDelay = _delayLearning.defaultDelays[eventName] or minDelay
+	local normalizedDelay = Clamp(delay, minDelay, maxDelay, fallbackDelay)
 	
 	if not _delayLearning.eventDelays[eventName] then
 		_delayLearning.eventDelays[eventName] = {}
@@ -625,7 +668,7 @@ function MLOptimizer:LearnDelay(eventName, delay, success)
 	
 	if not _delayLearning.eventDelays[eventName][contentType] then
 		_delayLearning.eventDelays[eventName][contentType] = {
-			delay = delay,
+			delay = normalizedDelay,
 			samples = 0,
 			successCount = 0,
 			fps = GetFramerate(),
@@ -634,6 +677,7 @@ function MLOptimizer:LearnDelay(eventName, delay, success)
 	end
 	
 	local entry = _delayLearning.eventDelays[eventName][contentType]
+	entry.delay = Clamp(entry.delay, minDelay, maxDelay, fallbackDelay)
 	entry.samples = entry.samples + 1
 	if success then
 		entry.successCount = entry.successCount + 1
@@ -643,10 +687,10 @@ function MLOptimizer:LearnDelay(eventName, delay, success)
 	local successRate = entry.successCount / entry.samples
 	if successRate < 0.7 then
 		-- Too aggressive, increase delay
-		entry.delay = math_min(0.2, entry.delay * 1.1)
+		entry.delay = math_min(maxDelay, entry.delay * 1.1)
 	elseif successRate > 0.95 and entry.samples > 10 then
 		-- Very successful, try decreasing delay
-		entry.delay = math_max(0.01, entry.delay * 0.95)
+		entry.delay = math_max(minDelay, entry.delay * 0.95)
 	end
 	
 	-- Update FPS/latency tracking
@@ -660,15 +704,17 @@ end
 -- @return number - Delay in seconds
 function MLOptimizer:GetOptimalDelay(eventName)
 	local contentType = _context.instanceType
+	local minDelay, maxDelay = GetDelayClamp(eventName)
+	local fallbackDelay = _delayLearning.defaultDelays[eventName] or minDelay
 	
 	-- Check learned delay
 	if _delayLearning.eventDelays[eventName] and 
 	   _delayLearning.eventDelays[eventName][contentType] then
-		return _delayLearning.eventDelays[eventName][contentType].delay
+		return Clamp(_delayLearning.eventDelays[eventName][contentType].delay, minDelay, maxDelay, fallbackDelay)
 	end
 	
 	-- Fall back to default
-	return _delayLearning.defaultDelays[eventName] or 0.05
+	return Clamp(_delayLearning.defaultDelays[eventName], minDelay, maxDelay, fallbackDelay)
 end
 
 --[[----------------------------------------------------------------------------
