@@ -18,7 +18,7 @@ function UUF:CreateUnitFrame(unitFrame, unit)
     UUF:CreateUnitHealPrediction(unitFrame, unit)
     if unit ~= "targettarget" and unit ~= "focustarget" then UUF:CreateUnitPortrait(unitFrame, unit) end
     UUF:CreateUnitPowerBar(unitFrame, unit)
-    if unit == "player" and UUF:RequiresAlternativePowerBar() then UUF:CreateUnitAlternativePowerBar(unitFrame, unit) end
+    if unit == "player" then UUF:CreateUnitAlternativePowerBar(unitFrame, unit) end
     if unit == "player" then UUF:CreateUnitSecondaryPowerBar(unitFrame, unit) end
     UUF:CreateUnitRaidTargetMarker(unitFrame, unit)
     if unit == "player" or unit == "target" then UUF:CreateUnitLeaderAssistantIndicator(unitFrame, unit) end
