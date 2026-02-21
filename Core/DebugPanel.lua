@@ -4,6 +4,22 @@
 local DebugPanel = {}
 DebugPanel.__index = DebugPanel
 
+local function IsScrollNearBottom(scrollFrame)
+	if not scrollFrame then return true end
+	local range = scrollFrame:GetVerticalScrollRange() or 0
+	if range <= 1 then
+		return true
+	end
+	local current = scrollFrame:GetVerticalScroll() or 0
+	return (range - current) <= 12
+end
+
+local function ScrollToBottom(scrollFrame)
+	if not scrollFrame then return end
+	local range = scrollFrame:GetVerticalScrollRange() or 0
+	scrollFrame:SetVerticalScroll(range)
+end
+
 function DebugPanel:New()
 	local self = setmetatable({}, DebugPanel)
 	self.frame = nil
@@ -40,41 +56,24 @@ function DebugPanel:Create()
 	
 	-- Note: BasicFrameTemplateWithInset already has close button, don't create duplicate
 	
-	-- Scroll frame for messages
-	local scrollFrame = CreateFrame("ScrollFrame", nil, frame, "FauxScrollFrameTemplate")
+	-- Scroll frame for messages (matches /uufperf model)
+	local scrollFrame = CreateFrame("ScrollFrame", nil, frame, "UIPanelScrollFrameTemplate")
 	scrollFrame:SetPoint("TOPLEFT", frame, "TOPLEFT", 10, -35)
 	scrollFrame:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -30, 45)
-	scrollFrame:SetScript("OnVerticalScroll", function(self, offset)
-		FauxScrollFrame_OnVerticalScroll(self, offset, 14, function()
-			UUF.DebugPanel:Refresh()
-		end)
-	end)
 	
 	self.scrollFrame = scrollFrame  -- Store reference for Refresh()
 	
-	-- Message text frame
+	-- Message text container
 	local textFrame = CreateFrame("Frame", nil, scrollFrame)
 	textFrame:SetSize(550, 1)
 	scrollFrame:SetScrollChild(textFrame)
-	
-	-- Create font strings for messages
-	local function CreateMessageLine()
-		local line = textFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-		line:SetJustifyH("LEFT")
-		line:SetJustifyV("TOP")
-		return line
-	end
-	
-	-- Pre-create message lines
-	self.messageLines = {}
-	for i = 1, 100 do
-		self.messageLines[i] = CreateMessageLine()
-		if i == 1 then
-			self.messageLines[i]:SetPoint("TOPLEFT", textFrame, "TOPLEFT", 5, 0)
-		else
-			self.messageLines[i]:SetPoint("TOPLEFT", self.messageLines[i-1], "BOTTOMLEFT", 0, -2)
-		end
-	end
+	local messagesText = textFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+	messagesText:SetPoint("TOPLEFT", textFrame, "TOPLEFT", 5, 0)
+	messagesText:SetWidth(540)
+	messagesText:SetJustifyH("LEFT")
+	messagesText:SetJustifyV("TOP")
+	messagesText:SetText("")
+	self.messagesText = messagesText
 	
 	-- Button row
 	local btnFrame = CreateFrame("Frame", nil, frame)
@@ -158,11 +157,7 @@ function DebugPanel:AddMessage(message)
 	-- Check if user is scrolled to bottom BEFORE modifying messages
 	local wasAtBottom = false
 	if self.frame and self.scrollFrame then
-		local numMessages = #self.messages
-		local numDisplayLines = 20
-		local maxOffset = math.max(0, numMessages - numDisplayLines)
-		local currentOffset = FauxScrollFrame_GetOffset(self.scrollFrame)
-		wasAtBottom = (currentOffset >= maxOffset - 1)  -- Within 1 line of bottom
+		wasAtBottom = IsScrollNearBottom(self.scrollFrame)
 	end
 	
 	-- Always store messages, even if frame not created yet
@@ -180,10 +175,11 @@ function DebugPanel:AddMessage(message)
 		
 		-- If user was at bottom, keep them at bottom after new message
 		if wasAtBottom then
-			local numDisplayLines = 20
-			local newMaxOffset = math.max(0, #self.messages - numDisplayLines)
-			FauxScrollFrame_SetOffset(self.scrollFrame, newMaxOffset)
-			self:Refresh()
+			C_Timer.After(0, function()
+				if self.scrollFrame and self.frame and self.frame:IsShown() then
+					ScrollToBottom(self.scrollFrame)
+				end
+			end)
 		end
 	end
 end
@@ -191,39 +187,17 @@ end
 function DebugPanel:ClearMessages()
 	self.messages = {}
 	if self.scrollFrame then
-		FauxScrollFrame_SetOffset(self.scrollFrame, 0)
+		self.scrollFrame:SetVerticalScroll(0)
 	end
 	self:Refresh()
 end
 
 function DebugPanel:Refresh()
-	if not self.frame or not self.scrollFrame then return end
-	
-	local numMessages = #self.messages
-	local numDisplayLines = 20  -- Number of visible lines in the scroll area
-	
-	-- Update scrollbar
-	FauxScrollFrame_Update(self.scrollFrame, numMessages, numDisplayLines, 14)
-	
-	local offset = FauxScrollFrame_GetOffset(self.scrollFrame)
-	
-	-- Update message display (oldest to newest, top to bottom)
-	for i = 1, numDisplayLines do
-		local messageIndex = offset + i
-		if messageIndex > 0 and messageIndex <= numMessages then
-			self.messageLines[i]:SetText(self.messages[messageIndex])
-			self.messageLines[i]:Show()
-		else
-			self.messageLines[i]:SetText("")
-			self.messageLines[i]:Hide()
-		end
-	end
-	
-	-- Hide remaining pre-created lines
-	for i = numDisplayLines + 1, 100 do
-		self.messageLines[i]:SetText("")
-		self.messageLines[i]:Hide()
-	end
+	if not self.frame or not self.scrollFrame or not self.messagesText then return end
+
+	self.messagesText:SetText(table.concat(self.messages, "\n"))
+	local textHeight = self.messagesText:GetStringHeight()
+	self.textFrame:SetHeight(math.max(textHeight + 10, 1))
 end
 
 function DebugPanel:ExportAsText()
@@ -319,10 +293,25 @@ function DebugPanel:ShowSettings()
 	helpText:SetPoint("TOPLEFT", frame, "TOPLEFT", 10, -35)
 	helpText:SetText("|cFF888888Enable systems to see DEBUG tier messages:|r")
 	helpText:SetJustifyH("LEFT")
+
+	-- CastBar output visibility toggle
+	local castBarToggle = CreateFrame("CheckButton", nil, frame, "UICheckButtonTemplate")
+	castBarToggle:SetPoint("TOPLEFT", frame, "TOPLEFT", 10, -58)
+	castBarToggle:SetChecked(not (UUF.db and UUF.db.profile and UUF.db.profile.Debug and UUF.db.profile.Debug.showCastBarDebug == false))
+	castBarToggle:SetScript("OnClick", function(self)
+		if UUF.db and UUF.db.profile and UUF.db.profile.Debug then
+			UUF.db.profile.Debug.showCastBarDebug = self:GetChecked() == true
+			local status = self:GetChecked() and "|cFF00FF00shown|r" or "|cFFFF0000hidden|r"
+			print("|cFF00B0F7UUF: CastBar debug output " .. status)
+		end
+	end)
+	local castBarLabel = castBarToggle:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+	castBarLabel:SetPoint("LEFT", castBarToggle, "RIGHT", 5, 0)
+	castBarLabel:SetText("Show CastBar debug output")
 	
 	-- Enable All / Disable All buttons
 	local enableAllBtn = CreateFrame("Button", nil, frame, "GameMenuButtonTemplate")
-	enableAllBtn:SetPoint("TOPLEFT", frame, "TOPLEFT", 10, -60)
+	enableAllBtn:SetPoint("TOPLEFT", frame, "TOPLEFT", 10, -84)
 	enableAllBtn:SetSize(90, 25)
 	enableAllBtn:SetText("Enable All")
 	enableAllBtn:SetScript("OnClick", function()
@@ -360,16 +349,16 @@ function DebugPanel:ShowSettings()
 	end)
 	
 	-- Scroll frame for system checkboxes
-	local scrollFrame = CreateFrame("ScrollFrame", nil, frame, "FauxScrollFrameTemplate")
-	scrollFrame:SetPoint("TOPLEFT", frame, "TOPLEFT", 10, -95)
+	local scrollFrame = CreateFrame("ScrollFrame", nil, frame, "UIPanelScrollFrameTemplate")
+	scrollFrame:SetPoint("TOPLEFT", frame, "TOPLEFT", 10, -118)
 	scrollFrame:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -30, 10)
 	
 	local scrollChild = CreateFrame("Frame", nil, scrollFrame)
-	scrollChild:SetSize(250, 1)
+	scrollChild:SetSize(245, 1)
 	scrollFrame:SetScrollChild(scrollChild)
 	
 	-- Create checkboxes for each system
-	local y = 0
+	local y = -2
 	if UUF.db and UUF.db.profile and UUF.db.profile.Debug and UUF.db.profile.Debug.systems then
 		for system in pairs(UUF.db.profile.Debug.systems) do
 			local checkbox = CreateFrame("CheckButton", nil, scrollChild, "UICheckButtonTemplate")
@@ -383,11 +372,11 @@ function DebugPanel:ShowSettings()
 			label:SetPoint("LEFT", checkbox, "RIGHT", 5, 0)
 			label:SetText(system)
 			
-			y = y - 25
+			y = y - 24
 		end
 	end
 	
-	scrollChild:SetHeight(math.abs(y) + 20)
+	scrollChild:SetHeight(math.max(math.abs(y) + 8, 1))
 	
 	self.settingsFrame = frame
 end
@@ -404,11 +393,12 @@ function DebugPanel:Show()
 	
 	-- Ensure scroll is at bottom (newest messages) when opening panel
 	if self.scrollFrame then
-		local numMessages = #self.messages
-		local numDisplayLines = 20
-		local maxOffset = math.max(0, numMessages - numDisplayLines)
-		FauxScrollFrame_SetOffset(self.scrollFrame, maxOffset)
 		self:Refresh()
+		C_Timer.After(0, function()
+			if self.scrollFrame and self.frame and self.frame:IsShown() then
+				ScrollToBottom(self.scrollFrame)
+			end
+		end)
 	end
 	
 	self.frame:Show()

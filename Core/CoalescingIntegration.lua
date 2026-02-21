@@ -42,15 +42,15 @@ local PRIORITY_LOW = 4
 -- Event coalescing configuration
 -- Maps high-frequency events to { delay, priority }
 local EVENT_COALESCE_CONFIG = {
-	-- CRITICAL: Health/power bars (must update immediately)
-	UNIT_HEALTH = { delay = 0.07, priority = PRIORITY_CRITICAL },           -- 70ms (~14 updates/sec)
-	UNIT_POWER_UPDATE = { delay = 0.07, priority = PRIORITY_CRITICAL },     -- 70ms
+	-- HIGH: Health/power bars (frequent and important, but still benefit from batching)
+	UNIT_HEALTH = { delay = 0.10, priority = PRIORITY_HIGH },               -- 100ms (~10 updates/sec)
+	UNIT_POWER_UPDATE = { delay = 0.09, priority = PRIORITY_HIGH },         -- 90ms
 	
 	-- HIGH: Max values and auras (important but less critical)
 	UNIT_MAXHEALTH = { delay = 0.1, priority = PRIORITY_HIGH },             -- 100ms (10 updates/sec)
 	UNIT_MAXPOWER = { delay = 0.1, priority = PRIORITY_HIGH },              -- 100ms
 	UNIT_DISPLAYPOWER = { delay = 0.1, priority = PRIORITY_HIGH },          -- 100ms
-	UNIT_AURA = { delay = 0.06, priority = PRIORITY_HIGH },                 -- 60ms (aura changes frequent)
+	UNIT_AURA = { delay = 0.08, priority = PRIORITY_HIGH },                 -- 80ms (aura changes frequent)
 	
 	-- MEDIUM: Threat and secondary indicators
 	UNIT_THREAT_SITUATION_UPDATE = { delay = 0.1, priority = PRIORITY_MEDIUM },  -- 100ms
@@ -71,6 +71,20 @@ local EVENT_COALESCE_CONFIG = {
 local NON_UNIT_EVENT_TARGETS = {
 	PLAYER_TOTEM_UPDATE = { "player" },
 	RUNE_POWER_UPDATE = { "player" },
+}
+
+local UNIT_SCOPED_EVENTS = {
+	UNIT_HEALTH = true,
+	UNIT_POWER_UPDATE = true,
+	UNIT_MAXHEALTH = true,
+	UNIT_MAXPOWER = true,
+	UNIT_DISPLAYPOWER = true,
+	UNIT_AURA = true,
+	UNIT_THREAT_SITUATION_UPDATE = true,
+	UNIT_THREAT_LIST_UPDATE = true,
+	UNIT_SPELLCAST_CHANNEL_UPDATE = true,
+	UNIT_PORTRAIT_UPDATE = true,
+	UNIT_MODEL_CHANGED = true,
 }
 
 -- Statistics
@@ -113,6 +127,8 @@ function CoalescingIntegration:ApplyToAllElements()
 		-- Register the coalesced event with EventCoalescer with correct priority
 		-- This wraps the handler with debouncing logic
 		UUF.EventCoalescer:CoalesceEvent(eventName, config.delay, handler, config.priority)
+		-- CoalesceEvent doesn't overwrite existing delays; enforce tuned delay explicitly.
+		UUF.EventCoalescer:SetEventDelay(eventName, config.delay)
 		
 		_stats.appliedEvents = _stats.appliedEvents + 1
 		appliedCount = appliedCount + 1
@@ -208,6 +224,12 @@ function CoalescingIntegration:_CreateEventDispatcher()
 	_eventDispatcher = CreateFrame("Frame")
 	_eventDispatcher:SetScript("OnEvent", function(self, eventName, ...)
 		if UUF.EventCoalescer then
+			if UNIT_SCOPED_EVENTS[eventName] then
+				local unitToken = ...
+				if not unitToken or not UUF.Units or not UUF.Units[unitToken] then
+					return
+				end
+			end
 			UUF.EventCoalescer:QueueEvent(eventName, ...)
 		end
 	end)

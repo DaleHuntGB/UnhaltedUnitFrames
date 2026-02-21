@@ -56,7 +56,7 @@ local function EnsureAltPowerCoalescer()
     if altPowerCoalesceRegistered then return end
     if not UUF.EventCoalescer then return end
 
-    UUF.EventCoalescer:CoalesceEvent(ALT_POWER_COALESCE_EVENT, 0.03, function(frameCastBar, event, unit)
+    UUF.EventCoalescer:CoalesceEvent(ALT_POWER_COALESCE_EVENT, 0.05, function(frameCastBar, event, unit)
         if not frameCastBar then return end
         if event == "UNIT_DISPLAYPOWER" then
             frameCastBar.powerType = ResolveSecondaryPowerType(frameCastBar.unit)

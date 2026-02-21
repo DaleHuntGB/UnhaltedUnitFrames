@@ -275,7 +275,8 @@ local function ProcessRangeFrameUpdates()
 end
 
 if UUF.EventCoalescer then
-    UUF.EventCoalescer:CoalesceEvent(RANGE_COALESCE_EVENT, 0.05, ProcessRangeFrameUpdates, 3)
+    UUF.EventCoalescer:CoalesceEvent(RANGE_COALESCE_EVENT, 0.10, ProcessRangeFrameUpdates, 3)
+    UUF.EventCoalescer:SetEventDelay(RANGE_COALESCE_EVENT, 0.10)
 end
 
 local RangeEventFrame = CreateFrame("Frame")

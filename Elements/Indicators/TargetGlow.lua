@@ -18,7 +18,7 @@ end
 
 if UUF.EventCoalescer then
     -- Keep target feedback responsive while avoiding UNIT_TARGET burst spam.
-    UUF.EventCoalescer:CoalesceEvent(TARGET_GLOW_COALESCE_EVENT, 0.03, ProcessTargetGlowUpdates, 2)
+    UUF.EventCoalescer:CoalesceEvent(TARGET_GLOW_COALESCE_EVENT, 0.05, ProcessTargetGlowUpdates, 2)
 end
 
 local unitIsTargetEvtFrame = CreateFrame("Frame")

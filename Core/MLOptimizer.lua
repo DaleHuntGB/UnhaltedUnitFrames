@@ -38,6 +38,9 @@ local math_exp, math_tanh = math.exp, math.tanh
 local math_random, math_min, math_max = math.random, math.min, math.max
 local table_insert, table_remove = table.insert, table.remove
 local select = select
+local type = type
+local CreateFrame = CreateFrame
+local time = time
 
 --[[----------------------------------------------------------------------------
 	Neural Network Configuration
@@ -208,6 +211,7 @@ function MLOptimizer:TrackPattern(eventName, reason)
 		if _patterns.lastSignature and _patterns.library[_patterns.lastSignature] then
 			local prevPattern = _patterns.library[_patterns.lastSignature]
 			prevPattern.predictions[eventName] = (prevPattern.predictions[eventName] or 0) + 1
+			self:MarkStateDirty()
 		end
 		_patterns.lastSignature = signature
 	end
@@ -237,6 +241,7 @@ function MLOptimizer:AnalyzePattern()
 	-- Increment occurrence
 	_patterns.library[signature].occurrences = _patterns.library[signature].occurrences + 1
 	_patterns.library[signature].lastSeen = GetTime()
+	self:MarkStateDirty()
 	
 	return signature
 end
@@ -306,7 +311,306 @@ local _hooks = {
 local _tickers = {
 	context = nil,
 	delayAdjust = nil,
+	persistence = nil,
 }
+
+local _persistence = {
+	dirty = false,
+	logoutFrame = nil,
+}
+
+local PERSIST_VERSION = 1
+local MAX_PERSIST_PATTERNS = 200
+local MAX_PERSIST_PREDICTIONS = 8
+local MAX_PERSIST_EVENTS = 32
+local MAX_PERSIST_CONTEXTS = 8
+
+local function EnsurePersistenceRoot()
+	if not UUF.db or not UUF.db.global then
+		return nil
+	end
+	UUF.db.global.MLOptimizer = UUF.db.global.MLOptimizer or {}
+	return UUF.db.global.MLOptimizer
+end
+
+local function IsFiniteNumber(value)
+	return type(value) == "number" and value == value and value ~= math.huge and value ~= -math.huge
+end
+
+local function Clamp(value, minValue, maxValue, fallback)
+	if not IsFiniteNumber(value) then
+		return fallback
+	end
+	if value < minValue then
+		return minValue
+	end
+	if value > maxValue then
+		return maxValue
+	end
+	return value
+end
+
+local function SerializeNetwork()
+	local network = {
+		inputHidden = {},
+		hiddenOutput = {},
+		biases = {
+			hidden = {},
+			output = {},
+		},
+	}
+
+	for i = 1, NETWORK.inputs do
+		network.inputHidden[i] = {}
+		for h = 1, NETWORK.hidden do
+			network.inputHidden[i][h] = Clamp(_weights.inputHidden[i] and _weights.inputHidden[i][h], -10, 10, 0)
+		end
+	end
+
+	for h = 1, NETWORK.hidden do
+		network.hiddenOutput[h] = {}
+		for o = 1, NETWORK.outputs do
+			network.hiddenOutput[h][o] = Clamp(_weights.hiddenOutput[h] and _weights.hiddenOutput[h][o], -10, 10, 0)
+		end
+	end
+
+	for h = 1, NETWORK.hidden do
+		network.biases.hidden[h] = Clamp(_biases.hidden[h], -10, 10, 0)
+	end
+	for o = 1, NETWORK.outputs do
+		network.biases.output[o] = Clamp(_biases.output[o], -10, 10, 0)
+	end
+
+	return network
+end
+
+local function ApplyNetworkState(network)
+	if type(network) ~= "table" then
+		return false
+	end
+	if type(network.inputHidden) ~= "table" or type(network.hiddenOutput) ~= "table" or type(network.biases) ~= "table" then
+		return false
+	end
+	if type(network.biases.hidden) ~= "table" or type(network.biases.output) ~= "table" then
+		return false
+	end
+
+	for i = 1, NETWORK.inputs do
+		if type(network.inputHidden[i]) ~= "table" then
+			return false
+		end
+		for h = 1, NETWORK.hidden do
+			if not IsFiniteNumber(network.inputHidden[i][h]) then
+				return false
+			end
+		end
+	end
+
+	for h = 1, NETWORK.hidden do
+		if type(network.hiddenOutput[h]) ~= "table" then
+			return false
+		end
+		for o = 1, NETWORK.outputs do
+			if not IsFiniteNumber(network.hiddenOutput[h][o]) then
+				return false
+			end
+		end
+	end
+
+	for h = 1, NETWORK.hidden do
+		if not IsFiniteNumber(network.biases.hidden[h]) then
+			return false
+		end
+	end
+	for o = 1, NETWORK.outputs do
+		if not IsFiniteNumber(network.biases.output[o]) then
+			return false
+		end
+	end
+
+	for i = 1, NETWORK.inputs do
+		for h = 1, NETWORK.hidden do
+			_weights.inputHidden[i][h] = Clamp(network.inputHidden[i][h], -10, 10, 0)
+		end
+	end
+	for h = 1, NETWORK.hidden do
+		for o = 1, NETWORK.outputs do
+			_weights.hiddenOutput[h][o] = Clamp(network.hiddenOutput[h][o], -10, 10, 0)
+		end
+	end
+	for h = 1, NETWORK.hidden do
+		_biases.hidden[h] = Clamp(network.biases.hidden[h], -10, 10, 0)
+	end
+	for o = 1, NETWORK.outputs do
+		_biases.output[o] = Clamp(network.biases.output[o], -10, 10, 0)
+	end
+
+	return true
+end
+
+local function SerializePatterns()
+	local patterns = {}
+	local count = 0
+	for signature, pattern in pairs(_patterns.library) do
+		if count >= MAX_PERSIST_PATTERNS then
+			break
+		end
+		if type(signature) == "string" and type(pattern) == "table" then
+			local predictions = {}
+			local predCount = 0
+			for eventName, eventCount in pairs(pattern.predictions or {}) do
+				if predCount >= MAX_PERSIST_PREDICTIONS then
+					break
+				end
+				if type(eventName) == "string" and IsFiniteNumber(eventCount) and eventCount > 0 then
+					predictions[eventName] = math_max(1, math.floor(eventCount + 0.5))
+					predCount = predCount + 1
+				end
+			end
+
+			patterns[signature] = {
+				occurrences = math_max(0, math.floor((pattern.occurrences or 0) + 0.5)),
+				lastSeen = Clamp(pattern.lastSeen, 0, 10^9, 0),
+				predictions = predictions,
+				context = type(pattern.context) == "table" and {
+					combat = pattern.context.combat and true or false,
+					instance = type(pattern.context.instance) == "string" and pattern.context.instance or "world",
+					groupSize = math_max(0, math.floor((pattern.context.groupSize or 0) + 0.5)),
+				} or nil,
+			}
+			count = count + 1
+		end
+	end
+
+	return patterns
+end
+
+local function ApplyPatternState(patterns)
+	if type(patterns) ~= "table" then
+		return false
+	end
+
+	local loaded = {}
+	local count = 0
+	for signature, pattern in pairs(patterns) do
+		if count >= MAX_PERSIST_PATTERNS then
+			break
+		end
+		if type(signature) == "string" and type(pattern) == "table" then
+			local restored = {
+				occurrences = math_max(0, math.floor((pattern.occurrences or 0) + 0.5)),
+				lastSeen = Clamp(pattern.lastSeen, 0, 10^9, 0),
+				predictions = {},
+				context = {
+					combat = false,
+					instance = "world",
+					groupSize = 0,
+				},
+			}
+
+			local predCount = 0
+			for eventName, eventCount in pairs(pattern.predictions or {}) do
+				if predCount >= MAX_PERSIST_PREDICTIONS then
+					break
+				end
+				if type(eventName) == "string" and IsFiniteNumber(eventCount) and eventCount > 0 then
+					restored.predictions[eventName] = math_max(1, math.floor(eventCount + 0.5))
+					predCount = predCount + 1
+				end
+			end
+
+			if type(pattern.context) == "table" then
+				restored.context.combat = pattern.context.combat and true or false
+				if type(pattern.context.instance) == "string" then
+					restored.context.instance = pattern.context.instance
+				end
+				restored.context.groupSize = math_max(0, math.floor((pattern.context.groupSize or 0) + 0.5))
+			end
+
+			loaded[signature] = restored
+			count = count + 1
+		end
+	end
+
+	_patterns.library = loaded
+	_patterns.currentSequence = {}
+	_patterns.lastSignature = nil
+	return count > 0
+end
+
+local function SerializeDelayLearning()
+	local out = {}
+	local eventCount = 0
+	for eventName, contexts in pairs(_delayLearning.eventDelays) do
+		if eventCount >= MAX_PERSIST_EVENTS then
+			break
+		end
+		if type(eventName) == "string" and type(contexts) == "table" then
+			out[eventName] = {}
+			local contextCount = 0
+			for contentType, data in pairs(contexts) do
+				if contextCount >= MAX_PERSIST_CONTEXTS then
+					break
+				end
+				if type(contentType) == "string" and type(data) == "table" then
+					out[eventName][contentType] = {
+						delay = Clamp(data.delay, 0.01, 0.2, 0.05),
+						samples = math_max(0, math.floor((data.samples or 0) + 0.5)),
+						successCount = math_max(0, math.floor((data.successCount or 0) + 0.5)),
+						fps = Clamp(data.fps, 0, 500, 60),
+						latency = Clamp(data.latency, 0, 5000, 50),
+					}
+					contextCount = contextCount + 1
+				end
+			end
+			eventCount = eventCount + 1
+		end
+	end
+
+	return out
+end
+
+local function ApplyDelayState(delayState)
+	if type(delayState) ~= "table" then
+		return false
+	end
+
+	local loaded = {}
+	local eventCount = 0
+	for eventName, contexts in pairs(delayState) do
+		if eventCount >= MAX_PERSIST_EVENTS then
+			break
+		end
+		if type(eventName) == "string" and type(contexts) == "table" then
+			loaded[eventName] = {}
+			local contextCount = 0
+			for contentType, data in pairs(contexts) do
+				if contextCount >= MAX_PERSIST_CONTEXTS then
+					break
+				end
+				if type(contentType) == "string" and type(data) == "table" then
+					local samples = math_max(0, math.floor((data.samples or 0) + 0.5))
+					local successCount = math_max(0, math.floor((data.successCount or 0) + 0.5))
+					if successCount > samples then
+						successCount = samples
+					end
+					loaded[eventName][contentType] = {
+						delay = Clamp(data.delay, 0.01, 0.2, 0.05),
+						samples = samples,
+						successCount = successCount,
+						fps = Clamp(data.fps, 0, 500, 60),
+						latency = Clamp(data.latency, 0, 5000, 50),
+					}
+					contextCount = contextCount + 1
+				end
+			end
+			eventCount = eventCount + 1
+		end
+	end
+
+	_delayLearning.eventDelays = loaded
+	return eventCount > 0
+end
 
 --- Learn optimal delay for an event based on context
 -- @param eventName string
@@ -348,6 +652,7 @@ function MLOptimizer:LearnDelay(eventName, delay, success)
 	-- Update FPS/latency tracking
 	entry.fps = GetFramerate()
 	entry.latency = select(3, GetNetStats()) or 0
+	self:MarkStateDirty()
 end
 
 --- Get optimal coalesce delay for an event
@@ -444,6 +749,80 @@ local function BackwardPropagate(inputs, hidden, outputs, targets)
 	end
 	for o = 1, NETWORK.outputs do
 		_biases.output[o] = _biases.output[o] + (NETWORK.learningRate * outputErrors[o])
+	end
+end
+
+function MLOptimizer:MarkStateDirty()
+	_persistence.dirty = true
+end
+
+function MLOptimizer:SavePersistedState(force)
+	if not force and not _persistence.dirty then
+		return false
+	end
+
+	local root = EnsurePersistenceRoot()
+	if not root then
+		return false
+	end
+
+	root.version = PERSIST_VERSION
+	root.network = SerializeNetwork()
+	root.patterns = SerializePatterns()
+	root.delays = SerializeDelayLearning()
+	local stats = self:GetStats()
+	root.meta = {
+		savedAt = time and time() or 0,
+		patternCount = stats.patterns,
+		delayCount = stats.delaysLearned,
+	}
+
+	_persistence.dirty = false
+	return true
+end
+
+function MLOptimizer:LoadPersistedState()
+	local root = EnsurePersistenceRoot()
+	if not root or type(root) ~= "table" then
+		return false
+	end
+
+	if type(root.version) ~= "number" or root.version ~= PERSIST_VERSION then
+		return false
+	end
+
+	local loadedAnything = false
+	if ApplyNetworkState(root.network) then
+		loadedAnything = true
+	end
+	if ApplyPatternState(root.patterns) then
+		loadedAnything = true
+	end
+	if ApplyDelayState(root.delays) then
+		loadedAnything = true
+	end
+
+	_persistence.dirty = false
+	return loadedAnything
+end
+
+function MLOptimizer:ResetPersistedState()
+	InitializeNetwork()
+	_patterns.library = {}
+	_patterns.currentSequence = {}
+	_patterns.lastSignature = nil
+	_delayLearning.eventDelays = {}
+	_persistence.dirty = false
+
+	local root = EnsurePersistenceRoot()
+	if root then
+		root.version = PERSIST_VERSION
+		root.network = {}
+		root.patterns = {}
+		root.delays = {}
+		root.meta = {
+			resetAt = time and time() or 0,
+		}
 	end
 end
 
@@ -547,6 +926,7 @@ function MLOptimizer:Train(eventName, reason, actualPriority, actualDelay, shoul
 	
 	-- Backward propagate to learn
 	BackwardPropagate(inputs, hidden, outputs, targets)
+	self:MarkStateDirty()
 end
 
 --- Update context (combat, instance, group)
@@ -799,6 +1179,7 @@ end
 function MLOptimizer:Init()
 	-- Initialize neural network
 	InitializeNetwork()
+	local loadedPersistedState = self:LoadPersistedState()
 	
 	-- Integrate with existing systems
 	self:IntegrateWithDirtyFlags()
@@ -811,12 +1192,33 @@ function MLOptimizer:Init()
 			self:UpdateContext()
 		end)
 	end
-	
-	if UUF.DebugOutput then
-		UUF.DebugOutput:Output("MLOptimizer", "Advanced ML optimizer initialized (neural network ready)", UUF.DebugOutput.TIER_INFO)
+
+	if not _tickers.persistence then
+		_tickers.persistence = C_Timer.NewTicker(30, function()
+			self:SavePersistedState(false)
+		end)
+	end
+
+	if not _persistence.logoutFrame then
+		_persistence.logoutFrame = CreateFrame("Frame")
+		_persistence.logoutFrame:RegisterEvent("PLAYER_LOGOUT")
+		_persistence.logoutFrame:SetScript("OnEvent", function()
+			if UUF.MLOptimizer then
+				UUF.MLOptimizer:SavePersistedState(true)
+			end
+		end)
 	end
 	
-	print("|cFF00B0F7UnhaltedUnitFrames: MLOptimizer initialized (neural network active)|r")
+	if UUF.DebugOutput then
+		UUF.DebugOutput:Output(
+			"MLOptimizer",
+			loadedPersistedState and "Advanced ML optimizer initialized (restored persisted model)"
+				or "Advanced ML optimizer initialized (fresh model)",
+			UUF.DebugOutput.TIER_INFO
+		)
+	end
+	
+	print("|cFF00B0F7UnhaltedUnitFrames: MLOptimizer initialized (neural network active, persistence enabled)|r")
 end
 
 --- Validate MLOptimizer
@@ -868,12 +1270,20 @@ do
 			if count == 0 then
 				print("  No predictions available (need more pattern data)")
 			end
+		elseif msg == "save" then
+			local ok = UUF.MLOptimizer:SavePersistedState(true)
+			print(ok and "|cFF00B0F7MLOptimizer state saved.|r" or "|cFFFF0000MLOptimizer state save failed (DB unavailable).|r")
+		elseif msg == "reset" then
+			UUF.MLOptimizer:ResetPersistedState()
+			print("|cFF00B0F7MLOptimizer state reset (memory + persisted state).|r")
 		elseif msg == "help" or msg == "" then
 			print("|cFF00B0F7=== MLOptimizer Commands (/uufml) ===|r")
 			print("  |cFFFFFFFF/uufml patterns|r - Show learned combat patterns")
 			print("  |cFFFFFFFF/uufml delays|r - Show adaptive coalescing delays")
 			print("  |cFFFFFFFF/uufml stats|r - Show statistics")
 			print("  |cFFFFFFFF/uufml predict|r - Show current predictions")
+			print("  |cFFFFFFFF/uufml save|r - Force save learned model to SavedVariables")
+			print("  |cFFFFFFFF/uufml reset|r - Reset learned model (memory + SavedVariables)")
 			print("  |cFFFFFFFF/uufml help|r - This help message")
 		else
 			print("|cFFFF0000Unknown command. Type /uufml help for options.|r")

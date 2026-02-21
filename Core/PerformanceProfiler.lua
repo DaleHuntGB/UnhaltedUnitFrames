@@ -35,13 +35,20 @@ local math = math
 -- Recording state
 local _isRecording = false
 local _recordingStartTime = 0
+local _recordingDuration = 0
 local _timeline = {}  -- Array of timeline events
 local _frameMetrics = {}  -- Per-frame metrics
+local _hooks = {
+	coalescerQueueEvent = nil,
+	coalescerDispatch = nil,
+}
+local _autoStopTimer = nil
 
 -- Event types for timeline
 local EVENT_TYPES = {
 	FRAME_UPDATE = "frame_update",
 	EVENT_COALESCED = "event_coalesced",
+	EVENT_BATCH_DISPATCHED = "event_batch_dispatched",
 	DIRTY_MARKED = "dirty_marked",
 	DIRTY_PROCESSED = "dirty_processed",
 	POOL_ACQUIRE = "pool_acquire",
@@ -51,7 +58,7 @@ local EVENT_TYPES = {
 }
 
 -- Configuration
-local MAX_TIMELINE_EVENTS = 10000
+local MAX_TIMELINE_EVENTS = 50000
 local PROFILE_SAMPLE_RATE = 0.016  -- 60 FPS (16ms per frame)
 
 --[[----------------------------------------------------------------------------
@@ -59,7 +66,8 @@ local PROFILE_SAMPLE_RATE = 0.016  -- 60 FPS (16ms per frame)
 ----------------------------------------------------------------------------]]--
 
 --- Start performance recording
-function PerformanceProfiler:StartRecording()
+-- @param autoStopSeconds number|nil - Optional auto-stop duration in seconds.
+function PerformanceProfiler:StartRecording(autoStopSeconds)
 	if _isRecording then
 		if UUF.DebugOutput then
 			UUF.DebugOutput:Output("PerformanceProfiler", "Already recording", UUF.DebugOutput.TIER_INFO)
@@ -69,6 +77,7 @@ function PerformanceProfiler:StartRecording()
 	
 	_isRecording = true
 	_recordingStartTime = GetTime()
+	_recordingDuration = 0
 	_timeline = {}
 	_frameMetrics = {}
 	
@@ -77,9 +86,30 @@ function PerformanceProfiler:StartRecording()
 	
 	-- Start frame sampling
 	self:_StartFrameSampling()
+
+	-- Optional timed auto-stop + analyze.
+	if _autoStopTimer then
+		_autoStopTimer:Cancel()
+		_autoStopTimer = nil
+	end
+	if type(autoStopSeconds) == "number" and autoStopSeconds > 0 then
+		_autoStopTimer = C_Timer.NewTimer(autoStopSeconds, function()
+			_autoStopTimer = nil
+			if _isRecording then
+				self:StopRecording()
+				self:PrintAnalysis()
+			end
+		end)
+	end
 	
 	if UUF.DebugOutput then
-		UUF.DebugOutput:Output("PerformanceProfiler", "Recording started", UUF.DebugOutput.TIER_INFO)
+		if type(autoStopSeconds) == "number" and autoStopSeconds > 0 then
+			UUF.DebugOutput:Output("PerformanceProfiler",
+				string.format("Recording started (auto-stop in %ds)", autoStopSeconds),
+				UUF.DebugOutput.TIER_INFO)
+		else
+			UUF.DebugOutput:Output("PerformanceProfiler", "Recording started", UUF.DebugOutput.TIER_INFO)
+		end
 	end
 	return true
 end
@@ -100,8 +130,15 @@ function PerformanceProfiler:StopRecording()
 	
 	-- Stop frame sampling
 	self:_StopFrameSampling()
+
+	-- Cancel timed auto-stop if active.
+	if _autoStopTimer then
+		_autoStopTimer:Cancel()
+		_autoStopTimer = nil
+	end
 	
 	local duration = GetTime() - _recordingStartTime
+	_recordingDuration = duration
 	if UUF.DebugOutput then
 		UUF.DebugOutput:Output("PerformanceProfiler", string.format("Recording stopped (%.2fs, %d events)", 
 			duration, #_timeline), UUF.DebugOutput.TIER_INFO)
@@ -152,10 +189,18 @@ function PerformanceProfiler:Analyze()
 	end
 	
 	local analysis = {
-		duration = GetTime() - _recordingStartTime,
+		duration = _recordingDuration > 0 and _recordingDuration or (GetTime() - _recordingStartTime),
 		totalEvents = #_timeline,
 		eventsByType = {},
 		coalescedEvents = {},  -- Breakdown of which WoW events are coalesced
+		dispatchedEvents = {}, -- Breakdown of coalesced batch dispatches by WoW event
+		coalescer = {
+			totalCoalesced = 0,
+			totalDispatched = 0,
+			savingsPercent = 0,
+			avgBatchSize = 0,
+			maxBatchSize = 0,
+		},
 		bottlenecks = {},
 		recommendations = {},
 		frameMetrics = {
@@ -176,6 +221,41 @@ function PerformanceProfiler:Analyze()
 		if event.type == "event_coalesced" and event.data and event.data.event then
 			local wowEvent = event.data.event
 			analysis.coalescedEvents[wowEvent] = (analysis.coalescedEvents[wowEvent] or 0) + 1
+		elseif event.type == "event_batch_dispatched" and event.data and event.data.event then
+			local wowEvent = event.data.event
+			analysis.dispatchedEvents[wowEvent] = (analysis.dispatchedEvents[wowEvent] or 0) + 1
+		end
+	end
+
+	-- Baseline coalescer metrics from recorded timeline (independent of live coalescer stat resets).
+	analysis.coalescer.totalCoalesced = analysis.eventsByType[EVENT_TYPES.EVENT_COALESCED] or 0
+	analysis.coalescer.totalDispatched = analysis.eventsByType[EVENT_TYPES.EVENT_BATCH_DISPATCHED] or 0
+	if analysis.coalescer.totalCoalesced > 0 then
+		local saved = analysis.coalescer.totalCoalesced - analysis.coalescer.totalDispatched
+		analysis.coalescer.savingsPercent = (saved / analysis.coalescer.totalCoalesced) * 100
+	end
+
+	if UUF.EventCoalescer and UUF.EventCoalescer.GetStats then
+		local ok, coalescerStats = pcall(UUF.EventCoalescer.GetStats, UUF.EventCoalescer)
+		if ok and type(coalescerStats) == "table" then
+			analysis.coalescer.totalCoalesced = math.max(analysis.coalescer.totalCoalesced, coalescerStats.totalCoalesced or 0)
+			analysis.coalescer.totalDispatched = math.max(analysis.coalescer.totalDispatched, coalescerStats.totalDispatched or 0)
+			analysis.coalescer.savingsPercent = coalescerStats.savingsPercent or analysis.coalescer.savingsPercent
+
+			local batchCount = 0
+			local batchTotal = 0
+			local batchMax = 0
+			for _, batch in pairs(coalescerStats.batchSizes or {}) do
+				local count = batch.count or 0
+				local avg = batch.avg or 0
+				batchCount = batchCount + count
+				batchTotal = batchTotal + (avg * count)
+				if (batch.max or 0) > batchMax then
+					batchMax = batch.max
+				end
+			end
+			analysis.coalescer.avgBatchSize = batchCount > 0 and (batchTotal / batchCount) or 0
+			analysis.coalescer.maxBatchSize = batchMax
 		end
 	end
 	
@@ -225,8 +305,8 @@ function PerformanceProfiler:_IdentifyBottlenecks()
 	end
 	
 	for eventType, count in pairs(eventCounts) do
-		-- Ignore event_coalesced - these are batched events (good, not a bottleneck)
-		if count > 100 and eventType ~= "event_coalesced" then
+		-- Ignore internal coalescer tracking events (these are instrumentation, not workload sources)
+		if count > 100 and eventType ~= "event_coalesced" and eventType ~= "event_batch_dispatched" then
 			table.insert(bottlenecks, {
 				type = "high_frequency",
 				event = eventType,
@@ -270,12 +350,55 @@ function PerformanceProfiler:_GenerateRecommendations(analysis)
 	
 	-- High event frequency
 	local totalEvents = analysis.totalEvents
+	local coalescedCount = analysis.eventsByType["event_coalesced"] or 0
+	local coalescedRatio = totalEvents > 0 and (coalescedCount / totalEvents) or 0
 	if totalEvents > 5000 then
-		table.insert(recommendations, {
-			category = "events",
-			priority = "medium",
-			message = string.format("%d events recorded. Event coalescing may help reduce CPU load.", totalEvents),
-		})
+		if coalescedCount > 0 and analysis.coalescer.totalDispatched == 0 then
+			table.insert(recommendations, {
+				category = "events",
+				priority = "high",
+				message = "Coalesced events were recorded but no batch dispatches were observed. Check EventCoalescer dispatch path/hooks.",
+			})
+		end
+
+		if coalescedRatio >= 0.8 then
+			table.insert(recommendations, {
+				category = "events",
+				priority = "low",
+				message = string.format("%d/%d events are already coalesced (%.0f%%). Coalescing is working; tune hot coalesced events instead of adding more coalescing.",
+					coalescedCount, totalEvents, coalescedRatio * 100),
+			})
+			
+			local sortedCoalesced = {}
+			for eventName, count in pairs(analysis.coalescedEvents or {}) do
+				table_insert(sortedCoalesced, { event = eventName, count = count })
+			end
+			table_sort(sortedCoalesced, function(a, b) return a.count > b.count end)
+			if #sortedCoalesced > 0 then
+				local top = sortedCoalesced[1]
+				table.insert(recommendations, {
+					category = "events",
+					priority = "medium",
+					message = string.format("Top coalesced event is %s (%d). Consider increasing its delay slightly or reducing upstream trigger frequency.",
+						top.event, top.count),
+				})
+			end
+
+			if analysis.coalescer.totalDispatched > 0 and analysis.coalescer.avgBatchSize < 1.5 then
+				table.insert(recommendations, {
+					category = "events",
+					priority = "medium",
+					message = string.format("Average coalesced batch size is low (%.2f). Increase delay slightly for top coalesced events to improve batching.",
+						analysis.coalescer.avgBatchSize),
+				})
+			end
+		else
+			table.insert(recommendations, {
+				category = "events",
+				priority = "medium",
+				message = string.format("%d events recorded. Event coalescing may help reduce CPU load.", totalEvents),
+			})
+		end
 	end
 	
 	-- Frame time variance
@@ -323,6 +446,13 @@ function PerformanceProfiler:PrintAnalysis()
 			UUF.DebugOutput:Output("PerformanceProfiler", string.format("  %s: %d", eventType, count), UUF.DebugOutput.TIER_INFO)
 		end
 		UUF.DebugOutput:Output("PerformanceProfiler", "", UUF.DebugOutput.TIER_INFO)
+
+		UUF.DebugOutput:Output("PerformanceProfiler", "Coalescer Batch Metrics:", UUF.DebugOutput.TIER_INFO)
+		UUF.DebugOutput:Output("PerformanceProfiler", string.format("  Batches Dispatched: %d", analysis.coalescer.totalDispatched), UUF.DebugOutput.TIER_INFO)
+		UUF.DebugOutput:Output("PerformanceProfiler", string.format("  Avg/Max Batch Size: %.2f / %d",
+			analysis.coalescer.avgBatchSize, analysis.coalescer.maxBatchSize), UUF.DebugOutput.TIER_INFO)
+		UUF.DebugOutput:Output("PerformanceProfiler", string.format("  Coalescer Savings: %.1f%%", analysis.coalescer.savingsPercent), UUF.DebugOutput.TIER_INFO)
+		UUF.DebugOutput:Output("PerformanceProfiler", "", UUF.DebugOutput.TIER_INFO)
 		
 		-- Show coalesced event breakdown
 		if next(analysis.coalescedEvents) then
@@ -334,6 +464,22 @@ function PerformanceProfiler:PrintAnalysis()
 			end
 			table.sort(sorted, function(a, b) return a.count > b.count end)
 			-- Show top 10
+			for i = 1, math.min(10, #sorted) do
+				UUF.DebugOutput:Output("PerformanceProfiler", string.format("  %s: %d", sorted[i].event, sorted[i].count), UUF.DebugOutput.TIER_INFO)
+			end
+			if #sorted > 10 then
+				UUF.DebugOutput:Output("PerformanceProfiler", string.format("  ... and %d more", #sorted - 10), UUF.DebugOutput.TIER_INFO)
+			end
+			UUF.DebugOutput:Output("PerformanceProfiler", "", UUF.DebugOutput.TIER_INFO)
+		end
+
+		if next(analysis.dispatchedEvents) then
+			UUF.DebugOutput:Output("PerformanceProfiler", "Dispatched Batches by Event (Top 10):", UUF.DebugOutput.TIER_INFO)
+			local sorted = {}
+			for event, count in pairs(analysis.dispatchedEvents) do
+				table.insert(sorted, {event = event, count = count})
+			end
+			table.sort(sorted, function(a, b) return a.count > b.count end)
 			for i = 1, math.min(10, #sorted) do
 				UUF.DebugOutput:Output("PerformanceProfiler", string.format("  %s: %d", sorted[i].event, sorted[i].count), UUF.DebugOutput.TIER_INFO)
 			end
@@ -421,18 +567,57 @@ function PerformanceProfiler:_HookSystems()
 	
 	-- Hook EventCoalescer
 	if UUF.EventCoalescer then
-		-- Hook QueueEvent
-		local originalQueue = UUF.EventCoalescer.QueueEvent
-		UUF.EventCoalescer.QueueEvent = function(self, eventName, ...)
-			PerformanceProfiler:RecordEvent(EVENT_TYPES.EVENT_COALESCED, { event = eventName })
-			return originalQueue(self, eventName, ...)
+		-- Hook QueueEvent once and keep original for restore
+		if not _hooks.coalescerQueueEvent then
+			_hooks.coalescerQueueEvent = UUF.EventCoalescer.QueueEvent
+			UUF.EventCoalescer.QueueEvent = function(self, eventName, ...)
+				PerformanceProfiler:RecordEvent(EVENT_TYPES.EVENT_COALESCED, { event = eventName })
+				return _hooks.coalescerQueueEvent(self, eventName, ...)
+			end
+		end
+
+		-- Hook _DispatchCoalesced for batch dispatch visibility
+		if not _hooks.coalescerDispatch and UUF.EventCoalescer._DispatchCoalesced then
+			_hooks.coalescerDispatch = UUF.EventCoalescer._DispatchCoalesced
+			UUF.EventCoalescer._DispatchCoalesced = function(self, eventName, ...)
+				local beforeDispatched = 0
+				if self.GetStats then
+					local okBefore, statsBefore = pcall(self.GetStats, self)
+					if okBefore and type(statsBefore) == "table" then
+						beforeDispatched = statsBefore.totalDispatched or 0
+					end
+				end
+
+				local result = _hooks.coalescerDispatch(self, eventName, ...)
+
+				local afterDispatched = beforeDispatched
+				if self.GetStats then
+					local okAfter, statsAfter = pcall(self.GetStats, self)
+					if okAfter and type(statsAfter) == "table" then
+						afterDispatched = statsAfter.totalDispatched or beforeDispatched
+					end
+				end
+
+				if afterDispatched > beforeDispatched then
+					PerformanceProfiler:RecordEvent(EVENT_TYPES.EVENT_BATCH_DISPATCHED, { event = eventName })
+				end
+
+				return result
+			end
 		end
 	end
 end
 
 function PerformanceProfiler:_UnhookSystems()
 	-- Restore original functions
-	-- (In production, would need to store originals properly)
+	if UUF.EventCoalescer and _hooks.coalescerQueueEvent then
+		UUF.EventCoalescer.QueueEvent = _hooks.coalescerQueueEvent
+		_hooks.coalescerQueueEvent = nil
+	end
+	if UUF.EventCoalescer and _hooks.coalescerDispatch then
+		UUF.EventCoalescer._DispatchCoalesced = _hooks.coalescerDispatch
+		_hooks.coalescerDispatch = nil
+	end
 end
 
 function PerformanceProfiler:_StartFrameSampling()
@@ -466,19 +651,38 @@ function PerformanceProfiler:Init()
 	-- Register slash commands
 	SLASH_UUFPROFILE1 = "/uufprofile"
 	SlashCmdList["UUFPROFILE"] = function(msg)
-		if msg == "start" then
-			PerformanceProfiler:StartRecording()
-		elseif msg == "stop" then
+		msg = (msg or ""):lower()
+		local command, arg = msg:match("^(%S+)%s*(.*)$")
+		command = command or ""
+		arg = arg or ""
+
+		-- Support: /uufprofile 90 (alias for /uufprofile start 90)
+		if command ~= "" and command:match("^%d+$") then
+			local seconds = tonumber(command)
+			PerformanceProfiler:StartRecording(seconds)
+			return
+		end
+
+		if command == "start" then
+			local seconds = tonumber(arg)
+			if seconds and seconds > 0 then
+				PerformanceProfiler:StartRecording(seconds)
+			else
+				PerformanceProfiler:StartRecording()
+			end
+		elseif command == "stop" then
 			PerformanceProfiler:StopRecording()
-		elseif msg == "analyze" then
+		elseif command == "analyze" then
 			PerformanceProfiler:PrintAnalysis()
-		elseif msg == "export" then
+		elseif command == "export" then
 			local export = PerformanceProfiler:Export()
 			print("|cFF00B0F7Export data copied to clipboard (if supported)|r")
 			-- In actual implementation, would copy to clipboard
 		else
 			print("|cFF00B0F7PerformanceProfiler Commands:|r")
 			print("  /uufprofile start - Start recording")
+			print("  /uufprofile start 90 - Start recording, auto-stop/analyze after 90s")
+			print("  /uufprofile 90 - Alias for timed start")
 			print("  /uufprofile stop - Stop recording")
 			print("  /uufprofile analyze - Show analysis")
 			print("  /uufprofile export - Export data")

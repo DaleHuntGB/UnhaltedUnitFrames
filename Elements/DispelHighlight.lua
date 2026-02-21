@@ -42,7 +42,8 @@ local function EnsureDispelHighlightDispatcher()
     dispelEventFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
 
     if UUF.EventCoalescer then
-        UUF.EventCoalescer:CoalesceEvent(DISPEL_HIGHLIGHT_COALESCE_EVENT, 0.05, ProcessDispelHighlightUpdates, 2)
+        UUF.EventCoalescer:CoalesceEvent(DISPEL_HIGHLIGHT_COALESCE_EVENT, 0.10, ProcessDispelHighlightUpdates, 2)
+        UUF.EventCoalescer:SetEventDelay(DISPEL_HIGHLIGHT_COALESCE_EVENT, 0.10)
     end
 
     dispelEventFrame:SetScript("OnEvent", function(_, event, ...)

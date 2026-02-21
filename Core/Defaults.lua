@@ -4,6 +4,13 @@ local Defaults = {
     global = {
         UseGlobalProfile = false,
         GlobalProfileName = "Default",
+        MLOptimizer = {
+            version = 1,
+            network = {},
+            patterns = {},
+            delays = {},
+            meta = {},
+        },
     },
     profile = {
         General = {
@@ -1950,6 +1957,7 @@ local Defaults = {
         Debug = {
             enabled = false,           -- Master debug output toggle
             showPanel = false,         -- Show debug panel on startup
+            showCastBarDebug = true,   -- Show castbar-related debug/info output in debug console
             timestamp = true,          -- Add timestamps to messages
             maxMessages = 500,         -- Max messages to keep in buffer
             colors = {

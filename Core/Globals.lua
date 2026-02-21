@@ -248,6 +248,133 @@ function UUF:CreateMinimapButton()
     if UUF.MinimapButton then return end
     if not Minimap then return end
 
+    if not UUF.MinimapContextMenuFrame then
+        UUF.MinimapContextMenuFrame = CreateFrame("Frame", "UUF_MinimapContextMenuLegacy", UIParent, "UIDropDownMenuTemplate")
+    end
+    if not UUF.MinimapContextMenuFallback then
+        UUF.MinimapContextMenuFallback = CreateFrame("Frame", "UUF_MinimapContextMenuLegacyFallback", UIParent, "BackdropTemplate")
+        UUF.MinimapContextMenuFallback:SetFrameStrata("DIALOG")
+        UUF.MinimapContextMenuFallback:SetClampedToScreen(true)
+        UUF.MinimapContextMenuFallback:EnableMouse(true)
+        UUF.MinimapContextMenuFallback:SetBackdrop({
+            bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
+            edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+            tile = true,
+            tileSize = 16,
+            edgeSize = 12,
+            insets = { left = 3, right = 3, top = 3, bottom = 3 },
+        })
+        UUF.MinimapContextMenuFallback:SetBackdropColor(0, 0, 0, 0.95)
+        UUF.MinimapContextMenuFallbackButtons = {}
+        UUF.MinimapContextMenuFallbackTitle = UUF.MinimapContextMenuFallback:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+        UUF.MinimapContextMenuFallbackTitle:SetPoint("TOPLEFT", UUF.MinimapContextMenuFallback, "TOPLEFT", 10, -8)
+        UUF.MinimapContextMenuFallbackTitle:SetJustifyH("LEFT")
+    end
+
+    local fallbackNoticeLogged = false
+
+    local function ShowDropdownMenu(menu)
+        local easyMenu = EasyMenu or _G.EasyMenu
+
+        if type(easyMenu) == "function" then
+            easyMenu(menu, UUF.MinimapContextMenuFrame, "cursor", 0, 0, "MENU")
+            return true
+        end
+
+        if not fallbackNoticeLogged and UUF.DebugOutput then
+            fallbackNoticeLogged = true
+            UUF.DebugOutput:Output(
+                "MinimapButton",
+                "EasyMenu unavailable; using internal minimap context menu fallback.",
+                UUF.DebugOutput.TIER_INFO
+            )
+        end
+
+        for i = 1, #UUF.MinimapContextMenuFallbackButtons do
+            UUF.MinimapContextMenuFallbackButtons[i]:Hide()
+        end
+
+        local row = 0
+        local width = 190
+        local function AcquireButton(index)
+            if UUF.MinimapContextMenuFallbackButtons[index] then
+                return UUF.MinimapContextMenuFallbackButtons[index]
+            end
+            local btn = CreateFrame("Button", nil, UUF.MinimapContextMenuFallback, "UIPanelButtonTemplate")
+            btn:SetSize(width - 20, 20)
+            UUF.MinimapContextMenuFallbackButtons[index] = btn
+            return btn
+        end
+
+        local titleText = "UnhaltedUnitFrames"
+        if type(menu) == "table" and type(menu[1]) == "table" and menu[1].isTitle then
+            titleText = menu[1].text or titleText
+        end
+        UUF.MinimapContextMenuFallbackTitle:SetText(titleText)
+
+        for i = 1, #menu do
+            local item = menu[i]
+            if item and not item.isTitle then
+                row = row + 1
+                local btn = AcquireButton(row)
+                btn:ClearAllPoints()
+                btn:SetPoint("TOPLEFT", UUF.MinimapContextMenuFallback, "TOPLEFT", 10, -10 - (row * 22))
+                btn:SetText(item.text or "")
+                btn:SetScript("OnClick", function()
+                    UUF.MinimapContextMenuFallback:Hide()
+                    if type(item.func) == "function" then
+                        item.func()
+                    end
+                end)
+                btn:Show()
+            end
+        end
+
+        local height = 16 + (row * 22) + 12
+        UUF.MinimapContextMenuFallback:SetSize(width, height)
+
+        local cursorX, cursorY = GetCursorPosition()
+        local scale = UIParent:GetEffectiveScale()
+        UUF.MinimapContextMenuFallback:ClearAllPoints()
+        UUF.MinimapContextMenuFallback:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", (cursorX / scale) + 8, (cursorY / scale) - 8)
+        UUF.MinimapContextMenuFallback:Show()
+        return true
+    end
+
+    local function ToggleConfigWindow()
+        if UUF.ConfigWindow and UUF.ConfigWindow:IsVisible() then
+            UUF.ConfigWindow:Hide()
+        else
+            UUF:CreateGUI()
+        end
+    end
+
+    local function TogglePerformanceDashboard()
+        if UUF.PerformanceDashboard then
+            UUF.PerformanceDashboard:Toggle()
+        end
+    end
+
+    local function ToggleDebugConsole()
+        if UUF.DebugPanel then
+            UUF.DebugPanel:Toggle()
+        elseif SlashCmdList and SlashCmdList["UUFDEBUG"] then
+            SlashCmdList["UUFDEBUG"]("")
+        end
+    end
+
+    local function ShowMinimapContextMenu()
+        local frameMoverLabel = UUF:GetFrameMoverLabel()
+        local menu = {
+            { text = UUF.PRETTY_ADDON_NAME or "UnhaltedUnitFrames", isTitle = true, notCheckable = true },
+            { text = "Open Config", notCheckable = true, func = ToggleConfigWindow },
+            { text = "Toggle UUFPerf", notCheckable = true, func = TogglePerformanceDashboard },
+            { text = "Toggle UUFDebug", notCheckable = true, func = ToggleDebugConsole },
+            { text = frameMoverLabel, notCheckable = true, func = function() UUF:ToggleFrameMover() end },
+        }
+        ShowDropdownMenu(menu)
+    end
+
     local button = CreateFrame("Button", "UUF_MinimapButton", Minimap)
     button:SetSize(32, 32)
     button:SetPoint("TOPLEFT", Minimap, "TOPLEFT", 0, 0)
@@ -259,17 +386,14 @@ function UUF:CreateMinimapButton()
         if mouseButton == "LeftButton" then
             UUF:ToggleFrameMover()
         elseif mouseButton == "RightButton" then
-            if SlashCmdList["UUF"] then
-                SlashCmdList["UUF"]("")
-            end
-            UUF:CreateGUI()
+            ShowMinimapContextMenu()
         end
     end)
     button:SetScript("OnEnter", function(self)
         GameTooltip:SetOwner(self, "ANCHOR_LEFT")
         GameTooltip:AddLine(UUF.PRETTY_ADDON_NAME)
         GameTooltip:AddLine("Left Click: Toggle Frame Unlock", 1, 1, 1)
-        GameTooltip:AddLine("Right Click: Open Config", 1, 1, 1)
+        GameTooltip:AddLine("Right Click: Context Menu", 1, 1, 1)
         GameTooltip:Show()
     end)
     button:SetScript("OnLeave", function() GameTooltip:Hide() end)

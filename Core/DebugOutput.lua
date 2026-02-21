@@ -8,6 +8,11 @@ local TIER_DEBUG = 3     -- Detailed traces, metrics - debug only
 local DebugOutput = {}
 DebugOutput.__index = DebugOutput
 
+local CASTBAR_DEBUG_SYSTEMS = {
+	CastBar = true,
+	EmpowerStages = true,
+}
+
 -- Initialize output system
 function DebugOutput:Init()
 	self.messageBuffer = {}
@@ -37,6 +42,11 @@ function DebugOutput:Output(system, message, tier)
 	
 	-- Tier filtering (only when database ready)
 	if dbReady then
+		-- Optional castbar output filter (applies to INFO/DEBUG for castbar systems)
+		if UUF.db.profile.Debug.showCastBarDebug == false and CASTBAR_DEBUG_SYSTEMS[system] and tier ~= TIER_CRITICAL then
+			return
+		end
+
 		if tier == TIER_DEBUG then
 			-- DEBUG requires enabled flag AND system flag
 			if not UUF.db.profile.Debug.enabled then return end

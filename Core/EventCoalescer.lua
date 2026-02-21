@@ -58,6 +58,8 @@ local _stats = {
 -- Configuration
 local DEFAULT_COALESCE_DELAY = 0.05  -- 50ms default (matches typical frame time)
 local MAX_COALESCE_DELAY = 0.5       -- Max 500ms batching
+local MAX_BUDGET_DEFERS = 3          -- Force dispatch after N consecutive budget defers
+local MAX_BUDGET_DEFER_WINDOW = 0.25 -- Or force if oldest queued work waited too long (seconds)
 
 --[[----------------------------------------------------------------------------
 	Public API
@@ -132,10 +134,22 @@ function EventCoalescer:QueueEvent(eventName, ...)
 		-- Not a coalesced event, ignore
 		return
 	end
+
+	-- Ensure per-event stats buckets exist (important after ResetStats()).
+	if not _stats.batchSizes[eventName] then
+		_stats.batchSizes[eventName] = { min = 999999, max = 0, total = 0, count = 0 }
+	end
+	if _stats.eventCounts[eventName] == nil then
+		_stats.eventCounts[eventName] = 0
+	end
 	
 	-- Store the latest args (overwrite previous)
 	eventData.pendingArgs = {...}
 	eventData.coalesceCount = eventData.coalesceCount + 1
+	if eventData.coalesceCount == 1 then
+		eventData.firstQueuedAt = GetTime()
+		eventData.deferCount = 0
+	end
 	_stats.totalCoalesced = _stats.totalCoalesced + 1
 	_stats.eventCounts[eventName] = (_stats.eventCounts[eventName] or 0) + 1
 	
@@ -283,7 +297,9 @@ end
 -- @param eventName string
 function EventCoalescer:_DispatchCoalesced(eventName)
 	local eventData = _coalescedEvents[eventName]
-	if not eventData or #eventData.pendingArgs == 0 then
+	-- Dispatch eligibility is based on queued coalesce count, not argument count.
+	-- Some synthetic coalesced events intentionally queue with no args.
+	if not eventData or (eventData.coalesceCount or 0) <= 0 then
 		return
 	end
 	
@@ -291,18 +307,25 @@ function EventCoalescer:_DispatchCoalesced(eventName)
 	if eventData.priority ~= PRIORITY_CRITICAL and UUF.FrameTimeBudget then
 		local estimatedCost = 0.5 * #eventData.callbacks  -- Rough estimate: 0.5ms per callback
 		if not UUF.FrameTimeBudget:CanAfford(eventData.priority, estimatedCost) then
-			-- Defer dispatch if budget exceeded (avoid growing deferred queue)
-			_stats.budgetDefers = _stats.budgetDefers + 1
-			eventData.scheduled = true
-			if not eventData.budgetDeferred then
-				eventData.budgetDeferred = true
-				local retryDelay = math_max(0.01, eventData.delay or DEFAULT_COALESCE_DELAY)
-				C_Timer.After(retryDelay, function()
-					eventData.budgetDeferred = false
-					self:_DispatchCoalesced(eventName)
-				end)
+			eventData.deferCount = (eventData.deferCount or 0) + 1
+			local now = GetTime()
+			local queuedFor = now - (eventData.firstQueuedAt or now)
+			local forceDispatch = (eventData.deferCount >= MAX_BUDGET_DEFERS) or (queuedFor >= MAX_BUDGET_DEFER_WINDOW)
+
+			if not forceDispatch then
+				-- Defer dispatch if budget exceeded (avoid growing deferred queue)
+				_stats.budgetDefers = _stats.budgetDefers + 1
+				eventData.scheduled = true
+				if not eventData.budgetDeferred then
+					eventData.budgetDeferred = true
+					local retryDelay = math_max(0.01, eventData.delay or DEFAULT_COALESCE_DELAY)
+					C_Timer.After(retryDelay, function()
+						eventData.budgetDeferred = false
+						self:_DispatchCoalesced(eventName)
+					end)
+				end
+				return
 			end
-			return
 		end
 	end
 	
@@ -320,6 +343,8 @@ function EventCoalescer:_DispatchCoalesced(eventName)
 	eventData.lastFire = GetTime()
 	eventData.scheduled = false
 	eventData.budgetDeferred = false
+	eventData.deferCount = 0
+	eventData.firstQueuedAt = nil
 	_stats.totalDispatched = _stats.totalDispatched + 1
 	
 	-- Dispatch to all callbacks

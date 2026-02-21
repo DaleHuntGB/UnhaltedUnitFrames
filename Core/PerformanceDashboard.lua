@@ -177,6 +177,9 @@ local function GetEventStats()
 		coalesced = 0,
 		dispatched = 0,
 		savingsPercent = 0,
+		avgBatchSize = 0,
+		maxBatchSize = 0,
+		dispatchRatio = 0,
 	}
 	
 	if UUF.EventCoalescer then
@@ -184,6 +187,22 @@ local function GetEventStats()
 		stats.coalesced = coalescerStats.totalCoalesced or 0
 		stats.dispatched = coalescerStats.totalDispatched or 0
 		stats.savingsPercent = coalescerStats.savingsPercent or 0
+		stats.dispatchRatio = stats.coalesced > 0 and (stats.dispatched / stats.coalesced) or 0
+
+		local batchCount = 0
+		local batchTotal = 0
+		local batchMax = 0
+		for _, batch in pairs(coalescerStats.batchSizes or {}) do
+			local count = batch.count or 0
+			local avg = batch.avg or 0
+			batchCount = batchCount + count
+			batchTotal = batchTotal + (avg * count)
+			if (batch.max or 0) > batchMax then
+				batchMax = batch.max
+			end
+		end
+		stats.avgBatchSize = batchCount > 0 and (batchTotal / batchCount) or 0
+		stats.maxBatchSize = batchMax
 	end
 	
 	return stats
@@ -296,6 +315,8 @@ local function UpdateDisplay()
 		table.insert(lines, string.format("Events Coalesced: |cFF00FF00%s|r", FormatNumber(eventStats.coalesced)))
 		table.insert(lines, string.format("Batches Dispatched: |cFFFFFF00%s|r", FormatNumber(eventStats.dispatched)))
 		table.insert(lines, string.format("CPU Savings: |cFF00FF00%.1f%%|r", eventStats.savingsPercent))
+		table.insert(lines, string.format("Avg/Max Batch Size: |cFF00FF00%.2f|r / |cFFFFFF00%d|r", eventStats.avgBatchSize, eventStats.maxBatchSize))
+		table.insert(lines, string.format("Dispatch Ratio: |cFFAAAAAA%.3f|r", eventStats.dispatchRatio))
 		table.insert(lines, "")
 	end
 	
@@ -448,10 +469,23 @@ function PerformanceDashboard:PrintStats()
 	-- Event coalescing stats
 	if UUF.EventCoalescer then
 		local stats = UUF.EventCoalescer:GetStats()
-		if stats.totalCallbacks > 0 then
-			local savedPct = ((stats.totalCallbacks - stats.actualCallbacks) / stats.totalCallbacks) * 100
-			print(string.format("Event Coalescing: |cFF00FF00%.1f%%|r saved (%d → %d callbacks)", 
-				savedPct, stats.totalCallbacks, stats.actualCallbacks))
+		if (stats.totalCoalesced or 0) > 0 then
+			local batchCount = 0
+			local batchTotal = 0
+			local batchMax = 0
+			for _, batch in pairs(stats.batchSizes or {}) do
+				local count = batch.count or 0
+				local avg = batch.avg or 0
+				batchCount = batchCount + count
+				batchTotal = batchTotal + (avg * count)
+				if (batch.max or 0) > batchMax then
+					batchMax = batch.max
+				end
+			end
+			local avgBatchSize = batchCount > 0 and (batchTotal / batchCount) or 0
+			print(string.format("Event Coalescing: |cFF00FF00%.1f%%|r saved (%d events, %d batches)",
+				stats.savingsPercent or 0, stats.totalCoalesced or 0, stats.totalDispatched or 0))
+			print(string.format("Batch Size: avg |cFF00FF00%.2f|r, max |cFFFFFF00%d|r", avgBatchSize, batchMax))
 		end
 	end
 end

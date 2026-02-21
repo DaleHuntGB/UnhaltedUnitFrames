@@ -656,7 +656,9 @@ function UUF:UpdateBossFrames()
     for i in pairs(UUF.BOSS_FRAMES) do
         UUF:UpdateUnitFrame(UUF["BOSS"..i], "boss"..i)
     end
-    UUF:CreateTestBossFrames()
+    if UUF.BOSS_TEST_MODE then
+        UUF:CreateTestBossFrames()
+    end
     UUF:LayoutBossFrames()
 end
 
@@ -667,7 +669,9 @@ function UUF:UpdatePartyFrames()
             UUF:UpdateUnitFrame(frame, frame.unit)
         end
     end
-    UUF:CreateTestPartyFrames()
+    if UUF.PARTY_TEST_MODE then
+        UUF:CreateTestPartyFrames()
+    end
     UUF:LayoutPartyFrames()
 end
 
