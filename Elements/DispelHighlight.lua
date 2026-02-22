@@ -35,11 +35,19 @@ local function EnsureDispelHighlightDispatcher()
 
     dispelEventFrame = CreateFrame("Frame")
     dispelEventFrame:RegisterEvent("UNIT_AURA")
-    dispelEventFrame:RegisterEvent("SPELLS_CHANGED")
-    dispelEventFrame:RegisterEvent("TRAIT_CONFIG_UPDATED")
-    dispelEventFrame:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
-    dispelEventFrame:RegisterEvent("PLAYER_TALENT_UPDATE")
     dispelEventFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
+
+    -- Keep spellbook/talent event handling centralized to reduce drift across patches.
+    if UUF.Utilities and UUF.Utilities.RegisterCompatibilityEvents then
+        UUF.Utilities.RegisterCompatibilityEvents(dispelEventFrame, "UUF_SPELLBOOK_STATE_CHANGED")
+    else
+        dispelEventFrame:RegisterEvent("SPELLS_CHANGED")
+        dispelEventFrame:RegisterEvent("TRAIT_CONFIG_UPDATED")
+        dispelEventFrame:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
+        dispelEventFrame:RegisterEvent("PLAYER_TALENT_UPDATE")
+        dispelEventFrame:RegisterEvent("LEARNED_SPELL_IN_TAB")
+        dispelEventFrame:RegisterEvent("LEARNED_SPELL_IN_SKILL_LINE")
+    end
 
     if UUF.EventCoalescer then
         UUF.EventCoalescer:CoalesceEvent(DISPEL_HIGHLIGHT_COALESCE_EVENT, 0.10, ProcessDispelHighlightUpdates, 2)

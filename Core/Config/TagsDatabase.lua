@@ -1,6 +1,38 @@
 local _, UUF = ...
 local oUF = UUF.oUF
 oUF.Tags = oUF.Tags or {}
+local Utilities = UUF.Utilities or {}
+
+local function FallbackIsSecret(value)
+    local fn = _G.IsSecretValue or _G.issecretvalue
+    return type(fn) == "function" and fn(value) or false
+end
+
+local IsSecret = Utilities.IsSecret or FallbackIsSecret
+local SafeValue = Utilities.SafeValue or function(value, default)
+    if value == nil or IsSecret(value) then
+        return default
+    end
+    return value
+end
+local SafeNumber = Utilities.SafeNumber or function(value, default)
+    local safe = SafeValue(value, nil)
+    if safe == nil then return default end
+    local n = tonumber(safe)
+    if n == nil or IsSecret(n) then
+        return default
+    end
+    return n
+end
+local SafeString = Utilities.SafeString or function(value, default)
+    local safe = SafeValue(value, nil)
+    if safe == nil then return default end
+    local ok, text = pcall(tostring, safe)
+    if not ok or not text or IsSecret(text) then
+        return default
+    end
+    return text
+end
 
 function UUFG:AddTag(tagString, tagEvents, tagMethod, tagType, tagDescription)
     -- tagString: The string used to call the tag, e.g., "curhp:abbr"
@@ -169,35 +201,68 @@ local abbrevData = {
 }
 
 local function AbbreviateValue(value)
+    local numericValue = SafeNumber(value, nil)
+    if numericValue == nil then return nil end
+
     local useCustomAbbreviations = UUF.db.profile.General.UseCustomAbbreviations
+    local ok, text
     if useCustomAbbreviations then
-        return AbbreviateNumbers(value, abbrevData)
+        ok, text = pcall(AbbreviateNumbers, numericValue, abbrevData)
     else
-        return AbbreviateLargeNumbers(value)
+        ok, text = pcall(AbbreviateLargeNumbers, numericValue)
     end
+
+    if ok and text and not IsSecret(text) then
+        return SafeString(text, nil)
+    end
+
+    return SafeString(numericValue, nil)
+end
+
+local function ResolveUnitStatus(unit)
+    if UnitIsDead(unit) then return "Dead" end
+    if UnitIsGhost(unit) then return "Ghost" end
+    if not UnitIsConnected(unit) then return "Offline" end
+    return nil
+end
+
+local function FormatHealthPair(healthText, healthPercent)
+    if UUF.SEPARATOR == "[]" then
+        return string.format("%s [%.0f%%]", healthText, healthPercent)
+    elseif UUF.SEPARATOR == "()" then
+        return string.format("%s (%.0f%%)", healthText, healthPercent)
+    elseif UUF.SEPARATOR == " " then
+        return string.format("%s %.0f%%", healthText, healthPercent)
+    end
+
+    return string.format("%s %s %.0f%%", healthText, UUF.SEPARATOR, healthPercent)
 end
 
 local function FetchAbsorbText(unit, useAbbrev)
     if not unit or not UnitExists(unit) then return nil end
     if type(UnitGetTotalAbsorbs) ~= "function" then return nil end
 
+    local absorbValue = SafeNumber(UnitGetTotalAbsorbs(unit), nil)
+    if absorbValue == nil then return nil end
+
     if C_StringUtil and C_StringUtil.TruncateWhenZero then
-        local ok, txt = pcall(C_StringUtil.TruncateWhenZero, UnitGetTotalAbsorbs(unit))
-        if ok and txt and not issecretvalue(txt) and txt ~= "" then
+        local ok, txt = pcall(C_StringUtil.TruncateWhenZero, absorbValue)
+        txt = ok and SafeString(txt, nil) or nil
+        if txt and txt ~= "" then
             return txt
         end
     end
 
-    local absorbValue = UnitGetTotalAbsorbs(unit)
     if useAbbrev then
         local ok, txt = pcall(AbbreviateValue, absorbValue)
-        if ok and txt and not issecretvalue(txt) then
+        txt = ok and SafeString(txt, nil) or nil
+        if txt then
             return txt
         end
     end
 
-    local ok, txt = pcall(tostring, absorbValue)
-    if ok and txt and not issecretvalue(txt) then
+    local txt = SafeString(absorbValue, nil)
+    if txt then
         return txt
     end
 
@@ -209,7 +274,7 @@ for tagString, tagEvents in pairs(Tags) do
 end
 
 local function FetchUnitPowerColour(unit)
-    local powerType = UnitPowerType(unit)
+    local powerType = SafeNumber(UnitPowerType(unit), nil)
     local powerColour = powerType and UUF.db.profile.General.Colours.Power[powerType]
     if powerColour then
         local powerColourR, powerColourG, powerColourB = unpack(powerColour)
@@ -220,215 +285,178 @@ end
 
 oUF.Tags.Methods["curhp:abbr"] = function(unit)
     if not unit or not UnitExists(unit) then return "" end
-    local unitHealth = UnitHealth(unit)
-    local unitStatus = UnitIsDead(unit) and "Dead" or UnitIsGhost(unit) and "Ghost" or not UnitIsConnected(unit) and "Offline"
+    local unitStatus = ResolveUnitStatus(unit)
     if unitStatus then
         return unitStatus
-    else
-        local absorbText = FetchAbsorbText(unit, true)
-        if absorbText then
-            return string.format("%s (%s)", AbbreviateValue(unitHealth), absorbText)
-        end
-        return string.format("%s", AbbreviateValue(unitHealth))
     end
+
+    local unitHealthText = AbbreviateValue(UnitHealth(unit))
+    if not unitHealthText then return "" end
+
+    local absorbText = FetchAbsorbText(unit, true)
+    if absorbText then
+        return string.format("%s (%s)", unitHealthText, absorbText)
+    end
+
+    return unitHealthText
 end
 
 oUF.Tags.Methods["curhpperhp"] = function(unit)
     if not unit or not UnitExists(unit) then return "" end
-    local unitHealth = UnitHealth(unit)
-    local unitMaxHealth = UnitHealthMax(unit)
-    local unitHealthPercent = UnitHealthPercent(unit, false, CurveConstants.ScaleTo100)
-    local unitStatus = UnitIsDead(unit) and "Dead" or UnitIsGhost(unit) and "Ghost" or not UnitIsConnected(unit) and "Offline"
+    local unitStatus = ResolveUnitStatus(unit)
     if unitStatus then
         return unitStatus
-    else
-        local absorbText = FetchAbsorbText(unit, false)
-        if UUF.SEPARATOR == "[]" then
-            local baseText = string.format("%s [%.0f%%]", unitHealth, unitHealthPercent)
-            return absorbText and string.format("%s (%s)", baseText, absorbText) or baseText
-        elseif UUF.SEPARATOR == "()" then
-            local baseText = string.format("%s (%.0f%%)", unitHealth, unitHealthPercent)
-            return absorbText and string.format("%s (%s)", baseText, absorbText) or baseText
-        elseif UUF.SEPARATOR == " " then
-            local baseText = string.format("%s %.0f%%", unitHealth, unitHealthPercent)
-            return absorbText and string.format("%s (%s)", baseText, absorbText) or baseText
-        else
-            local baseText = string.format("%s %s %.0f%%", unitHealth, UUF.SEPARATOR, unitHealthPercent)
-            return absorbText and string.format("%s (%s)", baseText, absorbText) or baseText
-        end
     end
+
+    local unitHealth = SafeNumber(UnitHealth(unit), nil)
+    local unitHealthPercent = SafeNumber(UnitHealthPercent(unit, false, CurveConstants.ScaleTo100), nil)
+    if unitHealth == nil or unitHealthPercent == nil then return "" end
+
+    local baseText = FormatHealthPair(SafeString(unitHealth, "0"), unitHealthPercent)
+    local absorbText = FetchAbsorbText(unit, false)
+    return absorbText and string.format("%s (%s)", baseText, absorbText) or baseText
 end
 
 oUF.Tags.Methods["curhpperhp:abbr"] = function(unit)
     if not unit or not UnitExists(unit) then return "" end
-    local unitHealth = UnitHealth(unit)
-    local unitMaxHealth = UnitHealthMax(unit)
-    local unitHealthPercent = UnitHealthPercent(unit, false, CurveConstants.ScaleTo100)
-    local unitStatus = UnitIsDead(unit) and "Dead" or UnitIsGhost(unit) and "Ghost" or not UnitIsConnected(unit) and "Offline"
+    local unitStatus = ResolveUnitStatus(unit)
     if unitStatus then
         return unitStatus
-    else
-        local absorbText = FetchAbsorbText(unit, true)
-        if UUF.SEPARATOR == "[]" then
-            local baseText = string.format("%s [%.0f%%]", AbbreviateValue(unitHealth), unitHealthPercent)
-            return absorbText and string.format("%s (%s)", baseText, absorbText) or baseText
-        elseif UUF.SEPARATOR == "()" then
-            local baseText = string.format("%s (%.0f%%)", AbbreviateValue(unitHealth), unitHealthPercent)
-            return absorbText and string.format("%s (%s)", baseText, absorbText) or baseText
-        elseif UUF.SEPARATOR == " " then
-            local baseText = string.format("%s %.0f%%", AbbreviateValue(unitHealth), unitHealthPercent)
-            return absorbText and string.format("%s (%s)", baseText, absorbText) or baseText
-        else
-            local baseText = string.format("%s %s %.0f%%", AbbreviateValue(unitHealth), UUF.SEPARATOR, unitHealthPercent)
-            return absorbText and string.format("%s (%s)", baseText, absorbText) or baseText
-        end
     end
+
+    local unitHealthText = AbbreviateValue(UnitHealth(unit))
+    local unitHealthPercent = SafeNumber(UnitHealthPercent(unit, false, CurveConstants.ScaleTo100), nil)
+    if not unitHealthText or unitHealthPercent == nil then return "" end
+
+    local baseText = FormatHealthPair(unitHealthText, unitHealthPercent)
+    local absorbText = FetchAbsorbText(unit, true)
+    return absorbText and string.format("%s (%s)", baseText, absorbText) or baseText
 end
 
 oUF.Tags.Methods["absorbs"] = function(unit)
     if not unit or not UnitExists(unit) then return "" end
-    local absorbAmount = UnitGetTotalAbsorbs(unit) or 0
-    if absorbAmount then
-        return string.format("%s", absorbAmount)
-    end
+    return FetchAbsorbText(unit, false) or ""
 end
 
 oUF.Tags.Methods["absorbs:abbr"] = function(unit)
     if not unit or not UnitExists(unit) then return "" end
-    local absorbAmount = UnitGetTotalAbsorbs(unit) or 0
-    if absorbAmount then
-        return string.format("%s", AbbreviateValue(absorbAmount))
-    end
+    return FetchAbsorbText(unit, true) or ""
 end
 
 oUF.Tags.Methods["absorbs:truncate"] = function(unit)
     if not unit or not UnitExists(unit) then return "" end
-    local absorbAmount = UnitGetTotalAbsorbs(unit) or 0
-    if absorbAmount then
-        return string.format("%s", C_StringUtil.TruncateWhenZero(absorbAmount))
+    local absorbAmount = SafeNumber(UnitGetTotalAbsorbs(unit), nil)
+    if absorbAmount == nil then return "" end
+    if C_StringUtil and C_StringUtil.TruncateWhenZero then
+        local ok, text = pcall(C_StringUtil.TruncateWhenZero, absorbAmount)
+        text = ok and SafeString(text, nil) or nil
+        return text or ""
     end
+    return SafeString(absorbAmount, "")
 end
 
 oUF.Tags.Methods["curpp:colour"] = function(unit)
     if not unit or not UnitExists(unit) then return "" end
     local powerColourR, powerColourG, powerColourB = FetchUnitPowerColour(unit)
-    local unitPower = UnitPower(unit)
-    if unitPower then
-        return string.format("|cff%02x%02x%02x%s|r", powerColourR * 255, powerColourG * 255, powerColourB * 255, unitPower)
-    end
+    local unitPower = SafeNumber(UnitPower(unit), nil)
+    if unitPower == nil then return "" end
+    return string.format("|cff%02x%02x%02x%s|r", powerColourR * 255, powerColourG * 255, powerColourB * 255, SafeString(unitPower, "0"))
 end
 
 oUF.Tags.Methods["maxpp:colour"] = function(unit)
     if not unit or not UnitExists(unit) then return "" end
     local powerColourR, powerColourG, powerColourB = FetchUnitPowerColour(unit)
-    local unitPowerMax = UnitPowerMax(unit)
-    if unitPowerMax then
-        return string.format("|cff%02x%02x%02x%s|r", powerColourR * 255, powerColourG * 255, powerColourB * 255, unitPowerMax)
-    end
+    local unitPowerMax = SafeNumber(UnitPowerMax(unit), nil)
+    if unitPowerMax == nil then return "" end
+    return string.format("|cff%02x%02x%02x%s|r", powerColourR * 255, powerColourG * 255, powerColourB * 255, SafeString(unitPowerMax, "0"))
 end
 
 oUF.Tags.Methods["curpp:abbr"] = function(unit)
     if not unit or not UnitExists(unit) then return "" end
-    local unitPower = UnitPower(unit)
-    if unitPower then
-        return string.format("%s", AbbreviateValue(unitPower))
-    end
+    return AbbreviateValue(UnitPower(unit)) or ""
 end
 
 oUF.Tags.Methods["curpp:manapercent"] = function(unit)
     if not unit or not UnitExists(unit) then return "" end
-    local unitPower = UnitPower(unit)
-    local unitPowerType = UnitPowerType(unit)
-    if unitPowerType == Enum.PowerType.Mana and unitPower then
-        local powerPercent = UnitPowerPercent(unit, Enum.PowerType.Mana, true, CurveConstants.ScaleTo100)
-        return string.format("%.f", powerPercent)
-    else
-        return string.format("%s", unitPower)
+    local unitPower = SafeNumber(UnitPower(unit), nil)
+    local unitPowerType = SafeNumber(UnitPowerType(unit), nil)
+    if unitPowerType == Enum.PowerType.Mana and unitPower ~= nil then
+        local powerPercent = SafeNumber(UnitPowerPercent(unit, Enum.PowerType.Mana, true, CurveConstants.ScaleTo100), nil)
+        return powerPercent and string.format("%.f", powerPercent) or ""
     end
+    return SafeString(unitPower, "")
 end
 
 oUF.Tags.Methods["curpp:manapercent-with-sign"] = function(unit)
     if not unit or not UnitExists(unit) then return "" end
-    local unitPower = UnitPower(unit)
-    local unitPowerType = UnitPowerType(unit)
-    if unitPowerType == Enum.PowerType.Mana and unitPower then
-        local powerPercent = UnitPowerPercent(unit, Enum.PowerType.Mana, true, CurveConstants.ScaleTo100)
-        return string.format("%.f%%", powerPercent)
-    else
-        return string.format("%s", unitPower)
+    local unitPower = SafeNumber(UnitPower(unit), nil)
+    local unitPowerType = SafeNumber(UnitPowerType(unit), nil)
+    if unitPowerType == Enum.PowerType.Mana and unitPower ~= nil then
+        local powerPercent = SafeNumber(UnitPowerPercent(unit, Enum.PowerType.Mana, true, CurveConstants.ScaleTo100), nil)
+        return powerPercent and string.format("%.f%%", powerPercent) or ""
     end
+    return SafeString(unitPower, "")
 end
 
 oUF.Tags.Methods["curpp:manapercent:abbr"] = function(unit)
     if not unit or not UnitExists(unit) then return "" end
-    local unitPower = UnitPower(unit)
-    local unitPowerType = UnitPowerType(unit)
-    if unitPowerType == Enum.PowerType.Mana and unitPower then
-        local powerPercent = UnitPowerPercent(unit, Enum.PowerType.Mana, true, CurveConstants.ScaleTo100)
-        return string.format("%.f", powerPercent)
-    else
-        return string.format("%s", AbbreviateValue(unitPower))
+    local unitPower = SafeNumber(UnitPower(unit), nil)
+    local unitPowerType = SafeNumber(UnitPowerType(unit), nil)
+    if unitPowerType == Enum.PowerType.Mana and unitPower ~= nil then
+        local powerPercent = SafeNumber(UnitPowerPercent(unit, Enum.PowerType.Mana, true, CurveConstants.ScaleTo100), nil)
+        return powerPercent and string.format("%.f", powerPercent) or ""
     end
+    return AbbreviateValue(unitPower) or ""
 end
 
 oUF.Tags.Methods["curpp:manapercent-with-sign:abbr"] = function(unit)
     if not unit or not UnitExists(unit) then return "" end
-    local unitPower = UnitPower(unit)
-    local unitPowerType = UnitPowerType(unit)
-    if unitPowerType == Enum.PowerType.Mana and unitPower then
-        local powerPercent = UnitPowerPercent(unit, Enum.PowerType.Mana, true, CurveConstants.ScaleTo100)
-        return string.format("%.f%%", powerPercent)
-    else
-        return string.format("%s", AbbreviateValue(unitPower))
+    local unitPower = SafeNumber(UnitPower(unit), nil)
+    local unitPowerType = SafeNumber(UnitPowerType(unit), nil)
+    if unitPowerType == Enum.PowerType.Mana and unitPower ~= nil then
+        local powerPercent = SafeNumber(UnitPowerPercent(unit, Enum.PowerType.Mana, true, CurveConstants.ScaleTo100), nil)
+        return powerPercent and string.format("%.f%%", powerPercent) or ""
     end
+    return AbbreviateValue(unitPower) or ""
 end
 
 oUF.Tags.Methods["maxpp:abbr"] = function(unit)
     if not unit or not UnitExists(unit) then return "" end
-    local unitPowerMax = UnitPowerMax(unit)
-    if unitPowerMax then
-        return string.format("%s", AbbreviateValue(unitPowerMax))
-    end
+    return AbbreviateValue(UnitPowerMax(unit)) or ""
 end
 
 oUF.Tags.Methods["curpp:abbr:colour"] = function(unit)
     if not unit or not UnitExists(unit) then return "" end
     local powerColourR, powerColourG, powerColourB = FetchUnitPowerColour(unit)
-    local unitPower = UnitPower(unit)
-    if unitPower then
-        return string.format("|cff%02x%02x%02x%s|r", powerColourR * 255, powerColourG * 255, powerColourB * 255, AbbreviateValue(unitPower))
-    end
+    local unitPowerText = AbbreviateValue(UnitPower(unit))
+    if not unitPowerText then return "" end
+    return string.format("|cff%02x%02x%02x%s|r", powerColourR * 255, powerColourG * 255, powerColourB * 255, unitPowerText)
 end
 
 oUF.Tags.Methods["maxpp:abbr:colour"] = function(unit)
     if not unit or not UnitExists(unit) then return "" end
     local powerColourR, powerColourG, powerColourB = FetchUnitPowerColour(unit)
-    local unitPowerMax = UnitPowerMax(unit)
-    if unitPowerMax then
-        return string.format("|cff%02x%02x%02x%s|r", powerColourR * 255, powerColourG * 255, powerColourB * 255, AbbreviateValue(unitPowerMax))
-    end
+    local unitPowerText = AbbreviateValue(UnitPowerMax(unit))
+    if not unitPowerText then return "" end
+    return string.format("|cff%02x%02x%02x%s|r", powerColourR * 255, powerColourG * 255, powerColourB * 255, unitPowerText)
 end
 
 oUF.Tags.Methods["maxhp:abbr"] = function(unit)
     if not unit or not UnitExists(unit) then return "" end
-    local unitMaxHealth = UnitHealthMax(unit)
-    if unitMaxHealth then
-        return string.format("%s", AbbreviateValue(unitMaxHealth))
-    end
+    return AbbreviateValue(UnitHealthMax(unit)) or ""
 end
 
 oUF.Tags.Methods["maxhp:abbr:colour"] = function(unit)
     if not unit or not UnitExists(unit) then return "" end
     local classColourR, classColourG, classColourB = UUF:GetUnitColour(unit)
-    local unitMaxHealth = UnitHealthMax(unit)
-    if unitMaxHealth then
-        return string.format("|cff%02x%02x%02x%s|r", classColourR * 255, classColourG * 255, classColourB * 255, AbbreviateValue(unitMaxHealth))
-    end
+    local unitHealthText = AbbreviateValue(UnitHealthMax(unit))
+    if not unitHealthText then return "" end
+    return string.format("|cff%02x%02x%02x%s|r", classColourR * 255, classColourG * 255, classColourB * 255, unitHealthText)
 end
 
 oUF.Tags.Methods["name:colour"] = function(unit)
     local classColourR, classColourG, classColourB = UUF:GetUnitColour(unit)
-    local unitName = UnitName(unit) or ""
+    local unitName = SafeString(UnitName(unit), "")
     return string.format("|cff%02x%02x%02x%s|r", classColourR * 255, classColourG * 255, classColourB * 255, unitName)
 end
 
@@ -496,7 +524,7 @@ end
 
 local function ShortenUnitName(unit, maxChars)
     if not unit or not UnitExists(unit) then return "" end
-    local unitName = UnitName(unit) or ""
+    local unitName = SafeString(UnitName(unit), "")
     if maxChars and maxChars > 0 then
         unitName = string.format("%." .. maxChars .. "s", unitName)
     end

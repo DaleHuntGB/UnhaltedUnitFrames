@@ -8,7 +8,7 @@ local _, UUF = ...
 -- =========================================================================
 
 local Utilities = {}
-local IsSecretValue = issecretvalue or function() return false end
+local IsSecretValue = _G.IsSecretValue or _G.issecretvalue or function() return false end
 
 -- =========================================================================
 -- Configuration Value Helpers (SavedVariables + Global Fallback)
@@ -100,6 +100,41 @@ end
 -- Safe API Wrappers
 -- =========================================================================
 
+--- Returns true when a value is a secret value object.
+function Utilities.IsSecret(value)
+    return IsSecretValue(value) == true
+end
+
+--- Returns non-secret value, otherwise default.
+function Utilities.SafeValue(value, default)
+    if value == nil or IsSecretValue(value) then
+        return default
+    end
+    return value
+end
+
+--- Safe numeric coercion that rejects secret values.
+function Utilities.SafeNumber(value, default)
+    local safe = Utilities.SafeValue(value, nil)
+    if safe == nil then return default end
+    local n = tonumber(safe)
+    if n == nil or IsSecretValue(n) then
+        return default
+    end
+    return n
+end
+
+--- Safe string coercion that rejects secret values.
+function Utilities.SafeString(value, default)
+    local safe = Utilities.SafeValue(value, nil)
+    if safe == nil then return default end
+    local ok, str = pcall(tostring, safe)
+    if not ok or not str or IsSecretValue(str) then
+        return default
+    end
+    return str
+end
+
 --- Get casting info safely (handles secret values)
 -- Returns nil if unit doesn't exist or API fails
 function Utilities.GetCastingInfoSafe(unit)
@@ -172,6 +207,46 @@ end
 -- =========================================================================
 -- Layout Helpers (for UI construction)
 -- =========================================================================
+
+-- Event compatibility aliases for mixed Retail client behavior.
+Utilities.EventCompatibility = {
+    UUF_SPELLBOOK_STATE_CHANGED = {
+        "SPELLS_CHANGED",
+        "TRAIT_CONFIG_UPDATED",
+        "PLAYER_SPECIALIZATION_CHANGED",
+        "PLAYER_TALENT_UPDATE",
+        "LEARNED_SPELL_IN_TAB",
+        "LEARNED_SPELL_IN_SKILL_LINE",
+    },
+}
+
+--- Resolve one event or compatibility alias to concrete events.
+function Utilities.ResolveEventList(eventOrAlias)
+    if type(eventOrAlias) == "table" then
+        return eventOrAlias
+    end
+    if type(eventOrAlias) ~= "string" then
+        return {}
+    end
+    return Utilities.EventCompatibility[eventOrAlias] or { eventOrAlias }
+end
+
+--- Register one or more events/aliases on a frame, deduplicated.
+function Utilities.RegisterCompatibilityEvents(frame, ...)
+    if not frame or not frame.RegisterEvent then return end
+    local seen = {}
+    for i = 1, select("#", ...) do
+        local spec = select(i, ...)
+        local resolved = Utilities.ResolveEventList(spec)
+        for j = 1, #resolved do
+            local eventName = resolved[j]
+            if eventName and not seen[eventName] then
+                seen[eventName] = true
+                frame:RegisterEvent(eventName)
+            end
+        end
+    end
+end
 
 --- Column layout helper for UI construction
 -- Simplifies coordinate math when building stacked UI elements

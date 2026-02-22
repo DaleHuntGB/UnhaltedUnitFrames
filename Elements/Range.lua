@@ -258,7 +258,16 @@ end
 
 local spellUpdateFrame = CreateFrame("Frame")
 spellUpdateFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
-spellUpdateFrame:RegisterEvent("SPELLS_CHANGED")
+if UUF.Utilities and UUF.Utilities.RegisterCompatibilityEvents then
+    UUF.Utilities.RegisterCompatibilityEvents(spellUpdateFrame, "UUF_SPELLBOOK_STATE_CHANGED")
+else
+    spellUpdateFrame:RegisterEvent("SPELLS_CHANGED")
+    spellUpdateFrame:RegisterEvent("TRAIT_CONFIG_UPDATED")
+    spellUpdateFrame:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
+    spellUpdateFrame:RegisterEvent("PLAYER_TALENT_UPDATE")
+    spellUpdateFrame:RegisterEvent("LEARNED_SPELL_IN_TAB")
+    spellUpdateFrame:RegisterEvent("LEARNED_SPELL_IN_SKILL_LINE")
+end
 spellUpdateFrame:SetScript("OnEvent", UpdateActiveSpells)
 
 local RANGE_COALESCE_EVENT = "UUF_RANGE_FRAME_UPDATE"
