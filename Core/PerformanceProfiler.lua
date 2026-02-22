@@ -25,7 +25,7 @@ local GetTime = GetTime
 local GetFramerate = GetFramerate
 local select, type, pairs, ipairs = select, type, pairs, ipairs
 local tonumber, tostring = tonumber, tostring
-local math_max, math_min = math.max, math.min
+local math_max, math_min, math_floor = math.max, math.min, math.floor
 local table_insert, table_sort = table.insert, table.sort
 local string_format = string.format
 local debugprofilestop = debugprofilestop
@@ -278,15 +278,16 @@ function PerformanceProfiler:Analyze()
 		
 		analysis.frameMetrics.avgFPS = fpsSum / #_frameMetrics
 		
-		-- Calculate percentiles
-		table.sort(frameTimes)
-		local p50idx = math.floor(#frameTimes * 0.5)
-		local p95idx = math.floor(#frameTimes * 0.95)
-		local p99idx = math.floor(#frameTimes * 0.99)
+		-- Calculate percentiles with 1-based clamped indexes.
+		table_sort(frameTimes)
+		local sampleCount = #frameTimes
+		local function percentileIndex(p)
+			return math_max(1, math_min(sampleCount, math_floor((sampleCount * p) + 0.5)))
+		end
 		
-		analysis.frameMetrics.frameTimeP50 = frameTimes[p50idx] or 0
-		analysis.frameMetrics.frameTimeP95 = frameTimes[p95idx] or 0
-		analysis.frameMetrics.frameTimeP99 = frameTimes[p99idx] or 0
+		analysis.frameMetrics.frameTimeP50 = frameTimes[percentileIndex(0.50)] or 0
+		analysis.frameMetrics.frameTimeP95 = frameTimes[percentileIndex(0.95)] or 0
+		analysis.frameMetrics.frameTimeP99 = frameTimes[percentileIndex(0.99)] or 0
 	end
 	
 	-- Identify bottlenecks
@@ -321,14 +322,43 @@ function PerformanceProfiler:_IdentifyBottlenecks()
 		end
 	end
 	
-	-- Look for frame time spikes
-	for i, metric in ipairs(_frameMetrics) do
-		if metric.frameTime > 33 then  -- > 33ms = below 30 FPS
-			table.insert(bottlenecks, {
-				type = "frame_spike",
+	-- Look for frame time spikes (summarized to avoid chat spam)
+	local spikes = {}
+	local totalSpikeFrameTime = 0
+	for _, metric in ipairs(_frameMetrics) do
+		if metric.frameTime > 33 then -- >33ms = below 30 FPS for that sample
+			table_insert(spikes, {
 				timestamp = metric.timestamp,
 				frameTime = metric.frameTime,
 				fps = metric.fps,
+			})
+			totalSpikeFrameTime = totalSpikeFrameTime + metric.frameTime
+		end
+	end
+
+	if #spikes > 0 then
+		table_sort(spikes, function(a, b) return a.frameTime > b.frameTime end)
+		local duration = _recordingDuration > 0 and _recordingDuration or (GetTime() - _recordingStartTime)
+		local spikesPerMinute = duration > 0 and (#spikes / duration) * 60 or 0
+
+		table_insert(bottlenecks, {
+			type = "frame_spike_summary",
+			count = #spikes,
+			avgFrameTime = totalSpikeFrameTime / #spikes,
+			worstFrameTime = spikes[1].frameTime,
+			worstFPS = spikes[1].fps,
+			worstTimestamp = spikes[1].timestamp,
+			spikesPerMinute = spikesPerMinute,
+			severity = (#spikes >= 30) and "high" or "medium",
+		})
+
+		for i = 1, math.min(3, #spikes) do
+			local spike = spikes[i]
+			table_insert(bottlenecks, {
+				type = "frame_spike_sample",
+				timestamp = spike.timestamp,
+				frameTime = spike.frameTime,
+				fps = spike.fps,
 				severity = "high",
 			})
 		end
@@ -370,7 +400,7 @@ function PerformanceProfiler:_GenerateRecommendations(analysis)
 			table.insert(recommendations, {
 				category = "events",
 				priority = "low",
-				message = string.format("%d/%d events are already coalesced (%.0f%%). Coalescing is working; tune hot coalesced events instead of adding more coalescing.",
+				message = string.format("%d/%d events are already coalesced (%.0f%%). Tune hot coalesced paths before adding more coalescing.",
 					coalescedCount, totalEvents, coalescedRatio * 100),
 			})
 			
@@ -384,7 +414,7 @@ function PerformanceProfiler:_GenerateRecommendations(analysis)
 				table.insert(recommendations, {
 					category = "events",
 					priority = "medium",
-					message = string.format("Top coalesced event is %s (%d). Consider increasing its delay slightly or reducing upstream trigger frequency.",
+					message = string.format("Top coalesced event: %s (%d). Consider a slightly higher delay or fewer upstream triggers.",
 						top.event, top.count),
 				})
 			end
@@ -410,7 +440,7 @@ function PerformanceProfiler:_GenerateRecommendations(analysis)
 			table.insert(recommendations, {
 				category = "events",
 				priority = "low",
-				message = string.format("Coalescing is active (%d queued, %d dispatched). Expand coalescing coverage for remaining hot non-coalesced paths before adding new systems.",
+				message = string.format("Coalescing is active (%d queued, %d dispatched). Expand coverage for hot non-coalesced paths.",
 					coalescedCount, analysis.coalescer.totalDispatched),
 			})
 		else
@@ -425,11 +455,28 @@ function PerformanceProfiler:_GenerateRecommendations(analysis)
 	-- Frame time variance
 	local p50 = analysis.frameMetrics.frameTimeP50
 	local p99 = analysis.frameMetrics.frameTimeP99
+	local spikeSummary
+	for _, bottleneck in ipairs(analysis.bottlenecks or {}) do
+		if bottleneck.type == "frame_spike_summary" then
+			spikeSummary = bottleneck
+			break
+		end
+	end
+
 	if p99 > p50 * 2 then
 		table.insert(recommendations, {
 			category = "consistency",
 			priority = "medium",
 			message = "Frame time variance is high. Consider batching updates more aggressively.",
+		})
+	end
+
+	if spikeSummary and spikeSummary.count >= 10 then
+		table_insert(recommendations, {
+			category = "consistency",
+			priority = spikeSummary.count >= 30 and "high" or "medium",
+			message = string.format("Detected %d frame spikes (worst %.1fms at %.1fs). Inspect heavy UI updates around spike windows.",
+				spikeSummary.count, spikeSummary.worstFrameTime, spikeSummary.worstTimestamp),
 		})
 	end
 	
@@ -515,7 +562,30 @@ function PerformanceProfiler:PrintAnalysis()
 		if #analysis.bottlenecks > 0 then
 			UUF.DebugOutput:Output("PerformanceProfiler", "Bottlenecks:", UUF.DebugOutput.TIER_INFO)
 			for _, bottleneck in ipairs(analysis.bottlenecks) do
-				UUF.DebugOutput:Output("PerformanceProfiler", string.format("  [%s] %s", bottleneck.severity:upper(), bottleneck.type), UUF.DebugOutput.TIER_INFO)
+				if bottleneck.type == "high_frequency" then
+					UUF.DebugOutput:Output("PerformanceProfiler",
+						string.format("  [%s] %s (%d)", bottleneck.severity:upper(), bottleneck.event or bottleneck.type, bottleneck.count or 0),
+						UUF.DebugOutput.TIER_INFO)
+				elseif bottleneck.type == "frame_spike_summary" then
+					UUF.DebugOutput:Output("PerformanceProfiler",
+						string.format("  [%s] frame_spikes: %d (avg %.1fms, worst %.1fms @ %.1fs, %.1f/min)",
+							bottleneck.severity:upper(),
+							bottleneck.count or 0,
+							bottleneck.avgFrameTime or 0,
+							bottleneck.worstFrameTime or 0,
+							bottleneck.worstTimestamp or 0,
+							bottleneck.spikesPerMinute or 0),
+						UUF.DebugOutput.TIER_INFO)
+				elseif bottleneck.type == "frame_spike_sample" then
+					UUF.DebugOutput:Output("PerformanceProfiler",
+						string.format("  [%s] sample spike: %.1fms (%.1f FPS) @ %.1fs",
+							bottleneck.severity:upper(), bottleneck.frameTime or 0, bottleneck.fps or 0, bottleneck.timestamp or 0),
+						UUF.DebugOutput.TIER_INFO)
+				else
+					UUF.DebugOutput:Output("PerformanceProfiler",
+						string.format("  [%s] %s", bottleneck.severity:upper(), bottleneck.type),
+						UUF.DebugOutput.TIER_INFO)
+				end
 			end
 			UUF.DebugOutput:Output("PerformanceProfiler", "", UUF.DebugOutput.TIER_INFO)
 		end
@@ -651,6 +721,12 @@ function PerformanceProfiler:_StartFrameSampling()
 		if not _isRecording then return end
 		
 		local fps = GetFramerate()
+		if not fps or fps <= 0 then
+			return
+		end
+		if fps > 1000 then
+			fps = 1000
+		end
 		local frameTime = 1000 / fps  -- Convert to milliseconds
 		local timestamp = GetTime() - _recordingStartTime
 		
