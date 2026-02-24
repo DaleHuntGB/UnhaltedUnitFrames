@@ -4,8 +4,8 @@ function UUF:CreateUnitRaidTargetMarker(unitFrame, unit)
     local RaidTargetMarkerDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Indicators.RaidTargetMarker
 
     local RaidTargetMarker = unitFrame.HighLevelContainer:CreateTexture(UUF:FetchFrameName(unit) .. "_RaidTargetMarkerIndicator", "OVERLAY")
-    RaidTargetMarker:SetSize(RaidTargetMarkerDB.Size, RaidTargetMarkerDB.Size)
-    RaidTargetMarker:SetPoint(RaidTargetMarkerDB.Layout[1], unitFrame.HighLevelContainer, RaidTargetMarkerDB.Layout[2], RaidTargetMarkerDB.Layout[3], RaidTargetMarkerDB.Layout[4])
+	UUF:PixelSize(RaidTargetMarker, RaidTargetMarkerDB.Size, RaidTargetMarkerDB.Size)
+	RaidTargetMarker:SetPoint(RaidTargetMarkerDB.Layout[1], unitFrame.HighLevelContainer, RaidTargetMarkerDB.Layout[2], UUF:PixelRound(RaidTargetMarkerDB.Layout[3]), UUF:PixelRound(RaidTargetMarkerDB.Layout[4]))
 
     if RaidTargetMarkerDB.Enabled then
         unitFrame.RaidTargetIndicator = RaidTargetMarker
@@ -28,8 +28,8 @@ function UUF:UpdateUnitRaidTargetMarker(unitFrame, unit)
 
         if unitFrame.RaidTargetIndicator then
             unitFrame.RaidTargetIndicator:ClearAllPoints()
-            unitFrame.RaidTargetIndicator:SetSize(RaidTargetMarkerDB.Size, RaidTargetMarkerDB.Size)
-            unitFrame.RaidTargetIndicator:SetPoint(RaidTargetMarkerDB.Layout[1], unitFrame.HighLevelContainer, RaidTargetMarkerDB.Layout[2], RaidTargetMarkerDB.Layout[3], RaidTargetMarkerDB.Layout[4])
+			UUF:PixelSize(unitFrame.RaidTargetIndicator, RaidTargetMarkerDB.Size, RaidTargetMarkerDB.Size)
+            unitFrame.RaidTargetIndicator:SetPoint(RaidTargetMarkerDB.Layout[1], unitFrame.HighLevelContainer, RaidTargetMarkerDB.Layout[2], UUF:PixelRound(RaidTargetMarkerDB.Layout[3]), UUF:PixelRound(RaidTargetMarkerDB.Layout[4]))
             unitFrame.RaidTargetIndicator:Show()
             unitFrame.RaidTargetIndicator:ForceUpdate()
         end

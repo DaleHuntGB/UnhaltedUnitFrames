@@ -153,6 +153,7 @@ function UUF:UpdateUnitSecondaryPowerBar(unitFrame, unit)
         bar:SetPoint("TOPLEFT", unitFrame.Container, "TOPLEFT", 1 + ((i - 1) * unitFrameWidth), -1)
         bar:SetSize(unitFrameWidth, DB.Height)
         bar.Background:SetVertexColor(DB.Background[1], DB.Background[2], DB.Background[3], DB.Background[4] or 1)
+		UUF:FramePixelPerfect(bar)
         bar:Show()
     end
 
@@ -162,6 +163,7 @@ function UUF:UpdateUnitSecondaryPowerBar(unitFrame, unit)
         tick:SetSize(1, DB.Height)
         tick:SetVertexColor(0, 0, 0, 1)
         tick:SetPoint("TOPLEFT", unitFrame.Container, "TOPLEFT", 1 + (i * unitFrameWidth) - 0.5, -1)
+		UUF:FramePixelPerfect(tick)
         tick:Show()
     end
 
