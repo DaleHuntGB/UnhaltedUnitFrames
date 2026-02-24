@@ -21,8 +21,8 @@ function UUF:CreateUnitPortrait(unitFrame, unit)
         unitPortrait.Backdrop = backdrop
     else
         unitPortrait = unitFrame.HighLevelContainer:CreateTexture(UUF:FetchFrameName(unit) .. "_Portrait2D", "BACKGROUND")
-        unitPortrait:SetSize(PortraitDB.Width, PortraitDB.Height)
-        unitPortrait:SetPoint(PortraitDB.Layout[1], unitFrame.HighLevelContainer, PortraitDB.Layout[2], PortraitDB.Layout[3], PortraitDB.Layout[4])
+		UUF:PixelSize(unitPortrait, PortraitDB.Width, PortraitDB.Height)
+		UUF:PixelPoint(unitPortrait, PortraitDB.Layout[1], unitFrame.HighLevelContainer, PortraitDB.Layout[2], PortraitDB.Layout[3], PortraitDB.Layout[4])
         unitPortrait:SetTexCoord((PortraitDB.Zoom or 0) * 0.5, 1 - (PortraitDB.Zoom or 0) * 0.5, (PortraitDB.Zoom or 0) * 0.5, 1 - (PortraitDB.Zoom or 0) * 0.5)
         unitPortrait.showClass = PortraitDB.UseClassPortrait
     end
@@ -88,9 +88,8 @@ function UUF:UpdateUnitPortrait(unitFrame, unit)
 
         if unitFrame.Portrait then
             if unitFrame.Portrait:IsObjectType("PlayerModel") then
-                unitFrame.Portrait.Backdrop:ClearAllPoints()
-                unitFrame.Portrait.Backdrop:SetSize(PortraitDB.Width, PortraitDB.Height)
-                unitFrame.Portrait.Backdrop:SetPoint(PortraitDB.Layout[1], unitFrame.HighLevelContainer, PortraitDB.Layout[2], PortraitDB.Layout[3], PortraitDB.Layout[4])
+				UUF:PixelSize(unitPortrait, PortraitDB.Width, PortraitDB.Height)
+				UUF:PixelPoint(unitPortrait, PortraitDB.Layout[1], unitFrame.HighLevelContainer, PortraitDB.Layout[2], PortraitDB.Layout[3], PortraitDB.Layout[4])
 
                 unitFrame.Portrait:SetCamDistanceScale(1)
                 unitFrame.Portrait:SetPortraitZoom(1)
@@ -98,9 +97,8 @@ function UUF:UpdateUnitPortrait(unitFrame, unit)
 
                 unitFrame.Portrait.Backdrop:Show()
             else
-                unitFrame.Portrait:ClearAllPoints()
-                unitFrame.Portrait:SetSize(PortraitDB.Width, PortraitDB.Height)
-                unitFrame.Portrait:SetPoint(PortraitDB.Layout[1], unitFrame.HighLevelContainer, PortraitDB.Layout[2], PortraitDB.Layout[3], PortraitDB.Layout[4])
+				UUF:PixelSize(unitFrame.Portrait, PortraitDB.Width, PortraitDB.Height)
+				UUF:PixelPoint(unitFrame.Portrait, PortraitDB.Layout[1], unitFrame.HighLevelContainer, PortraitDB.Layout[2], PortraitDB.Layout[3], PortraitDB.Layout[4])
                 unitFrame.Portrait:SetTexCoord((PortraitDB.Zoom or 0) * 0.5, 1 - (PortraitDB.Zoom or 0) * 0.5, (PortraitDB.Zoom or 0) * 0.5, 1 - (PortraitDB.Zoom or 0) * 0.5)
                 unitFrame.Portrait.showClass = PortraitDB.UseClassPortrait
             end

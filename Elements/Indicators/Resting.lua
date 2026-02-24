@@ -36,9 +36,8 @@ function UUF:UpdateUnitRestingIndicator(unitFrame, unit)
         if not unitFrame:IsElementEnabled("RestingIndicator") then unitFrame:EnableElement("RestingIndicator") end
 
         if unitFrame.RestingIndicator then
-            unitFrame.RestingIndicator:ClearAllPoints()
-            unitFrame.RestingIndicator:SetSize(RestingDB.Size, RestingDB.Size)
-            unitFrame.RestingIndicator:SetPoint(RestingDB.Layout[1], unitFrame.HighLevelContainer, RestingDB.Layout[2], RestingDB.Layout[3], RestingDB.Layout[4])
+			UUF:PixelSize(unitFrame.RestingIndicator, RestingDB.Size, RestingDB.Size)
+			UUF:PixelPoint(unitFrame.RestingIndicator, RestingDB.Layout[1], unitFrame.HighLevelContainer, RestingDB.Layout[2], RestingDB.Layout[3], RestingDB.Layout[4])
             if RestingDB.Texture == "DEFAULT" then
                 unitFrame.RestingIndicator:SetTexture([[Interface\CharacterFrame\UI-StateIcon]])
                 unitFrame.RestingIndicator:SetTexCoord(0, 0.5, 0, 0.421875)
