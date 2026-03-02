@@ -12,7 +12,6 @@ local function CreateUnitAbsorbs(unitFrame, unit)
         AbsorbBar:SetPoint("TOPRIGHT", unitFrame.Health, "TOPRIGHT", 0, 0)
         if AbsorbDB.MatchParentHeight then
             AbsorbBar:SetHeight(unitFrame.Health:GetHeight())
-            print("Match Parent Height is enabled for absorbs, setting height to " .. unitFrame.Health:GetHeight())
         else
             AbsorbBar:SetHeight(AbsorbDB.Height)
         end
@@ -28,7 +27,6 @@ local function CreateUnitAbsorbs(unitFrame, unit)
         end
         if AbsorbDB.MatchParentHeight then
             AbsorbBar:SetHeight(unitFrame.Health:GetHeight())
-            print("Match Parent Height is enabled for absorbs, setting height to " .. unitFrame.Health:GetHeight())
         else
             AbsorbBar:SetHeight(AbsorbDB.Height)
         end
