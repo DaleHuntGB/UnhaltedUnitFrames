@@ -1,5 +1,28 @@
 local _, UUF = ...
 
+local function CreatePowerBarPostUpdateColor(unitFrame, unit)
+    local PowerBarDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].PowerBar
+    return function(element, _, color, altR, altG, altB)
+        if not PowerBarDB.ColourBackgroundByType then return end
+        if not element.Background then return end
+
+        local mult = PowerBarDB.BackgroundMultiplier or 0.75
+        local r, g, b
+
+        if altR and altG and altB then
+            r, g, b = altR, altG, altB
+        elseif color then
+            r, g, b = color:GetRGB()
+        else
+            r, g, b = element:GetStatusBarColor()
+        end
+
+        if r and g and b then
+            element.Background:SetVertexColor(r * mult, g * mult, b * mult, PowerBarDB.Background[4] or 1)
+        end
+    end
+end
+
 function UUF:CreateUnitPowerBar(unitFrame, unit)
     local FrameDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Frame
     local PowerBarDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].PowerBar
@@ -14,6 +37,7 @@ function UUF:CreateUnitPowerBar(unitFrame, unit)
     PowerBar.colorPower = PowerBarDB.ColourByType
     PowerBar.colorClass = PowerBarDB.ColourByClass
     PowerBar.frequentUpdates = PowerBarDB.Smooth
+    PowerBar.PostUpdateColor = CreatePowerBarPostUpdateColor(unitFrame, unit)
 
     if PowerBarDB.Inverse then
         PowerBar:SetReverseFill(true)
@@ -69,6 +93,7 @@ function UUF:UpdateUnitPowerBar(unitFrame, unit)
             unitFrame.Power.colorPower = PowerBarDB.ColourByType
             unitFrame.Power.colorClass = PowerBarDB.ColourByClass
             unitFrame.Power.frequentUpdates = PowerBarDB.Smooth
+            unitFrame.Power.PostUpdateColor = CreatePowerBarPostUpdateColor(unitFrame, unit)
             if PowerBarDB.Inverse then
                 unitFrame.Power:SetReverseFill(true)
             else
