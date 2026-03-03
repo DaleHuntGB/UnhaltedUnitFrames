@@ -8,15 +8,11 @@ local function CreateUnitAbsorbs(unitFrame, unit)
     if AbsorbDB.UseStripedTexture then AbsorbBar:SetStatusBarTexture("Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\ThinStripes.png") else AbsorbBar:SetStatusBarTexture(UUF.Media.Foreground) end
     AbsorbBar:SetStatusBarColor(AbsorbDB.Colour[1], AbsorbDB.Colour[2], AbsorbDB.Colour[3], AbsorbDB.Colour[4])
     AbsorbBar:ClearAllPoints()
-    if AbsorbDB.Position == "RIGHT" then
-        AbsorbBar:SetPoint("TOPRIGHT", unitFrame.Health, "TOPRIGHT", 0, 0)
-        if AbsorbDB.MatchParentHeight then
-            AbsorbBar:SetHeight(unitFrame.Health:GetHeight())
-        else
-            AbsorbBar:SetHeight(AbsorbDB.Height)
-        end
-        AbsorbBar:SetReverseFill(true)
-    elseif AbsorbDB.Position == "ATTACH" then
+    local position = AbsorbDB.Position
+    local height = AbsorbDB.MatchParentHeight and unitFrame.Health:GetHeight() or AbsorbDB.Height
+    AbsorbBar:SetHeight(height)
+
+    if position == "ATTACH" then
         unitFrame.Health:SetClipsChildren(true)
         if unitFrame.Health:GetReverseFill() then
             AbsorbBar:SetPoint("TOPRIGHT", unitFrame.Health:GetStatusBarTexture(), "TOPLEFT", 0, 0)
@@ -25,18 +21,27 @@ local function CreateUnitAbsorbs(unitFrame, unit)
             AbsorbBar:SetPoint("TOPLEFT", unitFrame.Health:GetStatusBarTexture(), "TOPRIGHT", 0, 0)
             AbsorbBar:SetReverseFill(false)
         end
-        if AbsorbDB.MatchParentHeight then
-            AbsorbBar:SetHeight(unitFrame.Health:GetHeight())
-        else
-            AbsorbBar:SetHeight(AbsorbDB.Height)
-        end
-    else
+    elseif position == "TOPLEFT" then
         AbsorbBar:SetPoint("TOPLEFT", unitFrame.Health, "TOPLEFT", 0, 0)
-        if AbsorbDB.MatchParentHeight then
-            AbsorbBar:SetHeight(unitFrame.Health:GetHeight())
-        else
-            AbsorbBar:SetHeight(AbsorbDB.Height)
-        end
+        AbsorbBar:SetReverseFill(false)
+    elseif position == "TOPRIGHT" then
+        AbsorbBar:SetPoint("TOPRIGHT", unitFrame.Health, "TOPRIGHT", 0, 0)
+        AbsorbBar:SetReverseFill(true)
+    elseif position == "BOTTOMLEFT" then
+        AbsorbBar:SetPoint("BOTTOMLEFT", unitFrame.Health, "BOTTOMLEFT", 0, 0)
+        AbsorbBar:SetReverseFill(false)
+    elseif position == "BOTTOMRIGHT" then
+        AbsorbBar:SetPoint("BOTTOMRIGHT", unitFrame.Health, "BOTTOMRIGHT", 0, 0)
+        AbsorbBar:SetReverseFill(true)
+    elseif position == "LEFT" then
+        AbsorbBar:SetPoint("LEFT", unitFrame.Health, "LEFT", 0, 0)
+        AbsorbBar:SetReverseFill(false)
+    elseif position == "RIGHT" then
+        AbsorbBar:SetPoint("RIGHT", unitFrame.Health, "RIGHT", 0, 0)
+        AbsorbBar:SetReverseFill(true)
+    else
+        -- Default to TOPLEFT
+        AbsorbBar:SetPoint("TOPLEFT", unitFrame.Health, "TOPLEFT", 0, 0)
         AbsorbBar:SetReverseFill(false)
     end
     AbsorbBar:SetFrameLevel(unitFrame.Health:GetFrameLevel() + 1)
@@ -53,15 +58,11 @@ local function CreateUnitHealAbsorbs(unitFrame, unit)
     if HealAbsorbDB.UseStripedTexture then HealAbsorbBar:SetStatusBarTexture("Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\ThinStripes.png") else HealAbsorbBar:SetStatusBarTexture(UUF.Media.Foreground) end
     HealAbsorbBar:SetStatusBarColor(HealAbsorbDB.Colour[1], HealAbsorbDB.Colour[2], HealAbsorbDB.Colour[3], HealAbsorbDB.Colour[4])
     HealAbsorbBar:ClearAllPoints()
-    if HealAbsorbDB.Position == "RIGHT" then
-        HealAbsorbBar:SetPoint("TOPRIGHT", unitFrame.Health, "TOPRIGHT", 0, 0)
-        if HealAbsorbDB.MatchParentHeight then
-            HealAbsorbBar:SetHeight(unitFrame.Health:GetHeight())
-        else
-            HealAbsorbBar:SetHeight(HealAbsorbDB.Height)
-        end
-        HealAbsorbBar:SetReverseFill(true)
-    elseif HealAbsorbDB.Position == "ATTACH" then
+    local position = HealAbsorbDB.Position
+    local height = HealAbsorbDB.MatchParentHeight and unitFrame.Health:GetHeight() or HealAbsorbDB.Height
+    HealAbsorbBar:SetHeight(height)
+
+    if position == "ATTACH" then
         unitFrame.Health:SetClipsChildren(true)
         if unitFrame.Health:GetReverseFill() then
             HealAbsorbBar:SetPoint("TOPRIGHT", unitFrame.Health:GetStatusBarTexture(), "TOPLEFT", 0, 0)
@@ -70,17 +71,27 @@ local function CreateUnitHealAbsorbs(unitFrame, unit)
             HealAbsorbBar:SetPoint("TOPLEFT", unitFrame.Health:GetStatusBarTexture(), "TOPRIGHT", 0, 0)
             HealAbsorbBar:SetReverseFill(false)
         end
-        if HealAbsorbDB.MatchParentHeight then
-            HealAbsorbBar:SetHeight(unitFrame.Health:GetHeight())
-        else
-            HealAbsorbBar:SetHeight(HealAbsorbDB.Height)
-        end
+    elseif position == "TOPLEFT" then
+        HealAbsorbBar:SetPoint("TOPLEFT", unitFrame.Health, "TOPLEFT", 0, 0)
+        HealAbsorbBar:SetReverseFill(false)
+    elseif position == "TOPRIGHT" then
+        HealAbsorbBar:SetPoint("TOPRIGHT", unitFrame.Health, "TOPRIGHT", 0, 0)
+        HealAbsorbBar:SetReverseFill(true)
+    elseif position == "BOTTOMLEFT" then
+        HealAbsorbBar:SetPoint("BOTTOMLEFT", unitFrame.Health, "BOTTOMLEFT", 0, 0)
+        HealAbsorbBar:SetReverseFill(false)
+    elseif position == "BOTTOMRIGHT" then
+        HealAbsorbBar:SetPoint("BOTTOMRIGHT", unitFrame.Health, "BOTTOMRIGHT", 0, 0)
+        HealAbsorbBar:SetReverseFill(true)
+    elseif position == "LEFT" then
+        HealAbsorbBar:SetPoint("LEFT", unitFrame.Health, "LEFT", 0, 0)
+        HealAbsorbBar:SetReverseFill(false)
+    elseif position == "RIGHT" then
+        HealAbsorbBar:SetPoint("RIGHT", unitFrame.Health, "RIGHT", 0, 0)
+        HealAbsorbBar:SetReverseFill(true)
     else
-        if HealAbsorbDB.MatchParentHeight then
-            HealAbsorbBar:SetHeight(unitFrame.Health:GetHeight())
-        else
-            HealAbsorbBar:SetHeight(HealAbsorbDB.Height)
-        end
+        -- Default to TOPLEFT
+        HealAbsorbBar:SetPoint("TOPLEFT", unitFrame.Health, "TOPLEFT", 0, 0)
         HealAbsorbBar:SetReverseFill(false)
     end
     HealAbsorbBar:SetFrameLevel(unitFrame.Health:GetFrameLevel() + 1)
@@ -117,21 +128,14 @@ function UUF:UpdateUnitHealPrediction(unitFrame, unit)
             if AbsorbDB.UseStripedTexture then unitFrame.HealthPrediction.damageAbsorb:SetStatusBarTexture("Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\ThinStripes.png") else unitFrame.HealthPrediction.damageAbsorb:SetStatusBarTexture(UUF.Media.Foreground) end
             unitFrame.HealthPrediction.damageAbsorb:SetStatusBarColor(AbsorbDB.Colour[1], AbsorbDB.Colour[2], AbsorbDB.Colour[3], AbsorbDB.Colour[4])
             unitFrame.HealthPrediction.damageAbsorb:ClearAllPoints()
-            if AbsorbDB.Position == "RIGHT" then
-                unitFrame.HealthPrediction.damageAbsorb:SetPoint("TOPRIGHT", unitFrame.Health, "TOPRIGHT", 0, 0)
-                if AbsorbDB.MatchParentHeight then
-                    unitFrame.HealthPrediction.damageAbsorb:SetHeight(unitFrame.Health:GetHeight())
-                else
-                    unitFrame.HealthPrediction.damageAbsorb:SetHeight(AbsorbDB.Height)
-                end
-                unitFrame.HealthPrediction.damageAbsorb:SetReverseFill(true)
-            elseif AbsorbDB.Position == "ATTACH" then
-                unitFrame.Health:SetClipsChildren(true)
+            local position = AbsorbDB.Position
+            local height = AbsorbDB.MatchParentHeight and unitFrame.Health:GetHeight() or AbsorbDB.Height
+            unitFrame.HealthPrediction.damageAbsorb:SetHeight(height)
 
-                unitFrame.HealthPrediction.damageAbsorb:ClearAllPoints()
+            if position == "ATTACH" then
+                unitFrame.Health:SetClipsChildren(true)
                 unitFrame.HealthPrediction.damageAbsorb:SetPoint("TOP", unitFrame.Health, "TOP", 0, 0)
                 unitFrame.HealthPrediction.damageAbsorb:SetPoint("BOTTOM", unitFrame.Health, "BOTTOM", 0, 0)
-
                 if unitFrame.Health:GetReverseFill() then
                     unitFrame.HealthPrediction.damageAbsorb:SetPoint("RIGHT", unitFrame.Health:GetStatusBarTexture(), "LEFT", 0, 0)
                     unitFrame.HealthPrediction.damageAbsorb:SetReverseFill(true)
@@ -139,19 +143,26 @@ function UUF:UpdateUnitHealPrediction(unitFrame, unit)
                     unitFrame.HealthPrediction.damageAbsorb:SetPoint("LEFT", unitFrame.Health:GetStatusBarTexture(), "RIGHT", 0, 0)
                     unitFrame.HealthPrediction.damageAbsorb:SetReverseFill(false)
                 end
-
-                if AbsorbDB.MatchParentHeight then
-                    unitFrame.HealthPrediction.damageAbsorb:SetHeight(unitFrame.Health:GetHeight())
-                else
-                    unitFrame.HealthPrediction.damageAbsorb:SetHeight(AbsorbDB.Height)
-                end
+            elseif position == "TOPLEFT" then
+                unitFrame.HealthPrediction.damageAbsorb:SetPoint("TOPLEFT", unitFrame.Health, "TOPLEFT", 0, 0)
+                unitFrame.HealthPrediction.damageAbsorb:SetReverseFill(false)
+            elseif position == "TOPRIGHT" then
+                unitFrame.HealthPrediction.damageAbsorb:SetPoint("TOPRIGHT", unitFrame.Health, "TOPRIGHT", 0, 0)
+                unitFrame.HealthPrediction.damageAbsorb:SetReverseFill(true)
+            elseif position == "BOTTOMLEFT" then
+                unitFrame.HealthPrediction.damageAbsorb:SetPoint("BOTTOMLEFT", unitFrame.Health, "BOTTOMLEFT", 0, 0)
+                unitFrame.HealthPrediction.damageAbsorb:SetReverseFill(false)
+            elseif position == "BOTTOMRIGHT" then
+                unitFrame.HealthPrediction.damageAbsorb:SetPoint("BOTTOMRIGHT", unitFrame.Health, "BOTTOMRIGHT", 0, 0)
+                unitFrame.HealthPrediction.damageAbsorb:SetReverseFill(true)
+            elseif position == "LEFT" then
+                unitFrame.HealthPrediction.damageAbsorb:SetPoint("LEFT", unitFrame.Health, "LEFT", 0, 0)
+                unitFrame.HealthPrediction.damageAbsorb:SetReverseFill(false)
+            elseif position == "RIGHT" then
+                unitFrame.HealthPrediction.damageAbsorb:SetPoint("RIGHT", unitFrame.Health, "RIGHT", 0, 0)
+                unitFrame.HealthPrediction.damageAbsorb:SetReverseFill(true)
             else
                 unitFrame.HealthPrediction.damageAbsorb:SetPoint("TOPLEFT", unitFrame.Health, "TOPLEFT", 0, 0)
-                if AbsorbDB.MatchParentHeight then
-                    unitFrame.HealthPrediction.damageAbsorb:SetHeight(unitFrame.Health:GetHeight())
-                else
-                    unitFrame.HealthPrediction.damageAbsorb:SetHeight(AbsorbDB.Height)
-                end
                 unitFrame.HealthPrediction.damageAbsorb:SetReverseFill(false)
             end
             unitFrame.HealthPrediction:ForceUpdate()
@@ -167,21 +178,14 @@ function UUF:UpdateUnitHealPrediction(unitFrame, unit)
             if HealAbsorbDB.UseStripedTexture then unitFrame.HealthPrediction.healAbsorb:SetStatusBarTexture("Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\ThinStripes.png") else unitFrame.HealthPrediction.healAbsorb:SetStatusBarTexture(UUF.Media.Foreground) end
             unitFrame.HealthPrediction.healAbsorb:SetStatusBarColor(HealAbsorbDB.Colour[1], HealAbsorbDB.Colour[2], HealAbsorbDB.Colour[3], HealAbsorbDB.Colour[4])
             unitFrame.HealthPrediction.healAbsorb:ClearAllPoints()
-            if HealAbsorbDB.Position == "RIGHT" then
-                unitFrame.HealthPrediction.healAbsorb:SetPoint("TOPRIGHT", unitFrame.Health, "TOPRIGHT", 0, 0)
-                if HealAbsorbDB.MatchParentHeight then
-                    unitFrame.HealthPrediction.healAbsorb:SetHeight(unitFrame.Health:GetHeight())
-                else
-                    unitFrame.HealthPrediction.healAbsorb:SetHeight(HealAbsorbDB.Height)
-                end
-                unitFrame.HealthPrediction.healAbsorb:SetReverseFill(true)
-            elseif HealAbsorbDB.Position == "ATTACH" then
-                unitFrame.Health:SetClipsChildren(true)
+            local position = HealAbsorbDB.Position
+            local height = HealAbsorbDB.MatchParentHeight and unitFrame.Health:GetHeight() or HealAbsorbDB.Height
+            unitFrame.HealthPrediction.healAbsorb:SetHeight(height)
 
-                unitFrame.HealthPrediction.healAbsorb:ClearAllPoints()
+            if position == "ATTACH" then
+                unitFrame.Health:SetClipsChildren(true)
                 unitFrame.HealthPrediction.healAbsorb:SetPoint("TOP", unitFrame.Health, "TOP", 0, 0)
                 unitFrame.HealthPrediction.healAbsorb:SetPoint("BOTTOM", unitFrame.Health, "BOTTOM", 0, 0)
-
                 if unitFrame.Health:GetReverseFill() then
                     unitFrame.HealthPrediction.healAbsorb:SetPoint("RIGHT", unitFrame.Health:GetStatusBarTexture(), "LEFT", 0, 0)
                     unitFrame.HealthPrediction.healAbsorb:SetReverseFill(true)
@@ -189,18 +193,27 @@ function UUF:UpdateUnitHealPrediction(unitFrame, unit)
                     unitFrame.HealthPrediction.healAbsorb:SetPoint("LEFT", unitFrame.Health:GetStatusBarTexture(), "RIGHT", 0, 0)
                     unitFrame.HealthPrediction.healAbsorb:SetReverseFill(false)
                 end
-                if HealAbsorbDB.MatchParentHeight then
-                    unitFrame.HealthPrediction.healAbsorb:SetHeight(unitFrame.Health:GetHeight())
-                else
-                    unitFrame.HealthPrediction.healAbsorb:SetHeight(HealAbsorbDB.Height)
-                end
-            else
+            elseif position == "TOPLEFT" then
                 unitFrame.HealthPrediction.healAbsorb:SetPoint("TOPLEFT", unitFrame.Health, "TOPLEFT", 0, 0)
-                if HealAbsorbDB.MatchParentHeight then
-                    unitFrame.HealthPrediction.healAbsorb:SetHeight(unitFrame.Health:GetHeight())
-                else
-                    unitFrame.HealthPrediction.healAbsorb:SetHeight(HealAbsorbDB.Height)
-                end
+                unitFrame.HealthPrediction.healAbsorb:SetReverseFill(false)
+            elseif position == "TOPRIGHT" then
+                unitFrame.HealthPrediction.healAbsorb:SetPoint("TOPRIGHT", unitFrame.Health, "TOPRIGHT", 0, 0)
+                unitFrame.HealthPrediction.healAbsorb:SetReverseFill(true)
+            elseif position == "BOTTOMLEFT" then
+                unitFrame.HealthPrediction.healAbsorb:SetPoint("BOTTOMLEFT", unitFrame.Health, "BOTTOMLEFT", 0, 0)
+                unitFrame.HealthPrediction.healAbsorb:SetReverseFill(false)
+            elseif position == "BOTTOMRIGHT" then
+                unitFrame.HealthPrediction.healAbsorb:SetPoint("BOTTOMRIGHT", unitFrame.Health, "BOTTOMRIGHT", 0, 0)
+                unitFrame.HealthPrediction.healAbsorb:SetReverseFill(true)
+            elseif position == "LEFT" then
+                unitFrame.HealthPrediction.healAbsorb:SetPoint("LEFT", unitFrame.Health, "LEFT", 0, 0)
+                unitFrame.HealthPrediction.healAbsorb:SetReverseFill(false)
+            elseif position == "RIGHT" then
+                unitFrame.HealthPrediction.healAbsorb:SetPoint("RIGHT", unitFrame.Health, "RIGHT", 0, 0)
+                unitFrame.HealthPrediction.healAbsorb:SetReverseFill(true)
+            else
+                -- Default to TOPLEFT
+                unitFrame.HealthPrediction.healAbsorb:SetPoint("TOPLEFT", unitFrame.Health, "TOPLEFT", 0, 0)
                 unitFrame.HealthPrediction.healAbsorb:SetReverseFill(false)
             end
             unitFrame.HealthPrediction:ForceUpdate()
