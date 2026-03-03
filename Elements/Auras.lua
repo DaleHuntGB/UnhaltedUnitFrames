@@ -54,25 +54,35 @@ end
 local function NormalizeAuraFilter(filterString, baseFilter, auraFilterConfig)
     local decodedFilterString = DecodeAuraFilterString(filterString)
     if type(decodedFilterString) ~= "string" then return baseFilter end
+    
+    -- If no config, just decode and return
+    if not auraFilterConfig then return decodedFilterString end
 
-    if auraFilterConfig and decodedFilterString ~= baseFilter and auraFilterConfig[decodedFilterString] then
-        return decodedFilterString
-    end
-
-    for filterType in decodedFilterString:gmatch("[^|]+") do
-        if filterType ~= baseFilter and auraFilterConfig then
-            if auraFilterConfig[filterType] then
-                return filterType
-            end
-
-            local baseQualifiedFilter = baseFilter .. "|" .. filterType
-            if auraFilterConfig[baseQualifiedFilter] then
-                return baseQualifiedFilter
+    -- Build composed filter from base + valid modifiers + optional single-select special token.
+    local parts = { baseFilter }
+    local added = { [baseFilter] = true }
+    local selectedExclusive = nil
+    for part in decodedFilterString:gmatch("[^|]+") do
+        if part ~= baseFilter then
+            if auraFilterConfig.Modifiers and auraFilterConfig.Modifiers[part] and not added[part] then
+                parts[#parts + 1] = part
+                added[part] = true
+            elseif auraFilterConfig.Exclusive and auraFilterConfig.Exclusive[part] then
+                selectedExclusive = part
             end
         end
     end
 
-    return baseFilter
+    -- Migrate old "exclusive-only" values into composed form.
+    if not selectedExclusive and auraFilterConfig.Exclusive and auraFilterConfig.Exclusive[decodedFilterString] then
+        selectedExclusive = decodedFilterString
+    end
+
+    if selectedExclusive and not added[selectedExclusive] then
+        parts[#parts + 1] = selectedExclusive
+    end
+    
+    return table.concat(parts, "|")
 end
 
 local function StyleAuras(_, button, unit, auraType)
@@ -215,13 +225,17 @@ local function CreateUnitBuffs(unitFrame, unit)
         unitFrame.BuffContainer.createdButtons = 0
         unitFrame.BuffContainer.tooltipAnchor = "ANCHOR_CURSOR"
         unitFrame.BuffContainer.showType = false
-        unitFrame.BuffContainer.showBuffType = false
+        unitFrame.BuffContainer.showBuffType = BuffsDB.ShowType
         unitFrame.BuffContainer.dispelColorCurve = C_CurveUtil.CreateColorCurve()
         unitFrame.BuffContainer.dispelColorCurve:SetType(Enum.LuaCurveType.Step)
         for _, dispelIndex in next, oUF.Enum.DispelType do
             if(oUF.colors.dispel[dispelIndex]) then
                 unitFrame.BuffContainer.dispelColorCurve:AddPoint(dispelIndex, oUF.colors.dispel[dispelIndex])
             end
+        end
+        -- Ensure None (index 0) has a fallback color if not defined
+        if not oUF.colors.dispel[0] then
+            unitFrame.BuffContainer.dispelColorCurve:AddPoint(0, CreateColor(0.8, 0, 0, 1))
         end
 
         if BuffsDB.Enabled then
@@ -258,13 +272,17 @@ local function CreateUnitDebuffs(unitFrame, unit)
         unitFrame.DebuffContainer.PostCreateButton = function(_, button) StyleAuras(_, button, unit, "HARMFUL") end
         unitFrame.DebuffContainer.tooltipAnchor = "ANCHOR_CURSOR"
         unitFrame.DebuffContainer.showType = false
-        unitFrame.DebuffContainer.showDebuffType = false
+        unitFrame.DebuffContainer.showDebuffType = DebuffsDB.ShowType
         unitFrame.DebuffContainer.dispelColorCurve = C_CurveUtil.CreateColorCurve()
         unitFrame.DebuffContainer.dispelColorCurve:SetType(Enum.LuaCurveType.Step)
         for _, dispelIndex in next, oUF.Enum.DispelType do
             if(oUF.colors.dispel[dispelIndex]) then
                 unitFrame.DebuffContainer.dispelColorCurve:AddPoint(dispelIndex, oUF.colors.dispel[dispelIndex])
             end
+        end
+        -- Ensure None (index 0) has a fallback color if not defined
+        if not oUF.colors.dispel[0] then
+            unitFrame.DebuffContainer.dispelColorCurve:AddPoint(0, CreateColor(0.8, 0, 0, 1))
         end
 
         if DebuffsDB.Enabled then
@@ -308,7 +326,7 @@ function UUF:UpdateUnitAuras(unitFrame, unit)
         unitFrame.BuffContainer.anchoredButtons = unitFrame.Buffs.anchoredButtons or 0
         unitFrame.BuffContainer.PostCreateButton = function(_, button) StyleAuras(_, button, unit, "HELPFUL") end
         unitFrame.BuffContainer.showType = false
-        unitFrame.BuffContainer.showBuffType = false
+        unitFrame.BuffContainer.showBuffType = BuffsDB.ShowType
         unitFrame.BuffContainer:Show()
     else
         unitFrame.BuffContainer:Hide()
@@ -339,7 +357,7 @@ function UUF:UpdateUnitAuras(unitFrame, unit)
         unitFrame.DebuffContainer.anchoredButtons = unitFrame.Debuffs.anchoredButtons or 0
         unitFrame.DebuffContainer.PostCreateButton = function(_, button) StyleAuras(_, button, unit, "HARMFUL") end
         unitFrame.DebuffContainer.showType = false
-        unitFrame.DebuffContainer.showDebuffType = false
+        unitFrame.DebuffContainer.showDebuffType = DebuffsDB.ShowType
         unitFrame.DebuffContainer:Show()
     else
         unitFrame.DebuffContainer:Hide()
