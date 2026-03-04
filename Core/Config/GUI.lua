@@ -2374,7 +2374,7 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
             ModToggle:SetLabel(modData.Title or modifier)
             ModToggle:SetDescription(modData.Desc or "")
             ModToggle:SetValue(filterState.modifiers[modifier] or false)
-            ModToggle:SetRelativeWidth(0.5)
+            ModToggle:SetRelativeWidth(#modifierOrder > 3 and 0.5 or 0.33)
             ModToggle:SetCallback("OnValueChanged", function(_, _, value)
                 if isUpdatingToggles then return end
                 filterState.modifiers[modifier] = value or nil
@@ -2396,7 +2396,7 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
             ExclToggle:SetLabel(exclData.Title or exclusive)
             ExclToggle:SetDescription(exclData.Desc or "")
             ExclToggle:SetValue(filterState.exclusive == exclusive)
-            ExclToggle:SetRelativeWidth(0.5)
+            ExclToggle:SetRelativeWidth(0.33)
             ExclToggle:SetCallback("OnValueChanged", function(_, _, value)
                 if isUpdatingToggles then return end
                 if value then
