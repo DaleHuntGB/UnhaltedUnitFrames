@@ -2367,7 +2367,7 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
     end
     local modifierOrder = GetAuraModifierOrder(auraDB)
     if #modifierOrder > 0 then
-        GUIWidgets.CreateHeader(AuraContainer, "Inexclusive Modifiers")
+        GUIWidgets.CreateHeader(AuraContainer, "Unexclusive Filters")
         for _, modifier in ipairs(modifierOrder) do
             local modData = auraFilterConfig.Modifiers[modifier]
             local ModToggle = AG:Create("CheckBox")
