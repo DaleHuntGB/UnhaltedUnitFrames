@@ -421,32 +421,28 @@ end
 
 UUF.AURA_FILTERS = {
     Buffs = {
-        -- Combinable modifiers (can be combined with base filter using |)
         Modifiers = {
-            ["PLAYER"] = {Title = "Player", Desc = "Only show buffs applied by the player."},
-            ["RAID"] = {Title = "Raid", Desc = "Show buffs that appear on raid frames."},
-            ["CANCELABLE"] = {Title = "Cancelable", Desc = "Only show buffs that can be cancelled."},
-            ["NOT_CANCELABLE"] = {Title = "Not Cancelable", Desc = "Only show buffs that cannot be cancelled."},
+            ["PLAYER"] = {Title = "Player", Desc = "Buffs Applied by Player."},
+            ["RAID"] = {Title = "Raid", Desc = "Buffs that appear on Raid Frames."},
+            ["CANCELABLE"] = {Title = "Cancelable", Desc = "Cancelable Buffs."},
+            ["NOT_CANCELABLE"] = {Title = "Not Cancelable", Desc = "Un-cancelable Buffs.."},
         },
-        -- Single-select special filters (composed with base filter)
         Exclusive = {
-            ["EXTERNAL_DEFENSIVE"] = {Title = "External Defensives", Desc = "External defensive cooldowns."},
-            ["BIG_DEFENSIVE"] = {Title = "Big Defensives", Desc = "Major defensive buffs."},
-            ["IMPORTANT"] = {Title = "Important", Desc = "Important buffs flagged by |cFF00B0F7Blizzard|r."},
+            ["EXTERNAL_DEFENSIVE"] = {Title = "External Defensives", Desc = "External Defensive - |cFF00B0F7Blizzard|r."},
+            ["BIG_DEFENSIVE"] = {Title = "Big Defensives", Desc = "Major Defensive Buffs - |cFF00B0F7Blizzard|r."},
+            ["IMPORTANT"] = {Title = "Important", Desc = "Important Buffs - |cFF00B0F7Blizzard|r."},
         },
     },
     Debuffs = {
-        -- Combinable modifiers (can be combined with base filter using |)
         Modifiers = {
-            ["PLAYER"] = {Title = "Player", Desc = "Only show debuffs applied by the player."},
-            ["RAID"] = {Title = "Raid", Desc = "Show debuffs that appear on raid frames."},
-            ["INCLUDE_NAME_PLATE_ONLY"] = {Title = "Nameplate Only", Desc = "Include debuffs normally shown only on nameplates."},
+            ["PLAYER"] = {Title = "Player", Desc = "Debuffs Applied by Player."},
+            ["RAID"] = {Title = "Raid", Desc = "Debuffs that appear on Raid Frames."},
+            ["INCLUDE_NAME_PLATE_ONLY"] = {Title = "Nameplate Only", Desc = "Nameplate Debuffs."},
         },
-        -- Single-select special filters (composed with base filter)
         Exclusive = {
-            ["CROWD_CONTROL"] = {Title = "Crowd Control", Desc = "Crowd control effects."},
-            ["RAID_PLAYER_DISPELLABLE"] = {Title = "Player Dispellable", Desc = "Debuffs that the player can dispel."},
-            ["IMPORTANT"] = {Title = "Important", Desc = "Important debuffs flagged by |cFF00B0F7Blizzard|r."},
+            ["CROWD_CONTROL"] = {Title = "Crowd Control", Desc = "Crowd Control Debuffs."},
+            ["RAID_PLAYER_DISPELLABLE"] = {Title = "Player Dispellable", Desc = "Debuffs Dispellable by Player."},
+            ["IMPORTANT"] = {Title = "Important", Desc = "Important Debuffs - |cFF00B0F7Blizzard|r."},
         },
     }
 }

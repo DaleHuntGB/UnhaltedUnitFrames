@@ -80,15 +80,9 @@ end
 local function ParseAuraFilterState(auraDB, filterString)
     local baseFilter = GetAuraBaseFilter(auraDB)
     local config = GetAuraFilterConfig(auraDB)
-    local state = {
-        modifiers = {},
-        exclusive = nil,
-    }
-    
+    local state = { modifiers = {}, exclusive = nil, }
     if type(filterString) ~= "string" then return state end
     local decoded = filterString:gsub("||", "|")
-    
-    -- Parse composed filter string (base + modifiers + optional single-select special token)
     for part in decoded:gmatch("[^|]+") do
         if part ~= baseFilter then
             if config.Modifiers and config.Modifiers[part] then
@@ -98,14 +92,11 @@ local function ParseAuraFilterState(auraDB, filterString)
             end
         end
     end
-    
     return state
 end
 
 local function BuildAuraFilterFromState(auraDB, state)
     local baseFilter = GetAuraBaseFilter(auraDB)
-
-    -- Build composed filter from base + modifiers + optional single-select special token.
     local parts = { baseFilter }
     local added = { [baseFilter] = true }
     local modifierOrder = GetAuraModifierOrder(auraDB)
@@ -115,11 +106,7 @@ local function BuildAuraFilterFromState(auraDB, state)
             added[modifier] = true
         end
     end
-
-    if state.exclusive and not added[state.exclusive] then
-        parts[#parts + 1] = state.exclusive
-    end
-    
+    if state.exclusive and not added[state.exclusive] then parts[#parts + 1] = state.exclusive end
     return table.concat(parts, "|")
 end
 
@@ -2370,25 +2357,17 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
 
     local function RefreshFilterToggles()
         isUpdatingToggles = true
-        
-        -- Update modifier toggles
         for modifier, toggle in pairs(modifierToggles) do
             toggle:SetValue(filterState.modifiers[modifier] or false)
         end
-        
-        -- Update exclusive toggles
         for exclusive, toggle in pairs(exclusiveToggles) do
             toggle:SetValue(filterState.exclusive == exclusive)
         end
-        
         isUpdatingToggles = false
     end
-
-    -- Modifiers Section (multi-select, can combine)
     local modifierOrder = GetAuraModifierOrder(auraDB)
     if #modifierOrder > 0 then
-        GUIWidgets.CreateHeader(AuraContainer, "Filter Modifiers (combinable)")
-        
+        GUIWidgets.CreateHeader(AuraContainer, "Inexclusive Modifiers")
         for _, modifier in ipairs(modifierOrder) do
             local modData = auraFilterConfig.Modifiers[modifier]
             local ModToggle = AG:Create("CheckBox")
@@ -2407,11 +2386,10 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
         end
     end
 
-    -- Exclusive Filters Section (radio-button style)
     local exclusiveOrder = GetAuraExclusiveOrder(auraDB)
     if #exclusiveOrder > 0 then
-        GUIWidgets.CreateHeader(AuraContainer, "Exclusive Filters (select one)")
-        
+        GUIWidgets.CreateHeader(AuraContainer, "Exclusive Filters")
+
         for _, exclusive in ipairs(exclusiveOrder) do
             local exclData = auraFilterConfig.Exclusive[exclusive]
             local ExclToggle = AG:Create("CheckBox")
@@ -2433,7 +2411,7 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
             AuraContainer:AddChild(ExclToggle)
         end
     end
-    
+
     RefreshFilterToggles()
 
     local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
