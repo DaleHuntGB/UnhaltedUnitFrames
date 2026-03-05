@@ -109,6 +109,7 @@ function UUF:SpawnUnitFrame(unit)
         end
     end
 
+	UUF:FramePixelPerfect(UUF[unit:upper()])
     return UUF[unit:upper()]
 end
 

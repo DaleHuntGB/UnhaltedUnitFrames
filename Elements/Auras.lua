@@ -88,9 +88,13 @@ local function StyleAuras(_, button, unit, auraType)
     end
 
     local buttonBorder = CreateFrame("Frame", nil, button, "BackdropTemplate")
-    buttonBorder:SetAllPoints()
-    buttonBorder:SetBackdrop({ edgeFile = "Interface\\Buttons\\WHITE8X8", edgeSize = 1, insets = {left = 0, right = 0, top = 0, bottom = 0} })
+	local edgeThick = UUF:PixelRound(1)
+	local insetThick = UUF:PixelRound(0)
+	buttonBorder:SetAllPoints()
+	buttonBorder:SetBackdrop({ edgeFile = "Interface\\Buttons\\WHITE8X8", edgeSize = edgeThick, insets = {left = insetThick, right = insetThick, top = insetThick, bottom = insetThick} })
     buttonBorder:SetBackdropBorderColor(0, 0, 0, 1)
+	
+	button.Border = buttonBorder
 
     local auraCooldown = button.Cooldown
     if auraCooldown then
@@ -195,12 +199,12 @@ local function CreateUnitBuffs(unitFrame, unit)
         unitFrame.BuffContainer:SetFrameStrata(UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Auras.FrameStrata)
         local buffPerRow = BuffsDB.Wrap or 4
         local buffRows = math.ceil(BuffsDB.Num / buffPerRow)
-        local buffContainerWidth = (BuffsDB.Size + BuffsDB.Layout[5]) * buffPerRow - BuffsDB.Layout[5]
-        local buffContainerHeight = (BuffsDB.Size + BuffsDB.Layout[5]) * buffRows - BuffsDB.Layout[5]
-        unitFrame.BuffContainer:SetSize(buffContainerWidth, buffContainerHeight)
-        unitFrame.BuffContainer:SetPoint(BuffsDB.Layout[1], unitFrame, BuffsDB.Layout[2], BuffsDB.Layout[3], BuffsDB.Layout[4])
-        unitFrame.BuffContainer.size = BuffsDB.Size
-        unitFrame.BuffContainer.spacing = BuffsDB.Layout[5]
+        local buffContainerWidth = UUF:PixelRound((BuffsDB.Size + BuffsDB.Layout[5]) * buffPerRow - BuffsDB.Layout[5])
+        local buffContainerHeight = UUF:PixelRound((BuffsDB.Size + BuffsDB.Layout[5]) * buffRows - BuffsDB.Layout[5])
+		UUF:PixelSize(unitFrame.BuffContainer, buffContainerWidth, buffContainerHeight)
+		UUF:PixelPoint(unitFrame.BuffContainer, BuffsDB.Layout[1], unitFrame, BuffsDB.Layout[2], BuffsDB.Layout[3], BuffsDB.Layout[4])
+        unitFrame.BuffContainer.size = UUF:PixelRound(BuffsDB.Size)
+        unitFrame.BuffContainer.spacing = UUF:PixelRound(BuffsDB.Layout[5])
         unitFrame.BuffContainer.num = BuffsDB.Num
         unitFrame.BuffContainer.initialAnchor = BuffsDB.Layout[1]
         unitFrame.BuffContainer.onlyShowPlayer = BuffsDB.OnlyShowPlayer
@@ -239,12 +243,12 @@ local function CreateUnitDebuffs(unitFrame, unit)
         unitFrame.DebuffContainer:SetFrameStrata(UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Auras.FrameStrata)
         local debuffPerRow = DebuffsDB.Wrap or 3
         local debuffRows = math.ceil(DebuffsDB.Num / debuffPerRow)
-        local debuffContainerWidth = (DebuffsDB.Size + DebuffsDB.Layout[5]) * debuffPerRow - DebuffsDB.Layout[5]
-        local debuffContainerHeight = (DebuffsDB.Size + DebuffsDB.Layout[5]) * debuffRows - DebuffsDB.Layout[5]
-        unitFrame.DebuffContainer:SetSize(debuffContainerWidth, debuffContainerHeight)
-        unitFrame.DebuffContainer:SetPoint(DebuffsDB.Layout[1], unitFrame, DebuffsDB.Layout[2], DebuffsDB.Layout[3], DebuffsDB.Layout[4])
-        unitFrame.DebuffContainer.size = DebuffsDB.Size
-        unitFrame.DebuffContainer.spacing = DebuffsDB.Layout[5]
+        local debuffContainerWidth = UUF:PixelRound((DebuffsDB.Size + DebuffsDB.Layout[5]) * debuffPerRow - DebuffsDB.Layout[5])
+        local debuffContainerHeight = UUF:PixelRound((DebuffsDB.Size + DebuffsDB.Layout[5]) * debuffRows - DebuffsDB.Layout[5])
+		UUF:PixelSize(unitFrame.DebuffContainer, debuffContainerWidth, debuffContainerHeight)
+		UUF:PixelPoint(unitFrame.DebuffContainer, DebuffsDB.Layout[1], unitFrame, DebuffsDB.Layout[2], DebuffsDB.Layout[3], DebuffsDB.Layout[4])
+        unitFrame.DebuffContainer.size = UUF:PixelRound(DebuffsDB.Size)
+        unitFrame.DebuffContainer.spacing = UUF:PixelRound(DebuffsDB.Layout[5])
         unitFrame.DebuffContainer.num = DebuffsDB.Num
         unitFrame.DebuffContainer.initialAnchor = DebuffsDB.Layout[1]
         unitFrame.DebuffContainer.onlyShowPlayer = DebuffsDB.OnlyShowPlayer
@@ -289,14 +293,13 @@ function UUF:UpdateUnitAuras(unitFrame, unit)
         unitFrame.Buffs = unitFrame.BuffContainer
         local buffPerRow = BuffsDB.Wrap or 4
         local buffRows = math.ceil(BuffsDB.Num / buffPerRow)
-        local buffContainerWidth = (BuffsDB.Size + BuffsDB.Layout[5]) * buffPerRow - BuffsDB.Layout[5]
-        local buffContainerHeight = (BuffsDB.Size + BuffsDB.Layout[5]) * buffRows - BuffsDB.Layout[5]
-        unitFrame.BuffContainer:ClearAllPoints()
-        unitFrame.BuffContainer:SetSize(buffContainerWidth, buffContainerHeight)
-        unitFrame.BuffContainer:SetPoint(BuffsDB.Layout[1], unitFrame, BuffsDB.Layout[2], BuffsDB.Layout[3], BuffsDB.Layout[4])
+        local buffContainerWidth = UUF:PixelRound((BuffsDB.Size + BuffsDB.Layout[5]) * buffPerRow - BuffsDB.Layout[5])
+        local buffContainerHeight = UUF:PixelRound((BuffsDB.Size + BuffsDB.Layout[5]) * buffRows - BuffsDB.Layout[5])
+		UUF:PixelSize(unitFrame.BuffContainer, buffContainerWidth, buffContainerHeight)
+		UUF:PixelPoint(unitFrame.BuffContainer, BuffsDB.Layout[1], unitFrame, BuffsDB.Layout[2], BuffsDB.Layout[3], BuffsDB.Layout[4])
         unitFrame.BuffContainer:SetFrameStrata(UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Auras.FrameStrata)
-        unitFrame.BuffContainer.size = BuffsDB.Size
-        unitFrame.BuffContainer.spacing = BuffsDB.Layout[5]
+        unitFrame.BuffContainer.size = UUF:PixelRound(BuffsDB.Size)
+        unitFrame.BuffContainer.spacing = UUF:PixelRound(BuffsDB.Layout[5])
         unitFrame.BuffContainer.num = BuffsDB.Num
         unitFrame.BuffContainer.initialAnchor = BuffsDB.Layout[1]
         unitFrame.BuffContainer.onlyShowPlayer = BuffsDB.OnlyShowPlayer
@@ -320,14 +323,13 @@ function UUF:UpdateUnitAuras(unitFrame, unit)
         unitFrame.Debuffs = unitFrame.DebuffContainer
         local debuffPerRow = DebuffsDB.Wrap or 4
         local debuffRows = math.ceil(DebuffsDB.Num / debuffPerRow)
-        local debuffContainerWidth = (DebuffsDB.Size + DebuffsDB.Layout[5]) * debuffPerRow - DebuffsDB.Layout[5]
-        local debuffContainerHeight = (DebuffsDB.Size + DebuffsDB.Layout[5]) * debuffRows - DebuffsDB.Layout[5]
-        unitFrame.DebuffContainer:ClearAllPoints()
-        unitFrame.DebuffContainer:SetSize(debuffContainerWidth, debuffContainerHeight)
+        local debuffContainerWidth = UUF:PixelRound((DebuffsDB.Size + DebuffsDB.Layout[5]) * debuffPerRow - DebuffsDB.Layout[5])
+        local debuffContainerHeight = UUF:PixelRound((DebuffsDB.Size + DebuffsDB.Layout[5]) * debuffRows - DebuffsDB.Layout[5])
+		UUF:PixelSize(unitFrame.DebuffContainer, debuffContainerWidth, debuffContainerHeight)
         unitFrame.DebuffContainer:SetFrameStrata(UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Auras.FrameStrata)
-        unitFrame.DebuffContainer:SetPoint(DebuffsDB.Layout[1], unitFrame, DebuffsDB.Layout[2], DebuffsDB.Layout[3], DebuffsDB.Layout[4])
-        unitFrame.DebuffContainer.size = DebuffsDB.Size
-        unitFrame.DebuffContainer.spacing = DebuffsDB.Layout[5]
+		UUF:PixelPoint(unitFrame.DebuffContainer, DebuffsDB.Layout[1], unitFrame, DebuffsDB.Layout[2], DebuffsDB.Layout[3], DebuffsDB.Layout[4])
+        unitFrame.DebuffContainer.size = UUF:PixelRound(DebuffsDB.Size)
+        unitFrame.DebuffContainer.spacing = UUF:PixelRound(DebuffsDB.Layout[5])
         unitFrame.DebuffContainer.num = DebuffsDB.Num
         unitFrame.DebuffContainer.initialAnchor = DebuffsDB.Layout[1]
         unitFrame.DebuffContainer.onlyShowPlayer = DebuffsDB.OnlyShowPlayer
