@@ -50,6 +50,9 @@ local Tags = {
     ["maxpp:abbr:colour"] = "UNIT_POWER_UPDATE UNIT_MAXPOWER",
 
     ["name:colour"] = "UNIT_CLASSIFICATION_CHANGED UNIT_FACTION UNIT_NAME_UPDATE",
+    ["name:target"] = "UNIT_NAME_UPDATE UNIT_TARGET",
+    ["name:target:colour"] = "UNIT_NAME_UPDATE UNIT_TARGET",
+
 }
 
 for i = 1, 25 do
@@ -60,6 +63,14 @@ for i = 1, 25 do
     Tags["name:short:" .. i .. ":colour"] = "UNIT_NAME_UPDATE"
 end
 
+for i = 1, 25 do
+    Tags["name:target:short:" .. i] = "UNIT_NAME_UPDATE UNIT_TARGET"
+end
+
+for i = 1, 25 do
+    Tags["name:target:short:" .. i .. ":colour"] = "UNIT_NAME_UPDATE UNIT_TARGET"
+end
+
 UUF.SEPARATOR_TAGS = {
 {
     ["||"] = "|",
@@ -68,6 +79,7 @@ UUF.SEPARATOR_TAGS = {
     [" "] = "Space",
     ["[]"] = "[]",
     ["()"] = "()",
+    ["•"] = "•",
 },
 {
     "||",
@@ -75,7 +87,8 @@ UUF.SEPARATOR_TAGS = {
     "/",
     "[]",
     "()",
-    " "
+    "•",
+    " ",
 }
 }
 
@@ -84,88 +97,137 @@ UUF.TOT_SEPARATOR_TAGS = {
         ["»"] = "»",
         ["-"] = "-",
         [">"] = ">",
+        [">>"] = ">>",
+        ["•"] = "•",
     },
     {
         "»",
         "-",
         ">",
+        ">>",
+        "•",
     }
 }
 
--- Thank you to m33shoq for this abbreviation function and data!
+-- Thank you to m33shoq for the original abbreviation approach and baseline data.
+local LOG_TEN = math.log(10)
+local cachedAbbrevData
+local cachedAbbrevSignature
 
-local abbrevData = {
-   breakpointData = {
-      {
-         breakpoint = 1e12,
-         abbreviation = "B",
-         significandDivisor = 1e10,
-         fractionDivisor = 100,
-         abbreviationIsGlobal = false,
-      },
-      {
-         breakpoint = 1e11,
-         abbreviation = "B",
-         significandDivisor = 1e9,
-         fractionDivisor = 1,
-         abbreviationIsGlobal = false,
-      },
-      {
-         breakpoint = 1e10,
-         abbreviation = "B",
-         significandDivisor = 1e8,
-         fractionDivisor = 10,
-         abbreviationIsGlobal = false,
-      },
-      {
-         breakpoint = 1e9,
-         abbreviation = "B",
-         significandDivisor = 1e7,
-         fractionDivisor = 100,
-         abbreviationIsGlobal = false,
-      },
-      {
-         breakpoint = 1e8,
-         abbreviation = "M",
-         significandDivisor = 1e6,
-         fractionDivisor = 1,
-         abbreviationIsGlobal = false,
-      },
-      {
-         breakpoint = 1e7,
-         abbreviation = "M",
-         significandDivisor = 1e5,
-         fractionDivisor = 10,
-        abbreviationIsGlobal = false,
-      },
-      {
-         breakpoint = 1e6,
-         abbreviation = "M",
-         significandDivisor = 1e4,
-         fractionDivisor = 100,
-         abbreviationIsGlobal = false,
-      },
-      {
-         breakpoint = 1e5,
-         abbreviation = "K",
-         significandDivisor = 1000,
-         fractionDivisor = 1,
-         abbreviationIsGlobal = false,
-      },
-      {
-         breakpoint = 1e4,
-         abbreviation = "K",
-         significandDivisor = 100,
-         fractionDivisor = 10,
-         abbreviationIsGlobal = false,
-      },
-   },
-}
+local function CopyDefaultCustomAbbreviations()
+    local defaults = UUF:GetDefaultDB()
+    local defaultRules = defaults and defaults.profile and defaults.profile.General and defaults.profile.General.CustomAbbreviations
+    local copiedRules = {}
+
+    if type(defaultRules) ~= "table" then
+        return copiedRules
+    end
+
+    for _, rule in ipairs(defaultRules) do
+        if type(rule) == "table" then
+            local threshold = tonumber(rule.threshold)
+            local value = strtrim(tostring(rule.value or ""))
+            if threshold and threshold > 0 and value ~= "" then
+                copiedRules[#copiedRules + 1] = {
+                    threshold = tostring(math.floor(threshold)),
+                    value = value,
+                }
+            end
+        end
+    end
+
+    return copiedRules
+end
+
+local function GetConfiguredCustomAbbreviations()
+    local generalDB = UUF.db and UUF.db.profile and UUF.db.profile.General
+    local configuredRules = generalDB and generalDB.CustomAbbreviations
+    local rules = {}
+    local seenThresholds = {}
+    local needsSave = type(configuredRules) ~= "table"
+
+    if type(configuredRules) == "table" then
+        for _, rule in ipairs(configuredRules) do
+            if type(rule) == "table" then
+                local threshold = tonumber(rule.threshold)
+                local value = strtrim(tostring(rule.value or ""))
+                local thresholdString = threshold and threshold > 0 and tostring(math.floor(threshold)) or nil
+
+                if thresholdString and value ~= "" and not seenThresholds[thresholdString] then
+                    rules[#rules + 1] = {
+                        threshold = thresholdString,
+                        value = value,
+                    }
+                    seenThresholds[thresholdString] = true
+                    if rule.threshold ~= thresholdString or rule.value ~= value then
+                        needsSave = true
+                    end
+                else
+                    needsSave = true
+                end
+            else
+                needsSave = true
+            end
+        end
+    end
+
+    if #rules == 0 then
+        rules = CopyDefaultCustomAbbreviations()
+        needsSave = true
+    end
+
+    table.sort(rules, function(a, b)
+        return (tonumber(a.threshold) or 0) > (tonumber(b.threshold) or 0)
+    end)
+
+    if generalDB and (needsSave or type(configuredRules) ~= "table" or #configuredRules ~= #rules) then
+        generalDB.CustomAbbreviations = rules
+    end
+
+    return rules
+end
+
+local function BuildAbbreviationSignature(rules)
+    local signatureParts = {}
+    for i, rule in ipairs(rules) do
+        signatureParts[i] = tostring(rule.threshold or "") .. ":" .. tostring(rule.value or "")
+    end
+    return table.concat(signatureParts, "|")
+end
+
+local function BuildCustomAbbrevData()
+    local rules = GetConfiguredCustomAbbreviations()
+    local signature = BuildAbbreviationSignature(rules)
+
+    if cachedAbbrevData and signature == cachedAbbrevSignature then
+        return cachedAbbrevData
+    end
+
+    local breakpointData = {}
+    for _, rule in ipairs(rules) do
+        local breakpoint = math.max(1, math.floor(tonumber(rule.threshold) or 0))
+        local exponent = math.floor(math.log(breakpoint) / LOG_TEN)
+        local exponentMod = exponent % 3
+        local fractionDivisor = (exponentMod == 0) and 100 or ((exponentMod == 1) and 10 or 1)
+
+        breakpointData[#breakpointData + 1] = {
+            breakpoint = breakpoint,
+            abbreviation = rule.value,
+            significandDivisor = math.max(1, breakpoint / 100),
+            fractionDivisor = fractionDivisor,
+            abbreviationIsGlobal = false,
+        }
+    end
+
+    cachedAbbrevSignature = signature
+    cachedAbbrevData = { breakpointData = breakpointData }
+    return cachedAbbrevData
+end
 
 local function AbbreviateValue(value)
     local useCustomAbbreviations = UUF.db.profile.General.UseCustomAbbreviations
     if useCustomAbbreviations then
-        return AbbreviateNumbers(value, abbrevData)
+        return AbbreviateNumbers(value, BuildCustomAbbrevData())
     else
         return AbbreviateLargeNumbers(value)
     end
@@ -385,6 +447,22 @@ oUF.Tags.Methods["name:colour"] = function(unit)
     return string.format("|cff%02x%02x%02x%s|r", classColourR * 255, classColourG * 255, classColourB * 255, unitName)
 end
 
+oUF.Tags.Methods["name:target"] = function(unit)
+    local targetUnit = unit and (unit .. "target")
+    local arrowSeperator = UUF.TOT_SEPARATOR
+    if not targetUnit or not UnitExists(targetUnit) then return "" end
+    return string.format(" %s %s", arrowSeperator, UnitName(targetUnit) or "")
+end
+
+oUF.Tags.Methods["name:target:colour"] = function(unit)
+    local targetUnit = unit and (unit .. "target")
+    local arrowSeperator = UUF.TOT_SEPARATOR
+    if not targetUnit or not UnitExists(targetUnit) then return "" end
+    local classColourR, classColourG, classColourB = UUF:GetUnitColour(targetUnit)
+    local unitName = UnitName(targetUnit) or ""
+    return string.format(" %s |cff%02x%02x%02x%s|r", arrowSeperator, classColourR * 255, classColourG * 255, classColourB * 255, unitName)
+end
+
 oUF.Tags.Methods["resetcolor"] = function(unit)
     return "|r"
 end
@@ -401,11 +479,34 @@ end
 for i = 1, 25 do
     oUF.Tags.Methods["name:short:" .. i] = function(unit) return ShortenUnitName(unit, i) end
 end
+
 for i = 1, 25 do
     oUF.Tags.Methods["name:short:" .. i .. ":colour"] = function(unit)
         local classColourR, classColourG, classColourB = UUF:GetUnitColour(unit)
         local shortenedName = ShortenUnitName(unit, i)
-        return string.format("|cff%02x%02x%02x%s|r", classColourR * 255, classColourG * 255, classColourB * 255, shortenedName)
+        local arrowSeperator = UUF.TOT_SEPARATOR
+        return string.format(" %s |cff%02x%02x%02x%s|r", arrowSeperator, classColourR * 255, classColourG * 255, classColourB * 255, shortenedName)
+    end
+end
+
+for i = 1, 25 do
+    oUF.Tags.Methods["name:target:short:" .. i] = function(unit)
+        local targetUnit = unit and (unit .. "target")
+        if not targetUnit or not UnitExists(targetUnit) then return "" end
+        local shortenedName = ShortenUnitName(targetUnit, i)
+        local arrowSeperator = UUF.TOT_SEPARATOR
+        return string.format(" %s %s", arrowSeperator, shortenedName)
+    end
+end
+
+for i = 1, 25 do
+    oUF.Tags.Methods["name:target:short:" .. i .. ":colour"] = function(unit)
+        local targetUnit = unit and (unit .. "target")
+        if not targetUnit or not UnitExists(targetUnit) then return "" end
+        local classColourR, classColourG, classColourB = UUF:GetUnitColour(targetUnit)
+        local shortenedName = ShortenUnitName(targetUnit, i)
+        local arrowSeperator = UUF.TOT_SEPARATOR
+        return string.format(" %s |cff%02x%02x%02x%s|r", arrowSeperator, classColourR * 255, classColourG * 255, classColourB * 255, shortenedName)
     end
 end
 
@@ -476,12 +577,20 @@ local NameTags = {
         ["name:colour"] = "Unit Name with Colour",
         ["name:short:10"] = "Unit Name Shortened (1 - 25 Chars)",
         ["name:short:10:colour"] = "Unit Name Shortened (1 - 25 Chars) with Colour",
+        ["name:target"] = "Target Unit Name",
+        ["name:target:colour"] = "Target Unit Name with Colour",
+        ["name:target:short:10"] = "Target Unit Name Shortened (1 - 25 Chars)",
+        ["name:target:short:10:colour"] = "Target Unit Name Shortened (1 - 25 Chars) with Colour",
     },
     {
         "name",
         "name:colour",
         "name:short:10",
         "name:short:10:colour",
+        "name:target",
+        "name:target:colour",
+        "name:target:short:10",
+        "name:target:short:10:colour",
     }
 }
 

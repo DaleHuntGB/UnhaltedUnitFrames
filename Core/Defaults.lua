@@ -3,6 +3,7 @@ local _, UUF = ...
 local Defaults = {
     global = {
         UseGlobalProfile = false,
+        GlobalProfile = "Default",
         GlobalProfileName = "Default",
     },
     profile = {
@@ -11,6 +12,17 @@ local Defaults = {
             Separator = "||",
             ToTSeparator = "»",
             UseCustomAbbreviations = false,
+            CustomAbbreviations = {
+                { threshold = "1000000000000", value = "B" },
+                { threshold = "100000000000", value = "B" },
+                { threshold = "10000000000", value = "B" },
+                { threshold = "1000000000", value = "B" },
+                { threshold = "100000000", value = "M" },
+                { threshold = "10000000", value = "M" },
+                { threshold = "1000000", value = "M" },
+                { threshold = "100000", value = "K" },
+                { threshold = "10000", value = "K" },
+            },
             UIScale = {
                 Enabled = false,
                 Scale = 1.0,
