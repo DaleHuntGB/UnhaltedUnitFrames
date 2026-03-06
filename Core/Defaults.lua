@@ -188,6 +188,8 @@ local Defaults = {
                     Zoom = 0.3,
                     UseClassPortrait = false,
                     Style = "2D",
+                    RightClickMenuOnPortrait = false,
+                    LeftClickTargetOnPortrait = false,
                 },
                 Indicators = {
                     RaidTargetMarker = {
