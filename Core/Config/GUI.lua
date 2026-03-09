@@ -2725,228 +2725,6 @@ local function CreateAuraDurationSettings(containerParent)
     AuraDurationContainer:AddChild(FontSizeSlider)
 end
 
-local function CopyDefaultCustomAbbreviations()
-    local defaults = UUF:GetDefaultDB()
-    local defaultRules = defaults and defaults.profile and defaults.profile.General and defaults.profile.General.CustomAbbreviations
-    local copiedRules = {}
-
-    if type(defaultRules) ~= "table" then
-        return copiedRules
-    end
-
-    for _, rule in ipairs(defaultRules) do
-        if type(rule) == "table" then
-            local threshold = tonumber(rule.threshold)
-            local value = strtrim(tostring(rule.value or ""))
-            if threshold and threshold > 0 and value ~= "" then
-                copiedRules[#copiedRules + 1] = {
-                    threshold = tostring(math.floor(threshold)),
-                    value = value,
-                }
-            end
-        end
-    end
-
-    return copiedRules
-end
-
-local function EnsureCustomAbbreviationRules()
-    local generalDB = UUF.db.profile.General
-    local normalizedRules = {}
-    local seenThresholds = {}
-
-    if type(generalDB.CustomAbbreviations) == "table" then
-        for _, rule in ipairs(generalDB.CustomAbbreviations) do
-            if type(rule) == "table" then
-                local threshold = tonumber(rule.threshold)
-                local value = strtrim(tostring(rule.value or ""))
-                local thresholdString = threshold and threshold > 0 and tostring(math.floor(threshold)) or nil
-
-                if thresholdString and value ~= "" and not seenThresholds[thresholdString] then
-                    normalizedRules[#normalizedRules + 1] = {
-                        threshold = thresholdString,
-                        value = value,
-                    }
-                    seenThresholds[thresholdString] = true
-                end
-            end
-        end
-    end
-
-    if #normalizedRules == 0 then
-        normalizedRules = CopyDefaultCustomAbbreviations()
-    end
-
-    table.sort(normalizedRules, function(a, b)
-        return (tonumber(a.threshold) or 0) < (tonumber(b.threshold) or 0)
-    end)
-
-    generalDB.CustomAbbreviations = normalizedRules
-    return normalizedRules
-end
-
-local function FormatThresholdPreset(threshold)
-    local numericThreshold = tonumber(threshold)
-    if not numericThreshold then
-        return tostring(threshold or "")
-    end
-
-    local suffixes = {
-        { divisor = 1e12, suffix = "T" },
-        { divisor = 1e9, suffix = "B" },
-        { divisor = 1e6, suffix = "M" },
-        { divisor = 1e3, suffix = "k" },
-    }
-
-    for _, suffixData in ipairs(suffixes) do
-        if numericThreshold >= suffixData.divisor then
-            local scaledValue = numericThreshold / suffixData.divisor
-            if scaledValue == math.floor(scaledValue) then
-                return string.format("%d%s", scaledValue, suffixData.suffix)
-            end
-            return string.format("%.1f%s", scaledValue, suffixData.suffix):gsub("%.0", "")
-        end
-    end
-
-    return tostring(math.floor(numericThreshold))
-end
-
-local function BuildThresholdPresetDropdownData(rules)
-    local presets = {}
-    local order = {}
-    local sourceRules = CopyDefaultCustomAbbreviations()
-
-    if #sourceRules == 0 then
-        sourceRules = rules or {}
-    end
-
-    for _, rule in ipairs(sourceRules) do
-        local threshold = tonumber(rule.threshold)
-        if threshold and threshold > 0 then
-            local thresholdString = tostring(math.floor(threshold))
-            if not presets[thresholdString] then
-                presets[thresholdString] = FormatThresholdPreset(thresholdString)
-                order[#order + 1] = thresholdString
-            end
-        end
-    end
-
-    table.sort(order, function(a, b)
-        return (tonumber(a) or 0) < (tonumber(b) or 0)
-    end)
-
-    return presets, order
-end
-
-local function CreateCustomAbbreviationSettings(containerParent)
-    local customContainer = GUIWidgets.CreateInlineGroup(containerParent, "Custom Abbreviations")
-    GUIWidgets.CreateInformationTag(customContainer, "Set custom thresholds and abbreviation values. Press Enter after editing each field.")
-
-    local rules = EnsureCustomAbbreviationRules()
-    local thresholdBoxes = {}
-    local valueBoxes = {}
-    local presetLabels, presetOrder = BuildThresholdPresetDropdownData(rules)
-
-    local function SaveRules()
-        table.sort(rules, function(a, b)
-            return (tonumber(a.threshold) or 0) < (tonumber(b.threshold) or 0)
-        end)
-        UUF.db.profile.General.CustomAbbreviations = rules
-        UUF:UpdateUnitTags()
-    end
-
-    local function RefreshRuleBoxes()
-        rules = EnsureCustomAbbreviationRules()
-        for index, rule in ipairs(rules) do
-            if thresholdBoxes[index] then
-                thresholdBoxes[index]:SetText(tostring(rule.threshold))
-            end
-            if valueBoxes[index] then
-                valueBoxes[index]:SetText(rule.value)
-            end
-        end
-    end
-
-    local useCustomAbbreviationsCheckbox
-    local function RefreshEnabledState()
-        GUIWidgets.DeepDisable(customContainer, not UUF.db.profile.General.UseCustomAbbreviations, useCustomAbbreviationsCheckbox)
-    end
-
-    useCustomAbbreviationsCheckbox = AG:Create("CheckBox")
-    useCustomAbbreviationsCheckbox:SetLabel("Enable Custom Abbreviations")
-    useCustomAbbreviationsCheckbox:SetValue(UUF.db.profile.General.UseCustomAbbreviations)
-    useCustomAbbreviationsCheckbox:SetRelativeWidth(0.5)
-    useCustomAbbreviationsCheckbox:SetCallback("OnValueChanged", function(_, _, value)
-        UUF.db.profile.General.UseCustomAbbreviations = value
-        UUF:UpdateUnitTags()
-        RefreshEnabledState()
-    end)
-    customContainer:AddChild(useCustomAbbreviationsCheckbox)
-
-    local resetButton = AG:Create("Button")
-    resetButton:SetText("Reset To Defaults")
-    resetButton:SetRelativeWidth(0.5)
-    resetButton:SetCallback("OnClick", function()
-        rules = CopyDefaultCustomAbbreviations()
-        SaveRules()
-        RefreshRuleBoxes()
-    end)
-    customContainer:AddChild(resetButton)
-
-    GUIWidgets.CreateHeader(customContainer, "Threshold Rules")
-
-    for index, rule in ipairs(rules) do
-        local thresholdBox = AG:Create("EditBox")
-        thresholdBox:SetLabel("Threshold " .. index)
-        thresholdBox:SetText(tostring(rule.threshold))
-        thresholdBox:SetRelativeWidth(0.42)
-        thresholdBox:DisableButton(true)
-        thresholdBox:SetCallback("OnEnterPressed", function(widget, _, value)
-            local parsedThreshold = tonumber(value)
-            if parsedThreshold and parsedThreshold > 0 then
-                rules[index].threshold = tostring(math.floor(parsedThreshold))
-                SaveRules()
-            end
-            RefreshRuleBoxes()
-            widget:ClearFocus()
-        end)
-        customContainer:AddChild(thresholdBox)
-        thresholdBoxes[index] = thresholdBox
-
-        local presetDropdown = AG:Create("Dropdown")
-        presetDropdown:SetLabel("Preset " .. index)
-        presetDropdown:SetList(presetLabels, presetOrder)
-        presetDropdown:SetRelativeWidth(0.16)
-        presetDropdown:SetCallback("OnValueChanged", function(widget, _, value)
-            local selectedThreshold = value and tostring(value) or nil
-            if selectedThreshold and thresholdBoxes[index] then
-                thresholdBoxes[index]:SetText(selectedThreshold)
-            end
-            widget:SetValue(nil)
-        end)
-        customContainer:AddChild(presetDropdown)
-
-        local valueBox = AG:Create("EditBox")
-        valueBox:SetLabel("Value " .. index)
-        valueBox:SetText(rule.value)
-        valueBox:SetRelativeWidth(0.42)
-        valueBox:DisableButton(true)
-        valueBox:SetCallback("OnEnterPressed", function(widget, _, value)
-            local parsedValue = strtrim(tostring(value or ""))
-            if parsedValue ~= "" then
-                rules[index].value = parsedValue
-                SaveRules()
-            end
-            RefreshRuleBoxes()
-            widget:ClearFocus()
-        end)
-        customContainer:AddChild(valueBox)
-        valueBoxes[index] = valueBox
-    end
-
-    RefreshEnabledState()
-end
-
 local function CreateGlobalSettings(containerParent)
 
     local GlobalContainer = GUIWidgets.CreateInlineGroup(containerParent, "Global Settings")
@@ -2988,11 +2766,18 @@ local function CreateGlobalSettings(containerParent)
 
     local TagContainer = GUIWidgets.CreateInlineGroup(GlobalContainer, "Tag Settings")
 
+    local UseCustomAbbreviationsCheckbox = AG:Create("CheckBox")
+    UseCustomAbbreviationsCheckbox:SetLabel("Custom Abbreviations")
+    UseCustomAbbreviationsCheckbox:SetValue(UUF.db.profile.General.UseCustomAbbreviations)
+    UseCustomAbbreviationsCheckbox:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.General.UseCustomAbbreviations = value UUF:UpdateUnitTags() end)
+    UseCustomAbbreviationsCheckbox:SetRelativeWidth(0.25)
+    TagContainer:AddChild(UseCustomAbbreviationsCheckbox)
+
     local TagIntervalSlider = AG:Create("Slider")
     TagIntervalSlider:SetLabel("Tag Updates Per Second")
     TagIntervalSlider:SetValue(1 / UUF.db.profile.General.TagUpdateInterval)
     TagIntervalSlider:SetSliderValues(1, 10, 0.5)
-    TagIntervalSlider:SetRelativeWidth(0.34)
+    TagIntervalSlider:SetRelativeWidth(0.25)
     TagIntervalSlider:SetCallback("OnValueChanged", function(_, _, value) UUF.TAG_UPDATE_INTERVAL = 1 / value UUF.db.profile.General.TagUpdateInterval = 1 / value UUF:SetTagUpdateInterval() UUF:UpdateUnitTags() end)
     TagContainer:AddChild(TagIntervalSlider)
 
@@ -3000,7 +2785,7 @@ local function CreateGlobalSettings(containerParent)
     SeparatorDropdown:SetList(UUF.SEPARATOR_TAGS[1], UUF.SEPARATOR_TAGS[2])
     SeparatorDropdown:SetLabel("Tag Separator")
     SeparatorDropdown:SetValue(UUF.db.profile.General.Separator)
-    SeparatorDropdown:SetRelativeWidth(0.33)
+    SeparatorDropdown:SetRelativeWidth(0.25)
     SeparatorDropdown:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.General.Separator = value UUF:UpdateUnitTags() end)
     SeparatorDropdown:SetCallback("OnEnter", function() GameTooltip:SetOwner(SeparatorDropdown.frame, "ANCHOR_BOTTOM") GameTooltip:AddLine("The separator chosen here is only applied to custom tags which are combined. Such as |cFF8080FF[curhpperhp]|r or |cFF8080FF[curhpperhp:abbr]|r", 1, 1, 1) GameTooltip:Show() end)
     SeparatorDropdown:SetCallback("OnLeave", function() GameTooltip:Hide() end)
@@ -3010,7 +2795,7 @@ local function CreateGlobalSettings(containerParent)
     ToTSeparatorDropdown:SetList(UUF.TOT_SEPARATOR_TAGS[1], UUF.TOT_SEPARATOR_TAGS[2])
     ToTSeparatorDropdown:SetLabel("ToT Separator")
     ToTSeparatorDropdown:SetValue(UUF.db.profile.General.ToTSeparator)
-    ToTSeparatorDropdown:SetRelativeWidth(0.33)
+    ToTSeparatorDropdown:SetRelativeWidth(0.25)
     ToTSeparatorDropdown:SetCallback("OnValueChanged", function(_, _, value)
         UUF.db.profile.General.ToTSeparator = value
         UUF.TOT_SEPARATOR = value
@@ -3502,12 +3287,6 @@ function UUF:CreateGUI()
             CreateGlobalSettings(ScrollFrame)
 
             ScrollFrame:DoLayout()
-        elseif MainTab == "CustomAbbreviations" then
-            local ScrollFrame = GUIWidgets.CreateScrollFrame(Wrapper)
-
-            CreateCustomAbbreviationSettings(ScrollFrame)
-
-            ScrollFrame:DoLayout()
         elseif MainTab == "Player" then
             local ScrollFrame = GUIWidgets.CreateScrollFrame(Wrapper)
 
@@ -3571,7 +3350,6 @@ function UUF:CreateGUI()
     ContainerTabGroup:SetTabs({
         { text = "General", value = "General"},
         { text = "Global", value = "Global"},
-        { text = "Custom Abbreviations", value = "CustomAbbreviations"},
         { text = "Player", value = "Player"},
         { text = "Target", value = "Target"},
         { text = "Target of Target", value = "TargetTarget"},

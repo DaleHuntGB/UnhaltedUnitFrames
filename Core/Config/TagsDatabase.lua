@@ -109,125 +109,78 @@ UUF.TOT_SEPARATOR_TAGS = {
     }
 }
 
--- Thank you to m33shoq for the original abbreviation approach and baseline data.
-local LOG_TEN = math.log(10)
-local cachedAbbrevData
-local cachedAbbrevSignature
-
-local function CopyDefaultCustomAbbreviations()
-    local defaults = UUF:GetDefaultDB()
-    local defaultRules = defaults and defaults.profile and defaults.profile.General and defaults.profile.General.CustomAbbreviations
-    local copiedRules = {}
-
-    if type(defaultRules) ~= "table" then
-        return copiedRules
-    end
-
-    for _, rule in ipairs(defaultRules) do
-        if type(rule) == "table" then
-            local threshold = tonumber(rule.threshold)
-            local value = strtrim(tostring(rule.value or ""))
-            if threshold and threshold > 0 and value ~= "" then
-                copiedRules[#copiedRules + 1] = {
-                    threshold = tostring(math.floor(threshold)),
-                    value = value,
-                }
-            end
-        end
-    end
-
-    return copiedRules
-end
-
-local function GetConfiguredCustomAbbreviations()
-    local generalDB = UUF.db and UUF.db.profile and UUF.db.profile.General
-    local configuredRules = generalDB and generalDB.CustomAbbreviations
-    local rules = {}
-    local seenThresholds = {}
-    local needsSave = type(configuredRules) ~= "table"
-
-    if type(configuredRules) == "table" then
-        for _, rule in ipairs(configuredRules) do
-            if type(rule) == "table" then
-                local threshold = tonumber(rule.threshold)
-                local value = strtrim(tostring(rule.value or ""))
-                local thresholdString = threshold and threshold > 0 and tostring(math.floor(threshold)) or nil
-
-                if thresholdString and value ~= "" and not seenThresholds[thresholdString] then
-                    rules[#rules + 1] = {
-                        threshold = thresholdString,
-                        value = value,
-                    }
-                    seenThresholds[thresholdString] = true
-                    if rule.threshold ~= thresholdString or rule.value ~= value then
-                        needsSave = true
-                    end
-                else
-                    needsSave = true
-                end
-            else
-                needsSave = true
-            end
-        end
-    end
-
-    if #rules == 0 then
-        rules = CopyDefaultCustomAbbreviations()
-        needsSave = true
-    end
-
-    table.sort(rules, function(a, b)
-        return (tonumber(a.threshold) or 0) > (tonumber(b.threshold) or 0)
-    end)
-
-    if generalDB and (needsSave or type(configuredRules) ~= "table" or #configuredRules ~= #rules) then
-        generalDB.CustomAbbreviations = rules
-    end
-
-    return rules
-end
-
-local function BuildAbbreviationSignature(rules)
-    local signatureParts = {}
-    for i, rule in ipairs(rules) do
-        signatureParts[i] = tostring(rule.threshold or "") .. ":" .. tostring(rule.value or "")
-    end
-    return table.concat(signatureParts, "|")
-end
-
-local function BuildCustomAbbrevData()
-    local rules = GetConfiguredCustomAbbreviations()
-    local signature = BuildAbbreviationSignature(rules)
-
-    if cachedAbbrevData and signature == cachedAbbrevSignature then
-        return cachedAbbrevData
-    end
-
-    local breakpointData = {}
-    for _, rule in ipairs(rules) do
-        local breakpoint = math.max(1, math.floor(tonumber(rule.threshold) or 0))
-        local exponent = math.floor(math.log(breakpoint) / LOG_TEN)
-        local exponentMod = exponent % 3
-        local fractionDivisor = (exponentMod == 0) and 100 or ((exponentMod == 1) and 10 or 1)
-
-        breakpointData[#breakpointData + 1] = {
-            breakpoint = breakpoint,
-            abbreviation = rule.value,
-            significandDivisor = math.max(1, breakpoint / 100),
-            fractionDivisor = fractionDivisor,
-            abbreviationIsGlobal = false,
-        }
-    end
-
-    cachedAbbrevSignature = signature
-    cachedAbbrevData = { breakpointData = breakpointData }
-    return cachedAbbrevData
-end
+local abbrevData = {
+   breakpointData = {
+      {
+         breakpoint = 1e12,
+         abbreviation = "B",
+         significandDivisor = 1e10,
+         fractionDivisor = 100,
+         abbreviationIsGlobal = false,
+      },
+      {
+         breakpoint = 1e11,
+         abbreviation = "B",
+         significandDivisor = 1e9,
+         fractionDivisor = 1,
+         abbreviationIsGlobal = false,
+      },
+      {
+         breakpoint = 1e10,
+         abbreviation = "B",
+         significandDivisor = 1e8,
+         fractionDivisor = 10,
+         abbreviationIsGlobal = false,
+      },
+      {
+         breakpoint = 1e9,
+         abbreviation = "B",
+         significandDivisor = 1e7,
+         fractionDivisor = 100,
+         abbreviationIsGlobal = false,
+      },
+      {
+         breakpoint = 1e8,
+         abbreviation = "M",
+         significandDivisor = 1e6,
+         fractionDivisor = 1,
+         abbreviationIsGlobal = false,
+      },
+      {
+         breakpoint = 1e7,
+         abbreviation = "M",
+         significandDivisor = 1e5,
+         fractionDivisor = 10,
+        abbreviationIsGlobal = false,
+      },
+      {
+         breakpoint = 1e6,
+         abbreviation = "M",
+         significandDivisor = 1e4,
+         fractionDivisor = 100,
+         abbreviationIsGlobal = false,
+      },
+      {
+         breakpoint = 1e5,
+         abbreviation = "K",
+         significandDivisor = 1000,
+         fractionDivisor = 1,
+         abbreviationIsGlobal = false,
+      },
+      {
+         breakpoint = 1e4,
+         abbreviation = "K",
+         significandDivisor = 100,
+         fractionDivisor = 10,
+         abbreviationIsGlobal = false,
+      },
+   },
+}
 
 local function AbbreviateValue(value)
     local useCustomAbbreviations = UUF.db.profile.General.UseCustomAbbreviations
     if useCustomAbbreviations then
-        return AbbreviateNumbers(value, BuildCustomAbbrevData())
+        return AbbreviateNumbers(value, abbrevData)
     else
         return AbbreviateLargeNumbers(value)
     end
