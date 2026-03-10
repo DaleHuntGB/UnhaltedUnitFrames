@@ -2829,7 +2829,7 @@ local function CreateGlobalSettings(containerParent)
 end
 
 local function CreateUnitSettings(containerParent, unit)
-    EnableUnitFrameToggle = AG:Create("CheckBox")
+    local EnableUnitFrameToggle = AG:Create("CheckBox")
     EnableUnitFrameToggle:SetLabel("Enable |cFFFFCC00"..(UnitDBToUnitPrettyName[unit] or unit) .."|r")
     EnableUnitFrameToggle:SetValue(UUF.db.profile.Units[unit].Enabled)
     EnableUnitFrameToggle:SetCallback("OnValueChanged", function(_, _, value)
@@ -2849,26 +2849,31 @@ local function CreateUnitSettings(containerParent, unit)
     EnableUnitFrameToggle:SetRelativeWidth(0.5)
     containerParent:AddChild(EnableUnitFrameToggle)
 
-    EnableUnitFrameToggle = AG:Create("CheckBox")
-    EnableUnitFrameToggle:SetLabel("Hide Blizzard |cFFFFCC00"..(UnitDBToUnitPrettyName[unit] or unit) .."|r")
-    EnableUnitFrameToggle:SetValue(UUF.db.profile.Units[unit].ForceHideBlizzard)
-    EnableUnitFrameToggle:SetCallback("OnValueChanged", function(_, _, value)
+    local HideBlizzardToggle = AG:Create("CheckBox")
+    HideBlizzardToggle:SetLabel("Hide Blizzard |cFFFFCC00"..(UnitDBToUnitPrettyName[unit] or unit) .."|r")
+    HideBlizzardToggle:SetValue(UUF.db.profile.Units[unit].ForceHideBlizzard)
+    HideBlizzardToggle:SetCallback("OnValueChanged", function(_, _, value)
             StaticPopupDialogs["UUF_RELOAD_UI"] = {
             text = "You must reload to apply this change, do you want to reload now?",
             button1 = "Reload Now",
             button2 = "Later",
             showAlert = true,
             OnAccept = function() UUF.db.profile.Units[unit].ForceHideBlizzard = value C_UI.Reload() end,
-            OnCancel = function() EnableUnitFrameToggle:SetValue(UUF.db.profile.Units[unit].ForceHideBlizzard) containerParent:DoLayout() end,
+            OnCancel = function() HideBlizzardToggle:SetValue(UUF.db.profile.Units[unit].ForceHideBlizzard) containerParent:DoLayout() end,
             timeout = 0,
             whileDead = true,
             hideOnEscape = true,
         }
         StaticPopup_Show("UUF_RELOAD_UI")
     end)
-    EnableUnitFrameToggle:SetRelativeWidth(0.5)
-    EnableUnitFrameToggle:SetDisabled(UUF.db.profile.Units[unit].Enabled)
-    containerParent:AddChild(EnableUnitFrameToggle)
+    HideBlizzardToggle:SetRelativeWidth(0.5)
+    HideBlizzardToggle:SetDisabled(UUF.db.profile.Units[unit].Enabled)
+    containerParent:AddChild(HideBlizzardToggle)
+
+    local SettingsContainer = AG:Create("SimpleGroup")
+    SettingsContainer:SetFullWidth(true)
+    SettingsContainer:SetLayout("Flow")
+    containerParent:AddChild(SettingsContainer)
 
     local function SelectUnitTab(SubContainer, _, UnitTab)
         if not lastSelectedUnitTabs[unit] then lastSelectedUnitTabs[unit] = {} end
@@ -2951,7 +2956,9 @@ local function CreateUnitSettings(containerParent, unit)
     end
     SubContainerTabGroup:SetCallback("OnGroupSelected", SelectUnitTab)
     SubContainerTabGroup:SelectTab(GetSavedMainTab(unit, "Frame"))
-    containerParent:AddChild(SubContainerTabGroup)
+    SettingsContainer:AddChild(SubContainerTabGroup)
+
+    GUIWidgets.DeepDisable(SettingsContainer, not UUF.db.profile.Units[unit].Enabled)
 
     containerParent:DoLayout()
 end
