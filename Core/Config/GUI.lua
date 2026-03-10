@@ -231,6 +231,22 @@ local function GenerateSupportText(parentFrame)
     parentFrame.statustext:SetText(SupportOptions[math.random(1, #SupportOptions)])
 end
 
+local function BuildMainNavigationTree()
+    return {
+        { text = "General", value = "General" },
+        { text = "Global", value = "Global" },
+        { text = "Player", value = "Player" },
+        { text = "Target", value = "Target" },
+        { text = "Target of Target", value = "TargetTarget" },
+        { text = "Pet", value = "Pet" },
+        { text = "Focus", value = "Focus" },
+        { text = "Focus Target", value = "FocusTarget" },
+        { text = "Boss", value = "Boss" },
+        { text = "Tags", value = "Tags" },
+        { text = "Profiles", value = "Profiles" },
+    }
+end
+
 local function CreateUIScaleSettings(containerParent)
     local Container = GUIWidgets.CreateInlineGroup(containerParent, "UI Scale")
     GUIWidgets.CreateInformationTag(Container,"These options allow you to adjust the UI Scale beyond the means that |cFF00B0F7Blizzard|r provides. If you encounter issues, please |cFFFF4040disable|r this feature.")
@@ -3194,7 +3210,7 @@ function UUF:CreateGUI()
     Container = AG:Create("Frame")
     Container:SetTitle(UUF.PRETTY_ADDON_NAME)
     Container:SetLayout("Fill")
-    Container:SetWidth(900)
+    Container:SetWidth(1100)
     Container:SetHeight(600)
     Container:EnableResize(false)
     Container:SetCallback("OnClose", function(widget) AG:Release(widget) isGUIOpen = false DisableAllTestModes() end)
@@ -3344,25 +3360,29 @@ function UUF:CreateGUI()
         GenerateSupportText(Container)
     end
 
-    local ContainerTabGroup = AG:Create("TabGroup")
-    ContainerTabGroup:SetLayout("Flow")
-    ContainerTabGroup:SetFullWidth(true)
-    ContainerTabGroup:SetTabs({
-        { text = "General", value = "General"},
-        { text = "Global", value = "Global"},
-        { text = "Player", value = "Player"},
-        { text = "Target", value = "Target"},
-        { text = "Target of Target", value = "TargetTarget"},
-        { text = "Pet", value = "Pet"},
-        { text = "Focus", value = "Focus"},
-        { text = "Focus Target", value = "FocusTarget"},
-        { text = "Boss", value = "Boss"},
-        { text = "Tags", value = "Tags"},
-        { text = "Profiles", value = "Profiles"},
-    })
-    ContainerTabGroup:SetCallback("OnGroupSelected", SelectTab)
-    ContainerTabGroup:SelectTab("General")
-    Container:AddChild(ContainerTabGroup)
+    local mainNavigationTree = BuildMainNavigationTree()
+    local mainNavigationValues = {}
+    for _, entry in ipairs(mainNavigationTree) do
+        mainNavigationValues[entry.value] = true
+    end
+
+    UUFGUI.MainNavigationStatus = UUFGUI.MainNavigationStatus or {}
+
+    local ContainerTreeGroup = AG:Create("TreeGroup")
+    ContainerTreeGroup:SetLayout("Fill")
+    ContainerTreeGroup:SetFullWidth(true)
+    ContainerTreeGroup:SetFullHeight(true)
+    ContainerTreeGroup:SetStatusTable(UUFGUI.MainNavigationStatus)
+    ContainerTreeGroup:SetTreeWidth(220, false)
+    ContainerTreeGroup:SetTree(mainNavigationTree)
+    ContainerTreeGroup:SetCallback("OnGroupSelected", SelectTab)
+    Container:AddChild(ContainerTreeGroup)
+
+    local initialSection = UUFGUI.MainNavigationStatus.selected
+    if not initialSection or not mainNavigationValues[initialSection] then
+        initialSection = "General"
+    end
+    ContainerTreeGroup:SelectByValue(initialSection)
 end
 
 function UUFG:OpenUUFGUI()
