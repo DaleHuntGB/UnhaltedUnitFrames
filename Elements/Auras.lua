@@ -68,7 +68,6 @@ local function NormalizeAuraFilter(filterString, baseFilter, auraFilterConfig)
             end
         end
     end
-    if not selectedExclusive and auraFilterConfig.Exclusive and auraFilterConfig.Exclusive[decodedFilterString] then selectedExclusive = decodedFilterString end
     if selectedExclusive and not added[selectedExclusive] then parts[#parts + 1] = selectedExclusive end
 
     return table.concat(parts, "|")
