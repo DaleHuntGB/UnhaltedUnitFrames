@@ -634,7 +634,7 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
         AnchorParentEditBox:SetText(FrameDB.AnchorParent or "")
         AnchorParentEditBox:SetRelativeWidth(0.33)
         AnchorParentEditBox:DisableButton(true)
-        AnchorParentEditBox:SetCallback("OnEnterPressed", function(_, _, value) FrameDB.AnchorParent = value ~= "" and value or nil AnchorParentEditBox:SetText(FrameDB.AnchorParent or "") updateCallback() end)
+        AnchorParentEditBox:SetCallback("OnEnterPressed", function(_, _, value) FrameDB.AnchorParent = value AnchorParentEditBox:SetText(FrameDB.AnchorParent or "") updateCallback() end)
         LayoutContainer:AddChild(AnchorParentEditBox)
     end
 
