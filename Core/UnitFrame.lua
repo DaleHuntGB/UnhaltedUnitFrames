@@ -11,20 +11,26 @@ end
 
 function UUF:CreateUnitFrame(unitFrame, unit)
     if not unit or not unitFrame then return end
+    local isPlayer = unit == "player"
+    local isTarget = unit == "target"
+    local isFocus = unit == "focus"
+    local isTargetTarget = unit == "targettarget"
+    local isFocusTarget = unit == "focustarget"
+
     UUF:CreateUnitContainer(unitFrame, unit)
-    if unit ~= "targettarget" and unit ~= "focustarget" then UUF:CreateUnitCastBar(unitFrame, unit) end
+    if not isTargetTarget and not isFocusTarget then UUF:CreateUnitCastBar(unitFrame, unit) end
     UUF:CreateUnitHealthBar(unitFrame, unit)
-    if unit == "player" or unit == "target" or unit == "focus" then UUF:CreateUnitDispelHighlight(unitFrame, unit) end
+    if isPlayer or isTarget or isFocus then UUF:CreateUnitDispelHighlight(unitFrame, unit) end
     UUF:CreateUnitHealPrediction(unitFrame, unit)
-    if unit ~= "targettarget" and unit ~= "focustarget" then UUF:CreateUnitPortrait(unitFrame, unit) end
+    if not isTargetTarget and not isFocusTarget then UUF:CreateUnitPortrait(unitFrame, unit) end
     UUF:CreateUnitPowerBar(unitFrame, unit)
-    if unit == "player" then UUF:CreateUnitAlternativePowerBar(unitFrame, unit) end
-    if unit == "player" then UUF:CreateUnitSecondaryPowerBar(unitFrame, unit) end
+    if isPlayer then UUF:CreateUnitAlternativePowerBar(unitFrame, unit) end
+    if isPlayer then UUF:CreateUnitSecondaryPowerBar(unitFrame, unit) end
     UUF:CreateUnitRaidTargetMarker(unitFrame, unit)
-    if unit == "player" or unit == "target" then UUF:CreateUnitLeaderAssistantIndicator(unitFrame, unit) end
-    if unit == "player" or unit == "target" then UUF:CreateUnitCombatIndicator(unitFrame, unit) end
-    if unit == "player" then UUF:CreateUnitRestingIndicator(unitFrame, unit) end
-    -- if unit == "player" then UUF:CreateUnitTotems(unitFrame, unit) end
+    if isPlayer or isTarget then UUF:CreateUnitLeaderAssistantIndicator(unitFrame, unit) end
+    if isPlayer or isTarget then UUF:CreateUnitCombatIndicator(unitFrame, unit) end
+    if isPlayer then UUF:CreateUnitRestingIndicator(unitFrame, unit) end
+    -- if isPlayer then UUF:CreateUnitTotems(unitFrame, unit) end
     UUF:CreateUnitMouseoverIndicator(unitFrame, unit)
     UUF:CreateUnitTargetGlowIndicator(unitFrame, unit)
     UUF:CreateUnitAuras(unitFrame, unit)
@@ -114,18 +120,23 @@ end
 
 function UUF:UpdateUnitFrame(unitFrame, unit)
     local UnitDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)]
-    if unit ~= "targettarget" and unit ~= "focustarget" then UUF:UpdateUnitCastBar(unitFrame, unit) end
+    local isPlayer = unit == "player"
+    local isTarget = unit == "target"
+    local isTargetTarget = unit == "targettarget"
+    local isFocusTarget = unit == "focustarget"
+
+    if not isTargetTarget and not isFocusTarget then UUF:UpdateUnitCastBar(unitFrame, unit) end
     UUF:UpdateUnitHealthBar(unitFrame, unit)
     UUF:UpdateUnitHealPrediction(unitFrame, unit)
-    if unit ~= "targettarget" and unit ~= "focustarget" then UUF:UpdateUnitPortrait(unitFrame, unit) end
+    if not isTargetTarget and not isFocusTarget then UUF:UpdateUnitPortrait(unitFrame, unit) end
     UUF:UpdateUnitPowerBar(unitFrame, unit)
-    if unit == "player" then UUF:UpdateUnitAlternativePowerBar(unitFrame, unit) end
-    if unit == "player" then UUF:UpdateUnitSecondaryPowerBar(unitFrame, unit) end
+    if isPlayer then UUF:UpdateUnitAlternativePowerBar(unitFrame, unit) end
+    if isPlayer then UUF:UpdateUnitSecondaryPowerBar(unitFrame, unit) end
     UUF:UpdateUnitRaidTargetMarker(unitFrame, unit)
-    if unit == "player" or unit == "target" then UUF:UpdateUnitLeaderAssistantIndicator(unitFrame, unit) end
-    if unit == "player" or unit == "target" then UUF:UpdateUnitCombatIndicator(unitFrame, unit) end
-    if unit == "player" then UUF:UpdateUnitRestingIndicator(unitFrame, unit) end
-    -- if unit == "player" then UUF:UpdateUnitTotems(unitFrame, unit) end
+    if isPlayer or isTarget then UUF:UpdateUnitLeaderAssistantIndicator(unitFrame, unit) end
+    if isPlayer or isTarget then UUF:UpdateUnitCombatIndicator(unitFrame, unit) end
+    if isPlayer then UUF:UpdateUnitRestingIndicator(unitFrame, unit) end
+    -- if isPlayer then UUF:UpdateUnitTotems(unitFrame, unit) end
     UUF:UpdateUnitMouseoverIndicator(unitFrame, unit)
     UUF:UpdateUnitTargetGlowIndicator(unitFrame, unit)
     UUF:UpdateUnitAuras(unitFrame, unit)

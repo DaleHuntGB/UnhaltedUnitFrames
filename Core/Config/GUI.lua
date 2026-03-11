@@ -231,6 +231,22 @@ local function GenerateSupportText(parentFrame)
     parentFrame.statustext:SetText(SupportOptions[math.random(1, #SupportOptions)])
 end
 
+local function BuildMainNavigationTree()
+    return {
+        { text = "General", value = "General" },
+        { text = "Global", value = "Global" },
+        { text = "Player", value = "Player" },
+        { text = "Target", value = "Target" },
+        { text = "Target of Target", value = "TargetTarget" },
+        { text = "Pet", value = "Pet" },
+        { text = "Focus", value = "Focus" },
+        { text = "Focus Target", value = "FocusTarget" },
+        { text = "Boss", value = "Boss" },
+        { text = "Tags", value = "Tags" },
+        { text = "Profiles", value = "Profiles" },
+    }
+end
+
 local function CreateUIScaleSettings(containerParent)
     local Container = GUIWidgets.CreateInlineGroup(containerParent, "UI Scale")
     GUIWidgets.CreateInformationTag(Container,"These options allow you to adjust the UI Scale beyond the means that |cFF00B0F7Blizzard|r provides. If you encounter issues, please |cFFFF4040disable|r this feature.")
@@ -2770,14 +2786,14 @@ local function CreateGlobalSettings(containerParent)
     UseCustomAbbreviationsCheckbox:SetLabel("Custom Abbreviations")
     UseCustomAbbreviationsCheckbox:SetValue(UUF.db.profile.General.UseCustomAbbreviations)
     UseCustomAbbreviationsCheckbox:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.General.UseCustomAbbreviations = value UUF:UpdateUnitTags() end)
-    UseCustomAbbreviationsCheckbox:SetRelativeWidth(0.33)
+    UseCustomAbbreviationsCheckbox:SetRelativeWidth(0.25)
     TagContainer:AddChild(UseCustomAbbreviationsCheckbox)
 
     local TagIntervalSlider = AG:Create("Slider")
     TagIntervalSlider:SetLabel("Tag Updates Per Second")
     TagIntervalSlider:SetValue(1 / UUF.db.profile.General.TagUpdateInterval)
     TagIntervalSlider:SetSliderValues(1, 10, 0.5)
-    TagIntervalSlider:SetRelativeWidth(0.33)
+    TagIntervalSlider:SetRelativeWidth(0.25)
     TagIntervalSlider:SetCallback("OnValueChanged", function(_, _, value) UUF.TAG_UPDATE_INTERVAL = 1 / value UUF.db.profile.General.TagUpdateInterval = 1 / value UUF:SetTagUpdateInterval() UUF:UpdateUnitTags() end)
     TagContainer:AddChild(TagIntervalSlider)
 
@@ -2785,17 +2801,35 @@ local function CreateGlobalSettings(containerParent)
     SeparatorDropdown:SetList(UUF.SEPARATOR_TAGS[1], UUF.SEPARATOR_TAGS[2])
     SeparatorDropdown:SetLabel("Tag Separator")
     SeparatorDropdown:SetValue(UUF.db.profile.General.Separator)
-    SeparatorDropdown:SetRelativeWidth(0.33)
+    SeparatorDropdown:SetRelativeWidth(0.25)
     SeparatorDropdown:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.General.Separator = value UUF:UpdateUnitTags() end)
     SeparatorDropdown:SetCallback("OnEnter", function() GameTooltip:SetOwner(SeparatorDropdown.frame, "ANCHOR_BOTTOM") GameTooltip:AddLine("The separator chosen here is only applied to custom tags which are combined. Such as |cFF8080FF[curhpperhp]|r or |cFF8080FF[curhpperhp:abbr]|r", 1, 1, 1) GameTooltip:Show() end)
     SeparatorDropdown:SetCallback("OnLeave", function() GameTooltip:Hide() end)
     TagContainer:AddChild(SeparatorDropdown)
 
+    local ToTSeparatorDropdown = AG:Create("Dropdown")
+    ToTSeparatorDropdown:SetList(UUF.TOT_SEPARATOR_TAGS[1], UUF.TOT_SEPARATOR_TAGS[2])
+    ToTSeparatorDropdown:SetLabel("ToT Separator")
+    ToTSeparatorDropdown:SetValue(UUF.db.profile.General.ToTSeparator)
+    ToTSeparatorDropdown:SetRelativeWidth(0.25)
+    ToTSeparatorDropdown:SetCallback("OnValueChanged", function(_, _, value)
+        UUF.db.profile.General.ToTSeparator = value
+        UUF.TOT_SEPARATOR = value
+        UUF:UpdateUnitTags()
+    end)
+    ToTSeparatorDropdown:SetCallback("OnEnter", function()
+        GameTooltip:SetOwner(ToTSeparatorDropdown.frame, "ANCHOR_BOTTOM")
+        GameTooltip:AddLine("Used as the prefix separator for Target of Target tags like |cFF8080FF[name:target]|r on your target frame.", 1, 1, 1)
+        GameTooltip:Show()
+    end)
+    ToTSeparatorDropdown:SetCallback("OnLeave", function() GameTooltip:Hide() end)
+    TagContainer:AddChild(ToTSeparatorDropdown)
+
     containerParent:DoLayout()
 end
 
 local function CreateUnitSettings(containerParent, unit)
-    EnableUnitFrameToggle = AG:Create("CheckBox")
+    local EnableUnitFrameToggle = AG:Create("CheckBox")
     EnableUnitFrameToggle:SetLabel("Enable |cFFFFCC00"..(UnitDBToUnitPrettyName[unit] or unit) .."|r")
     EnableUnitFrameToggle:SetValue(UUF.db.profile.Units[unit].Enabled)
     EnableUnitFrameToggle:SetCallback("OnValueChanged", function(_, _, value)
@@ -2815,26 +2849,31 @@ local function CreateUnitSettings(containerParent, unit)
     EnableUnitFrameToggle:SetRelativeWidth(0.5)
     containerParent:AddChild(EnableUnitFrameToggle)
 
-    EnableUnitFrameToggle = AG:Create("CheckBox")
-    EnableUnitFrameToggle:SetLabel("Hide Blizzard |cFFFFCC00"..(UnitDBToUnitPrettyName[unit] or unit) .."|r")
-    EnableUnitFrameToggle:SetValue(UUF.db.profile.Units[unit].ForceHideBlizzard)
-    EnableUnitFrameToggle:SetCallback("OnValueChanged", function(_, _, value)
+    local HideBlizzardToggle = AG:Create("CheckBox")
+    HideBlizzardToggle:SetLabel("Hide Blizzard |cFFFFCC00"..(UnitDBToUnitPrettyName[unit] or unit) .."|r")
+    HideBlizzardToggle:SetValue(UUF.db.profile.Units[unit].ForceHideBlizzard)
+    HideBlizzardToggle:SetCallback("OnValueChanged", function(_, _, value)
             StaticPopupDialogs["UUF_RELOAD_UI"] = {
             text = "You must reload to apply this change, do you want to reload now?",
             button1 = "Reload Now",
             button2 = "Later",
             showAlert = true,
             OnAccept = function() UUF.db.profile.Units[unit].ForceHideBlizzard = value C_UI.Reload() end,
-            OnCancel = function() EnableUnitFrameToggle:SetValue(UUF.db.profile.Units[unit].ForceHideBlizzard) containerParent:DoLayout() end,
+            OnCancel = function() HideBlizzardToggle:SetValue(UUF.db.profile.Units[unit].ForceHideBlizzard) containerParent:DoLayout() end,
             timeout = 0,
             whileDead = true,
             hideOnEscape = true,
         }
         StaticPopup_Show("UUF_RELOAD_UI")
     end)
-    EnableUnitFrameToggle:SetRelativeWidth(0.5)
-    EnableUnitFrameToggle:SetDisabled(UUF.db.profile.Units[unit].Enabled)
-    containerParent:AddChild(EnableUnitFrameToggle)
+    HideBlizzardToggle:SetRelativeWidth(0.5)
+    HideBlizzardToggle:SetDisabled(UUF.db.profile.Units[unit].Enabled)
+    containerParent:AddChild(HideBlizzardToggle)
+
+    local SettingsContainer = AG:Create("SimpleGroup")
+    SettingsContainer:SetFullWidth(true)
+    SettingsContainer:SetLayout("Flow")
+    containerParent:AddChild(SettingsContainer)
 
     local function SelectUnitTab(SubContainer, _, UnitTab)
         if not lastSelectedUnitTabs[unit] then lastSelectedUnitTabs[unit] = {} end
@@ -2917,7 +2956,9 @@ local function CreateUnitSettings(containerParent, unit)
     end
     SubContainerTabGroup:SetCallback("OnGroupSelected", SelectUnitTab)
     SubContainerTabGroup:SelectTab(GetSavedMainTab(unit, "Frame"))
-    containerParent:AddChild(SubContainerTabGroup)
+    SettingsContainer:AddChild(SubContainerTabGroup)
+
+    GUIWidgets.DeepDisable(SettingsContainer, not UUF.db.profile.Units[unit].Enabled)
 
     containerParent:DoLayout()
 end
@@ -3176,7 +3217,7 @@ function UUF:CreateGUI()
     Container = AG:Create("Frame")
     Container:SetTitle(UUF.PRETTY_ADDON_NAME)
     Container:SetLayout("Fill")
-    Container:SetWidth(900)
+    Container:SetWidth(1100)
     Container:SetHeight(600)
     Container:EnableResize(false)
     Container:SetCallback("OnClose", function(widget) AG:Release(widget) isGUIOpen = false DisableAllTestModes() end)
@@ -3326,25 +3367,29 @@ function UUF:CreateGUI()
         GenerateSupportText(Container)
     end
 
-    local ContainerTabGroup = AG:Create("TabGroup")
-    ContainerTabGroup:SetLayout("Flow")
-    ContainerTabGroup:SetFullWidth(true)
-    ContainerTabGroup:SetTabs({
-        { text = "General", value = "General"},
-        { text = "Global", value = "Global"},
-        { text = "Player", value = "Player"},
-        { text = "Target", value = "Target"},
-        { text = "Target of Target", value = "TargetTarget"},
-        { text = "Pet", value = "Pet"},
-        { text = "Focus", value = "Focus"},
-        { text = "Focus Target", value = "FocusTarget"},
-        { text = "Boss", value = "Boss"},
-        { text = "Tags", value = "Tags"},
-        { text = "Profiles", value = "Profiles"},
-    })
-    ContainerTabGroup:SetCallback("OnGroupSelected", SelectTab)
-    ContainerTabGroup:SelectTab("General")
-    Container:AddChild(ContainerTabGroup)
+    local mainNavigationTree = BuildMainNavigationTree()
+    local mainNavigationValues = {}
+    for _, entry in ipairs(mainNavigationTree) do
+        mainNavigationValues[entry.value] = true
+    end
+
+    UUFGUI.MainNavigationStatus = UUFGUI.MainNavigationStatus or {}
+
+    local ContainerTreeGroup = AG:Create("TreeGroup")
+    ContainerTreeGroup:SetLayout("Fill")
+    ContainerTreeGroup:SetFullWidth(true)
+    ContainerTreeGroup:SetFullHeight(true)
+    ContainerTreeGroup:SetStatusTable(UUFGUI.MainNavigationStatus)
+    ContainerTreeGroup:SetTreeWidth(220, false)
+    ContainerTreeGroup:SetTree(mainNavigationTree)
+    ContainerTreeGroup:SetCallback("OnGroupSelected", SelectTab)
+    Container:AddChild(ContainerTreeGroup)
+
+    local initialSection = UUFGUI.MainNavigationStatus.selected
+    if not initialSection or not mainNavigationValues[initialSection] then
+        initialSection = "General"
+    end
+    ContainerTreeGroup:SelectByValue(initialSection)
 end
 
 function UUFG:OpenUUFGUI()

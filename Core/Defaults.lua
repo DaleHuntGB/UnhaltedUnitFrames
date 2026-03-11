@@ -3,6 +3,7 @@ local _, UUF = ...
 local Defaults = {
     global = {
         UseGlobalProfile = false,
+        GlobalProfile = "Default",
         GlobalProfileName = "Default",
     },
     profile = {
