@@ -1,5 +1,29 @@
 local _, UUF = ...
 
+local function ResolveHealthSmoothingMode()
+    local interpolationModes = Enum and Enum.StatusBarInterpolation
+    local immediateMode = interpolationModes and interpolationModes.Immediate or 0
+
+    if not interpolationModes then
+        return 1
+    end
+
+    for _, mode in pairs(interpolationModes) do
+        if type(mode) == "number" and mode ~= immediateMode then
+            return mode
+        end
+    end
+
+    return immediateMode
+end
+
+local UUF_HEALTH_SMOOTHING_MODE = ResolveHealthSmoothingMode()
+local UUF_HEALTH_IMMEDIATE_MODE = Enum and Enum.StatusBarInterpolation and Enum.StatusBarInterpolation.Immediate or 0
+
+local function GetHealthInterpolationMode(healthBarDB)
+    return healthBarDB and healthBarDB.AnimateChanges and UUF_HEALTH_SMOOTHING_MODE or UUF_HEALTH_IMMEDIATE_MODE
+end
+
 function UUF:CreateUnitHealthBar(unitFrame, unit)
     local FrameDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Frame
     local HealthBarDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].HealthBar
@@ -21,6 +45,7 @@ function UUF:CreateUnitHealthBar(unitFrame, unit)
         HealthBar:SetStatusBarTexture(UUF.Media.Foreground)
         HealthBar:SetFrameLevel(unitContainer:GetFrameLevel() + 2)
         HealthBar:SetStatusBarColor(HealthBarDB.Foreground[1], HealthBarDB.Foreground[2], HealthBarDB.Foreground[3], HealthBarDB.ForegroundOpacity)
+        HealthBar.smoothing = GetHealthInterpolationMode(HealthBarDB)
         HealthBar.colorClass = HealthBarDB.ColourByClass
         HealthBar.colorReaction = HealthBarDB.ColourByClass
         HealthBar.colorTapped = HealthBarDB.ColourWhenTapped
@@ -40,10 +65,16 @@ function UUF:CreateUnitHealthBar(unitFrame, unit)
 
         unitFrame.Health.PostUpdate = function(_, _, curHP, maxHP)
             local unitHP = unitFrame.HealthBackground
+            local interpolationMode = GetHealthInterpolationMode(HealthBarDB)
+
             maxHP = maxHP or 1
             curHP = curHP or 0
+
             unitHP:SetMinMaxValues(0, maxHP)
-            unitHP:SetValue(UnitHealthMissing(unitFrame.unit, true))
+
+            local missingHealth = UnitHealthMissing(unitFrame.unit, true) or 0
+            unitHP:SetValue(missingHealth, interpolationMode)
+
             if HealthBarDB.ColourBackgroundByClass then
                 local unitToColour = unitFrame.unit ~= "pet" and unitFrame.unit or "player"
                 local r, g, b = UUF:GetUnitColour(unitToColour)
@@ -84,6 +115,7 @@ function UUF:UpdateUnitHealthBar(unitFrame, unit)
     if unitFrame.Health then
         unitFrame.Health:SetSize(FrameDB.Width - 2, FrameDB.Height - 2)
         unitFrame.Health:SetStatusBarColor(HealthBarDB.Foreground[1], HealthBarDB.Foreground[2], HealthBarDB.Foreground[3], HealthBarDB.ForegroundOpacity)
+        unitFrame.Health.smoothing = GetHealthInterpolationMode(HealthBarDB)
         unitFrame.Health.colorClass = HealthBarDB.ColourByClass
         unitFrame.Health.colorReaction = HealthBarDB.ColourByClass
         unitFrame.Health.colorTapped = HealthBarDB.ColourWhenTapped

@@ -706,6 +706,13 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
     InverseGrowthDirectionToggle:SetRelativeWidth((unit == "player" or unit == "target") and 0.33 or 0.5)
     ColourContainer:AddChild(InverseGrowthDirectionToggle)
 
+    local AnimateChangesToggle = AG:Create("CheckBox")
+    AnimateChangesToggle:SetLabel("Animate Changes")
+    AnimateChangesToggle:SetValue(HealthBarDB.AnimateChanges)
+    AnimateChangesToggle:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.AnimateChanges = value updateCallback() end)
+    AnimateChangesToggle:SetRelativeWidth((unit == "player" or unit == "target") and 0.25 or 0.33)
+    ColourContainer:AddChild(AnimateChangesToggle)
+
     if unit == "player" or unit == "target" then
         local AnchorToCooldownViewerToggle = AG:Create("CheckBox")
         AnchorToCooldownViewerToggle:SetLabel("Anchor To Cooldown Viewer")
