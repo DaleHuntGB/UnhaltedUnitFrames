@@ -437,8 +437,7 @@ for i = 1, 25 do
     oUF.Tags.Methods["name:short:" .. i .. ":colour"] = function(unit)
         local classColourR, classColourG, classColourB = UUF:GetUnitColour(unit)
         local shortenedName = ShortenUnitName(unit, i)
-        local arrowSeperator = UUF.TOT_SEPARATOR
-        return string.format(" %s |cff%02x%02x%02x%s|r", arrowSeperator, classColourR * 255, classColourG * 255, classColourB * 255, shortenedName)
+        return string.format("|cff%02x%02x%02x%s|r", classColourR * 255, classColourG * 255, classColourB * 255, shortenedName)
     end
 end
 
