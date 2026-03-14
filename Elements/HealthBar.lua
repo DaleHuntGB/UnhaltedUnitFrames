@@ -1,27 +1,24 @@
 local _, UUF = ...
 
+local StatusBarInterpolation = Enum and Enum.StatusBarInterpolation
+local HealthInterpolationImmediate = StatusBarInterpolation and StatusBarInterpolation.Immediate or 0
 local function ResolveHealthSmoothingMode()
-    local interpolationModes = Enum and Enum.StatusBarInterpolation
-    local immediateMode = interpolationModes and interpolationModes.Immediate or 0
-
-    if not interpolationModes then
-        return 1
+    if not StatusBarInterpolation then
+        return HealthInterpolationImmediate
     end
 
-    for _, mode in pairs(interpolationModes) do
-        if type(mode) == "number" and mode ~= immediateMode then
+    for _, mode in pairs(StatusBarInterpolation) do
+        if type(mode) == "number" and mode ~= HealthInterpolationImmediate then
             return mode
         end
     end
 
-    return immediateMode
+    return HealthInterpolationImmediate
 end
 
-local UUF_HEALTH_SMOOTHING_MODE = ResolveHealthSmoothingMode()
-local UUF_HEALTH_IMMEDIATE_MODE = Enum and Enum.StatusBarInterpolation and Enum.StatusBarInterpolation.Immediate or 0
-
+local HealthInterpolationSmooth = ResolveHealthSmoothingMode()
 local function GetHealthInterpolationMode(healthBarDB)
-    return healthBarDB and healthBarDB.AnimateChanges and UUF_HEALTH_SMOOTHING_MODE or UUF_HEALTH_IMMEDIATE_MODE
+    return healthBarDB and healthBarDB.AnimateChanges and HealthInterpolationSmooth or HealthInterpolationImmediate
 end
 
 function UUF:CreateUnitHealthBar(unitFrame, unit)
@@ -63,12 +60,11 @@ function UUF:CreateUnitHealthBar(unitFrame, unit)
 
         unitFrame.Health = HealthBar
 
-        unitFrame.Health.PostUpdate = function(_, _, curHP, maxHP)
+        unitFrame.Health.PostUpdate = function(_, _, _, maxHP)
             local unitHP = unitFrame.HealthBackground
             local interpolationMode = GetHealthInterpolationMode(HealthBarDB)
 
             maxHP = maxHP or 1
-            curHP = curHP or 0
 
             unitHP:SetMinMaxValues(0, maxHP)
 
