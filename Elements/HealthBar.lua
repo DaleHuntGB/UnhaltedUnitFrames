@@ -1,23 +1,9 @@
 local _, UUF = ...
 
-local StatusBarInterpolation = Enum and Enum.StatusBarInterpolation
-local HealthInterpolationImmediate = StatusBarInterpolation and StatusBarInterpolation.Immediate or 0
-local function ResolveHealthSmoothingMode()
-    if not StatusBarInterpolation then
-        return HealthInterpolationImmediate
-    end
-
-    for _, mode in pairs(StatusBarInterpolation) do
-        if type(mode) == "number" and mode ~= HealthInterpolationImmediate then
-            return mode
-        end
-    end
-
-    return HealthInterpolationImmediate
-end
-
-local HealthInterpolationSmooth = ResolveHealthSmoothingMode()
 local function GetHealthInterpolationMode(healthBarDB)
+    local StatusBarInterpolation = Enum and Enum.StatusBarInterpolation
+    local HealthInterpolationImmediate = StatusBarInterpolation and StatusBarInterpolation.Immediate or 0
+    local HealthInterpolationSmooth = StatusBarInterpolation and StatusBarInterpolation.ExponentialEaseOut or 1
     return healthBarDB and healthBarDB.AnimateChanges and HealthInterpolationSmooth or HealthInterpolationImmediate
 end
 
