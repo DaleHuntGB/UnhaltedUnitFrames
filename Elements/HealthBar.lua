@@ -37,6 +37,14 @@ function UUF:CreateUnitHealthBar(unitFrame, unit)
         end
 
         unitFrame.Health = HealthBar
+        if unit ~= "boss" then
+            local TempLoss = CreateFrame('StatusBar', nil, HealthBar)
+            TempLoss:SetStatusBarTexture('UI-HUD-UnitFrame-Target-PortraitOn-Bar-TempHPLoss')
+            TempLoss:SetReverseFill(true)
+            TempLoss:SetAllPoints()
+            TempLoss:SetFrameLevel(HealthBar:GetFrameLevel() + 1)
+            HealthBar.TempLoss = TempLoss
+        end
 
         unitFrame.Health.PostUpdate = function(_, _, curHP, maxHP)
             local unitHP = unitFrame.HealthBackground
