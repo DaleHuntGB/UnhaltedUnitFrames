@@ -130,11 +130,13 @@ local Defaults = {
                     ColourByClass = false,
                     Smooth = true,
                     Inverse = false,
+                    Position = "BOTTOM",
                     BackgroundMultiplier = 0.75,
                 },
                 SecondaryPowerBar = {
                     Enabled = false,
                     Height = 3,
+                    Position = "TOP",
                     ColourByType = true,
                     Foreground = {8/255, 8/255, 8/255},
                     Background = {128/255, 128/255, 128/255},

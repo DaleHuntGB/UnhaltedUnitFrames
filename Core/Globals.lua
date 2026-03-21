@@ -192,7 +192,9 @@ local function AddAnchorsToBCDM()
         ["UUF_Target"] = "|cFF8080FFUnhalted|rUnitFrames: Target Frame",
         ["UUF_Pet"] = "|cFF8080FFUnhalted|rUnitFrames: Pet Frame",
     }
-    BCDMG:AddAnchors("UnhaltedUnitFrames", {"Utility", "Custom", "AdditionalCustom", "Item", "ItemSpell", "Trinket"}, UUF_Anchors)
+    if BCDMG then
+        BCDMG:AddAnchors("UnhaltedUnitFrames", {"Utility", "CustomViewer", "Custom", "AdditionalCustom", "Item", "ItemSpell", "Trinket"}, UUF_Anchors)
+    end
 end
 
 function UUF:Init()
@@ -389,25 +391,86 @@ function UUF:GetSecondaryPowerType()
     return nil
 end
 
+function UUF:HasActiveSecondaryPowerBar(unitFrame, unit)
+    local SecondaryPowerBarDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].SecondaryPowerBar
+    return SecondaryPowerBarDB and SecondaryPowerBarDB.Enabled and (unitFrame.Runes or unitFrame.ClassPower)
+end
+
+local function NormalizeBarPosition(value, fallback)
+    if value == "TOP" or value == "BOTTOM" then
+        return value
+    end
+    return fallback
+end
+
+function UUF:GetConfiguredPowerBarPosition(unit)
+    local PowerBarDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].PowerBar
+    if not PowerBarDB then return "BOTTOM" end
+    if PowerBarDB.Position then
+        return NormalizeBarPosition(PowerBarDB.Position, "BOTTOM")
+    end
+    if PowerBarDB.SwapPositionWithSecondary then
+        return "TOP"
+    end
+    return "BOTTOM"
+end
+
+function UUF:GetConfiguredSecondaryPowerBarPosition(unit)
+    local UnitDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)]
+    local SecondaryPowerBarDB = UnitDB.SecondaryPowerBar
+    if not SecondaryPowerBarDB then return "TOP" end
+    if SecondaryPowerBarDB.Position then
+        return NormalizeBarPosition(SecondaryPowerBarDB.Position, "TOP")
+    end
+    if UnitDB.PowerBar and UnitDB.PowerBar.SwapPositionWithSecondary then
+        return "BOTTOM"
+    end
+    return "TOP"
+end
+
+function UUF:GetSecondaryPowerBarStackOffset(unitFrame, unit)
+    if not UUF:HasActiveSecondaryPowerBar(unitFrame, unit) then return 0 end
+
+    local PowerBarDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].PowerBar
+    if not (PowerBarDB and PowerBarDB.Enabled and unitFrame.Power) then
+        return 0
+    end
+
+    if UUF:GetConfiguredPowerBarPosition(unit) ~= UUF:GetConfiguredSecondaryPowerBarPosition(unit) then
+        return 0
+    end
+
+    return PowerBarDB.Height + 1
+end
+
 function UUF:UpdateHealthBarLayout(unitFrame, unit)
     local PowerBarDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].PowerBar
     local SecondaryPowerBarDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].SecondaryPowerBar
 
-    local topOffset = -1
-    local bottomOffset = 1
+    local topDepth = 0
+    local bottomDepth = 0
 
-    local hasSecondaryPower =
-        SecondaryPowerBarDB
-        and SecondaryPowerBarDB.Enabled
-        and (unitFrame.Runes or unitFrame.ClassPower)
+    local hasPrimaryPower = PowerBarDB and PowerBarDB.Enabled and unitFrame.Power
+    local hasSecondaryPower = UUF:HasActiveSecondaryPowerBar(unitFrame, unit)
+
+    if hasPrimaryPower then
+        if UUF:GetConfiguredPowerBarPosition(unit) == "TOP" then
+            topDepth = topDepth + PowerBarDB.Height + 1
+        else
+            bottomDepth = bottomDepth + PowerBarDB.Height + 1
+        end
+    end
 
     if hasSecondaryPower then
-        topOffset = topOffset - SecondaryPowerBarDB.Height - 1
+        if UUF:GetConfiguredSecondaryPowerBarPosition(unit) == "TOP" then
+            topDepth = topDepth + SecondaryPowerBarDB.Height + 1
+        else
+            bottomDepth = bottomDepth + SecondaryPowerBarDB.Height + 1
+        end
     end
 
-    if PowerBarDB and PowerBarDB.Enabled then
-        bottomOffset = bottomOffset + PowerBarDB.Height + 1
-    end
+    local topOffset = -1 - topDepth
+    local bottomOffset = 1 + bottomDepth
 
     unitFrame.HealthBackground:ClearAllPoints()
     unitFrame.HealthBackground:SetPoint("TOPLEFT", unitFrame.Container, "TOPLEFT", 1, topOffset)

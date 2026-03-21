@@ -22,8 +22,46 @@ function UUF:IsRunePower()
     return class == "DEATHKNIGHT"
 end
 
+local function LayoutUnitSecondaryPowerBar(unitFrame, unit, secondaryPowerBarElement, maxPower, totalWidth, elementHeight)
+    local unitFrameWidth = totalWidth / maxPower
+    local position = UUF:GetConfiguredSecondaryPowerBarPosition(unit)
+    local isTopAnchored = position == "TOP"
+    local stackOffset = UUF:GetSecondaryPowerBarStackOffset(unitFrame, unit)
+    local anchorPoint = isTopAnchored and "TOPLEFT" or "BOTTOMLEFT"
+    local anchorY = isTopAnchored and (-1 - stackOffset) or (1 + stackOffset)
+
+    secondaryPowerBarElement.ContainerBackground:SetSize(totalWidth, elementHeight)
+    secondaryPowerBarElement.ContainerBackground:ClearAllPoints()
+    secondaryPowerBarElement.ContainerBackground:SetPoint(anchorPoint, unitFrame.Container, anchorPoint, 1, anchorY)
+
+    secondaryPowerBarElement.PowerBarBorder:ClearAllPoints()
+    secondaryPowerBarElement.PowerBarBorder:SetVertexColor(0, 0, 0, 1)
+    secondaryPowerBarElement.PowerBarBorder:SetHeight(1)
+    if isTopAnchored then
+        secondaryPowerBarElement.PowerBarBorder:SetPoint("TOPLEFT", unitFrame.Container, "TOPLEFT", 1, -1 - elementHeight)
+        secondaryPowerBarElement.PowerBarBorder:SetPoint("TOPRIGHT", unitFrame.Container, "TOPLEFT", 1 + totalWidth, -1 - elementHeight)
+    else
+        secondaryPowerBarElement.PowerBarBorder:SetPoint("BOTTOMLEFT", unitFrame.Container, "BOTTOMLEFT", 1, 1 + elementHeight)
+        secondaryPowerBarElement.PowerBarBorder:SetPoint("BOTTOMRIGHT", unitFrame.Container, "BOTTOMLEFT", 1 + totalWidth, 1 + elementHeight)
+    end
+
+    for i = 1, maxPower do
+        local bar = secondaryPowerBarElement[i]
+        bar:ClearAllPoints()
+        bar:SetPoint(anchorPoint, unitFrame.Container, anchorPoint, 1 + ((i - 1) * unitFrameWidth), anchorY)
+        bar:SetSize(unitFrameWidth, elementHeight)
+    end
+
+    for i = 1, maxPower - 1 do
+        local tick = secondaryPowerBarElement.Ticks[i]
+        tick:ClearAllPoints()
+        tick:SetSize(1, elementHeight)
+        tick:SetVertexColor(0, 0, 0, 1)
+        tick:SetPoint(anchorPoint, unitFrame.Container, anchorPoint, 1 + (i * unitFrameWidth) - 0.5, anchorY)
+    end
+end
+
 function UUF:CreateUnitSecondaryPowerBar(unitFrame, unit)
-    local FrameDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Frame
     local DB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].SecondaryPowerBar
     local unitFrameContainer = unitFrame.Container
 
@@ -36,8 +74,6 @@ function UUF:CreateUnitSecondaryPowerBar(unitFrame, unit)
     secondaryPowerElement.Ticks = {}
 
     local maxPower = UUF:IsRunePower() and 6 or (UnitPowerMax("player", powerType) or 6)
-    local totalWidth = FrameDB.Width - 2
-    local unitFrameWidth = totalWidth / maxPower
 
     secondaryPowerElement.ContainerBackground = unitFrameContainer:CreateTexture(nil, "BACKGROUND")
     secondaryPowerElement.ContainerBackground:SetTexture(UUF.Media.Background)
@@ -110,7 +146,11 @@ function UUF:UpdateUnitSecondaryPowerBar(unitFrame, unit)
             if secondaryPowerBarElement.OverlayFrame then secondaryPowerBarElement.OverlayFrame:Hide() end
             unitFrame[secondaryPowerBarElementName] = nil
         end
-        UUF:UpdateHealthBarLayout(unitFrame, unit)
+        if unitFrame.Power then
+            UUF:UpdateUnitPowerBar(unitFrame, unit)
+        else
+            UUF:UpdateHealthBarLayout(unitFrame, unit)
+        end
         return
     end
 
@@ -128,40 +168,25 @@ function UUF:UpdateUnitSecondaryPowerBar(unitFrame, unit)
     end
 
     local totalWidth = FrameDB.Width - 2
-    local unitFrameWidth = totalWidth / currentMaxPower
-
-    secondaryPowerBarElement.ContainerBackground:SetSize(totalWidth, DB.Height)
     secondaryPowerBarElement.ContainerBackground:SetVertexColor(DB.Background[1], DB.Background[2], DB.Background[3], DB.Background[4] or 1)
-    secondaryPowerBarElement.ContainerBackground:ClearAllPoints()
-    secondaryPowerBarElement.ContainerBackground:SetPoint("TOPLEFT", unitFrame.Container, "TOPLEFT", 1, -1)
     secondaryPowerBarElement.ContainerBackground:Show()
 
     secondaryPowerBarElement.OverlayFrame:SetAllPoints(unitFrame.Container)
     secondaryPowerBarElement.OverlayFrame:SetFrameLevel(unitFrame.Container:GetFrameLevel() + 10)
     secondaryPowerBarElement.OverlayFrame:Show()
 
-    secondaryPowerBarElement.PowerBarBorder:ClearAllPoints()
-    secondaryPowerBarElement.PowerBarBorder:SetVertexColor(0, 0, 0, 1)
-    secondaryPowerBarElement.PowerBarBorder:SetPoint("TOPLEFT", unitFrame.Container, "TOPLEFT", 1, -1 - DB.Height)
-    secondaryPowerBarElement.PowerBarBorder:SetPoint("TOPRIGHT", unitFrame.Container, "TOPLEFT", 1 + totalWidth, -1 - DB.Height)
-    secondaryPowerBarElement.PowerBarBorder:SetHeight(1)
     secondaryPowerBarElement.PowerBarBorder:Show()
+
+    LayoutUnitSecondaryPowerBar(unitFrame, unit, secondaryPowerBarElement, currentMaxPower, totalWidth, DB.Height)
 
     for i = 1, currentMaxPower do
         local bar = secondaryPowerBarElement[i]
-        bar:ClearAllPoints()
-        bar:SetPoint("TOPLEFT", unitFrame.Container, "TOPLEFT", 1 + ((i - 1) * unitFrameWidth), -1)
-        bar:SetSize(unitFrameWidth, DB.Height)
         bar.Background:SetVertexColor(DB.Background[1], DB.Background[2], DB.Background[3], DB.Background[4] or 1)
         bar:Show()
     end
 
     for i = 1, currentMaxPower - 1 do
         local tick = secondaryPowerBarElement.Ticks[i]
-        tick:ClearAllPoints()
-        tick:SetSize(1, DB.Height)
-        tick:SetVertexColor(0, 0, 0, 1)
-        tick:SetPoint("TOPLEFT", unitFrame.Container, "TOPLEFT", 1 + (i * unitFrameWidth) - 0.5, -1)
         tick:Show()
     end
 
@@ -177,6 +202,10 @@ function UUF:UpdateUnitSecondaryPowerBar(unitFrame, unit)
         secondaryPowerBarElement:PostUpdateColor()
     end
 
-    UUF:UpdateHealthBarLayout(unitFrame, unit)
+    if unitFrame.Power then
+        UUF:UpdateUnitPowerBar(unitFrame, unit)
+    else
+        UUF:UpdateHealthBarLayout(unitFrame, unit)
+    end
     secondaryPowerBarElement:ForceUpdate()
 end
