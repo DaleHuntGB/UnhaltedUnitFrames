@@ -367,6 +367,10 @@ function UUF:CleanTruncateUTF8String(text)
     return text
 end
 
+function UUF:IsSecretValue(value)
+    return type(value) == "number" and type(issecretvalue) == "function" and issecretvalue(value)
+end
+
 function UUF:GetSecondaryPowerType()
     local class = select(2, UnitClass("player"))
     local spec = C_SpecializationInfo.GetSpecialization()

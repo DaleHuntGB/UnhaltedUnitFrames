@@ -2,6 +2,9 @@ local _, UUF = ...
 
 local function ShortenCastName(text, maxChars)
     if not text then return "" end
+    if UUF:IsSecretValue(text) then
+        return text
+    end
     if maxChars and maxChars > 0 then
         text = string.format("%." .. maxChars .. "s", text)
     end
