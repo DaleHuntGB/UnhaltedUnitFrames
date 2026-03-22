@@ -368,7 +368,7 @@ function UUF:CleanTruncateUTF8String(text)
 end
 
 function UUF:IsSecretValue(value)
-    return type(value) == "number" and type(issecretvalue) == "function" and issecretvalue(value)
+    return value ~= nil and type(issecretvalue) == "function" and issecretvalue(value)
 end
 
 function UUF:GetSecondaryPowerType()

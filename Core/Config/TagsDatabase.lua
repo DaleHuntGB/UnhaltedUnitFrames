@@ -423,9 +423,7 @@ end
 local function ShortenUnitName(unit, maxChars)
     if not unit or not UnitExists(unit) then return "" end
     local unitName = UnitName(unit) or ""
-    if UUF:IsSecretValue(unitName) then
-        return unitName
-    end
+    if UUF:IsSecretValue(unitName) then return unitName end
     if maxChars and maxChars > 0 then
         unitName = string.format("%." .. maxChars .. "s", unitName)
     end
