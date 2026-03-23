@@ -10,6 +10,10 @@ UUF.MAX_BOSS_FRAMES = 5
 UUF.PARTY_FRAMES = {}
 UUF.PARTY_TEST_FRAMES = {}
 UUF.MAX_PARTY_FRAMES = 4
+UUF.RAID_FRAMES = {}
+UUF.MAX_RAID_FRAMES = 40
+UUF.RAID_GROUP_HEADERS = {}
+UUF.MAX_RAID_GROUPS = 8
 
 UUF.LSM = LibStub("LibSharedMedia-3.0")
 UUF.LDS = LibStub("LibDualSpec-1.0")
@@ -74,11 +78,13 @@ function UUF:FetchFrameName(unit)
         ["focustarget"] = "UUF_FocusTarget",
         ["pet"] = "UUF_Pet",
         ["party"] = "UUF_Party",
+        ["raid"] = "UUF_Raid",
         ["boss"] = "UUF_Boss",
     }
     if not unit then return end
     if unit:match("^boss(%d+)$") then local unitID = unit:match("^boss(%d+)$") return "UUF_Boss" .. unitID end
     if unit:match("^party(%d+)$") then local unitID = unit:match("^party(%d+)$") return "UUF_Party" .. unitID end
+    if unit:match("^raid(%d+)$") then local unitID = unit:match("^raid(%d+)$") return "UUF_Raid" .. unitID end
     return UnitToFrame[unit]
 end
 
@@ -268,6 +274,8 @@ function UUF:GetNormalizedUnit(unit)
         normalizedUnit = "boss"
     elseif unit:match("^party%d+$") then
         normalizedUnit = "party"
+    elseif unit:match("^raid%d+$") then
+        normalizedUnit = "raid"
     end
     return normalizedUnit
 end
@@ -447,7 +455,7 @@ function UUF:GetSecondaryPowerBarStackOffset(unitFrame, unit)
     if not UUF:HasActiveSecondaryPowerBar(unitFrame, unit) then return 0 end
 
     local PowerBarDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].PowerBar
-    if not (PowerBarDB and PowerBarDB.Enabled and unitFrame.Power) then
+    if not (PowerBarDB and PowerBarDB.Enabled and unitFrame.Power and unitFrame.Power:IsShown()) then
         return 0
     end
 
@@ -465,7 +473,7 @@ function UUF:UpdateHealthBarLayout(unitFrame, unit)
     local topDepth = 0
     local bottomDepth = 0
 
-    local hasPrimaryPower = PowerBarDB and PowerBarDB.Enabled and unitFrame.Power
+    local hasPrimaryPower = PowerBarDB and PowerBarDB.Enabled and unitFrame.Power and unitFrame.Power:IsShown()
     local hasSecondaryPower = UUF:HasActiveSecondaryPowerBar(unitFrame, unit)
 
     if hasPrimaryPower then

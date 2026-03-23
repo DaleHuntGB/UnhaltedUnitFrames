@@ -29,13 +29,57 @@ local UnitDBToUnitPrettyName = {
     focustarget = "Focus Target",
     pet = "Pet",
     party = "Party",
+    raid = "Raid",
     boss = "Boss",
 }
 
 local AnchorPoints = { { ["TOPLEFT"] = "Top Left", ["TOP"] = "Top", ["TOPRIGHT"] = "Top Right", ["LEFT"] = "Left", ["CENTER"] = "Center", ["RIGHT"] = "Right", ["BOTTOMLEFT"] = "Bottom Left", ["BOTTOM"] = "Bottom", ["BOTTOMRIGHT"] = "Bottom Right" }, { "TOPLEFT", "TOP", "TOPRIGHT", "LEFT", "CENTER", "RIGHT", "BOTTOMLEFT", "BOTTOM", "BOTTOMRIGHT", } }
 local FrameStrataList = {{ ["BACKGROUND"] = "Background", ["LOW"] = "Low", ["MEDIUM"] = "Medium", ["HIGH"] = "High", ["DIALOG"] = "Dialog", ["FULLSCREEN"] = "Fullscreen", ["FULLSCREEN_DIALOG"] = "Fullscreen Dialog", ["TOOLTIP"] = "Tooltip" }, { "BACKGROUND", "LOW", "MEDIUM", "HIGH", "DIALOG", "FULLSCREEN", "FULLSCREEN_DIALOG", "TOOLTIP" }}
 local TopBottomList = {{ ["TOP"] = "Top", ["BOTTOM"] = "Bottom" }, { "TOP", "BOTTOM" }}
-
+local RaidGrowthDirectionList = {
+    {
+        DOWN_RIGHT = "Down Right",
+        DOWN_LEFT = "Down Left",
+        UP_RIGHT = "Up Right",
+        UP_LEFT = "Up Left",
+        RIGHT_DOWN = "Right Down",
+        RIGHT_UP = "Right Up",
+        LEFT_DOWN = "Left Down",
+        LEFT_UP = "Left Up",
+    },
+    { "DOWN_RIGHT", "DOWN_LEFT", "UP_RIGHT", "UP_LEFT", "RIGHT_DOWN", "RIGHT_UP", "LEFT_DOWN", "LEFT_UP" }
+}
+local RaidGroupByList = {
+    {
+        ROLE = "Role",
+        NAME = "Name",
+        GROUP = "Group",
+        INDEX = "Index",
+    },
+    { "ROLE", "NAME", "GROUP", "INDEX" }
+}
+local RaidSortDirectionList = {
+    {
+        ASC = "Ascending",
+        DESC = "Descending",
+    },
+    { "ASC", "DESC" }
+}
+local RaidSortMethodList = {
+    {
+        NAME = "Name",
+        INDEX = "Index",
+    },
+    { "NAME", "INDEX" }
+}
+local RaidRoleList = {
+    {
+        TANK = "Tank",
+        HEALER = "Healer",
+        DAMAGER = "Damager",
+    },
+    { "TANK", "HEALER", "DAMAGER" }
+}
 local function GetAuraBaseFilter(auraDB)
     return auraDB == "Buffs" and "HELPFUL" or "HARMFUL"
 end
@@ -257,7 +301,12 @@ local function UpdateManagedUnitMethod(unit, methodName, ...)
         return
     end
 
-    if unit == "boss" or unit == "party" then
+    if unit == "raid" and methodName == "UpdateUnitFrame" then
+        UUF:UpdateRaidFrames()
+        return
+    end
+
+    if unit == "boss" or unit == "party" or unit == "raid" then
         UUF:ForEachManagedUnitFrame(unit, function(unitFrame, actualUnit)
             method(UUF, unitFrame, actualUnit, unpack(args))
         end)
@@ -292,6 +341,7 @@ local function BuildMainNavigationTree()
         { text = "Target of Target", value = "TargetTarget" },
         { text = "Pet", value = "Pet" },
         { text = "Party", value = "Party" },
+        { text = "Raid", value = "Raid" },
         { text = "Focus", value = "Focus" },
         { text = "Focus Target", value = "FocusTarget" },
         { text = "Boss", value = "Boss" },
@@ -651,10 +701,102 @@ local function CreateColourSettings(containerParent)
     end
 end
 
+local function CreateRaidFrameSortingSettings(containerParent, frameDB, updateCallback)
+    if frameDB.GroupBy == "CLASS" then
+        frameDB.GroupBy = "GROUP"
+    end
+
+    local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Raid Layout")
+
+    local HorizontalSpacingSlider = AG:Create("Slider")
+    HorizontalSpacingSlider:SetLabel("Horizontal Spacing")
+    HorizontalSpacingSlider:SetValue(frameDB.HorizontalSpacing or 0)
+    HorizontalSpacingSlider:SetSliderValues(-20, 100, 0.1)
+    HorizontalSpacingSlider:SetRelativeWidth(0.25)
+    HorizontalSpacingSlider:SetCallback("OnValueChanged", function(_, _, value) frameDB.HorizontalSpacing = value updateCallback() end)
+    LayoutContainer:AddChild(HorizontalSpacingSlider)
+
+    local VerticalSpacingSlider = AG:Create("Slider")
+    VerticalSpacingSlider:SetLabel("Vertical Spacing")
+    VerticalSpacingSlider:SetValue(frameDB.VerticalSpacing or 0)
+    VerticalSpacingSlider:SetSliderValues(-20, 100, 0.1)
+    VerticalSpacingSlider:SetRelativeWidth(0.25)
+    VerticalSpacingSlider:SetCallback("OnValueChanged", function(_, _, value) frameDB.VerticalSpacing = value updateCallback() end)
+    LayoutContainer:AddChild(VerticalSpacingSlider)
+
+    local MaxColumnsSlider = AG:Create("Slider")
+    MaxColumnsSlider:SetLabel("Columns")
+    MaxColumnsSlider:SetValue(frameDB.MaxColumns or 8)
+    MaxColumnsSlider:SetSliderValues(1, 8, 1)
+    MaxColumnsSlider:SetRelativeWidth(0.25)
+    MaxColumnsSlider:SetCallback("OnValueChanged", function(_, _, value) frameDB.MaxColumns = value updateCallback() end)
+    LayoutContainer:AddChild(MaxColumnsSlider)
+
+    local UnitsPerColumnSlider = AG:Create("Slider")
+    UnitsPerColumnSlider:SetLabel("Units Per Column")
+    UnitsPerColumnSlider:SetValue(frameDB.UnitsPerColumn or 5)
+    UnitsPerColumnSlider:SetSliderValues(1, UUF.MAX_RAID_FRAMES, 1)
+    UnitsPerColumnSlider:SetRelativeWidth(0.25)
+    UnitsPerColumnSlider:SetCallback("OnValueChanged", function(_, _, value) frameDB.UnitsPerColumn = value updateCallback() end)
+    LayoutContainer:AddChild(UnitsPerColumnSlider)
+
+    local SortingContainer = GUIWidgets.CreateInlineGroup(containerParent, "Grouping & Sorting")
+
+    local GroupByDropdown = AG:Create("Dropdown")
+    GroupByDropdown:SetList(RaidGroupByList[1], RaidGroupByList[2])
+    GroupByDropdown:SetLabel("Group By")
+    GroupByDropdown:SetValue(frameDB.GroupBy or "GROUP")
+    GroupByDropdown:SetRelativeWidth(0.25)
+    GroupByDropdown:SetCallback("OnValueChanged", function(_, _, value) frameDB.GroupBy = value updateCallback() end)
+    SortingContainer:AddChild(GroupByDropdown)
+
+    local SortDirectionDropdown = AG:Create("Dropdown")
+    SortDirectionDropdown:SetList(RaidSortDirectionList[1], RaidSortDirectionList[2])
+    SortDirectionDropdown:SetLabel("Sort Direction")
+    SortDirectionDropdown:SetValue(frameDB.SortDirection or "ASC")
+    SortDirectionDropdown:SetRelativeWidth(0.25)
+    SortDirectionDropdown:SetCallback("OnValueChanged", function(_, _, value) frameDB.SortDirection = value updateCallback() end)
+    SortingContainer:AddChild(SortDirectionDropdown)
+
+    local SortMethodDropdown = AG:Create("Dropdown")
+    SortMethodDropdown:SetList(RaidSortMethodList[1], RaidSortMethodList[2])
+    SortMethodDropdown:SetLabel("Sort Method")
+    SortMethodDropdown:SetValue(frameDB.SortMethod or "INDEX")
+    SortMethodDropdown:SetRelativeWidth(0.25)
+    SortMethodDropdown:SetCallback("OnValueChanged", function(_, _, value) frameDB.SortMethod = value updateCallback() end)
+    SortingContainer:AddChild(SortMethodDropdown)
+
+    local GroupFilterEditBox = AG:Create("EditBox")
+    GroupFilterEditBox:SetLabel("Group Filter")
+    GroupFilterEditBox:SetText(frameDB.GroupFilter or "")
+    GroupFilterEditBox:SetRelativeWidth(0.25)
+    GroupFilterEditBox:DisableButton(true)
+    GroupFilterEditBox:SetCallback("OnEnterPressed", function(_, _, value) frameDB.GroupFilter = value GroupFilterEditBox:SetText(frameDB.GroupFilter or "") updateCallback() end)
+    SortingContainer:AddChild(GroupFilterEditBox)
+
+    GUIWidgets.CreateInformationTag(SortingContainer, "Leave Group Filter blank to show all groups, or enter values like 1,2,3,4.")
+
+    local RoleOrderContainer = GUIWidgets.CreateInlineGroup(containerParent, "Role Order")
+    for index = 1, 3 do
+        local RoleDropdown = AG:Create("Dropdown")
+        RoleDropdown:SetList(RaidRoleList[1], RaidRoleList[2])
+        RoleDropdown:SetLabel("Role " .. index)
+        RoleDropdown:SetValue(frameDB.RoleOrder and frameDB.RoleOrder[index] or RaidRoleList[2][index])
+        RoleDropdown:SetRelativeWidth(0.33)
+        RoleDropdown:SetCallback("OnValueChanged", function(_, _, value)
+            frameDB.RoleOrder = frameDB.RoleOrder or {}
+            frameDB.RoleOrder[index] = value
+            updateCallback()
+        end)
+        RoleOrderContainer:AddChild(RoleDropdown)
+    end
+end
+
 local function CreateFrameSettings(containerParent, unit, unitHasParent, updateCallback)
     local FrameDB = UUF.db.profile.Units[unit].Frame
     local HealthBarDB = UUF.db.profile.Units[unit].HealthBar
-    local isGroupedUnit = unit == "boss" or unit == "party"
+    local isRaidUnit = unit == "raid"
+    local isGroupedUnit = unit == "boss" or unit == "party" or isRaidUnit
 
     local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
 
@@ -700,9 +842,17 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
     AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) FrameDB.Layout[2] = value updateCallback() end)
     LayoutContainer:AddChild(AnchorToDropdown)
 
-    if isGroupedUnit then
+    if unit == "boss" or unit == "party" then
         local GrowthDirectionDropdown = AG:Create("Dropdown")
         GrowthDirectionDropdown:SetList({["UP"] = "Up", ["DOWN"] = "Down"})
+        GrowthDirectionDropdown:SetLabel("Growth Direction")
+        GrowthDirectionDropdown:SetValue(FrameDB.GrowthDirection)
+        GrowthDirectionDropdown:SetRelativeWidth(0.33)
+        GrowthDirectionDropdown:SetCallback("OnValueChanged", function(_, _, value) FrameDB.GrowthDirection = value updateCallback() end)
+        LayoutContainer:AddChild(GrowthDirectionDropdown)
+    elseif isRaidUnit then
+        local GrowthDirectionDropdown = AG:Create("Dropdown")
+        GrowthDirectionDropdown:SetList(RaidGrowthDirectionList[1], RaidGrowthDirectionList[2])
         GrowthDirectionDropdown:SetLabel("Growth Direction")
         GrowthDirectionDropdown:SetValue(FrameDB.GrowthDirection)
         GrowthDirectionDropdown:SetRelativeWidth(0.33)
@@ -714,7 +864,7 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
     XPosSlider:SetLabel("X Position")
     XPosSlider:SetValue(FrameDB.Layout[3])
     XPosSlider:SetSliderValues(-1000, 1000, 0.1)
-    XPosSlider:SetRelativeWidth(isGroupedUnit and 0.25 or 0.33)
+    XPosSlider:SetRelativeWidth((unit == "boss" or unit == "party") and 0.25 or 0.33)
     XPosSlider:SetCallback("OnValueChanged", function(_, _, value) FrameDB.Layout[3] = value updateCallback() end)
     LayoutContainer:AddChild(XPosSlider)
 
@@ -722,11 +872,11 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
     YPosSlider:SetLabel("Y Position")
     YPosSlider:SetValue(FrameDB.Layout[4])
     YPosSlider:SetSliderValues(-1000, 1000, 0.1)
-    YPosSlider:SetRelativeWidth(isGroupedUnit and 0.25 or 0.33)
+    YPosSlider:SetRelativeWidth((unit == "boss" or unit == "party") and 0.25 or 0.33)
     YPosSlider:SetCallback("OnValueChanged", function(_, _, value) FrameDB.Layout[4] = value updateCallback() end)
     LayoutContainer:AddChild(YPosSlider)
 
-    if isGroupedUnit then
+    if unit == "boss" or unit == "party" then
         local SpacingSlider = AG:Create("Slider")
         SpacingSlider:SetLabel("Frame Spacing")
         SpacingSlider:SetValue(FrameDB.Layout[5])
@@ -740,9 +890,13 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
     FrameStrataDropdown:SetList(FrameStrataList[1], FrameStrataList[2])
     FrameStrataDropdown:SetLabel("Frame Strata")
     FrameStrataDropdown:SetValue(FrameDB.FrameStrata)
-    FrameStrataDropdown:SetRelativeWidth(isGroupedUnit and 0.25 or 0.33)
+    FrameStrataDropdown:SetRelativeWidth((unit == "boss" or unit == "party") and 0.25 or 0.33)
     FrameStrataDropdown:SetCallback("OnValueChanged", function(_, _, value) FrameDB.FrameStrata = value updateCallback() end)
     LayoutContainer:AddChild(FrameStrataDropdown)
+
+    if isRaidUnit then
+        CreateRaidFrameSortingSettings(containerParent, FrameDB, updateCallback)
+    end
 
     local ColourContainer = GUIWidgets.CreateInlineGroup(containerParent, "Colours & Toggles")
 
@@ -1375,10 +1529,17 @@ local function CreatePowerBarSettings(containerParent, unit, updateCallback)
     local FrameDB = UUF.db.profile.Units[unit].Frame
     local PowerBarDB = UUF.db.profile.Units[unit].PowerBar
 
+    local function ShouldDisablePowerBarBackgroundColourPicker()
+        return not PowerBarDB.Enabled or PowerBarDB.ColourBackgroundByType
+    end
+
     local function UpdatePowerBarSettings()
         updateCallback()
         if unit == "player" and UUF.PLAYER then
             UUF:UpdateUnitSecondaryPowerBar(UUF.PLAYER, unit)
+        end
+        if unit == "party" and UUF.PARTY_TEST_MODE then
+            UUF:CreateTestPartyFrames()
         end
     end
 
@@ -1413,6 +1574,15 @@ local function CreatePowerBarSettings(containerParent, unit, updateCallback)
     HeightSlider:SetRelativeWidth(0.25)
     HeightSlider:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.Height = value UpdatePowerBarSettings() end)
     LayoutContainer:AddChild(HeightSlider)
+
+    if unit == "party" or unit == "raid" then
+        local HealersOnlyToggle = AG:Create("CheckBox")
+        HealersOnlyToggle:SetLabel("Show For Healers Only")
+        HealersOnlyToggle:SetValue(PowerBarDB.OnlyHealers or false)
+        HealersOnlyToggle:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.OnlyHealers = value UpdatePowerBarSettings() end)
+        HealersOnlyToggle:SetRelativeWidth(0.25)
+        LayoutContainer:AddChild(HealersOnlyToggle)
+    end
 
     local ColourContainer = GUIWidgets.CreateInlineGroup(containerParent, "Colours & Toggles")
 
@@ -1462,7 +1632,7 @@ local function CreatePowerBarSettings(containerParent, unit, updateCallback)
     BackgroundColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) PowerBarDB.Background = {r, g, b, a} UpdatePowerBarSettings() end)
     BackgroundColourPicker:SetHasAlpha(true)
     BackgroundColourPicker:SetRelativeWidth(0.33)
-    BackgroundColourPicker:SetDisabled(PowerBarDB.ColourBackgroundByType)
+    BackgroundColourPicker:SetDisabled(ShouldDisablePowerBarBackgroundColourPicker())
     ColourContainer:AddChild(BackgroundColourPicker)
 
     local BackgroundMultiplierSlider = AG:Create("Slider")
@@ -1484,7 +1654,7 @@ local function CreatePowerBarSettings(containerParent, unit, updateCallback)
             else
                 ForegroundColourPicker:SetDisabled(false)
             end
-            BackgroundColourPicker:SetDisabled(PowerBarDB.ColourBackgroundByType)
+            BackgroundColourPicker:SetDisabled(ShouldDisablePowerBarBackgroundColourPicker())
             BackgroundMultiplierSlider:SetDisabled(not PowerBarDB.ColourBackgroundByType)
         else
             GUIWidgets.DeepDisable(LayoutContainer, true, Toggle)
@@ -1498,6 +1668,10 @@ end
 local function CreateSecondaryPowerBarSettings(containerParent, unit, updateCallback)
     local FrameDB = UUF.db.profile.Units[unit].Frame
     local SecondaryPowerBarDB = UUF.db.profile.Units[unit].SecondaryPowerBar
+
+    local function ShouldDisableSecondaryPowerBarBackgroundColourPicker()
+        return not SecondaryPowerBarDB.Enabled or SecondaryPowerBarDB.ColourBackgroundByType
+    end
 
     local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Power Bar Settings")
 
@@ -1550,7 +1724,7 @@ local function CreateSecondaryPowerBarSettings(containerParent, unit, updateCall
     BackgroundColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) SecondaryPowerBarDB.Background = {r, g, b, a} updateCallback() end)
     BackgroundColourPicker:SetHasAlpha(true)
     BackgroundColourPicker:SetRelativeWidth(0.5)
-    BackgroundColourPicker:SetDisabled(SecondaryPowerBarDB.ColourBackgroundByType)
+    BackgroundColourPicker:SetDisabled(ShouldDisableSecondaryPowerBarBackgroundColourPicker())
     ColourContainer:AddChild(BackgroundColourPicker)
 
     function RefreshSecondaryPowerBarGUI()
@@ -1562,6 +1736,7 @@ local function CreateSecondaryPowerBarSettings(containerParent, unit, updateCall
             else
                 ForegroundColourPicker:SetDisabled(false)
             end
+            BackgroundColourPicker:SetDisabled(ShouldDisableSecondaryPowerBarBackgroundColourPicker())
         else
             GUIWidgets.DeepDisable(LayoutContainer, true, Toggle)
             GUIWidgets.DeepDisable(ColourContainer, true, Toggle)
@@ -1926,6 +2101,73 @@ local function CreateLeaderAssistaintSettings(containerParent, unit, updateCallb
     RefreshStatusGUI()
 end
 
+local function CreateRoleIconSettings(containerParent, unit, updateCallback)
+    local RoleIconDB = UUF.db.profile.Units[unit].Indicators.RoleIcon
+
+    local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Role Icon Settings")
+
+    local Toggle = AG:Create("CheckBox")
+    Toggle:SetLabel("Enable |cFF8080FFRole Icon|r Indicator")
+    Toggle:SetValue(RoleIconDB.Enabled)
+    Toggle:SetCallback("OnValueChanged", function(_, _, value) RoleIconDB.Enabled = value updateCallback() RefreshRoleIconGUI() end)
+    Toggle:SetRelativeWidth(1)
+    ToggleContainer:AddChild(Toggle)
+
+    local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
+
+    local AnchorFromDropdown = AG:Create("Dropdown")
+    AnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
+    AnchorFromDropdown:SetLabel("Anchor From")
+    AnchorFromDropdown:SetValue(RoleIconDB.Layout[1])
+    AnchorFromDropdown:SetRelativeWidth(0.5)
+    AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) RoleIconDB.Layout[1] = value updateCallback() end)
+    LayoutContainer:AddChild(AnchorFromDropdown)
+
+    local AnchorToDropdown = AG:Create("Dropdown")
+    AnchorToDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
+    AnchorToDropdown:SetLabel("Anchor To")
+    AnchorToDropdown:SetValue(RoleIconDB.Layout[2])
+    AnchorToDropdown:SetRelativeWidth(0.5)
+    AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) RoleIconDB.Layout[2] = value updateCallback() end)
+    LayoutContainer:AddChild(AnchorToDropdown)
+
+    local XPosSlider = AG:Create("Slider")
+    XPosSlider:SetLabel("X Position")
+    XPosSlider:SetValue(RoleIconDB.Layout[3])
+    XPosSlider:SetSliderValues(-1000, 1000, 0.1)
+    XPosSlider:SetRelativeWidth(0.33)
+    XPosSlider:SetCallback("OnValueChanged", function(_, _, value) RoleIconDB.Layout[3] = value updateCallback() end)
+    LayoutContainer:AddChild(XPosSlider)
+
+    local YPosSlider = AG:Create("Slider")
+    YPosSlider:SetLabel("Y Position")
+    YPosSlider:SetValue(RoleIconDB.Layout[4])
+    YPosSlider:SetSliderValues(-1000, 1000, 0.1)
+    YPosSlider:SetRelativeWidth(0.33)
+    YPosSlider:SetCallback("OnValueChanged", function(_, _, value) RoleIconDB.Layout[4] = value updateCallback() end)
+    LayoutContainer:AddChild(YPosSlider)
+
+    local SizeSlider = AG:Create("Slider")
+    SizeSlider:SetLabel("Size")
+    SizeSlider:SetValue(RoleIconDB.Size)
+    SizeSlider:SetSliderValues(8, 64, 1)
+    SizeSlider:SetRelativeWidth(0.33)
+    SizeSlider:SetCallback("OnValueChanged", function(_, _, value) RoleIconDB.Size = value updateCallback() end)
+    LayoutContainer:AddChild(SizeSlider)
+
+    function RefreshRoleIconGUI()
+        if RoleIconDB.Enabled then
+            GUIWidgets.DeepDisable(ToggleContainer, false, Toggle)
+            GUIWidgets.DeepDisable(LayoutContainer, false, Toggle)
+        else
+            GUIWidgets.DeepDisable(ToggleContainer, true, Toggle)
+            GUIWidgets.DeepDisable(LayoutContainer, true, Toggle)
+        end
+    end
+
+    RefreshRoleIconGUI()
+end
+
 local function CreateStatusSettings(containerParent, unit, statusDB, updateCallback)
     local StatusDB = UUF.db.profile.Units[unit].Indicators[statusDB]
 
@@ -2229,6 +2471,8 @@ local function CreateIndicatorSettings(containerParent, unit)
         IndicatorContainer:ReleaseChildren()
         if IndicatorTab == "RaidTargetMarker" then
             CreateRaidTargetMarkerSettings(IndicatorContainer, unit, function() UpdateManagedUnitMethod(unit, "UpdateUnitRaidTargetMarker") end)
+        elseif IndicatorTab == "RoleIcon" then
+            CreateRoleIconSettings(IndicatorContainer, unit, function() UpdateManagedUnitMethod(unit, "UpdateUnitRoleIconIndicator") end)
         elseif IndicatorTab == "LeaderAssistant" then
             CreateLeaderAssistaintSettings(IndicatorContainer, unit, function() UpdateManagedUnitMethod(unit, "UpdateUnitLeaderAssistantIndicator") end)
         elseif IndicatorTab == "Resting" then
@@ -2267,6 +2511,14 @@ local function CreateIndicatorSettings(containerParent, unit)
     elseif unit == "party" then
         IndicatorContainerTabGroup:SetTabs({
             { text = "Raid Target Marker", value = "RaidTargetMarker" },
+            { text = "Role Icon", value = "RoleIcon" },
+            { text = "Leader & Assistant", value = "LeaderAssistant" },
+            { text = "Mouseover", value = "Mouseover" },
+        })
+    elseif unit == "raid" then
+        IndicatorContainerTabGroup:SetTabs({
+            { text = "Raid Target Marker", value = "RaidTargetMarker" },
+            { text = "Role Icon", value = "RoleIcon" },
             { text = "Leader & Assistant", value = "LeaderAssistant" },
             { text = "Mouseover", value = "Mouseover" },
         })
@@ -2279,7 +2531,7 @@ local function CreateIndicatorSettings(containerParent, unit)
     end
     IndicatorContainerTabGroup:SetCallback("OnGroupSelected", SelectIndicatorTab)
     local defaultIndicatorTab = GetSavedSubTab(unit, "Indicators", "RaidTargetMarker")
-    if unit == "party" and (defaultIndicatorTab == "Combat" or defaultIndicatorTab == "TargetIndicator") then
+    if (unit == "party" or unit == "raid") and (defaultIndicatorTab == "Combat" or defaultIndicatorTab == "TargetIndicator") then
         defaultIndicatorTab = "RaidTargetMarker"
     end
     IndicatorContainerTabGroup:SelectTab(defaultIndicatorTab)
@@ -3025,6 +3277,15 @@ local function CreateUnitSettings(containerParent, unit)
             { text = "Indicators", value = "Indicators"},
             { text = "Tags", value = "Tags"},
         })
+    elseif unit == "raid" then
+        SubContainerTabGroup:SetTabs({
+            { text = "Frame", value = "Frame"},
+            { text = "Heal Prediction", value = "HealPrediction"},
+            { text = "Auras", value = "Auras"},
+            { text = "Power Bar", value = "PowerBar"},
+            { text = "Indicators", value = "Indicators"},
+            { text = "Tags", value = "Tags"},
+        })
     elseif unit ~= "targettarget" and unit ~= "focustarget" then
         SubContainerTabGroup:SetTabs({
             { text = "Frame", value = "Frame"},
@@ -3047,7 +3308,11 @@ local function CreateUnitSettings(containerParent, unit)
         })
     end
     SubContainerTabGroup:SetCallback("OnGroupSelected", SelectUnitTab)
-    SubContainerTabGroup:SelectTab(GetSavedMainTab(unit, "Frame"))
+    local defaultMainTab = GetSavedMainTab(unit, "Frame")
+    if unit == "raid" and (defaultMainTab == "CastBar" or defaultMainTab == "Portrait") then
+        defaultMainTab = "Frame"
+    end
+    SubContainerTabGroup:SelectTab(defaultMainTab)
     SettingsContainer:AddChild(SubContainerTabGroup)
 
     GUIWidgets.DeepDisable(SettingsContainer, not UUF.db.profile.Units[unit].Enabled)
@@ -3430,6 +3695,12 @@ function UUF:CreateGUI()
             local ScrollFrame = GUIWidgets.CreateScrollFrame(Wrapper)
 
             CreateUnitSettings(ScrollFrame, "party")
+
+            ScrollFrame:DoLayout()
+        elseif MainTab == "Raid" then
+            local ScrollFrame = GUIWidgets.CreateScrollFrame(Wrapper)
+
+            CreateUnitSettings(ScrollFrame, "raid")
 
             ScrollFrame:DoLayout()
         elseif MainTab == "Focus" then

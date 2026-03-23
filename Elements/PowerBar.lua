@@ -1,4 +1,35 @@
 local _, UUF = ...
+local oUF = UUF.oUF
+local PowerBarRoleUpdateFrame = CreateFrame("Frame")
+local PARTY_TEST_ROLES = {
+    [1] = "HEALER",
+    [2] = "TANK",
+    [3] = "DAMAGER",
+    [4] = "DAMAGER",
+}
+
+local function UsesHealerOnlyPowerBar(unit)
+    local normalizedUnit = UUF:GetNormalizedUnit(unit)
+    return normalizedUnit == "party" or normalizedUnit == "raid"
+end
+
+local function GetUnitAssignedRole(unitFrame, unit)
+    local normalizedUnit = UUF:GetNormalizedUnit(unit)
+    if normalizedUnit == "party" and UUF.PARTY_TEST_MODE and unitFrame and not unitFrame.unit then
+        local unitIndex = tonumber((unit or ""):match("(%d+)$"))
+        return PARTY_TEST_ROLES[unitIndex] or "NONE"
+    end
+
+    return UnitGroupRolesAssigned((unitFrame and unitFrame.unit) or unit)
+end
+
+local function ShouldShowUnitPowerBar(unitFrame, unit)
+    local PowerBarDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].PowerBar
+    if not PowerBarDB or not PowerBarDB.Enabled then return false end
+    if not UsesHealerOnlyPowerBar(unit) or not PowerBarDB.OnlyHealers then return true end
+
+    return GetUnitAssignedRole(unitFrame, unit) == "HEALER"
+end
 
 local function CreatePowerBarPostUpdateColor(unitFrame, unit)
     local PowerBarDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].PowerBar
@@ -93,8 +124,9 @@ function UUF:CreateUnitPowerBar(unitFrame, unit)
         PowerBar.PowerBarBorder:SetPoint("TOPRIGHT", PowerBar, "TOPRIGHT", 0, 1)
     end
 
-    if PowerBarDB.Enabled then
-        unitFrame.Power = PowerBar
+    unitFrame.Power = PowerBar
+
+    if ShouldShowUnitPowerBar(unitFrame, unit) then
         PowerBar:Show()
         if unitFrame.PowerBackground then unitFrame.PowerBackground:Show() end
     else
@@ -115,7 +147,9 @@ function UUF:UpdateUnitPowerBar(unitFrame, unit)
     local FrameDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Frame
     local PowerBarDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].PowerBar
 
-    if PowerBarDB.Enabled then
+    unitFrame.Power = unitFrame.Power or UUF:CreateUnitPowerBar(unitFrame, unit)
+
+    if ShouldShowUnitPowerBar(unitFrame, unit) then
         unitFrame.Power = unitFrame.Power or UUF:CreateUnitPowerBar(unitFrame, unit)
 
         if not unitFrame:IsElementEnabled("Power") then unitFrame:EnableElement("Power") end
@@ -146,8 +180,39 @@ function UUF:UpdateUnitPowerBar(unitFrame, unit)
         if not unitFrame.Power then return end
         if unitFrame:IsElementEnabled("Power") then unitFrame:DisableElement("Power") end
         unitFrame.Power:Hide()
-        unitFrame.Power = nil
     end
 
     UUF:UpdateHealthBarLayout(unitFrame, unit)
 end
+
+PowerBarRoleUpdateFrame:RegisterEvent("GROUP_ROSTER_UPDATE")
+PowerBarRoleUpdateFrame:RegisterEvent("PLAYER_ROLES_ASSIGNED")
+PowerBarRoleUpdateFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
+PowerBarRoleUpdateFrame:SetScript("OnEvent", function()
+    if not (UUF.db and UUF.db.profile and UUF.db.profile.Units) then return end
+
+    local partyPowerBarDB = UUF.db.profile.Units.party and UUF.db.profile.Units.party.PowerBar
+    if partyPowerBarDB and partyPowerBarDB.Enabled and partyPowerBarDB.OnlyHealers then
+        UUF:UpdatePartyFrames()
+    end
+
+    local raidPowerBarDB = UUF.db.profile.Units.raid and UUF.db.profile.Units.raid.PowerBar
+    if raidPowerBarDB and raidPowerBarDB.Enabled and raidPowerBarDB.OnlyHealers then
+        UUF:UpdateRaidFrames()
+    end
+end)
+
+oUF:RegisterInitCallback(function(unitFrame)
+    if not unitFrame then return end
+
+    local unit = unitFrame.unit or unitFrame:GetAttribute("unit")
+    if not unit then return end
+
+    local normalizedUnit = UUF:GetNormalizedUnit(unit)
+    if normalizedUnit ~= "party" and normalizedUnit ~= "raid" then return end
+
+    local powerBarDB = UUF.db and UUF.db.profile and UUF.db.profile.Units and UUF.db.profile.Units[normalizedUnit] and UUF.db.profile.Units[normalizedUnit].PowerBar
+    if not powerBarDB then return end
+
+    UUF:UpdateUnitPowerBar(unitFrame, unit)
+end)

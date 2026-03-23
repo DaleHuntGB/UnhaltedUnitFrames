@@ -254,12 +254,31 @@ spellUpdateFrame:RegisterEvent("SPELLS_CHANGED")
 spellUpdateFrame:SetScript("OnEvent", UpdateActiveSpells)
 
 local RangeEventFrame = CreateFrame("Frame")
+local RANGE_UPDATE_INTERVAL = 0.2
 RangeEventFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
 RangeEventFrame:RegisterEvent("UNIT_TARGET")
 RangeEventFrame:RegisterEvent("SPELL_UPDATE_COOLDOWN")
+RangeEventFrame:RegisterEvent("GROUP_ROSTER_UPDATE")
+RangeEventFrame:RegisterEvent("UNIT_CONNECTION")
+RangeEventFrame:RegisterEvent("UNIT_FLAGS")
 RangeEventFrame:SetScript("OnEvent", function()
     for _, frameData in ipairs(UUF.RangeEvtFrames) do
-        UUF:UpdateRangeAlpha(frameData.frame, frameData.unit)
+        local frame = frameData.frame
+        if frame then
+            UUF:UpdateRangeAlpha(frame, frame.unit or frame:GetAttribute("unit") or frameData.unit)
+        end
+    end
+end)
+RangeEventFrame:SetScript("OnUpdate", function(_, elapsed)
+    RangeEventFrame.elapsed = (RangeEventFrame.elapsed or 0) + elapsed
+    if RangeEventFrame.elapsed < RANGE_UPDATE_INTERVAL then return end
+
+    RangeEventFrame.elapsed = 0
+    for _, frameData in ipairs(UUF.RangeEvtFrames) do
+        local frame = frameData.frame
+        if frame then
+            UUF:UpdateRangeAlpha(frame, frame.unit or frame:GetAttribute("unit") or frameData.unit)
+        end
     end
 end)
 
@@ -348,9 +367,12 @@ function UUF:RegisterRangeFrame(frameName, unit)
     UUF:UpdateRangeAlpha(frame, unit)
 end
 
-function UUF:IsRangeFrameRegistered(unit)
+function UUF:IsRangeFrameRegistered(frameName)
+    local frame = type(frameName) == "table" and frameName or _G[frameName]
+    if not frame then return end
+
     for _, data in ipairs(UUF.RangeEvtFrames) do
-        if data.unit == unit then return true end
+        if data.frame == frame then return true end
     end
 end
 

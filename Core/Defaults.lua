@@ -1302,6 +1302,7 @@ local Defaults = {
                 },
                 PowerBar = {
                     Enabled = true,
+                    OnlyHealers = false,
                     Height = 3,
                     Foreground = {8/255, 8/255, 8/255},
                     Background = {128/255, 128/255, 128/255},
@@ -1359,6 +1360,11 @@ local Defaults = {
                         Enabled = true,
                         Size = 18,
                         Layout = {"CENTER", "TOP", 0, 0},
+                    },
+                    RoleIcon = {
+                        Enabled = true,
+                        Size = 14,
+                        Layout = {"LEFT", "TOPLEFT", 2, -2},
                     },
                     LeaderAssistantIndicator = {
                         Enabled = true,
@@ -1442,6 +1448,213 @@ local Defaults = {
                     },
                     TagFive = {
                         FontSize = 12,
+                        Layout = {"CENTER", "CENTER", 0, 0},
+                        Colour = {1, 1, 1},
+                        Tag = "",
+                    },
+                }
+            },
+            raid = {
+                Enabled = true,
+                ForceHideBlizzard = true,
+                Frame = {
+                    Width = 92,
+                    Height = 38,
+                    Layout = {"TOPLEFT", "TOPLEFT", 230, -24},
+                    GrowthDirection = "DOWN_RIGHT",
+                    HorizontalSpacing = 4,
+                    VerticalSpacing = 4,
+                    MaxColumns = 8,
+                    UnitsPerColumn = 5,
+                    GroupBy = "GROUP",
+                    SortDirection = "ASC",
+                    SortMethod = "INDEX",
+                    GroupFilter = "",
+                    FrameStrata = "LOW",
+                    RoleOrder = {"TANK", "HEALER", "DAMAGER"},
+                    ClassOrder = {"DEATHKNIGHT", "DEMONHUNTER", "DRUID", "EVOKER", "HUNTER", "MAGE", "MONK", "PALADIN", "PRIEST", "ROGUE", "SHAMAN", "WARLOCK", "WARRIOR"},
+                },
+                HealthBar = {
+                    ColourByClass = true,
+                    ColourBackgroundByClass = false,
+                    ColourByReaction = true,
+                    ColourWhenTapped = true,
+                    Inverse = false,
+                    Foreground = {8/255, 8/255, 8/255},
+                    ForegroundOpacity = 0.8,
+                    Background = {34/255, 34/255, 34/255},
+                    BackgroundOpacity = 1.0,
+                    DispelHighlight = {
+                        Enabled = true,
+                        Style = "GRADIENT",
+                    },
+                },
+                HealPrediction = {
+                    Absorbs = {
+                        Enabled = true,
+                        UseStripedTexture = true,
+                        MatchParentHeight = true,
+                        Colour = {255/255, 204/255, 0/255, 1.0},
+                        Position = "LEFT",
+                        Height = 36,
+                    },
+                    HealAbsorbs = {
+                        Enabled = true,
+                        UseStripedTexture = false,
+                        MatchParentHeight = true,
+                        Colour = {128/255, 64/255, 255/255, 1.0},
+                        Position = "RIGHT",
+                        Height = 36,
+                    },
+                },
+                PowerBar = {
+                    Enabled = false,
+                    OnlyHealers = false,
+                    Height = 3,
+                    Foreground = {8/255, 8/255, 8/255},
+                    Background = {128/255, 128/255, 128/255},
+                    ColourByType = true,
+                    ColourBackgroundByType = false,
+                    ColourByClass = false,
+                    Smooth = true,
+                    Inverse = false,
+                    Position = "BOTTOM",
+                    BackgroundMultiplier = 0.75,
+                },
+                CastBar = {
+                    Enabled = false,
+                    Width = 92,
+                    Height = 12,
+                    Layout = {"TOPLEFT", "BOTTOMLEFT", 0, -2},
+                    Foreground = {128/255, 128/255, 255/255},
+                    Background = {34/255, 34/255, 34/255},
+                    NotInterruptibleColour = {255/255, 64/255, 64/255},
+                    MatchParentWidth = true,
+                    ColourByClass = false,
+                    Inverse = false,
+                    FrameStrata = "MEDIUM",
+                    Icon = {
+                        Enabled = false,
+                        Position = "LEFT",
+                    },
+                    Text = {
+                        SpellName = {
+                            Enabled = false,
+                            FontSize = 10,
+                            Layout = {"LEFT", "LEFT", 3, 0},
+                            Colour = {1, 1, 1},
+                            MaxChars = 10,
+                        },
+                        Duration = {
+                            Enabled = false,
+                            FontSize = 10,
+                            Layout = {"RIGHT", "RIGHT", -3, 0},
+                            Colour = {1, 1, 1},
+                        }
+                    }
+                },
+                Portrait = {
+                    Enabled = false,
+                    Width = 32,
+                    Height = 32,
+                    Layout = {"RIGHT", "LEFT", -1, 0},
+                    Zoom = 0.3,
+                    UseClassPortrait = false,
+                    Style = "2D",
+                },
+                Indicators = {
+                    RaidTargetMarker = {
+                        Enabled = true,
+                        Size = 16,
+                        Layout = {"CENTER", "TOP", 0, 0},
+                    },
+                    RoleIcon = {
+                        Enabled = true,
+                        Size = 12,
+                        Layout = {"LEFT", "TOPLEFT", 2, -2},
+                    },
+                    LeaderAssistantIndicator = {
+                        Enabled = true,
+                        Size = 12,
+                        Layout = {"TOPLEFT", "TOPLEFT", 2, -2},
+                    },
+                    Mouseover = {
+                        Enabled = true,
+                        Colour = {1, 1, 1},
+                        HighlightOpacity = 0.75,
+                        Style = "GRADIENT"
+                    }
+                },
+                Auras = {
+                    FrameStrata = "LOW",
+                    AuraDuration = {
+                        Layout = {"CENTER", "CENTER", 0, 0},
+                        FontSize = 10,
+                        ScaleByIconSize = false,
+                        Colour = {1, 1, 1},
+                    },
+                    Buffs = {
+                        Enabled = false,
+                        OnlyShowPlayer = false,
+                        Size = 16,
+                        Layout = {"LEFT", "RIGHT", 2, 0, 1},
+                        Num = 2,
+                        Wrap = 2,
+                        GrowthDirection = "RIGHT",
+                        WrapDirection = "UP",
+                        ShowType = false,
+                        Filter = "HELPFUL",
+                        Count = {
+                            Layout = {"BOTTOMRIGHT", "BOTTOMRIGHT", 0, 2},
+                            FontSize = 10,
+                            Colour = {1, 1, 1, 1}
+                        }
+                    },
+                    Debuffs = {
+                        Enabled = false,
+                        OnlyShowPlayer = false,
+                        Size = 16,
+                        Layout = {"RIGHT", "LEFT", -2, 0, 1},
+                        Num = 2,
+                        Wrap = 2,
+                        GrowthDirection = "LEFT",
+                        WrapDirection = "UP",
+                        ShowType = false,
+                        Filter = "HARMFUL",
+                        Count = {
+                            Layout = {"BOTTOMRIGHT", "BOTTOMRIGHT", 0, 2},
+                            FontSize = 10,
+                            Colour = {1, 1, 1, 1}
+                        }
+                    },
+                },
+                Tags = {
+                    TagOne = {
+                        FontSize = 10,
+                        Layout = {"LEFT", "LEFT", 3, 0},
+                        Colour = {1, 1, 1},
+                        Tag = "[name]",
+                    },
+                    TagTwo = {
+                        FontSize = 10,
+                        Layout = {"RIGHT", "RIGHT", -3, 0},
+                        Colour = {1, 1, 1},
+                        Tag = "[curhp:abbr]",
+                    },
+                    TagThree = {
+                        FontSize = 10,
+                        Layout = {"CENTER", "CENTER", 0, 0},
+                        Colour = {1, 1, 1},
+                        Tag = "",
+                    },
+                    TagFour = {
+                        FontSize = 10,
+                        Layout = {"CENTER", "CENTER", 0, 0},
+                        Colour = {1, 1, 1},
+                        Tag = "",
+                    },
+                    TagFive = {
+                        FontSize = 10,
                         Layout = {"CENTER", "CENTER", 0, 0},
                         Colour = {1, 1, 1},
                         Tag = "",
