@@ -210,15 +210,27 @@ local function EnableBossFramesTestMode()
     UUF:CreateTestBossFrames()
 end
 
+local function EnablePartyFramesTestMode()
+    UUF.PARTY_TEST_MODE = true
+    UUF:CreateTestPartyFrames()
+    UUF:UpdatePartyFrames()
+end
+
 local function DisableBossFramesTestMode()
     UUF.BOSS_TEST_MODE = false
     UUF:CreateTestBossFrames()
+end
+
+local function DisablePartyFramesTestMode()
+    UUF.PARTY_TEST_MODE = false
+    UUF:CreateTestPartyFrames()
 end
 
 local function DisableAllTestModes()
     UUF.AURA_TEST_MODE = false
     UUF.CASTBAR_TEST_MODE = false
     UUF.BOSS_TEST_MODE = false
+    UUF.PARTY_TEST_MODE = false
     for unit, _ in pairs(UUF.db.profile.Units) do
         UUF:ForEachManagedUnitFrame(unit, function(unitFrame, actualUnit)
             UUF:CreateTestAuras(unitFrame, actualUnit)
@@ -226,6 +238,7 @@ local function DisableAllTestModes()
         end)
     end
     UUF:CreateTestBossFrames()
+    UUF:CreateTestPartyFrames()
 end
 
 local function UpdateManagedUnitMethod(unit, methodName, ...)
@@ -3449,6 +3462,7 @@ function UUF:CreateGUI()
             ScrollFrame:DoLayout()
         end
         if MainTab == "Boss" then EnableBossFramesTestMode() else DisableBossFramesTestMode() end
+        if MainTab == "Party" then EnablePartyFramesTestMode() else DisablePartyFramesTestMode() end
         GenerateSupportText(Container)
     end
 

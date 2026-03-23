@@ -31,6 +31,17 @@ end
 
 function UUF:RefreshPartyFrames()
     wipe(UUF.PARTY_FRAMES)
+
+    if UUF.PARTY_TEST_MODE and #UUF.PARTY_TEST_FRAMES > 0 then
+        for i = 1, UUF.MAX_PARTY_FRAMES do
+            local unitFrame = UUF.PARTY_TEST_FRAMES[i]
+            if unitFrame then
+                UUF.PARTY_FRAMES[i] = unitFrame
+            end
+        end
+        return UUF.PARTY_FRAMES
+    end
+
     if not UUF.PARTY then return UUF.PARTY_FRAMES end
 
     for _, child in ipairs({ UUF.PARTY:GetChildren() }) do
@@ -103,7 +114,42 @@ end
 
 function UUF:LayoutPartyFrames()
     local frameDB = UUF.db.profile.Units.party and UUF.db.profile.Units.party.Frame
-    if not UUF.PARTY or not frameDB then return end
+    if not frameDB then return end
+
+    if UUF.PARTY_TEST_MODE and #UUF.PARTY_TEST_FRAMES > 0 then
+        local partyFrames = {}
+        for i = 1, UUF.MAX_PARTY_FRAMES do
+            if UUF.PARTY_TEST_FRAMES[i] then
+                partyFrames[#partyFrames + 1] = UUF.PARTY_TEST_FRAMES[i]
+            end
+        end
+        if #partyFrames == 0 then return end
+        if UUF.PARTY then
+            UUF.PARTY:Hide()
+        end
+        if frameDB.GrowthDirection == "UP" then
+            local reversedFrames = {}
+            for i = #partyFrames, 1, -1 do
+                reversedFrames[#reversedFrames + 1] = partyFrames[i]
+            end
+            partyFrames = reversedFrames
+        end
+        local layoutConfig = UUF.LayoutConfig[frameDB.Layout[1]]
+        local frameHeight = partyFrames[1]:GetHeight()
+        local containerHeight = (frameHeight + frameDB.Layout[5]) * #partyFrames - frameDB.Layout[5]
+        local offsetY = containerHeight * layoutConfig.offsetMultiplier
+        if layoutConfig.isCenter then offsetY = offsetY - (frameHeight / 2) end
+        local initialAnchor = AnchorUtil.CreateAnchor(layoutConfig.anchor, UIParent, frameDB.Layout[2], frameDB.Layout[3], frameDB.Layout[4] + offsetY)
+        AnchorUtil.VerticalLayout(partyFrames, initialAnchor, frameDB.Layout[5])
+        for _, unitFrame in ipairs(partyFrames) do
+            unitFrame:SetSize(frameDB.Width, frameDB.Height)
+            unitFrame:SetFrameStrata(frameDB.FrameStrata)
+            unitFrame:SetShown(UUF.db.profile.Units.party.Enabled)
+        end
+        return
+    end
+
+    if not UUF.PARTY then return end
 
     local spacing = frameDB.Layout[5] or 0
     local growthDirection = frameDB.GrowthDirection or "DOWN"
@@ -302,6 +348,7 @@ function UUF:UpdatePartyFrames()
     UUF:ForEachPartyFrame(function(unitFrame, actualUnit)
         UUF:UpdateUnitFrame(unitFrame, actualUnit)
     end)
+    UUF:CreateTestPartyFrames()
     UUF:LayoutPartyFrames()
 end
 

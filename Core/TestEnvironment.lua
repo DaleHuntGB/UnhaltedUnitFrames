@@ -63,6 +63,145 @@ local function GetTestUnitColour(id, defaultColour, colourByClass, opacity)
     end
 end
 
+local PortraitOptions = {
+    [1] = "achievement_character_human_female",
+    [2] = "achievement_character_human_male",
+    [3] = "achievement_character_dwarf_male",
+    [4] = "achievement_character_dwarf_female",
+    [5] = "achievement_character_nightelf_female",
+    [6] = "achievement_character_nightelf_male",
+    [7] = "achievement_character_undead_male",
+    [8] = "achievement_character_undead_female",
+    [9] = "achievement_character_orc_male",
+    [10]= "achievement_character_orc_female"
+}
+
+local raidTargetMarkerCoords = {
+    {0,0.25,0,0.25},
+    {0.25,0.5,0,0.25},
+    {0.5,0.75,0,0.25},
+    {0.75,1,0,0.25},
+    {0,0.25,0.25,0.5},
+    {0.25,0.5,0.25,0.5},
+    {0.5,0.75,0.25,0.5},
+    {0.75,1,0.25,0.5},
+    {0,0.25,0,0.25},
+    {0.25,0.5,0,0.25}
+}
+
+local function ApplyTestTag(fontString, ownerFrame, tagDB, generalDB, text)
+    if not fontString or not tagDB then return end
+    fontString:ClearAllPoints()
+    fontString:SetPoint(tagDB.Layout[1], ownerFrame, tagDB.Layout[2], tagDB.Layout[3], tagDB.Layout[4])
+    fontString:SetFont(UUF.Media.Font, tagDB.FontSize, generalDB.Fonts.FontFlag)
+    if generalDB.Fonts.Shadow.Enabled then
+        fontString:SetShadowColor(unpack(generalDB.Fonts.Shadow.Colour))
+        fontString:SetShadowOffset(generalDB.Fonts.Shadow.XPos, generalDB.Fonts.Shadow.YPos)
+    else
+        fontString:SetShadowColor(0, 0, 0, 0)
+        fontString:SetShadowOffset(0, 0)
+    end
+    fontString:SetTextColor(unpack(tagDB.Colour))
+    fontString:SetText(text or "")
+end
+
+function UUF:EnsurePartyTestFrames()
+    if #UUF.PARTY_TEST_FRAMES > 0 then return end
+
+    oUF:SetActiveStyle(UUF:FetchFrameName("party"))
+
+    for i = 1, UUF.MAX_PARTY_FRAMES do
+        local frameName = "UUF_PartyTest" .. i
+        local unitFrame = _G[frameName] or oUF:Spawn("party" .. i, frameName)
+        unitFrame:SetAttribute("unit", nil)
+        UnregisterUnitWatch(unitFrame)
+        unitFrame:Hide()
+        UUF.PARTY_TEST_FRAMES[i] = unitFrame
+    end
+end
+
+function UUF:CreateTestPartyFrames()
+    local generalDB = UUF.db.profile.General
+    local partyDB = UUF.db.profile.Units.party
+    local tagsDB = partyDB.Tags
+    local previousAuraTestMode = UUF.AURA_TEST_MODE
+    local previousCastBarTestMode = UUF.CASTBAR_TEST_MODE
+
+    UUF:EnsurePartyTestFrames()
+    UUF:ResolveLSM()
+
+    if UUF.PARTY_TEST_MODE then
+        if UUF.PARTY then
+            UUF.PARTY:Hide()
+        end
+
+        UUF.AURA_TEST_MODE = true
+        UUF.CASTBAR_TEST_MODE = true
+
+        for i, partyFrame in ipairs(UUF.PARTY_TEST_FRAMES) do
+            local testData = EnvironmenTestData[i]
+            if testData then
+                partyFrame:SetAttribute("unit", nil)
+                UnregisterUnitWatch(partyFrame)
+                partyFrame:SetFrameStrata(partyDB.Frame.FrameStrata)
+                partyFrame:SetShown(partyDB.Enabled)
+
+                if partyFrame.Health then
+                    local healthBarDB = partyDB.HealthBar
+                    partyFrame.Health:SetMinMaxValues(0, testData.maxHealth)
+                    partyFrame.Health:SetValue(testData.health)
+                    partyFrame.HealthBackground:SetMinMaxValues(0, testData.maxHealth)
+                    partyFrame.HealthBackground:SetValue(testData.missingHealth)
+                    partyFrame.HealthBackground:SetStatusBarColor(GetTestUnitColour(i, healthBarDB.Background, healthBarDB.ColourBackgroundByClass, healthBarDB.BackgroundOpacity))
+                    partyFrame.Health:SetStatusBarColor(GetTestUnitColour(i, healthBarDB.Foreground, healthBarDB.ColourByClass, healthBarDB.ForegroundOpacity))
+                end
+
+                if partyFrame.Portrait and PortraitOptions[i] then
+                    partyFrame.Portrait:SetTexture("Interface\\ICONS\\" .. PortraitOptions[i])
+                end
+
+                if partyFrame.Power then
+                    partyFrame.Power:SetMinMaxValues(0, testData.maxPower)
+                    partyFrame.Power:SetValue(testData.power)
+                end
+
+                if partyFrame.RaidTargetIndicator and raidTargetMarkerCoords[i] then
+                    partyFrame.RaidTargetIndicator:SetTexture("Interface\\TargetingFrame\\UI-RaidTargetingIcons")
+                    partyFrame.RaidTargetIndicator:SetTexCoord(unpack(raidTargetMarkerCoords[i]))
+                    partyFrame.RaidTargetIndicator:Show()
+                end
+
+                UUF:CreateTestCastBar(partyFrame, "party" .. i)
+                UUF:CreateTestAuras(partyFrame, "party" .. i)
+
+                if partyFrame.Tags then
+                    ApplyTestTag(partyFrame.Tags.TagOne, partyFrame, tagsDB.TagOne, generalDB, "Party " .. i)
+                    ApplyTestTag(partyFrame.Tags.TagTwo, partyFrame, tagsDB.TagTwo, generalDB, string.format("%.1f%%", testData.percent))
+                    ApplyTestTag(partyFrame.Tags.TagThree, partyFrame, tagsDB.TagThree, generalDB, tostring(testData.power))
+                    ApplyTestTag(partyFrame.Tags.TagFour, partyFrame, tagsDB.TagFour, generalDB, "")
+                    ApplyTestTag(partyFrame.Tags.TagFive, partyFrame, tagsDB.TagFive, generalDB, "")
+                end
+            end
+        end
+    else
+        UUF.AURA_TEST_MODE = false
+        UUF.CASTBAR_TEST_MODE = false
+
+        for i, partyFrame in ipairs(UUF.PARTY_TEST_FRAMES) do
+            UUF:CreateTestAuras(partyFrame, "party" .. i)
+            UUF:CreateTestCastBar(partyFrame, "party" .. i)
+            partyFrame:Hide()
+        end
+
+        if UUF.PARTY then
+            UUF.PARTY:SetShown(partyDB.Enabled)
+        end
+    end
+
+    UUF.AURA_TEST_MODE = previousAuraTestMode
+    UUF.CASTBAR_TEST_MODE = previousCastBarTestMode
+end
+
 function UUF:CreateTestBossFrames()
     local General = UUF.db.profile.General
     local AuraDurationDB = UUF.db.profile.Units.boss.Auras.AuraDuration
@@ -90,18 +229,6 @@ function UUF:CreateTestBossFrames()
             end
 
             if BossFrame.Portrait then
-                local PortraitOptions = {
-                    [1] = "achievement_character_human_female",
-                    [2] = "achievement_character_human_male",
-                    [3] = "achievement_character_dwarf_male",
-                    [4] = "achievement_character_dwarf_female",
-                    [5] = "achievement_character_nightelf_female",
-                    [6] = "achievement_character_nightelf_male",
-                    [7] = "achievement_character_undead_male",
-                    [8] = "achievement_character_undead_female",
-                    [9] = "achievement_character_orc_male",
-                    [10]= "achievement_character_orc_female"
-                }
                 BossFrame.Portrait:SetTexture("Interface\\ICONS\\" .. PortraitOptions[i])
             end
 
@@ -110,7 +237,6 @@ function UUF:CreateTestBossFrames()
                 BossFrame.Power:SetValue(EnvironmenTestData[i].power)
             end
 
-            local raidTargetMarkerCoords={{0,0.25,0,0.25},{0.25,0.5,0,0.25},{0.5,0.75,0,0.25},{0.75,1,0,0.25},{0,0.25,0.25,0.5},{0.25,0.5,0.25,0.5},{0.5,0.75,0.25,0.5},{0.75,1,0.25,0.5},{0,0.25,0,0.25},{0.25,0.5,0,0.25}}
             if BossFrame.RaidTargetIndicator and i and raidTargetMarkerCoords[i] then
                 BossFrame.RaidTargetIndicator:SetTexture("Interface\\TargetingFrame\\UI-RaidTargetingIcons")
                 BossFrame.RaidTargetIndicator:SetTexCoord(unpack(raidTargetMarkerCoords[i]))
