@@ -1015,7 +1015,7 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
     BackgroundOpacitySlider:SetIsPercent(true)
     ColourContainer:AddChild(BackgroundOpacitySlider)
 
-    if unit == "player" or unit == "target" or unit == "focus" then
+    if HealthBarDB.DispelHighlight then
         local DispelHighlightContainer = GUIWidgets.CreateInlineGroup(containerParent, "Dispel Highlighting")
 
         local EnableDispelHighlightingToggle = AG:Create("CheckBox")

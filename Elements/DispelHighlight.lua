@@ -54,8 +54,10 @@ function UUF:CreateUnitDispelHighlight(unitFrame, unit)
     end
 
     if DispelHighlightDB.Enabled then
-        unitFrame.DispelHighlight:Show()
+        UUF:RegisterDispelHighlightEvents(unitFrame, unit)
+        UUF:UpdateUnitDispelState(unitFrame, unit)
     else
+        UUF:UnregisterDispelHighlightEvents(unitFrame)
         unitFrame.DispelHighlight:Hide()
     end
 end
@@ -82,7 +84,7 @@ function UUF:UpdateUnitDispelHighlight(unitFrame, unit)
                 unitFrame.DispelHighlight:SetTexture("Interface\\Buttons\\WHITE8X8")
                 unitFrame.DispelHighlight:SetAlpha(0.75)
             end
-            unitFrame.DispelHighlight:Show()
+            UUF:UpdateUnitDispelState(unitFrame, unit)
         else
             UUF:UnregisterDispelHighlightEvents(unitFrame)
             unitFrame.DispelHighlight:Hide()
@@ -141,7 +143,10 @@ function UUF:RegisterDispelHighlightEvents(unitFrame, unit)
     unitFrame.DispelHighlightHandler:RegisterUnitEvent("UNIT_AURA", unit)
     unitFrame.DispelHighlightHandler:RegisterEvent("SPELLS_CHANGED")
     unitFrame.DispelHighlightHandler:RegisterEvent("PLAYER_TALENT_UPDATE")
+    unitFrame.DispelHighlightHandler:RegisterEvent("PLAYER_FOCUS_CHANGED")
     unitFrame.DispelHighlightHandler:RegisterEvent("PLAYER_TARGET_CHANGED")
+    unitFrame.DispelHighlightHandler:RegisterEvent("GROUP_ROSTER_UPDATE")
+    unitFrame.DispelHighlightHandler:RegisterEvent("PLAYER_ENTERING_WORLD")
 end
 
 function UUF:UnregisterDispelHighlightEvents(unitFrame)
