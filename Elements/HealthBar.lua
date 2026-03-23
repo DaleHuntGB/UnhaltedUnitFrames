@@ -63,19 +63,23 @@ function UUF:CreateUnitHealthBar(unitFrame, unit)
 end
 
 function UUF:UpdateUnitHealthBar(unitFrame, unit)
-    local FrameDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Frame
-    local HealthBarDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].HealthBar
-    local DispelHighlightDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].HealthBar.DispelHighlight
+    local normalizedUnit = UUF:GetNormalizedUnit(unit)
+    local FrameDB = UUF.db.profile.Units[normalizedUnit].Frame
+    local HealthBarDB = UUF.db.profile.Units[normalizedUnit].HealthBar
+    local DispelHighlightDB = UUF.db.profile.Units[normalizedUnit].HealthBar.DispelHighlight
 
     if unitFrame then
-        unitFrame:ClearAllPoints()
         unitFrame:SetSize(FrameDB.Width, FrameDB.Height)
-        if unit == "player" or unit == "target" then
-            local parentFrame = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].HealthBar.AnchorToCooldownViewer and _G["UUF_CDMAnchor"] or UIParent
+        if normalizedUnit == "party" then
+            -- Group headers own the child anchors, so only the size can be adjusted here.
+        elseif unit == "player" or unit == "target" then
+            unitFrame:ClearAllPoints()
+            local parentFrame = UUF.db.profile.Units[normalizedUnit].HealthBar.AnchorToCooldownViewer and _G["UUF_CDMAnchor"] or UIParent
             UUF[unit:upper()]:SetPoint(FrameDB.Layout[1], parentFrame, FrameDB.Layout[2], FrameDB.Layout[3], FrameDB.Layout[4])
             UUF[unit:upper()]:SetSize(FrameDB.Width, FrameDB.Height)
         elseif unit == "targettarget" or unit == "focus" or unit == "focustarget" or unit == "pet" then
-            local parentFrame = _G[UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Frame.AnchorParent] or UIParent
+            unitFrame:ClearAllPoints()
+            local parentFrame = _G[UUF.db.profile.Units[normalizedUnit].Frame.AnchorParent] or UIParent
             UUF[unit:upper()]:SetPoint(FrameDB.Layout[1], parentFrame, FrameDB.Layout[2], FrameDB.Layout[3], FrameDB.Layout[4])
             UUF[unit:upper()]:SetSize(FrameDB.Width, FrameDB.Height)
         end

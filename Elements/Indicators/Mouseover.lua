@@ -2,10 +2,14 @@ local _, UUF = ...
 
 function UUF:CreateUnitMouseoverIndicator(unitFrame, unit)
     local MouseoverDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Indicators.Mouseover
+    if unitFrame.MouseoverHighlight then
+        return unitFrame.MouseoverHighlight
+    end
 
     local MouseoverHighlight = CreateFrame("Frame", nil, unitFrame.Health, "BackdropTemplate")
     MouseoverHighlight:SetPoint("TOPLEFT", unitFrame.Health, "TOPLEFT", 0, 0)
     MouseoverHighlight:SetPoint("BOTTOMRIGHT", unitFrame.Health, "BOTTOMRIGHT", 0, 0)
+    MouseoverHighlight:EnableMouse(false)
 
     if MouseoverDB.Style == "BORDER" then
         MouseoverHighlight:SetBackdrop(UUF.BACKDROP)
@@ -28,8 +32,23 @@ function UUF:CreateUnitMouseoverIndicator(unitFrame, unit)
 
     MouseoverHighlight:Hide()
     MouseoverHighlight:SetFrameLevel(unitFrame.Health:GetFrameLevel() + 3)
-    unitFrame:HookScript("OnEnter", function() local DB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Indicators.Mouseover if DB.Enabled then MouseoverHighlight:Show() end end)
-    unitFrame:HookScript("OnLeave", function() local DB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Indicators.Mouseover if DB.Enabled then MouseoverHighlight:Hide() end end)
+    unitFrame.MouseoverHighlight = MouseoverHighlight
+
+    if not unitFrame.MouseoverHooksApplied then
+        unitFrame:HookScript("OnEnter", function(frame)
+            local DB = UUF.db.profile.Units[UUF:GetNormalizedUnit(frame.unit or unit)].Indicators.Mouseover
+            if DB.Enabled and frame.MouseoverHighlight then
+                frame.MouseoverHighlight:Show()
+            end
+        end)
+        unitFrame:HookScript("OnLeave", function(frame)
+            local DB = UUF.db.profile.Units[UUF:GetNormalizedUnit(frame.unit or unit)].Indicators.Mouseover
+            if DB.Enabled and frame.MouseoverHighlight then
+                frame.MouseoverHighlight:Hide()
+            end
+        end)
+        unitFrame.MouseoverHooksApplied = true
+    end
 
     return MouseoverHighlight
 end

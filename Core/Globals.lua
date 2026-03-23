@@ -6,6 +6,8 @@ UUF.CASTBAR_TEST_MODE = false
 UUF.BOSS_TEST_MODE = false
 UUF.BOSS_FRAMES = {}
 UUF.MAX_BOSS_FRAMES = 5
+UUF.PARTY_FRAMES = {}
+UUF.MAX_PARTY_FRAMES = 4
 
 UUF.LSM = LibStub("LibSharedMedia-3.0")
 UUF.LDS = LibStub("LibDualSpec-1.0")
@@ -69,10 +71,12 @@ function UUF:FetchFrameName(unit)
         ["focus"] = "UUF_Focus",
         ["focustarget"] = "UUF_FocusTarget",
         ["pet"] = "UUF_Pet",
+        ["party"] = "UUF_Party",
         ["boss"] = "UUF_Boss",
     }
     if not unit then return end
     if unit:match("^boss(%d+)$") then local unitID = unit:match("^boss(%d+)$") return "UUF_Boss" .. unitID end
+    if unit:match("^party(%d+)$") then local unitID = unit:match("^party(%d+)$") return "UUF_Party" .. unitID end
     return UnitToFrame[unit]
 end
 
@@ -257,7 +261,12 @@ function UUF:GetReactionColour(reaction)
 end
 
 function UUF:GetNormalizedUnit(unit)
-    local normalizedUnit = unit:match("^boss%d+$") and "boss" or unit
+    local normalizedUnit = unit
+    if unit:match("^boss%d+$") then
+        normalizedUnit = "boss"
+    elseif unit:match("^party%d+$") then
+        normalizedUnit = "party"
+    end
     return normalizedUnit
 end
 
