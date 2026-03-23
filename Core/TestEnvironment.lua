@@ -48,13 +48,19 @@ for i = 1, 10 do
 end
 
 local function GetTestUnitColour(id, defaultColour, colourByClass, opacity)
+    local dataIndex = ((id - 1) % #EnvironmenTestData) + 1
+    local testData = EnvironmenTestData[dataIndex]
+    if not testData then
+        return defaultColour[1], defaultColour[2], defaultColour[3], opacity
+    end
+
     if colourByClass then
-        if id <= 5 then
-            local temporaryClass = EnvironmenTestData[id].class
+        if dataIndex <= 5 then
+            local temporaryClass = testData.class
             local classColour = RAID_CLASS_COLORS[temporaryClass]
             return classColour.r, classColour.g, classColour.b, opacity
         else
-            local temporaryReaction = EnvironmenTestData[id].reaction
+            local temporaryReaction = testData.reaction
             local reactionColour = oUF.colors.reaction[temporaryReaction]
             return reactionColour.r, reactionColour.g, reactionColour.b, opacity
         end
@@ -89,6 +95,52 @@ local raidTargetMarkerCoords = {
     {0.25,0.5,0,0.25}
 }
 
+local RAID_DIRECTION_TO_POINT = {
+    DOWN_RIGHT = "TOP",
+    DOWN_LEFT = "TOP",
+    UP_RIGHT = "BOTTOM",
+    UP_LEFT = "BOTTOM",
+    RIGHT_DOWN = "LEFT",
+    RIGHT_UP = "LEFT",
+    LEFT_DOWN = "RIGHT",
+    LEFT_UP = "RIGHT",
+}
+
+local function GetTestRaidGroupHeaderDimensions(frameDB)
+    local direction = frameDB.GrowthDirection or "DOWN_RIGHT"
+    local point = RAID_DIRECTION_TO_POINT[direction] or "TOP"
+    local horizontalSpacing = frameDB.HorizontalSpacing or 0
+    local verticalSpacing = frameDB.VerticalSpacing or 0
+
+    if point == "LEFT" or point == "RIGHT" then
+        return (frameDB.Width * 5) + (horizontalSpacing * 4), frameDB.Height
+    end
+
+    return frameDB.Width, (frameDB.Height * 5) + (verticalSpacing * 4)
+end
+
+local function GetTestRaidGroupLayoutOffsets(direction, groupWidth, groupHeight, horizontalSpacing, verticalSpacing)
+    if direction == "DOWN_RIGHT" then
+        return groupWidth + horizontalSpacing, 0, 0, -(groupHeight + verticalSpacing)
+    elseif direction == "DOWN_LEFT" then
+        return -(groupWidth + horizontalSpacing), 0, 0, -(groupHeight + verticalSpacing)
+    elseif direction == "UP_RIGHT" then
+        return groupWidth + horizontalSpacing, 0, 0, groupHeight + verticalSpacing
+    elseif direction == "UP_LEFT" then
+        return -(groupWidth + horizontalSpacing), 0, 0, groupHeight + verticalSpacing
+    elseif direction == "RIGHT_DOWN" then
+        return 0, -(groupHeight + verticalSpacing), groupWidth + horizontalSpacing, 0
+    elseif direction == "RIGHT_UP" then
+        return 0, groupHeight + verticalSpacing, groupWidth + horizontalSpacing, 0
+    elseif direction == "LEFT_DOWN" then
+        return 0, -(groupHeight + verticalSpacing), -(groupWidth + horizontalSpacing), 0
+    elseif direction == "LEFT_UP" then
+        return 0, groupHeight + verticalSpacing, -(groupWidth + horizontalSpacing), 0
+    end
+
+    return groupWidth + horizontalSpacing, 0, 0, -(groupHeight + verticalSpacing)
+end
+
 local function ApplyTestTag(fontString, ownerFrame, tagDB, generalDB, text)
     if not fontString or not tagDB then return end
     fontString:ClearAllPoints()
@@ -103,6 +155,71 @@ local function ApplyTestTag(fontString, ownerFrame, tagDB, generalDB, text)
     end
     fontString:SetTextColor(unpack(tagDB.Colour))
     fontString:SetText(text or "")
+end
+
+local function GetTestData(index, label)
+    local dataIndex = ((index - 1) % #EnvironmenTestData) + 1
+    local baseData = EnvironmenTestData[dataIndex]
+    if not baseData then return end
+
+    return {
+        name = string.format("%s %d", label, index),
+        class = baseData.class,
+        reaction = baseData.reaction,
+        health = baseData.health,
+        maxHealth = baseData.maxHealth,
+        missingHealth = baseData.missingHealth,
+        absorb = baseData.absorb,
+        percent = baseData.percent,
+        maxPower = baseData.maxPower,
+        power = baseData.power,
+        powerType = baseData.powerType,
+    }
+end
+
+local function ApplySharedTestFrameState(unitFrame, unitToken, unitDB, tagsDB, label, index, includeCastBar)
+    local generalDB = UUF.db.profile.General
+    local healthBarDB = unitDB.HealthBar
+    local testData = GetTestData(index, label)
+    if not testData then return end
+
+    unitFrame:SetAttribute("unit", nil)
+    UnregisterUnitWatch(unitFrame)
+    unitFrame:SetFrameStrata(unitDB.Frame.FrameStrata)
+    unitFrame:SetShown(unitDB.Enabled)
+
+    if unitFrame.Health then
+        unitFrame.Health:SetMinMaxValues(0, testData.maxHealth)
+        unitFrame.Health:SetValue(testData.health)
+        unitFrame.HealthBackground:SetMinMaxValues(0, testData.maxHealth)
+        unitFrame.HealthBackground:SetValue(testData.missingHealth)
+        unitFrame.HealthBackground:SetStatusBarColor(GetTestUnitColour(index, healthBarDB.Background, healthBarDB.ColourBackgroundByClass, healthBarDB.BackgroundOpacity))
+        unitFrame.Health:SetStatusBarColor(GetTestUnitColour(index, healthBarDB.Foreground, healthBarDB.ColourByClass, healthBarDB.ForegroundOpacity))
+    end
+
+    if unitFrame.Power then
+        unitFrame.Power:SetMinMaxValues(0, testData.maxPower)
+        unitFrame.Power:SetValue(testData.power)
+    end
+
+    if unitFrame.RaidTargetIndicator and raidTargetMarkerCoords[((index - 1) % #raidTargetMarkerCoords) + 1] then
+        unitFrame.RaidTargetIndicator:SetTexture("Interface\\TargetingFrame\\UI-RaidTargetingIcons")
+        unitFrame.RaidTargetIndicator:SetTexCoord(unpack(raidTargetMarkerCoords[((index - 1) % #raidTargetMarkerCoords) + 1]))
+        unitFrame.RaidTargetIndicator:Show()
+    end
+
+    UUF:CreateTestAuras(unitFrame, unitToken)
+    if includeCastBar then
+        UUF:CreateTestCastBar(unitFrame, unitToken)
+    end
+
+    if unitFrame.Tags and tagsDB then
+        ApplyTestTag(unitFrame.Tags.TagOne, unitFrame, tagsDB.TagOne, generalDB, testData.name)
+        ApplyTestTag(unitFrame.Tags.TagTwo, unitFrame, tagsDB.TagTwo, generalDB, string.format("%.1f%%", testData.percent))
+        ApplyTestTag(unitFrame.Tags.TagThree, unitFrame, tagsDB.TagThree, generalDB, tostring(testData.power))
+        ApplyTestTag(unitFrame.Tags.TagFour, unitFrame, tagsDB.TagFour, generalDB, "")
+        ApplyTestTag(unitFrame.Tags.TagFive, unitFrame, tagsDB.TagFive, generalDB, "")
+    end
 end
 
 function UUF:EnsurePartyTestFrames()
@@ -120,8 +237,22 @@ function UUF:EnsurePartyTestFrames()
     end
 end
 
+function UUF:EnsureRaidTestFrames()
+    if #UUF.RAID_TEST_FRAMES > 0 then return end
+
+    oUF:SetActiveStyle(UUF:FetchFrameName("raid"))
+
+    for i = 1, UUF.MAX_RAID_FRAMES do
+        local frameName = "UUF_RaidTest" .. i
+        local unitFrame = _G[frameName] or oUF:Spawn("raid" .. i, frameName)
+        unitFrame:SetAttribute("unit", nil)
+        UnregisterUnitWatch(unitFrame)
+        unitFrame:Hide()
+        UUF.RAID_TEST_FRAMES[i] = unitFrame
+    end
+end
+
 function UUF:CreateTestPartyFrames()
-    local generalDB = UUF.db.profile.General
     local partyDB = UUF.db.profile.Units.party
     local tagsDB = partyDB.Tags
     local previousAuraTestMode = UUF.AURA_TEST_MODE
@@ -139,48 +270,10 @@ function UUF:CreateTestPartyFrames()
         UUF.CASTBAR_TEST_MODE = true
 
         for i, partyFrame in ipairs(UUF.PARTY_TEST_FRAMES) do
-            local testData = EnvironmenTestData[i]
-            if testData then
-                partyFrame:SetAttribute("unit", nil)
-                UnregisterUnitWatch(partyFrame)
-                partyFrame:SetFrameStrata(partyDB.Frame.FrameStrata)
-                partyFrame:SetShown(partyDB.Enabled)
+            ApplySharedTestFrameState(partyFrame, "party" .. i, partyDB, tagsDB, "Party", i, true)
 
-                if partyFrame.Health then
-                    local healthBarDB = partyDB.HealthBar
-                    partyFrame.Health:SetMinMaxValues(0, testData.maxHealth)
-                    partyFrame.Health:SetValue(testData.health)
-                    partyFrame.HealthBackground:SetMinMaxValues(0, testData.maxHealth)
-                    partyFrame.HealthBackground:SetValue(testData.missingHealth)
-                    partyFrame.HealthBackground:SetStatusBarColor(GetTestUnitColour(i, healthBarDB.Background, healthBarDB.ColourBackgroundByClass, healthBarDB.BackgroundOpacity))
-                    partyFrame.Health:SetStatusBarColor(GetTestUnitColour(i, healthBarDB.Foreground, healthBarDB.ColourByClass, healthBarDB.ForegroundOpacity))
-                end
-
-                if partyFrame.Portrait and PortraitOptions[i] then
-                    partyFrame.Portrait:SetTexture("Interface\\ICONS\\" .. PortraitOptions[i])
-                end
-
-                if partyFrame.Power then
-                    partyFrame.Power:SetMinMaxValues(0, testData.maxPower)
-                    partyFrame.Power:SetValue(testData.power)
-                end
-
-                if partyFrame.RaidTargetIndicator and raidTargetMarkerCoords[i] then
-                    partyFrame.RaidTargetIndicator:SetTexture("Interface\\TargetingFrame\\UI-RaidTargetingIcons")
-                    partyFrame.RaidTargetIndicator:SetTexCoord(unpack(raidTargetMarkerCoords[i]))
-                    partyFrame.RaidTargetIndicator:Show()
-                end
-
-                UUF:CreateTestCastBar(partyFrame, "party" .. i)
-                UUF:CreateTestAuras(partyFrame, "party" .. i)
-
-                if partyFrame.Tags then
-                    ApplyTestTag(partyFrame.Tags.TagOne, partyFrame, tagsDB.TagOne, generalDB, "Party " .. i)
-                    ApplyTestTag(partyFrame.Tags.TagTwo, partyFrame, tagsDB.TagTwo, generalDB, string.format("%.1f%%", testData.percent))
-                    ApplyTestTag(partyFrame.Tags.TagThree, partyFrame, tagsDB.TagThree, generalDB, tostring(testData.power))
-                    ApplyTestTag(partyFrame.Tags.TagFour, partyFrame, tagsDB.TagFour, generalDB, "")
-                    ApplyTestTag(partyFrame.Tags.TagFive, partyFrame, tagsDB.TagFive, generalDB, "")
-                end
+            if partyFrame.Portrait and PortraitOptions[((i - 1) % #PortraitOptions) + 1] then
+                partyFrame.Portrait:SetTexture("Interface\\ICONS\\" .. PortraitOptions[((i - 1) % #PortraitOptions) + 1])
             end
         end
     else
@@ -200,6 +293,143 @@ function UUF:CreateTestPartyFrames()
 
     UUF.AURA_TEST_MODE = previousAuraTestMode
     UUF.CASTBAR_TEST_MODE = previousCastBarTestMode
+end
+
+function UUF:CreateTestRaidFrames()
+    local raidDB = UUF.db.profile.Units.raid
+    local tagsDB = raidDB.Tags
+    local frameDB = raidDB.Frame
+    local previousAuraTestMode = UUF.AURA_TEST_MODE
+
+    UUF:EnsureRaidTestFrames()
+    UUF:ResolveLSM()
+
+    if UUF.RAID_TEST_MODE then
+        local direction = frameDB.GrowthDirection or "DOWN_RIGHT"
+        local point = RAID_DIRECTION_TO_POINT[direction] or "TOP"
+        local xSpacingMultiplier = ({
+            DOWN_RIGHT = 1,
+            DOWN_LEFT = -1,
+            UP_RIGHT = 1,
+            UP_LEFT = -1,
+            RIGHT_DOWN = 1,
+            RIGHT_UP = 1,
+            LEFT_DOWN = -1,
+            LEFT_UP = -1,
+        })[direction] or 1
+        local ySpacingMultiplier = ({
+            DOWN_RIGHT = -1,
+            DOWN_LEFT = -1,
+            UP_RIGHT = 1,
+            UP_LEFT = 1,
+            RIGHT_DOWN = -1,
+            RIGHT_UP = 1,
+            LEFT_DOWN = -1,
+            LEFT_UP = 1,
+        })[direction] or -1
+        local horizontalSpacing = frameDB.HorizontalSpacing or 0
+        local verticalSpacing = frameDB.VerticalSpacing or 0
+        local maxColumns = math.max(1, math.floor(frameDB.MaxColumns or 8))
+        local unitsPerColumn = math.max(1, math.floor(frameDB.UnitsPerColumn or 5))
+        local groupByGroup = frameDB.GroupBy == "GROUP"
+        local groupWidth, groupHeight = GetTestRaidGroupHeaderDimensions(frameDB)
+        local lineStepX, lineStepY, wrapStepX, wrapStepY = GetTestRaidGroupLayoutOffsets(direction, groupWidth, groupHeight, horizontalSpacing, verticalSpacing)
+        local filteredGroups = {}
+        local hasFilteredGroups = false
+        local visibleGroupIndices = {}
+        local visibleFrameIndex = 0
+
+        if type(frameDB.GroupFilter) == "string" and strtrim(frameDB.GroupFilter) ~= "" then
+            for groupID in frameDB.GroupFilter:gmatch("%d+") do
+                local groupIndex = tonumber(groupID)
+                if groupIndex and groupIndex >= 1 and groupIndex <= UUF.MAX_RAID_GROUPS then
+                    filteredGroups[groupIndex] = true
+                    hasFilteredGroups = true
+                end
+            end
+        end
+
+        if groupByGroup then
+            local visibleGroupCount = 0
+            for groupIndex = 1, UUF.MAX_RAID_GROUPS do
+                if not hasFilteredGroups or filteredGroups[groupIndex] then
+                    visibleGroupCount = visibleGroupCount + 1
+                    visibleGroupIndices[groupIndex] = visibleGroupCount
+                end
+            end
+        end
+
+        if UUF.RAID then
+            UUF.RAID:Hide()
+        end
+
+        for _, header in ipairs(UUF.RAID_GROUP_HEADERS) do
+            if header then
+                header:Hide()
+            end
+        end
+
+        UUF.AURA_TEST_MODE = true
+
+        for index, raidFrame in ipairs(UUF.RAID_TEST_FRAMES) do
+            local groupIndex = math.floor((index - 1) / 5) + 1
+            if hasFilteredGroups and not filteredGroups[groupIndex] then
+                raidFrame:Hide()
+            else
+                visibleFrameIndex = visibleFrameIndex + 1
+                ApplySharedTestFrameState(raidFrame, "raid" .. index, raidDB, tagsDB, "Raid", index, false)
+                raidFrame:SetSize(frameDB.Width, frameDB.Height)
+                raidFrame:ClearAllPoints()
+
+                if groupByGroup then
+                    local groupedIndex = (visibleGroupIndices[groupIndex] or groupIndex) - 1
+                    local indexInGroup = (index - 1) % 5
+                    local lineIndex = groupedIndex % maxColumns
+                    local wrapIndex = math.floor(groupedIndex / maxColumns)
+                    local groupBaseX = frameDB.Layout[3] + (lineStepX * lineIndex) + (wrapStepX * wrapIndex)
+                    local groupBaseY = frameDB.Layout[4] + (lineStepY * lineIndex) + (wrapStepY * wrapIndex)
+
+                    local offsetX = 0
+                    local offsetY = 0
+                    if point == "LEFT" or point == "RIGHT" then
+                        offsetX = (frameDB.Width + horizontalSpacing) * indexInGroup * xSpacingMultiplier
+                    else
+                        offsetY = (frameDB.Height + verticalSpacing) * indexInGroup * ySpacingMultiplier
+                    end
+
+                    raidFrame:SetPoint(frameDB.Layout[1], UIParent, frameDB.Layout[2], groupBaseX + offsetX, groupBaseY + offsetY)
+                else
+                    local lineIndex = (visibleFrameIndex - 1) % unitsPerColumn
+                    local wrapIndex = math.floor((visibleFrameIndex - 1) / unitsPerColumn)
+                    local offsetX = 0
+                    local offsetY = 0
+
+                    if point == "LEFT" or point == "RIGHT" then
+                        offsetX = (frameDB.Width + horizontalSpacing) * lineIndex * xSpacingMultiplier
+                        offsetY = (frameDB.Height + verticalSpacing) * wrapIndex * ySpacingMultiplier
+                    else
+                        offsetX = (frameDB.Width + horizontalSpacing) * wrapIndex * xSpacingMultiplier
+                        offsetY = (frameDB.Height + verticalSpacing) * lineIndex * ySpacingMultiplier
+                    end
+
+                    raidFrame:SetPoint(frameDB.Layout[1], UIParent, frameDB.Layout[2], frameDB.Layout[3] + offsetX, frameDB.Layout[4] + offsetY)
+                end
+            end
+        end
+    else
+        UUF.AURA_TEST_MODE = false
+
+        for index, raidFrame in ipairs(UUF.RAID_TEST_FRAMES) do
+            UUF:CreateTestAuras(raidFrame, "raid" .. index)
+            raidFrame:Hide()
+        end
+
+        if UUF.RAID then
+            UUF.RAID:SetShown(raidDB.Enabled and frameDB.GroupBy ~= "GROUP")
+        end
+    end
+
+    UUF.AURA_TEST_MODE = previousAuraTestMode
 end
 
 function UUF:CreateTestBossFrames()

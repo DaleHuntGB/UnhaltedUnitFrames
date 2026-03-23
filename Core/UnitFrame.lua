@@ -408,6 +408,16 @@ end
 function UUF:RefreshRaidFrames()
     wipe(UUF.RAID_FRAMES)
 
+    if UUF.RAID_TEST_MODE and #UUF.RAID_TEST_FRAMES > 0 then
+        for i = 1, UUF.MAX_RAID_FRAMES do
+            local unitFrame = UUF.RAID_TEST_FRAMES[i]
+            if unitFrame then
+                UUF.RAID_FRAMES[i] = unitFrame
+            end
+        end
+        return UUF.RAID_FRAMES
+    end
+
     if UseGroupedRaidHeaders() then
         for _, header in ipairs(UUF.RAID_GROUP_HEADERS) do
             if header then
@@ -444,8 +454,11 @@ function UUF:ForEachRaidFrame(callback)
         local unitFrame = raidFrames[index]
         if unitFrame then
             local actualUnit = unitFrame.unit or unitFrame:GetAttribute("unit")
+            if not actualUnit and UUF.RAID_TEST_MODE then
+                actualUnit = "raid" .. index
+            end
             if actualUnit then
-            callback(unitFrame, actualUnit, index)
+                callback(unitFrame, actualUnit, index)
             end
         end
     end
@@ -574,6 +587,11 @@ function UUF:LayoutRaidFrames()
     local raidDB = UUF.db.profile.Units.raid
     local frameDB = raidDB and raidDB.Frame
     if not frameDB then return end
+
+    if UUF.RAID_TEST_MODE and #UUF.RAID_TEST_FRAMES > 0 then
+        UUF:CreateTestRaidFrames()
+        return
+    end
 
     local useGroupedHeaders = UseGroupedRaidHeaders()
     local raidFrames = UUF:RefreshRaidFrames()
@@ -886,6 +904,7 @@ function UUF:UpdateRaidFrames()
     UUF:ForEachRaidFrame(function(unitFrame, actualUnit)
         UUF:UpdateUnitFrame(unitFrame, actualUnit)
     end)
+    UUF:CreateTestRaidFrames()
     UUF:LayoutRaidFrames()
 end
 

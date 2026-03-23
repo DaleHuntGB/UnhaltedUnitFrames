@@ -32,6 +32,17 @@ local UnitDBToUnitPrettyName = {
     raid = "Raid",
     boss = "Boss",
 }
+local MainTabToUnit = {
+    Player = "player",
+    Target = "target",
+    TargetTarget = "targettarget",
+    Pet = "pet",
+    Party = "party",
+    Raid = "raid",
+    Focus = "focus",
+    FocusTarget = "focustarget",
+    Boss = "boss",
+}
 
 local AnchorPoints = { { ["TOPLEFT"] = "Top Left", ["TOP"] = "Top", ["TOPRIGHT"] = "Top Right", ["LEFT"] = "Left", ["CENTER"] = "Center", ["RIGHT"] = "Right", ["BOTTOMLEFT"] = "Bottom Left", ["BOTTOM"] = "Bottom", ["BOTTOMRIGHT"] = "Bottom Right" }, { "TOPLEFT", "TOP", "TOPRIGHT", "LEFT", "CENTER", "RIGHT", "BOTTOMLEFT", "BOTTOM", "BOTTOMRIGHT", } }
 local FrameStrataList = {{ ["BACKGROUND"] = "Background", ["LOW"] = "Low", ["MEDIUM"] = "Medium", ["HIGH"] = "High", ["DIALOG"] = "Dialog", ["FULLSCREEN"] = "Fullscreen", ["FULLSCREEN_DIALOG"] = "Fullscreen Dialog", ["TOOLTIP"] = "Tooltip" }, { "BACKGROUND", "LOW", "MEDIUM", "HIGH", "DIALOG", "FULLSCREEN", "FULLSCREEN_DIALOG", "TOOLTIP" }}
@@ -222,6 +233,7 @@ local StatusTextures = {
 }
 
 local function EnableAurasTestMode(unit)
+    if UUF.AURA_TEST_MODE then return end
     UUF.AURA_TEST_MODE = true
     UUF:ForEachManagedUnitFrame(unit, function(unitFrame, actualUnit)
         UUF:CreateTestAuras(unitFrame, actualUnit)
@@ -229,6 +241,7 @@ local function EnableAurasTestMode(unit)
 end
 
 local function DisableAurasTestMode(unit)
+    if not UUF.AURA_TEST_MODE then return end
     UUF.AURA_TEST_MODE = false
     UUF:ForEachManagedUnitFrame(unit, function(unitFrame, actualUnit)
         UUF:CreateTestAuras(unitFrame, actualUnit)
@@ -236,6 +249,7 @@ local function DisableAurasTestMode(unit)
 end
 
 local function EnableCastBarTestMode(unit)
+    if UUF.CASTBAR_TEST_MODE then return end
     UUF.CASTBAR_TEST_MODE = true
     UUF:ForEachManagedUnitFrame(unit, function(unitFrame, actualUnit)
         UUF:CreateTestCastBar(unitFrame, actualUnit)
@@ -243,6 +257,7 @@ local function EnableCastBarTestMode(unit)
 end
 
 local function DisableCastBarTestMode(unit)
+    if not UUF.CASTBAR_TEST_MODE then return end
     UUF.CASTBAR_TEST_MODE = false
     UUF:ForEachManagedUnitFrame(unit, function(unitFrame, actualUnit)
         UUF:CreateTestCastBar(unitFrame, actualUnit)
@@ -250,24 +265,44 @@ local function DisableCastBarTestMode(unit)
 end
 
 local function EnableBossFramesTestMode()
+    if UUF.BOSS_TEST_MODE then return end
     UUF.BOSS_TEST_MODE = true
     UUF:CreateTestBossFrames()
 end
 
 local function EnablePartyFramesTestMode()
+    if UUF.PARTY_TEST_MODE then return end
     UUF.PARTY_TEST_MODE = true
     UUF:CreateTestPartyFrames()
     UUF:UpdatePartyFrames()
 end
 
+local function EnableRaidFramesTestMode()
+    if UUF.RAID_TEST_MODE then return end
+    UUF.RAID_TEST_MODE = true
+    UUF:CreateTestRaidFrames()
+    UUF:UpdateRaidFrames()
+end
+
 local function DisableBossFramesTestMode()
+    if not UUF.BOSS_TEST_MODE then return end
     UUF.BOSS_TEST_MODE = false
     UUF:CreateTestBossFrames()
 end
 
 local function DisablePartyFramesTestMode()
+    if not UUF.PARTY_TEST_MODE then return end
     UUF.PARTY_TEST_MODE = false
     UUF:CreateTestPartyFrames()
+end
+
+local function DisableRaidFramesTestMode()
+    if not UUF.RAID_TEST_MODE then return end
+    UUF.RAID_TEST_MODE = false
+    UUF:CreateTestRaidFrames()
+    if UUF.RAID or #UUF.RAID_GROUP_HEADERS > 0 then
+        UUF:ToggleUnitFrameVisibility("raid")
+    end
 end
 
 local function DisableAllTestModes()
@@ -275,6 +310,7 @@ local function DisableAllTestModes()
     UUF.CASTBAR_TEST_MODE = false
     UUF.BOSS_TEST_MODE = false
     UUF.PARTY_TEST_MODE = false
+    UUF.RAID_TEST_MODE = false
     for unit, _ in pairs(UUF.db.profile.Units) do
         UUF:ForEachManagedUnitFrame(unit, function(unitFrame, actualUnit)
             UUF:CreateTestAuras(unitFrame, actualUnit)
@@ -283,6 +319,20 @@ local function DisableAllTestModes()
     end
     UUF:CreateTestBossFrames()
     UUF:CreateTestPartyFrames()
+    UUF:CreateTestRaidFrames()
+    if UUF.RAID or #UUF.RAID_GROUP_HEADERS > 0 then
+        UUF:ToggleUnitFrameVisibility("raid")
+    end
+end
+
+local function RefreshGroupedTestFrames(unit)
+    if unit == "boss" and UUF.BOSS_TEST_MODE then
+        UUF:CreateTestBossFrames()
+    elseif unit == "party" and UUF.PARTY_TEST_MODE then
+        UUF:CreateTestPartyFrames()
+    elseif unit == "raid" and UUF.RAID_TEST_MODE then
+        UUF:CreateTestRaidFrames()
+    end
 end
 
 local function UpdateManagedUnitMethod(unit, methodName, ...)
@@ -310,6 +360,7 @@ local function UpdateManagedUnitMethod(unit, methodName, ...)
         UUF:ForEachManagedUnitFrame(unit, function(unitFrame, actualUnit)
             method(UUF, unitFrame, actualUnit, unpack(args))
         end)
+        RefreshGroupedTestFrames(unit)
         return
     end
 
@@ -317,6 +368,21 @@ local function UpdateManagedUnitMethod(unit, methodName, ...)
     if unitFrame then
         method(UUF, unitFrame, unit, unpack(args))
     end
+end
+
+local function GetActiveMainTabUnit()
+    local selectedTab = UUFGUI and UUFGUI.MainNavigationStatus and UUFGUI.MainNavigationStatus.selected
+    return selectedTab and MainTabToUnit[selectedTab]
+end
+
+local function RefreshConfigPreview()
+    local activeUnit = GetActiveMainTabUnit()
+    if activeUnit then
+        UpdateManagedUnitMethod(activeUnit, "UpdateUnitFrame")
+        return
+    end
+
+    UUF:UpdateAllUnitFrames()
 end
 
 local function GenerateSupportText(parentFrame)
@@ -410,7 +476,7 @@ local function CreateFontSettings(containerParent)
     FontDropdown:SetLabel("Font")
     FontDropdown:SetValue(UUF.db.profile.General.Fonts.Font)
     FontDropdown:SetRelativeWidth(0.5)
-    FontDropdown:SetCallback("OnValueChanged", function(widget, _, value) widget:SetValue(value) UUF.db.profile.General.Fonts.Font = value UUF:ResolveLSM() UUF:UpdateAllUnitFrames() end)
+    FontDropdown:SetCallback("OnValueChanged", function(widget, _, value) widget:SetValue(value) UUF.db.profile.General.Fonts.Font = value UUF:ResolveLSM() RefreshConfigPreview() end)
     Container:AddChild(FontDropdown)
 
     local FontFlagDropdown = AG:Create("Dropdown")
@@ -418,7 +484,7 @@ local function CreateFontSettings(containerParent)
     FontFlagDropdown:SetLabel("Font Flag")
     FontFlagDropdown:SetValue(UUF.db.profile.General.Fonts.FontFlag)
     FontFlagDropdown:SetRelativeWidth(0.5)
-    FontFlagDropdown:SetCallback("OnValueChanged", function(widget, _, value) widget:SetValue(value) UUF.db.profile.General.Fonts.FontFlag = value UUF:ResolveLSM() UUF:UpdateAllUnitFrames() end)
+    FontFlagDropdown:SetCallback("OnValueChanged", function(widget, _, value) widget:SetValue(value) UUF.db.profile.General.Fonts.FontFlag = value UUF:ResolveLSM() RefreshConfigPreview() end)
     Container:AddChild(FontFlagDropdown)
 
     local SimpleGroup = AG:Create("SimpleGroup")
@@ -432,7 +498,7 @@ local function CreateFontSettings(containerParent)
     Toggle:SetLabel("Enable Font Shadows")
     Toggle:SetValue(UUF.db.profile.General.Fonts.Shadow.Enabled)
     Toggle:SetFullWidth(true)
-    Toggle:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.General.Fonts.Shadow.Enabled = value UUF:ResolveLSM() GUIWidgets.DeepDisable(SimpleGroup, not UUF.db.profile.General.Fonts.Shadow.Enabled, Toggle) UUF:UpdateAllUnitFrames() end)
+    Toggle:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.General.Fonts.Shadow.Enabled = value UUF:ResolveLSM() GUIWidgets.DeepDisable(SimpleGroup, not UUF.db.profile.General.Fonts.Shadow.Enabled, Toggle) RefreshConfigPreview() end)
     Toggle:SetRelativeWidth(0.5)
     SimpleGroup:AddChild(Toggle)
 
@@ -440,7 +506,7 @@ local function CreateFontSettings(containerParent)
     ColorPicker:SetLabel("Colour")
     ColorPicker:SetColor(unpack(UUF.db.profile.General.Fonts.Shadow.Colour))
     ColorPicker:SetFullWidth(true)
-    ColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) UUF.db.profile.General.Fonts.Shadow.Colour = {r, g, b, a} UUF:ResolveLSM() UUF:UpdateAllUnitFrames() end)
+    ColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) UUF.db.profile.General.Fonts.Shadow.Colour = {r, g, b, a} UUF:ResolveLSM() RefreshConfigPreview() end)
     ColorPicker:SetRelativeWidth(0.5)
     SimpleGroup:AddChild(ColorPicker)
 
@@ -449,7 +515,7 @@ local function CreateFontSettings(containerParent)
     XSlider:SetValue(UUF.db.profile.General.Fonts.Shadow.XPos)
     XSlider:SetSliderValues(-5, 5, 1)
     XSlider:SetFullWidth(true)
-    XSlider:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.General.Fonts.Shadow.XPos = value UUF:ResolveLSM() UUF:UpdateAllUnitFrames() end)
+    XSlider:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.General.Fonts.Shadow.XPos = value UUF:ResolveLSM() RefreshConfigPreview() end)
     XSlider:SetRelativeWidth(0.5)
     SimpleGroup:AddChild(XSlider)
 
@@ -458,7 +524,7 @@ local function CreateFontSettings(containerParent)
     YSlider:SetValue(UUF.db.profile.General.Fonts.Shadow.YPos)
     YSlider:SetSliderValues(-5, 5, 1)
     YSlider:SetFullWidth(true)
-    YSlider:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.General.Fonts.Shadow.YPos = value UUF:ResolveLSM() UUF:UpdateAllUnitFrames() end)
+    YSlider:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.General.Fonts.Shadow.YPos = value UUF:ResolveLSM() RefreshConfigPreview() end)
     YSlider:SetRelativeWidth(0.5)
     SimpleGroup:AddChild(YSlider)
 
@@ -475,7 +541,7 @@ local function CreateTextureSettings(containerParent)
     ForegroundTextureDropdown:SetLabel("Foreground Texture")
     ForegroundTextureDropdown:SetValue(UUF.db.profile.General.Textures.Foreground)
     ForegroundTextureDropdown:SetRelativeWidth(0.5)
-    ForegroundTextureDropdown:SetCallback("OnValueChanged", function(widget, _, value) widget:SetValue(value) UUF.db.profile.General.Textures.Foreground = value UUF:ResolveLSM() UUF:UpdateAllUnitFrames() end)
+    ForegroundTextureDropdown:SetCallback("OnValueChanged", function(widget, _, value) widget:SetValue(value) UUF.db.profile.General.Textures.Foreground = value UUF:ResolveLSM() RefreshConfigPreview() end)
     Container:AddChild(ForegroundTextureDropdown)
 
     local BackgroundTextureDropdown = AG:Create("LSM30_Statusbar")
@@ -483,7 +549,7 @@ local function CreateTextureSettings(containerParent)
     BackgroundTextureDropdown:SetLabel("Background Texture")
     BackgroundTextureDropdown:SetValue(UUF.db.profile.General.Textures.Background)
     BackgroundTextureDropdown:SetRelativeWidth(0.5)
-    BackgroundTextureDropdown:SetCallback("OnValueChanged", function(widget, _, value) widget:SetValue(value) UUF.db.profile.General.Textures.Background = value UUF:ResolveLSM() UUF:UpdateAllUnitFrames() end)
+    BackgroundTextureDropdown:SetCallback("OnValueChanged", function(widget, _, value) widget:SetValue(value) UUF.db.profile.General.Textures.Background = value UUF:ResolveLSM() RefreshConfigPreview() end)
     Container:AddChild(BackgroundTextureDropdown)
 
     local MouseoverStyleDropdown = AG:Create("Dropdown")
@@ -491,7 +557,7 @@ local function CreateTextureSettings(containerParent)
     MouseoverStyleDropdown:SetLabel("Highlight Style")
     MouseoverStyleDropdown:SetValue("SELECT")
     MouseoverStyleDropdown:SetRelativeWidth(0.5)
-    MouseoverStyleDropdown:SetCallback("OnValueChanged", function(_, _, value) for _, unitDB in pairs(UUF.db.profile.Units) do if unitDB.Indicators.Mouseover and unitDB.Indicators.Mouseover.Enabled then unitDB.Indicators.Mouseover.Style = value end end UUF:UpdateAllUnitFrames() MouseoverStyleDropdown:SetValue("SELECT") end)
+    MouseoverStyleDropdown:SetCallback("OnValueChanged", function(_, _, value) for _, unitDB in pairs(UUF.db.profile.Units) do if unitDB.Indicators.Mouseover and unitDB.Indicators.Mouseover.Enabled then unitDB.Indicators.Mouseover.Style = value end end RefreshConfigPreview() MouseoverStyleDropdown:SetValue("SELECT") end)
     MouseoverStyleDropdown:SetCallback("OnEnter", function() GameTooltip:SetOwner(MouseoverStyleDropdown.frame, "ANCHOR_BOTTOM") GameTooltip:AddLine("Set |cFF8080FFMouseover Highlight Style|r for all units. |cFF8080FFColour|r & |cFF8080FFAlpha|r can be adjusted per unit.", 1, 1, 1) GameTooltip:Show() end)
     MouseoverStyleDropdown:SetCallback("OnLeave", function() GameTooltip:Hide() end)
     Container:AddChild(MouseoverStyleDropdown)
@@ -502,7 +568,7 @@ local function CreateTextureSettings(containerParent)
     MouseoverHighlightSlider:SetSliderValues(0.0, 1.0, 0.01)
     MouseoverHighlightSlider:SetRelativeWidth(0.5)
     MouseoverHighlightSlider:SetIsPercent(true)
-    MouseoverHighlightSlider:SetCallback("OnValueChanged", function(_, _, value) for _, unitDB in pairs(UUF.db.profile.Units) do if unitDB.Indicators.Mouseover and unitDB.Indicators.Mouseover.Enabled then unitDB.Indicators.Mouseover.HighlightOpacity = value end end UUF:UpdateAllUnitFrames() end)
+    MouseoverHighlightSlider:SetCallback("OnValueChanged", function(_, _, value) for _, unitDB in pairs(UUF.db.profile.Units) do if unitDB.Indicators.Mouseover and unitDB.Indicators.Mouseover.Enabled then unitDB.Indicators.Mouseover.HighlightOpacity = value end end RefreshConfigPreview() end)
     Container:AddChild(MouseoverHighlightSlider)
 
     local ForegroundColourPicker = AG:Create("ColorPicker")
@@ -510,7 +576,7 @@ local function CreateTextureSettings(containerParent)
     local R, G, B = 8/255, 8/255, 8/255
     ForegroundColourPicker:SetColor(R, G, B)
     ForegroundColourPicker:SetRelativeWidth(0.5)
-    ForegroundColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) for _, unitDB in pairs(UUF.db.profile.Units) do unitDB.HealthBar.Foreground = {r, g, b} end UUF:UpdateAllUnitFrames() end)
+    ForegroundColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) for _, unitDB in pairs(UUF.db.profile.Units) do unitDB.HealthBar.Foreground = {r, g, b} end RefreshConfigPreview() end)
     Container:AddChild(ForegroundColourPicker)
 
     local ForegroundOpacitySlider = AG:Create("Slider")
@@ -519,7 +585,7 @@ local function CreateTextureSettings(containerParent)
     ForegroundOpacitySlider:SetSliderValues(0.0, 1.0, 0.01)
     ForegroundOpacitySlider:SetRelativeWidth(0.5)
     ForegroundOpacitySlider:SetIsPercent(true)
-    ForegroundOpacitySlider:SetCallback("OnValueChanged", function(_, _, value) for _, unitDB in pairs(UUF.db.profile.Units) do unitDB.HealthBar.ForegroundOpacity = value end UUF:UpdateAllUnitFrames() end)
+    ForegroundOpacitySlider:SetCallback("OnValueChanged", function(_, _, value) for _, unitDB in pairs(UUF.db.profile.Units) do unitDB.HealthBar.ForegroundOpacity = value end RefreshConfigPreview() end)
     Container:AddChild(ForegroundOpacitySlider)
 
     local BackgroundColourPicker = AG:Create("ColorPicker")
@@ -527,7 +593,7 @@ local function CreateTextureSettings(containerParent)
     local R2, G2, B2 = 8/255, 8/255, 8/255
     BackgroundColourPicker:SetColor(R2, G2, B2)
     BackgroundColourPicker:SetRelativeWidth(0.5)
-    BackgroundColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) for _, unitDB in pairs(UUF.db.profile.Units) do unitDB.HealthBar.Background = {r, g, b} end UUF:UpdateAllUnitFrames() end)
+    BackgroundColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) for _, unitDB in pairs(UUF.db.profile.Units) do unitDB.HealthBar.Background = {r, g, b} end RefreshConfigPreview() end)
     Container:AddChild(BackgroundColourPicker)
 
     local BackgroundOpacitySlider = AG:Create("Slider")
@@ -536,7 +602,7 @@ local function CreateTextureSettings(containerParent)
     BackgroundOpacitySlider:SetSliderValues(0.0, 1.0, 0.01)
     BackgroundOpacitySlider:SetRelativeWidth(0.5)
     BackgroundOpacitySlider:SetIsPercent(true)
-    BackgroundOpacitySlider:SetCallback("OnValueChanged", function(_, _, value) for _, unitDB in pairs(UUF.db.profile.Units) do unitDB.HealthBar.BackgroundOpacity = value end UUF:UpdateAllUnitFrames() end)
+    BackgroundOpacitySlider:SetCallback("OnValueChanged", function(_, _, value) for _, unitDB in pairs(UUF.db.profile.Units) do unitDB.HealthBar.BackgroundOpacity = value end RefreshConfigPreview() end)
     Container:AddChild(BackgroundOpacitySlider)
 
     local CastBarContainer = GUIWidgets.CreateInlineGroup(Container, "Cast Bar")
@@ -546,7 +612,7 @@ local function CreateTextureSettings(containerParent)
     local CR, CG, CB = 128/255, 128/255, 255/255
     CastBarForegroundColourPicker:SetColor(CR, CG, CB)
     CastBarForegroundColourPicker:SetRelativeWidth(0.33)
-    CastBarForegroundColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) for _, unitDB in pairs(UUF.db.profile.Units) do if unitDB.CastBar then unitDB.CastBar.Foreground = {r, g, b} end end UUF:UpdateAllUnitFrames() end)
+    CastBarForegroundColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) for _, unitDB in pairs(UUF.db.profile.Units) do if unitDB.CastBar then unitDB.CastBar.Foreground = {r, g, b} end end RefreshConfigPreview() end)
     CastBarContainer:AddChild(CastBarForegroundColourPicker)
 
     local CastBarBackgroundColourPicker = AG:Create("ColorPicker")
@@ -554,7 +620,7 @@ local function CreateTextureSettings(containerParent)
     local CR2, CG2, CB2 = 34/255, 34/255, 34/255
     CastBarBackgroundColourPicker:SetColor(CR2, CG2, CB2)
     CastBarBackgroundColourPicker:SetRelativeWidth(0.33)
-    CastBarBackgroundColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) for _, unitDB in pairs(UUF.db.profile.Units) do if unitDB.CastBar then unitDB.CastBar.Background = {r, g, b} end end UUF:UpdateAllUnitFrames() end)
+    CastBarBackgroundColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) for _, unitDB in pairs(UUF.db.profile.Units) do if unitDB.CastBar then unitDB.CastBar.Background = {r, g, b} end end RefreshConfigPreview() end)
     CastBarContainer:AddChild(CastBarBackgroundColourPicker)
 
     local CastBarInterruptibleColourPicker = AG:Create("ColorPicker")
@@ -562,7 +628,7 @@ local function CreateTextureSettings(containerParent)
     local CR3, CG3, CB3 = 255/255, 64/255, 64/255
     CastBarInterruptibleColourPicker:SetColor(CR3, CG3, CB3)
     CastBarInterruptibleColourPicker:SetRelativeWidth(0.33)
-    CastBarInterruptibleColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) for _, unitDB in pairs(UUF.db.profile.Units) do if unitDB.CastBar then unitDB.CastBar.NotInterruptibleColour = {r, g, b} end end UUF:UpdateAllUnitFrames() end)
+    CastBarInterruptibleColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) for _, unitDB in pairs(UUF.db.profile.Units) do if unitDB.CastBar then unitDB.CastBar.NotInterruptibleColour = {r, g, b} end end RefreshConfigPreview() end)
     CastBarContainer:AddChild(CastBarInterruptibleColourPicker)
 end
 
@@ -574,7 +640,7 @@ local function CreateRangeSettings(containerParent)
     Toggle:SetLabel("Enable Range Fading")
     Toggle:SetValue(RangeDB.Enabled)
     Toggle:SetFullWidth(true)
-    Toggle:SetCallback("OnValueChanged", function(_, _, value) RangeDB.Enabled = value UUF:UpdateAllUnitFrames() GUIWidgets.DeepDisable(Container, not value, Toggle) end)
+    Toggle:SetCallback("OnValueChanged", function(_, _, value) RangeDB.Enabled = value RefreshConfigPreview() GUIWidgets.DeepDisable(Container, not value, Toggle) end)
     Toggle:SetRelativeWidth(0.33)
     Container:AddChild(Toggle)
 
@@ -583,7 +649,7 @@ local function CreateRangeSettings(containerParent)
     InAlphaSlider:SetValue(RangeDB.InRange)
     InAlphaSlider:SetSliderValues(0.0, 1.0, 0.01)
     InAlphaSlider:SetFullWidth(true)
-    InAlphaSlider:SetCallback("OnValueChanged", function(_, _, value) RangeDB.InRange = value UUF:UpdateAllUnitFrames() end)
+    InAlphaSlider:SetCallback("OnValueChanged", function(_, _, value) RangeDB.InRange = value RefreshConfigPreview() end)
     InAlphaSlider:SetRelativeWidth(0.33)
     InAlphaSlider:SetIsPercent(true)
     Container:AddChild(InAlphaSlider)
@@ -593,7 +659,7 @@ local function CreateRangeSettings(containerParent)
     OutAlphaSlider:SetValue(RangeDB.OutOfRange)
     OutAlphaSlider:SetSliderValues(0.0, 1.0, 0.01)
     OutAlphaSlider:SetFullWidth(true)
-    OutAlphaSlider:SetCallback("OnValueChanged", function(_, _, value) RangeDB.OutOfRange = value UUF:UpdateAllUnitFrames() end)
+    OutAlphaSlider:SetCallback("OnValueChanged", function(_, _, value) RangeDB.OutOfRange = value RefreshConfigPreview() end)
     OutAlphaSlider:SetRelativeWidth(0.33)
     OutAlphaSlider:SetIsPercent(true)
     Container:AddChild(OutAlphaSlider)
@@ -646,7 +712,7 @@ local function CreateColourSettings(containerParent)
         PowerColourPicker:SetLabel(Power[powerType])
         local R, G, B = unpack(powerColour)
         PowerColourPicker:SetColor(R, G, B)
-        PowerColourPicker:SetCallback("OnValueChanged", function(widget, _, r, g, b) UUF.db.profile.General.Colours.Power[powerType] = {r, g, b} UUF:LoadCustomColours() UUF:UpdateAllUnitFrames() end)
+        PowerColourPicker:SetCallback("OnValueChanged", function(widget, _, r, g, b) UUF.db.profile.General.Colours.Power[powerType] = {r, g, b} UUF:LoadCustomColours() RefreshConfigPreview() end)
         PowerColourPicker:SetHasAlpha(false)
         PowerColourPicker:SetRelativeWidth(0.19)
         Container:AddChild(PowerColourPicker)
@@ -663,7 +729,7 @@ local function CreateColourSettings(containerParent)
             SecondaryPowerColourPicker:SetLabel(Power[secondaryPowerType])
             local R, G, B = unpack(secondaryPowerColour)
             SecondaryPowerColourPicker:SetColor(R, G, B)
-            SecondaryPowerColourPicker:SetCallback("OnValueChanged", function(widget, _, r, g, b) UUF.db.profile.General.Colours.SecondaryPower[secondaryPowerType] = {r, g, b} UUF:LoadCustomColours() UUF:UpdateAllUnitFrames() end)
+            SecondaryPowerColourPicker:SetCallback("OnValueChanged", function(widget, _, r, g, b) UUF.db.profile.General.Colours.SecondaryPower[secondaryPowerType] = {r, g, b} UUF:LoadCustomColours() RefreshConfigPreview() end)
             SecondaryPowerColourPicker:SetHasAlpha(false)
             SecondaryPowerColourPicker:SetRelativeWidth(0.2)
             Container:AddChild(SecondaryPowerColourPicker)
@@ -679,7 +745,7 @@ local function CreateColourSettings(containerParent)
         ReactionColourPicker:SetLabel(Reaction[reactionType])
         local R, G, B = unpack(UUF.db.profile.General.Colours.Reaction[reactionType])
         ReactionColourPicker:SetColor(R, G, B)
-        ReactionColourPicker:SetCallback("OnValueChanged", function(widget, _, r, g, b) UUF.db.profile.General.Colours.Reaction[reactionType] = {r, g, b} UUF:LoadCustomColours() UUF:UpdateAllUnitFrames() end)
+        ReactionColourPicker:SetCallback("OnValueChanged", function(widget, _, r, g, b) UUF.db.profile.General.Colours.Reaction[reactionType] = {r, g, b} UUF:LoadCustomColours() RefreshConfigPreview() end)
         ReactionColourPicker:SetHasAlpha(false)
         ReactionColourPicker:SetRelativeWidth(0.25)
         Container:AddChild(ReactionColourPicker)
@@ -694,7 +760,7 @@ local function CreateColourSettings(containerParent)
         DispelColourPicker:SetLabel(dispelType)
         local R, G, B = unpack(UUF.db.profile.General.Colours.Dispel[dispelType])
         DispelColourPicker:SetColor(R, G, B)
-        DispelColourPicker:SetCallback("OnValueChanged", function(widget, _, r, g, b) UUF.db.profile.General.Colours.Dispel[dispelType] = {r, g, b} UUF:LoadCustomColours() UUF:UpdateAllUnitFrames() end)
+        DispelColourPicker:SetCallback("OnValueChanged", function(widget, _, r, g, b) UUF.db.profile.General.Colours.Dispel[dispelType] = {r, g, b} UUF:LoadCustomColours() RefreshConfigPreview() end)
         DispelColourPicker:SetHasAlpha(false)
         DispelColourPicker:SetRelativeWidth(0.2)
         Container:AddChild(DispelColourPicker)
@@ -3007,7 +3073,7 @@ local function CreateAuraDurationSettings(containerParent)
     local ColourPicker = AG:Create("ColorPicker")
     ColourPicker:SetLabel("Cooldown Text Colour")
     ColourPicker:SetColor(1, 1, 1, 1)
-    ColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) for _, unitDB in pairs(UUF.db.profile.Units) do unitDB.Auras.AuraDuration.Colour = {r, g, b} end UUF:UpdateAllUnitFrames() end)
+    ColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) for _, unitDB in pairs(UUF.db.profile.Units) do unitDB.Auras.AuraDuration.Colour = {r, g, b} end RefreshConfigPreview() end)
     ColourPicker:SetHasAlpha(false)
     ColourPicker:SetRelativeWidth(0.5)
     AuraDurationContainer:AddChild(ColourPicker)
@@ -3015,7 +3081,7 @@ local function CreateAuraDurationSettings(containerParent)
     local ScaleByIconSizeCheckbox = AG:Create("CheckBox")
     ScaleByIconSizeCheckbox:SetLabel("Scale Cooldown Text By Icon Size")
     ScaleByIconSizeCheckbox:SetValue(false)
-    ScaleByIconSizeCheckbox:SetCallback("OnValueChanged", function(_, _, value) for _, unitDB in pairs(UUF.db.profile.Units) do unitDB.Auras.AuraDuration.ScaleByIconSize = value end UUF:UpdateAllUnitFrames() end)
+    ScaleByIconSizeCheckbox:SetCallback("OnValueChanged", function(_, _, value) for _, unitDB in pairs(UUF.db.profile.Units) do unitDB.Auras.AuraDuration.ScaleByIconSize = value end RefreshConfigPreview() end)
     ScaleByIconSizeCheckbox:SetRelativeWidth(0.5)
     AuraDurationContainer:AddChild(ScaleByIconSizeCheckbox)
 
@@ -3024,7 +3090,7 @@ local function CreateAuraDurationSettings(containerParent)
     AnchorFromDropdown:SetLabel("Anchor From")
     AnchorFromDropdown:SetValue("CENTER")
     AnchorFromDropdown:SetRelativeWidth(0.5)
-    AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) for _, unitDB in pairs(UUF.db.profile.Units) do unitDB.Auras.AuraDuration.Layout[1] = value end UUF:UpdateAllUnitFrames() end)
+    AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) for _, unitDB in pairs(UUF.db.profile.Units) do unitDB.Auras.AuraDuration.Layout[1] = value end RefreshConfigPreview() end)
     AuraDurationContainer:AddChild(AnchorFromDropdown)
 
     local AnchorToDropdown = AG:Create("Dropdown")
@@ -3032,7 +3098,7 @@ local function CreateAuraDurationSettings(containerParent)
     AnchorToDropdown:SetLabel("Anchor To")
     AnchorToDropdown:SetValue("CENTER")
     AnchorToDropdown:SetRelativeWidth(0.5)
-    AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) for _, unitDB in pairs(UUF.db.profile.Units) do unitDB.Auras.AuraDuration.Layout[2] = value end UUF:UpdateAllUnitFrames() end)
+    AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) for _, unitDB in pairs(UUF.db.profile.Units) do unitDB.Auras.AuraDuration.Layout[2] = value end RefreshConfigPreview() end)
     AuraDurationContainer:AddChild(AnchorToDropdown)
 
     local XPosSlider = AG:Create("Slider")
@@ -3040,7 +3106,7 @@ local function CreateAuraDurationSettings(containerParent)
     XPosSlider:SetValue(0)
     XPosSlider:SetSliderValues(-1000, 1000, 0.1)
     XPosSlider:SetRelativeWidth(0.33)
-    XPosSlider:SetCallback("OnValueChanged", function(_, _, value) for _, unitDB in pairs(UUF.db.profile.Units) do unitDB.Auras.AuraDuration.Layout[3] = value end UUF:UpdateAllUnitFrames() end)
+    XPosSlider:SetCallback("OnValueChanged", function(_, _, value) for _, unitDB in pairs(UUF.db.profile.Units) do unitDB.Auras.AuraDuration.Layout[3] = value end RefreshConfigPreview() end)
     AuraDurationContainer:AddChild(XPosSlider)
 
     local YPosSlider = AG:Create("Slider")
@@ -3048,7 +3114,7 @@ local function CreateAuraDurationSettings(containerParent)
     YPosSlider:SetValue(0)
     YPosSlider:SetSliderValues(-1000, 1000, 0.1)
     YPosSlider:SetRelativeWidth(0.33)
-    YPosSlider:SetCallback("OnValueChanged", function(_, _, value) for _, unitDB in pairs(UUF.db.profile.Units) do unitDB.Auras.AuraDuration.Layout[4] = value end UUF:UpdateAllUnitFrames() end)
+    YPosSlider:SetCallback("OnValueChanged", function(_, _, value) for _, unitDB in pairs(UUF.db.profile.Units) do unitDB.Auras.AuraDuration.Layout[4] = value end RefreshConfigPreview() end)
     AuraDurationContainer:AddChild(YPosSlider)
 
     local FontSizeSlider = AG:Create("Slider")
@@ -3056,7 +3122,7 @@ local function CreateAuraDurationSettings(containerParent)
     FontSizeSlider:SetValue(12)
     FontSizeSlider:SetSliderValues(8, 64, 1)
     FontSizeSlider:SetRelativeWidth(0.33)
-    FontSizeSlider:SetCallback("OnValueChanged", function(_, _, value) for _, unitDB in pairs(UUF.db.profile.Units) do unitDB.Auras.AuraDuration.FontSize = value end UUF:UpdateAllUnitFrames() end)
+    FontSizeSlider:SetCallback("OnValueChanged", function(_, _, value) for _, unitDB in pairs(UUF.db.profile.Units) do unitDB.Auras.AuraDuration.FontSize = value end RefreshConfigPreview() end)
     FontSizeSlider:SetDisabled(false)
     AuraDurationContainer:AddChild(FontSizeSlider)
 end
@@ -3078,7 +3144,7 @@ local function CreateGlobalSettings(containerParent)
             unitDB.HealthBar.ColourWhenTapped = true
             unitDB.HealthBar.ColourBackgroundByClass = false
         end
-        UUF:UpdateAllUnitFrames()
+        RefreshConfigPreview()
     end)
     ToggleContainer:AddChild(ApplyColours)
 
@@ -3091,7 +3157,7 @@ local function CreateGlobalSettings(containerParent)
             unitDB.HealthBar.ColourWhenTapped = false
             unitDB.HealthBar.ColourBackgroundByClass = false
         end
-        UUF:UpdateAllUnitFrames()
+        RefreshConfigPreview()
     end)
     ToggleContainer:AddChild(RemoveColours)
 
@@ -3710,6 +3776,7 @@ function UUF:CreateGUI()
         end
         if MainTab == "Boss" then EnableBossFramesTestMode() else DisableBossFramesTestMode() end
         if MainTab == "Party" then EnablePartyFramesTestMode() else DisablePartyFramesTestMode() end
+        if MainTab == "Raid" then EnableRaidFramesTestMode() else DisableRaidFramesTestMode() end
         GenerateSupportText(Container)
     end
 

@@ -7,6 +7,13 @@ local PARTY_TEST_ROLES = {
     [3] = "DAMAGER",
     [4] = "DAMAGER",
 }
+local RAID_TEST_ROLES = {
+    [1] = "TANK",
+    [2] = "HEALER",
+    [3] = "DAMAGER",
+    [4] = "DAMAGER",
+    [5] = "HEALER",
+}
 
 local function UsesHealerOnlyPowerBar(unit)
     local normalizedUnit = UUF:GetNormalizedUnit(unit)
@@ -18,6 +25,15 @@ local function GetUnitAssignedRole(unitFrame, unit)
     if normalizedUnit == "party" and UUF.PARTY_TEST_MODE and unitFrame and not unitFrame.unit then
         local unitIndex = tonumber((unit or ""):match("(%d+)$"))
         return PARTY_TEST_ROLES[unitIndex] or "NONE"
+    end
+
+    if normalizedUnit == "raid" and UUF.RAID_TEST_MODE and unitFrame and not unitFrame.unit then
+        local unitIndex = tonumber((unit or ""):match("(%d+)$"))
+        if unitIndex then
+            local roleIndex = ((unitIndex - 1) % #RAID_TEST_ROLES) + 1
+            return RAID_TEST_ROLES[roleIndex] or "NONE"
+        end
+        return "NONE"
     end
 
     return UnitGroupRolesAssigned((unitFrame and unitFrame.unit) or unit)

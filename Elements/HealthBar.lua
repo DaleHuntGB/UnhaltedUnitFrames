@@ -1,4 +1,42 @@
 local _, UUF = ...
+local oUF = UUF.oUF
+
+local function EnsureUnitFrameColors(unitFrame)
+    if rawget(unitFrame, "colors") then return end
+
+    unitFrame.colors = setmetatable({}, {__index = oUF.colors})
+end
+
+local function GetHealthBarFallbackColor(unit, healthBarDB)
+    if unit == "pet" and healthBarDB.ColourByClass then
+        local unitClass = select(2, UnitClass("player"))
+        local unitColor = unitClass and RAID_CLASS_COLORS[unitClass]
+        if unitColor then
+            return unitColor.r, unitColor.g, unitColor.b, healthBarDB.ForegroundOpacity
+        end
+    end
+
+    return healthBarDB.Foreground[1], healthBarDB.Foreground[2], healthBarDB.Foreground[3], healthBarDB.ForegroundOpacity
+end
+
+local function ApplyHealthBarColors(unitFrame, unit, healthBarDB)
+    local healthBar = unitFrame.Health
+    if not healthBar then return end
+
+    local useClassReactionColour = unit ~= "pet" and healthBarDB.ColourByClass
+    local useReactionColour = useClassReactionColour and healthBarDB.ColourByReaction ~= false
+    local r, g, b, a = GetHealthBarFallbackColor(unit, healthBarDB)
+
+    EnsureUnitFrameColors(unitFrame)
+    unitFrame.colors.health = oUF:CreateColor(r, g, b, a or 1)
+
+    healthBar:SetStatusBarColor(r, g, b, a or 1)
+    healthBar.colorClass = useClassReactionColour
+    healthBar.colorReaction = useReactionColour
+    healthBar.colorTapped = healthBarDB.ColourWhenTapped
+    healthBar.colorDisconnected = true
+    healthBar.colorHealth = true
+end
 
 function UUF:CreateUnitHealthBar(unitFrame, unit)
     local FrameDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Frame
@@ -20,23 +58,9 @@ function UUF:CreateUnitHealthBar(unitFrame, unit)
         HealthBar:SetSize(FrameDB.Width - 2, FrameDB.Height - 2)
         HealthBar:SetStatusBarTexture(UUF.Media.Foreground)
         HealthBar:SetFrameLevel(unitContainer:GetFrameLevel() + 2)
-        HealthBar:SetStatusBarColor(HealthBarDB.Foreground[1], HealthBarDB.Foreground[2], HealthBarDB.Foreground[3], HealthBarDB.ForegroundOpacity)
-        HealthBar.colorClass = HealthBarDB.ColourByClass
-        HealthBar.colorReaction = HealthBarDB.ColourByClass
-        HealthBar.colorTapped = HealthBarDB.ColourWhenTapped
-
-        if unit == "pet" and HealthBarDB.ColourByClass then
-            HealthBar.colorClass = false
-            HealthBar.colorReaction = false
-            HealthBar.colorHealth = false
-            local unitClass = select(2, UnitClass("player"))
-            local unitColor = RAID_CLASS_COLORS[unitClass]
-            if unitColor then
-                HealthBar:SetStatusBarColor(unitColor.r, unitColor.g, unitColor.b, HealthBarDB.ForegroundOpacity)
-            end
-        end
 
         unitFrame.Health = HealthBar
+        ApplyHealthBarColors(unitFrame, unit, HealthBarDB)
 
         unitFrame.Health.PostUpdate = function(_, _, curHP, maxHP)
             local unitHP = unitFrame.HealthBackground
@@ -87,21 +111,8 @@ function UUF:UpdateUnitHealthBar(unitFrame, unit)
 
     if unitFrame.Health then
         unitFrame.Health:SetSize(FrameDB.Width - 2, FrameDB.Height - 2)
-        unitFrame.Health:SetStatusBarColor(HealthBarDB.Foreground[1], HealthBarDB.Foreground[2], HealthBarDB.Foreground[3], HealthBarDB.ForegroundOpacity)
-        unitFrame.Health.colorClass = HealthBarDB.ColourByClass
-        unitFrame.Health.colorReaction = HealthBarDB.ColourByClass
-        unitFrame.Health.colorTapped = HealthBarDB.ColourWhenTapped
         unitFrame.Health:SetStatusBarTexture(UUF.Media.Foreground)
-        if unit == "pet" and HealthBarDB.ColourByClass then
-            unitFrame.Health.colorClass = false
-            unitFrame.Health.colorReaction = false
-            unitFrame.Health.colorHealth = false
-            local unitClass = select(2, UnitClass("player"))
-            local unitColor = RAID_CLASS_COLORS[unitClass]
-            if unitColor then
-                unitFrame.Health:SetStatusBarColor(unitColor.r, unitColor.g, unitColor.b, HealthBarDB.ForegroundOpacity)
-            end
-        end
+        ApplyHealthBarColors(unitFrame, unit, HealthBarDB)
     end
 
     if unitFrame.HealthBackground then
