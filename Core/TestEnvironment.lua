@@ -155,6 +155,7 @@ local function ApplyTestTag(fontString, ownerFrame, tagDB, generalDB, text)
     end
     fontString:SetTextColor(unpack(tagDB.Colour))
     fontString:SetText(text or "")
+    fontString:Show()
 end
 
 local function GetTestData(index, label)
@@ -187,19 +188,42 @@ local function ApplySharedTestFrameState(unitFrame, unitToken, unitDB, tagsDB, l
     UnregisterUnitWatch(unitFrame)
     unitFrame:SetFrameStrata(unitDB.Frame.FrameStrata)
     unitFrame:SetShown(unitDB.Enabled)
+    unitFrame:SetAlpha(1)
+
+    if unitFrame.Container then
+        unitFrame.Container:Show()
+    end
+
+    if unitFrame.HighLevelContainer then
+        unitFrame.HighLevelContainer:Show()
+    end
 
     if unitFrame.Health then
+        unitFrame.Health:Show()
+        unitFrame.Health:SetStatusBarTexture(UUF.Media.Foreground)
         unitFrame.Health:SetMinMaxValues(0, testData.maxHealth)
         unitFrame.Health:SetValue(testData.health)
+    end
+
+    if unitFrame.HealthBackground then
+        unitFrame.HealthBackground:Show()
+        unitFrame.HealthBackground:SetStatusBarTexture(UUF.Media.Background)
         unitFrame.HealthBackground:SetMinMaxValues(0, testData.maxHealth)
         unitFrame.HealthBackground:SetValue(testData.missingHealth)
         unitFrame.HealthBackground:SetStatusBarColor(GetTestUnitColour(index, healthBarDB.Background, healthBarDB.ColourBackgroundByClass, healthBarDB.BackgroundOpacity))
+    end
+
+    if unitFrame.Health then
         unitFrame.Health:SetStatusBarColor(GetTestUnitColour(index, healthBarDB.Foreground, healthBarDB.ColourByClass, healthBarDB.ForegroundOpacity))
     end
 
     if unitFrame.Power then
+        unitFrame.Power:SetStatusBarTexture(UUF.Media.Foreground)
         unitFrame.Power:SetMinMaxValues(0, testData.maxPower)
         unitFrame.Power:SetValue(testData.power)
+        if unitFrame.Power.Background then
+            unitFrame.Power.Background:SetTexture(UUF.Media.Background)
+        end
     end
 
     if unitFrame.RaidTargetIndicator and raidTargetMarkerCoords[((index - 1) % #raidTargetMarkerCoords) + 1] then
@@ -213,7 +237,11 @@ local function ApplySharedTestFrameState(unitFrame, unitToken, unitDB, tagsDB, l
         UUF:CreateTestCastBar(unitFrame, unitToken)
     end
 
-    if unitFrame.Tags and tagsDB then
+    if tagsDB then
+        if not unitFrame.Tags then
+            UUF:CreateUnitTags(unitFrame, unitToken)
+        end
+
         ApplyTestTag(unitFrame.Tags.TagOne, unitFrame, tagsDB.TagOne, generalDB, testData.name)
         ApplyTestTag(unitFrame.Tags.TagTwo, unitFrame, tagsDB.TagTwo, generalDB, string.format("%.1f%%", testData.percent))
         ApplyTestTag(unitFrame.Tags.TagThree, unitFrame, tagsDB.TagThree, generalDB, tostring(testData.power))
