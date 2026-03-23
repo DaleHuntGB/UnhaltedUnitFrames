@@ -862,7 +862,7 @@ function UUF:UpdateUnitFrame(unitFrame, unit)
         unitFrame.TargetIndicator:SetAlpha(0)
     end
     UUF:UpdateUnitAuras(unitFrame, unit)
-    UUF:UpdateUnitTags()
+    UUF:UpdateUnitFrameTags(unitFrame, unit)
     unitFrame:SetFrameStrata(UnitDB.Frame.FrameStrata)
 end
 

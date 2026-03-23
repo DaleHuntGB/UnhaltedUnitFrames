@@ -87,6 +87,14 @@ local function LayoutUnitPowerBar(unitFrame, unit, width)
     end
 end
 
+local function UpdateGroupedPowerBars(unit)
+    if not unit then return end
+
+    UUF:ForEachManagedUnitFrame(unit, function(unitFrame, actualUnit)
+        UUF:UpdateUnitPowerBar(unitFrame, actualUnit)
+    end)
+end
+
 function UUF:CreateUnitPowerBar(unitFrame, unit)
     local FrameDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Frame
     local PowerBarDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].PowerBar
@@ -193,12 +201,12 @@ PowerBarRoleUpdateFrame:SetScript("OnEvent", function()
 
     local partyPowerBarDB = UUF.db.profile.Units.party and UUF.db.profile.Units.party.PowerBar
     if partyPowerBarDB and partyPowerBarDB.Enabled and partyPowerBarDB.OnlyHealers then
-        UUF:UpdatePartyFrames()
+        UpdateGroupedPowerBars("party")
     end
 
     local raidPowerBarDB = UUF.db.profile.Units.raid and UUF.db.profile.Units.raid.PowerBar
     if raidPowerBarDB and raidPowerBarDB.Enabled and raidPowerBarDB.OnlyHealers then
-        UUF:UpdateRaidFrames()
+        UpdateGroupedPowerBars("raid")
     end
 end)
 
