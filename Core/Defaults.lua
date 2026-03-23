@@ -103,6 +103,14 @@ local Defaults = {
                     },
                 },
                 HealPrediction = {
+                    IncomingHeals = {
+                        Enabled = true,
+                        UseStripedTexture = false,
+                        MatchParentHeight = true,
+                        Colour = {64/255, 255/255, 128/255, 0.8},
+                        Position = "ATTACH",
+                        Height = 40,
+                    },
                     Absorbs = {
                         Enabled = true,
                         UseStripedTexture = true,
@@ -336,6 +344,14 @@ local Defaults = {
                     },
                 },
                 HealPrediction = {
+                    IncomingHeals = {
+                        Enabled = true,
+                        UseStripedTexture = false,
+                        MatchParentHeight = true,
+                        Colour = {64/255, 255/255, 128/255, 0.8},
+                        Position = "ATTACH",
+                        Height = 40,
+                    },
                     Absorbs = {
                         Enabled = true,
                         UseStripedTexture = true,
@@ -537,6 +553,14 @@ local Defaults = {
                     BackgroundOpacity = 1.0,
                 },
                 HealPrediction = {
+                    IncomingHeals = {
+                        Enabled = true,
+                        UseStripedTexture = false,
+                        MatchParentHeight = true,
+                        Colour = {64/255, 255/255, 128/255, 0.8},
+                        Position = "ATTACH",
+                        Height = 20,
+                    },
                     Absorbs = {
                         Enabled = true,
                         UseStripedTexture = true,
@@ -725,6 +749,14 @@ local Defaults = {
                     },
                 },
                 HealPrediction = {
+                    IncomingHeals = {
+                        Enabled = true,
+                        UseStripedTexture = false,
+                        MatchParentHeight = true,
+                        Colour = {64/255, 255/255, 128/255, 0.8},
+                        Position = "ATTACH",
+                        Height = 20,
+                    },
                     Absorbs = {
                         Enabled = true,
                         UseStripedTexture = true,
@@ -910,6 +942,14 @@ local Defaults = {
                     BackgroundOpacity = 1.0,
                 },
                 HealPrediction = {
+                    IncomingHeals = {
+                        Enabled = true,
+                        UseStripedTexture = false,
+                        MatchParentHeight = true,
+                        Colour = {64/255, 255/255, 128/255, 0.8},
+                        Position = "ATTACH",
+                        Height = 20,
+                    },
                     Absorbs = {
                         Enabled = true,
                         UseStripedTexture = true,
@@ -1094,6 +1134,14 @@ local Defaults = {
                     BackgroundOpacity = 1.0,
                 },
                 HealPrediction = {
+                    IncomingHeals = {
+                        Enabled = true,
+                        UseStripedTexture = false,
+                        MatchParentHeight = true,
+                        Colour = {64/255, 255/255, 128/255, 0.8},
+                        Position = "ATTACH",
+                        Height = 20,
+                    },
                     Absorbs = {
                         Enabled = true,
                         UseStripedTexture = true,
@@ -1283,6 +1331,14 @@ local Defaults = {
                     },
                 },
                 HealPrediction = {
+                    IncomingHeals = {
+                        Enabled = true,
+                        UseStripedTexture = false,
+                        MatchParentHeight = true,
+                        Colour = {64/255, 255/255, 128/255, 0.8},
+                        Position = "ATTACH",
+                        Height = 30,
+                    },
                     Absorbs = {
                         Enabled = true,
                         UseStripedTexture = true,
@@ -1490,6 +1546,14 @@ local Defaults = {
                     },
                 },
                 HealPrediction = {
+                    IncomingHeals = {
+                        Enabled = true,
+                        UseStripedTexture = false,
+                        MatchParentHeight = true,
+                        Colour = {64/255, 255/255, 128/255, 0.8},
+                        Position = "ATTACH",
+                        Height = 36,
+                    },
                     Absorbs = {
                         Enabled = true,
                         UseStripedTexture = true,
@@ -1683,6 +1747,14 @@ local Defaults = {
                     BackgroundOpacity = 1.0,
                 },
                 HealPrediction = {
+                    IncomingHeals = {
+                        Enabled = true,
+                        UseStripedTexture = false,
+                        MatchParentHeight = true,
+                        Colour = {64/255, 255/255, 128/255, 0.8},
+                        Position = "ATTACH",
+                        Height = 40,
+                    },
                     Absorbs = {
                         Enabled = true,
                         UseStripedTexture = true,
