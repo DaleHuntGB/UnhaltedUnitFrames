@@ -211,6 +211,16 @@ oUF.Tags.Methods["curhp:abbr"] = function(unit)
     end
 end
 
+oUF.Tags.Methods["perhp"] = function(unit)
+    if not unit or not UnitExists(unit) then return "" end
+    local unitStatus = UnitIsDead(unit) and "Dead" or UnitIsGhost(unit) and "Ghost" or not UnitIsConnected(unit) and "Offline"
+    if unitStatus then
+        return unitStatus
+    end
+
+    return string.format("%.0f%%", UnitHealthPercent(unit, false, CurveConstants.ScaleTo100))
+end
+
 oUF.Tags.Methods["curhpperhp"] = function(unit)
     if not unit or not UnitExists(unit) then return "" end
     local unitHealth = UnitHealth(unit)

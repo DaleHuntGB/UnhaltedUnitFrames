@@ -2,6 +2,7 @@ local _, UUF = ...
 local isRetail = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
 
 UUF.RangeEvtFrames = {}
+UUF.RangeStatusCache = UUF.RangeStatusCache or {}
 
 --[[
     Range spell data derived from LibRangeCheck-3.0
@@ -260,8 +261,13 @@ RangeEventFrame:RegisterEvent("UNIT_TARGET")
 RangeEventFrame:RegisterEvent("SPELL_UPDATE_COOLDOWN")
 RangeEventFrame:RegisterEvent("GROUP_ROSTER_UPDATE")
 RangeEventFrame:RegisterEvent("UNIT_CONNECTION")
+RangeEventFrame:RegisterEvent("UNIT_IN_RANGE_UPDATE")
 RangeEventFrame:RegisterEvent("UNIT_FLAGS")
-RangeEventFrame:SetScript("OnEvent", function()
+RangeEventFrame:SetScript("OnEvent", function(_, event)
+    if event == "GROUP_ROSTER_UPDATE" then
+        wipe(UUF.RangeStatusCache)
+    end
+
     for _, frameData in ipairs(UUF.RangeEvtFrames) do
         local frame = frameData.frame
         if frame then
@@ -350,6 +356,28 @@ local function FriendlyIsInRange(realUnit)
     return UnitInSpellsRange(unit, "friendly")
 end
 
+local function IsGroupedRangeUnit(unit)
+    return unit and (unit:match("^party%d+$") or unit:match("^raid%d+$"))
+end
+
+local function GroupedUnitInRange(unit)
+    if not unit then return nil end
+
+    if isRetail and UnitPhaseReason(unit) then
+        return false
+    end
+
+    local inRange, checkedRange = UnitInRange(unit)
+    if NotSecretValue(checkedRange) and checkedRange then
+        if NotSecretValue(inRange) then
+            return inRange
+        end
+        return nil
+    end
+
+    return nil
+end
+
 function UUF:RegisterRangeFrame(frameName, unit)
     if not frameName or not unit then return end
 
@@ -396,7 +424,12 @@ function UUF:UpdateRangeAlpha(frame, unit)
     local outAlpha = RangeDB.OutOfRange or 0.5
     local inRange;
 
-    if UnitIsDeadOrGhost(unit) then
+    if IsGroupedRangeUnit(unit) and UnitIsConnected(unit) then
+        inRange = GroupedUnitInRange(unit)
+        if inRange == nil and not InCombatLockdown() then
+            inRange = FriendlyIsInRange(unit)
+        end
+    elseif UnitIsDeadOrGhost(unit) then
         inRange = UnitInSpellsRange(unit, "resurrect")
     elseif UnitCanAttack("player", unit) then
         inRange = UnitInSpellsRange(unit, "enemy")
@@ -409,6 +442,17 @@ function UUF:UpdateRangeAlpha(frame, unit)
             inRange = FriendlyIsInRange(unit)
         else
             inRange = false
+        end
+    end
+
+    if IsGroupedRangeUnit(unit) then
+        if inRange ~= nil then
+            UUF.RangeStatusCache[unit] = inRange
+        else
+            inRange = UUF.RangeStatusCache[unit]
+            if inRange == nil then
+                return
+            end
         end
     end
 
