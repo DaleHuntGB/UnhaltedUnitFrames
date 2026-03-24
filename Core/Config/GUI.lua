@@ -299,18 +299,27 @@ local function DisableBossFramesTestMode()
     if not UUF.BOSS_TEST_MODE then return end
     UUF.BOSS_TEST_MODE = false
     UUF:CreateTestBossFrames()
+    UUF:UpdateBossFrames()
+    UUF:RefreshLiveUnitTags("boss")
+    UUFG:UpdateAllTags()
 end
 
 local function DisablePartyFramesTestMode()
     if not UUF.PARTY_TEST_MODE then return end
     UUF.PARTY_TEST_MODE = false
     UUF:CreateTestPartyFrames()
+    UUF:UpdatePartyFrames()
+    UUF:RefreshLiveUnitTags("party")
+    UUFG:UpdateAllTags()
 end
 
 local function DisableRaidFramesTestMode()
     if not UUF.RAID_TEST_MODE then return end
     UUF.RAID_TEST_MODE = false
     UUF:CreateTestRaidFrames()
+    UUF:UpdateRaidFrames()
+    UUF:RefreshLiveUnitTags("raid")
+    UUFG:UpdateAllTags()
     if UUF.RAID or #UUF.RAID_GROUP_HEADERS > 0 then
         UUF:ToggleUnitFrameVisibility("raid")
     end
@@ -331,6 +340,13 @@ local function DisableAllTestModes()
     UUF:CreateTestBossFrames()
     UUF:CreateTestPartyFrames()
     UUF:CreateTestRaidFrames()
+    UUF:UpdateBossFrames()
+    UUF:UpdatePartyFrames()
+    UUF:UpdateRaidFrames()
+    UUF:RefreshLiveUnitTags("boss")
+    UUF:RefreshLiveUnitTags("party")
+    UUF:RefreshLiveUnitTags("raid")
+    UUFG:UpdateAllTags()
     if UUF.RAID or #UUF.RAID_GROUP_HEADERS > 0 then
         UUF:ToggleUnitFrameVisibility("raid")
     end
@@ -344,6 +360,12 @@ local function RefreshGroupedTestFrames(unit)
     elseif unit == "raid" and UUF.RAID_TEST_MODE then
         UUF:CreateTestRaidFrames()
     end
+end
+
+local function IsGroupedTagTestModeActive(unit)
+    return (unit == "boss" and UUF.BOSS_TEST_MODE)
+        or (unit == "party" and UUF.PARTY_TEST_MODE)
+        or (unit == "raid" and UUF.RAID_TEST_MODE)
 end
 
 local function UpdateManagedUnitMethod(unit, methodName, ...)
@@ -2829,6 +2851,11 @@ end
 local function CreateTagSetting(containerParent, unit, tagDB)
     local TagDB = UUF.db.profile.Units[unit].Tags[tagDB]
     local function UpdateTagSettings()
+        if IsGroupedTagTestModeActive(unit) then
+            RefreshGroupedTestFrames(unit)
+            return
+        end
+
         UpdateManagedUnitMethod(unit, "UpdateUnitFrame")
         UUF:RefreshLiveUnitTags(unit)
         UUFG:UpdateAllTags()
