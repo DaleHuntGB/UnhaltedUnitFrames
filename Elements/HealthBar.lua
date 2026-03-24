@@ -38,6 +38,14 @@ local function ApplyHealthBarColors(unitFrame, unit, healthBarDB)
     healthBar.colorHealth = true
 end
 
+local function GetHealthInterpolationMode(healthBarDB)
+    local statusBarInterpolation = Enum and Enum.StatusBarInterpolation
+    local healthInterpolationImmediate = statusBarInterpolation and statusBarInterpolation.Immediate or 0
+    local healthInterpolationSmooth = statusBarInterpolation and statusBarInterpolation.ExponentialEaseOut or 1
+
+    return healthBarDB and healthBarDB.Smoothing and healthInterpolationSmooth or healthInterpolationImmediate
+end
+
 function UUF:CreateUnitHealthBar(unitFrame, unit)
     local FrameDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Frame
     local HealthBarDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].HealthBar
@@ -58,16 +66,18 @@ function UUF:CreateUnitHealthBar(unitFrame, unit)
         HealthBar:SetSize(FrameDB.Width - 2, FrameDB.Height - 2)
         HealthBar:SetStatusBarTexture(UUF.Media.Foreground)
         HealthBar:SetFrameLevel(unitContainer:GetFrameLevel() + 2)
+        HealthBar.smoothing = GetHealthInterpolationMode(HealthBarDB)
 
         unitFrame.Health = HealthBar
         ApplyHealthBarColors(unitFrame, unit, HealthBarDB)
 
         unitFrame.Health.PostUpdate = function(_, _, curHP, maxHP)
             local unitHP = unitFrame.HealthBackground
+            local interpolationMode = GetHealthInterpolationMode(HealthBarDB)
             maxHP = maxHP or 1
             curHP = curHP or 0
             unitHP:SetMinMaxValues(0, maxHP)
-            unitHP:SetValue(UnitHealthMissing(unitFrame.unit, true))
+            unitHP:SetValue(UnitHealthMissing(unitFrame.unit, true), interpolationMode)
             if HealthBarDB.ColourBackgroundByClass then
                 local unitToColour = unitFrame.unit ~= "pet" and unitFrame.unit or "player"
                 local r, g, b = UUF:GetUnitColour(unitToColour)
@@ -112,6 +122,7 @@ function UUF:UpdateUnitHealthBar(unitFrame, unit)
     if unitFrame.Health then
         unitFrame.Health:SetSize(FrameDB.Width - 2, FrameDB.Height - 2)
         unitFrame.Health:SetStatusBarTexture(UUF.Media.Foreground)
+        unitFrame.Health.smoothing = GetHealthInterpolationMode(HealthBarDB)
         ApplyHealthBarColors(unitFrame, unit, HealthBarDB)
     end
 

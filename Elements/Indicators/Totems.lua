@@ -1,10 +1,79 @@
 local _, UUF = ...
+local MAX_TOTEM_SLOTS = _G.MAX_TOTEMS or 4
 
 local function FetchAuraDurationRegion(cooldown)
     if not cooldown then return end
     for _, region in ipairs({ cooldown:GetRegions() }) do
         if region:GetObjectType() == "FontString" then return region end
     end
+end
+
+local function PositionTotem(totem, anchorFrame, TotemsDB, displayIndex)
+    if not totem or not anchorFrame or not TotemsDB then return end
+
+    local anchorFrom = TotemsDB.Layout[1]
+    local anchorTo = TotemsDB.Layout[2]
+    local baseXOffset = TotemsDB.Layout[3]
+    local baseYOffset = TotemsDB.Layout[4]
+    local spacing = TotemsDB.Layout[5] or 0
+    local size = TotemsDB.Size or 0
+    local growthDirection = TotemsDB.GrowthDirection or "LEFT"
+    local slotOffset = ((displayIndex or 1) - 1) * (size + spacing)
+
+    local xOffset = baseXOffset
+    local yOffset = baseYOffset
+
+    if growthDirection == "RIGHT" then
+        xOffset = xOffset + slotOffset
+    elseif growthDirection == "UP" then
+        yOffset = yOffset + slotOffset
+    elseif growthDirection == "DOWN" then
+        yOffset = yOffset - slotOffset
+    else
+        xOffset = xOffset - slotOffset
+    end
+
+    totem:ClearAllPoints()
+    totem:SetPoint(anchorFrom, anchorFrame, anchorTo, xOffset, yOffset)
+end
+
+local function RefreshTotemDisplay(unitFrame)
+    if not unitFrame or not unitFrame.Totems then return end
+
+    local unit = unitFrame.unit or unitFrame:GetAttribute("unit") or "player"
+    local TotemsDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Indicators.Totems
+    local anchorFrame = unitFrame.HighLevelContainer or unitFrame
+    local visibleIndex = 0
+
+    for slot = 1, MAX_TOTEM_SLOTS do
+        local totem = unitFrame.Totems[slot]
+        if totem then
+            local haveTotem, _, start, duration, icon = GetTotemInfo(slot)
+            if haveTotem and duration and duration > 0 then
+                visibleIndex = visibleIndex + 1
+
+                totem:SetSize(TotemsDB.Size, TotemsDB.Size)
+                PositionTotem(totem, anchorFrame, TotemsDB, visibleIndex)
+
+                if totem.Icon then
+                    totem.Icon:SetTexture(icon)
+                    totem.Icon:Show()
+                end
+
+                if totem.Cooldown then
+                    totem.Cooldown:SetCooldown(start, duration)
+                end
+
+                totem:Show()
+            else
+                totem:Hide()
+            end
+        end
+    end
+end
+
+local function UpdateTotemBySlot(self)
+    RefreshTotemDisplay(self)
 end
 
 local function ApplyAuraDuration(icon, unit)
@@ -44,20 +113,17 @@ function UUF:CreateUnitTotems(unitFrame, unit)
 
     if not TotemsDB.Enabled then return end
 
+    local anchorFrame = unitFrame.HighLevelContainer or unitFrame
     local Totems = {}
-    local anchorFrom = TotemsDB.Layout[1]
-    local anchorTo = TotemsDB.Layout[2]
-    local xOffset = TotemsDB.Layout[3]
-    local yOffset = TotemsDB.Layout[4]
 
-    -- Create 4 totems but stack them all in the same position
-    for index = 1, 4 do
-        local Totem = CreateFrame('Button', nil, unitFrame, 'SecureActionButtonTemplate')
+    for index = 1, MAX_TOTEM_SLOTS do
+        local Totem = CreateFrame('Button', nil, anchorFrame, 'SecureActionButtonTemplate')
         Totem:SetSize(TotemsDB.Size, TotemsDB.Size)
-        Totem:SetPoint(anchorFrom, unitFrame, anchorTo, xOffset, yOffset)
         Totem:RegisterForClicks("RightButtonUp", "RightButtonDown")
         Totem:SetAttribute("type2", "destroytotem")
         Totem:SetAttribute("totem-slot2", index)
+        Totem:SetID(index)
+        PositionTotem(Totem, anchorFrame, TotemsDB, index)
 
         local Border = Totem:CreateTexture(nil, 'BACKGROUND')
         Border:SetAllPoints()
@@ -81,41 +147,52 @@ function UUF:CreateUnitTotems(unitFrame, unit)
         Totem.Border = Border
         Totem.Icon = Icon
         Totem.Cooldown = Cooldown
+        Totem:Hide()
 
         Totems[index] = Totem
     end
 
+    Totems.Override = UpdateTotemBySlot
     unitFrame.Totems = Totems
 end
 
 function UUF:UpdateUnitTotems(unitFrame, unit)
     local TotemsDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Indicators.Totems
+    local anchorFrame = unitFrame.HighLevelContainer or unitFrame
 
     if TotemsDB.Enabled then
         if not unitFrame.Totems then
             UUF:CreateUnitTotems(unitFrame, unit)
-        else
-            local anchorFrom = TotemsDB.Layout[1]
-            local anchorTo = TotemsDB.Layout[2]
-            local xOffset = TotemsDB.Layout[3]
-            local yOffset = TotemsDB.Layout[4]
-
-            for index = 1, 4 do
-                local Totem = unitFrame.Totems[index]
-                Totem:SetSize(TotemsDB.Size, TotemsDB.Size)
-                Totem:ClearAllPoints()
-                Totem:SetPoint(anchorFrom, unitFrame, anchorTo, xOffset, yOffset)
-                ApplyAuraDuration(Totem.Cooldown, unit)
-            end
         end
 
         if unitFrame.Totems then
-            unitFrame:EnableElement("Totems")
+            for index = 1, MAX_TOTEM_SLOTS do
+                local Totem = unitFrame.Totems[index]
+                if Totem then
+                    Totem:SetSize(TotemsDB.Size, TotemsDB.Size)
+                    Totem:SetAttribute("totem-slot2", index)
+                    Totem:SetID(index)
+                    ApplyAuraDuration(Totem.Cooldown, unit)
+                end
+            end
+
+            if not unitFrame:IsElementEnabled("Totems") then
+                unitFrame:EnableElement("Totems")
+            end
+
             unitFrame.Totems:ForceUpdate()
         end
     else
         if unitFrame.Totems then
-            unitFrame:DisableElement("Totems")
+            if unitFrame:IsElementEnabled("Totems") then
+                unitFrame:DisableElement("Totems")
+            end
+
+            for index = 1, MAX_TOTEM_SLOTS do
+                if unitFrame.Totems[index] then
+                    unitFrame.Totems[index]:Hide()
+                end
+            end
         end
     end
 end

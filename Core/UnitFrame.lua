@@ -695,7 +695,7 @@ function UUF:CreateUnitFrame(unitFrame, unit)
     if UsesLeaderAssistantIndicator(unit) then UUF:CreateUnitLeaderAssistantIndicator(unitFrame, unit) end
     if UsesCombatIndicator(unit) then UUF:CreateUnitCombatIndicator(unitFrame, unit) end
     if isPlayer then UUF:CreateUnitRestingIndicator(unitFrame, unit) end
-    -- if isPlayer then UUF:CreateUnitTotems(unitFrame, unit) end
+    if isPlayer then UUF:CreateUnitTotems(unitFrame, unit) end
     UUF:CreateUnitMouseoverIndicator(unitFrame, unit)
     if UsesTargetIndicator(unit) then UUF:CreateUnitTargetGlowIndicator(unitFrame, unit) end
     UUF:CreateUnitAuras(unitFrame, unit)
@@ -885,7 +885,7 @@ function UUF:UpdateUnitFrame(unitFrame, unit)
         unitFrame.CombatIndicator = nil
     end
     if isPlayer then UUF:UpdateUnitRestingIndicator(unitFrame, unit) end
-    -- if isPlayer then UUF:UpdateUnitTotems(unitFrame, unit) end
+    if isPlayer then UUF:UpdateUnitTotems(unitFrame, unit) end
     UUF:UpdateUnitMouseoverIndicator(unitFrame, unit)
     if UsesTargetIndicator(unit) then
         UUF:UpdateUnitTargetGlowIndicator(unitFrame, unit)

@@ -233,8 +233,6 @@ oUF:RegisterInitCallback(function(unitFrame)
     if not unit then return end
 
     local normalizedUnit = UUF:GetNormalizedUnit(unit)
-    if normalizedUnit ~= "party" and normalizedUnit ~= "raid" then return end
-
     local powerBarDB = UUF.db and UUF.db.profile and UUF.db.profile.Units and UUF.db.profile.Units[normalizedUnit] and UUF.db.profile.Units[normalizedUnit].PowerBar
     if not powerBarDB then return end
 
