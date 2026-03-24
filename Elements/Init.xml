@@ -16,6 +16,7 @@
 	<Script file="Indicators/LeaderAssistant.lua"/>
 	<Script file="Indicators/Mouseover.lua"/>
 	<Script file="Indicators/RaidTargetMarker.lua"/>
+	<Script file="Indicators/Resurrect.lua"/>
 	<Script file="Indicators/RoleIcon.lua"/>
 	<Script file="Indicators/Resting.lua"/>
 	<Script file="Indicators/Combat.lua"/>

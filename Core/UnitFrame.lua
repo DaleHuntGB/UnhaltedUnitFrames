@@ -24,6 +24,11 @@ local function UsesRoleIconIndicator(unit)
     return normalizedUnit == "party" or normalizedUnit == "raid"
 end
 
+local function UsesResurrectIndicator(unit)
+    local normalizedUnit = UUF:GetNormalizedUnit(unit)
+    return normalizedUnit == "party" or normalizedUnit == "raid"
+end
+
 local function UsesCombatIndicator(unit)
     local normalizedUnit = UUF:GetNormalizedUnit(unit)
     return normalizedUnit == "player" or normalizedUnit == "target"
@@ -686,6 +691,7 @@ function UUF:CreateUnitFrame(unitFrame, unit)
     if isPlayer then UUF:CreateUnitSecondaryPowerBar(unitFrame, unit) end
     UUF:CreateUnitRaidTargetMarker(unitFrame, unit)
     if UsesRoleIconIndicator(unit) then UUF:CreateUnitRoleIconIndicator(unitFrame, unit) end
+    if UsesResurrectIndicator(unit) then UUF:CreateUnitResurrectIndicator(unitFrame, unit) end
     if UsesLeaderAssistantIndicator(unit) then UUF:CreateUnitLeaderAssistantIndicator(unitFrame, unit) end
     if UsesCombatIndicator(unit) then UUF:CreateUnitCombatIndicator(unitFrame, unit) end
     if isPlayer then UUF:CreateUnitRestingIndicator(unitFrame, unit) end
@@ -862,6 +868,13 @@ function UUF:UpdateUnitFrame(unitFrame, unit)
         if unitFrame:IsElementEnabled("GroupRoleIndicator") then unitFrame:DisableElement("GroupRoleIndicator") end
         unitFrame.GroupRoleIndicator:Hide()
         unitFrame.GroupRoleIndicator = nil
+    end
+    if UsesResurrectIndicator(unit) then
+        UUF:UpdateUnitResurrectIndicator(unitFrame, unit)
+    elseif unitFrame.ResurrectIndicator then
+        if unitFrame:IsElementEnabled("ResurrectIndicator") then unitFrame:DisableElement("ResurrectIndicator") end
+        unitFrame.ResurrectIndicator:Hide()
+        unitFrame.ResurrectIndicator = nil
     end
     if UsesLeaderAssistantIndicator(unit) then UUF:UpdateUnitLeaderAssistantIndicator(unitFrame, unit) end
     if UsesCombatIndicator(unit) then

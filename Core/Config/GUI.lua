@@ -2210,6 +2210,73 @@ local function CreateRoleIconSettings(containerParent, unit, updateCallback)
     RefreshRoleIconGUI()
 end
 
+local function CreateResurrectSettings(containerParent, unit, updateCallback)
+    local ResurrectDB = UUF.db.profile.Units[unit].Indicators.Resurrect
+
+    local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Resurrection Settings")
+
+    local Toggle = AG:Create("CheckBox")
+    Toggle:SetLabel("Enable |cFF8080FFResurrection|r Indicator")
+    Toggle:SetValue(ResurrectDB.Enabled)
+    Toggle:SetCallback("OnValueChanged", function(_, _, value) ResurrectDB.Enabled = value updateCallback() RefreshResurrectGUI() end)
+    Toggle:SetRelativeWidth(1)
+    ToggleContainer:AddChild(Toggle)
+
+    local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
+
+    local AnchorFromDropdown = AG:Create("Dropdown")
+    AnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
+    AnchorFromDropdown:SetLabel("Anchor From")
+    AnchorFromDropdown:SetValue(ResurrectDB.Layout[1])
+    AnchorFromDropdown:SetRelativeWidth(0.5)
+    AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) ResurrectDB.Layout[1] = value updateCallback() end)
+    LayoutContainer:AddChild(AnchorFromDropdown)
+
+    local AnchorToDropdown = AG:Create("Dropdown")
+    AnchorToDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
+    AnchorToDropdown:SetLabel("Anchor To")
+    AnchorToDropdown:SetValue(ResurrectDB.Layout[2])
+    AnchorToDropdown:SetRelativeWidth(0.5)
+    AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) ResurrectDB.Layout[2] = value updateCallback() end)
+    LayoutContainer:AddChild(AnchorToDropdown)
+
+    local XPosSlider = AG:Create("Slider")
+    XPosSlider:SetLabel("X Position")
+    XPosSlider:SetValue(ResurrectDB.Layout[3])
+    XPosSlider:SetSliderValues(-1000, 1000, 0.1)
+    XPosSlider:SetRelativeWidth(0.33)
+    XPosSlider:SetCallback("OnValueChanged", function(_, _, value) ResurrectDB.Layout[3] = value updateCallback() end)
+    LayoutContainer:AddChild(XPosSlider)
+
+    local YPosSlider = AG:Create("Slider")
+    YPosSlider:SetLabel("Y Position")
+    YPosSlider:SetValue(ResurrectDB.Layout[4])
+    YPosSlider:SetSliderValues(-1000, 1000, 0.1)
+    YPosSlider:SetRelativeWidth(0.33)
+    YPosSlider:SetCallback("OnValueChanged", function(_, _, value) ResurrectDB.Layout[4] = value updateCallback() end)
+    LayoutContainer:AddChild(YPosSlider)
+
+    local SizeSlider = AG:Create("Slider")
+    SizeSlider:SetLabel("Size")
+    SizeSlider:SetValue(ResurrectDB.Size)
+    SizeSlider:SetSliderValues(8, 64, 1)
+    SizeSlider:SetRelativeWidth(0.33)
+    SizeSlider:SetCallback("OnValueChanged", function(_, _, value) ResurrectDB.Size = value updateCallback() end)
+    LayoutContainer:AddChild(SizeSlider)
+
+    function RefreshResurrectGUI()
+        if ResurrectDB.Enabled then
+            GUIWidgets.DeepDisable(ToggleContainer, false, Toggle)
+            GUIWidgets.DeepDisable(LayoutContainer, false, Toggle)
+        else
+            GUIWidgets.DeepDisable(ToggleContainer, true, Toggle)
+            GUIWidgets.DeepDisable(LayoutContainer, true, Toggle)
+        end
+    end
+
+    RefreshResurrectGUI()
+end
+
 local function CreateStatusSettings(containerParent, unit, statusDB, updateCallback)
     local StatusDB = UUF.db.profile.Units[unit].Indicators[statusDB]
 
@@ -2515,6 +2582,8 @@ local function CreateIndicatorSettings(containerParent, unit)
             CreateRaidTargetMarkerSettings(IndicatorContainer, unit, function() UpdateManagedUnitMethod(unit, "UpdateUnitRaidTargetMarker") end)
         elseif IndicatorTab == "RoleIcon" then
             CreateRoleIconSettings(IndicatorContainer, unit, function() UpdateManagedUnitMethod(unit, "UpdateUnitRoleIconIndicator") end)
+        elseif IndicatorTab == "Resurrect" then
+            CreateResurrectSettings(IndicatorContainer, unit, function() UpdateManagedUnitMethod(unit, "UpdateUnitResurrectIndicator") end)
         elseif IndicatorTab == "LeaderAssistant" then
             CreateLeaderAssistaintSettings(IndicatorContainer, unit, function() UpdateManagedUnitMethod(unit, "UpdateUnitLeaderAssistantIndicator") end)
         elseif IndicatorTab == "Resting" then
@@ -2554,6 +2623,7 @@ local function CreateIndicatorSettings(containerParent, unit)
         IndicatorContainerTabGroup:SetTabs({
             { text = "Raid Target Marker", value = "RaidTargetMarker" },
             { text = "Role Icon", value = "RoleIcon" },
+            { text = "Resurrection", value = "Resurrect" },
             { text = "Leader & Assistant", value = "LeaderAssistant" },
             { text = "Mouseover", value = "Mouseover" },
         })
@@ -2561,6 +2631,7 @@ local function CreateIndicatorSettings(containerParent, unit)
         IndicatorContainerTabGroup:SetTabs({
             { text = "Raid Target Marker", value = "RaidTargetMarker" },
             { text = "Role Icon", value = "RoleIcon" },
+            { text = "Resurrection", value = "Resurrect" },
             { text = "Leader & Assistant", value = "LeaderAssistant" },
             { text = "Mouseover", value = "Mouseover" },
         })

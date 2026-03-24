@@ -1422,6 +1422,11 @@ local Defaults = {
                         Size = 14,
                         Layout = {"LEFT", "TOPLEFT", 2, -2},
                     },
+                    Resurrect = {
+                        Enabled = true,
+                        Size = 14,
+                        Layout = {"RIGHT", "TOPRIGHT", -2, -2},
+                    },
                     LeaderAssistantIndicator = {
                         Enabled = true,
                         Size = 14,
@@ -1636,6 +1641,11 @@ local Defaults = {
                         Enabled = true,
                         Size = 12,
                         Layout = {"LEFT", "TOPLEFT", 2, -2},
+                    },
+                    Resurrect = {
+                        Enabled = true,
+                        Size = 12,
+                        Layout = {"RIGHT", "TOPRIGHT", -2, -2},
                     },
                     LeaderAssistantIndicator = {
                         Enabled = true,
