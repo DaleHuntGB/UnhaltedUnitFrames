@@ -1,4 +1,5 @@
 local _, UUF = ...
+local oUF = UUF.oUF
 
 local function CreateUnitTag(unitFrame, unit, tagDB)
     local GeneralDB = UUF.db.profile.General
@@ -18,6 +19,7 @@ local function CreateUnitTag(unitFrame, unit, tagDB)
         unitFrame.Tags[tagDB]:SetPoint(TagDB.Layout[1], unitFrame.HighLevelContainer, TagDB.Layout[2], TagDB.Layout[3], TagDB.Layout[4])
         unitFrame.Tags[tagDB]:SetJustifyH(UUF:SetJustification(TagDB.Layout[1]))
         unitFrame:Tag(unitFrame.Tags[tagDB], TagDB.Tag)
+        unitFrame.Tags[tagDB].UUFTagString = TagDB.Tag
     end
 end
 
@@ -74,5 +76,17 @@ function UUF:UpdateUnitTags()
         UUF:ForEachManagedUnitFrame(unit, function(unitFrame, actualUnit)
             UUF:UpdateUnitFrameTags(unitFrame, actualUnit)
         end)
+    end
+end
+
+function UUF:RefreshLiveUnitTags(unit)
+    local normalizedUnit = unit and UUF:GetNormalizedUnit(unit)
+    if not normalizedUnit then return end
+
+    for _, obj in next, oUF.objects do
+        local actualUnit = obj.unit or (obj.GetAttribute and obj:GetAttribute("unit"))
+        if actualUnit and UUF:GetNormalizedUnit(actualUnit) == normalizedUnit then
+            UUF:UpdateUnitFrameTags(obj, actualUnit)
+        end
     end
 end

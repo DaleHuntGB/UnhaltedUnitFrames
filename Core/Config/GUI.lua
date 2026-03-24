@@ -352,6 +352,16 @@ local function UpdateManagedUnitMethod(unit, methodName, ...)
     local args = { ... }
     if type(method) ~= "function" then return end
 
+    if unit == "party" and methodName == "UpdateUnitFrameTags" then
+        UUF:UpdatePartyFrames()
+        return
+    end
+
+    if unit == "raid" and methodName == "UpdateUnitFrameTags" then
+        UUF:UpdateRaidFrames()
+        return
+    end
+
     if unit == "boss" and methodName == "UpdateUnitFrame" then
         UUF:UpdateBossFrames()
         return
@@ -1169,8 +1179,26 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
     ForegroundColourPicker:SetColor(R, G, B)
     ForegroundColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) HealthBarDB.Foreground = {r, g, b} updateCallback() end)
     ForegroundColourPicker:SetHasAlpha(false)
-    ForegroundColourPicker:SetRelativeWidth(0.5)
+    ForegroundColourPicker:SetRelativeWidth(0.33)
     ColourContainer:AddChild(ForegroundColourPicker)
+
+    BackgroundColourPicker = AG:Create("ColorPicker")
+    BackgroundColourPicker:SetLabel("Background Colour")
+    local R2, G2, B2 = unpack(HealthBarDB.Background)
+    BackgroundColourPicker:SetColor(R2, G2, B2)
+    BackgroundColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) HealthBarDB.Background = {r, g, b} updateCallback() end)
+    BackgroundColourPicker:SetHasAlpha(false)
+    BackgroundColourPicker:SetRelativeWidth(0.33)
+    ColourContainer:AddChild(BackgroundColourPicker)
+
+    local DeadBackgroundColourPicker = AG:Create("ColorPicker")
+    DeadBackgroundColourPicker:SetLabel("Dead Background Colour")
+    local DR, DG, DB = unpack(HealthBarDB.DeadBackground or HealthBarDB.Background)
+    DeadBackgroundColourPicker:SetColor(DR, DG, DB)
+    DeadBackgroundColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) HealthBarDB.DeadBackground = {r, g, b} updateCallback() end)
+    DeadBackgroundColourPicker:SetHasAlpha(false)
+    DeadBackgroundColourPicker:SetRelativeWidth(0.33)
+    ColourContainer:AddChild(DeadBackgroundColourPicker)
 
     local ForegroundOpacitySlider = AG:Create("Slider")
     ForegroundOpacitySlider:SetLabel("Foreground Opacity")
@@ -1180,15 +1208,6 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
     ForegroundOpacitySlider:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.ForegroundOpacity = value updateCallback() end)
     ForegroundOpacitySlider:SetIsPercent(true)
     ColourContainer:AddChild(ForegroundOpacitySlider)
-
-    BackgroundColourPicker = AG:Create("ColorPicker")
-    BackgroundColourPicker:SetLabel("Background Colour")
-    local R2, G2, B2 = unpack(HealthBarDB.Background)
-    BackgroundColourPicker:SetColor(R2, G2, B2)
-    BackgroundColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) HealthBarDB.Background = {r, g, b} updateCallback() end)
-    BackgroundColourPicker:SetHasAlpha(false)
-    BackgroundColourPicker:SetRelativeWidth(0.5)
-    ColourContainer:AddChild(BackgroundColourPicker)
 
     local BackgroundOpacitySlider = AG:Create("Slider")
     BackgroundOpacitySlider:SetLabel("Background Opacity")
@@ -2810,7 +2829,9 @@ end
 local function CreateTagSetting(containerParent, unit, tagDB)
     local TagDB = UUF.db.profile.Units[unit].Tags[tagDB]
     local function UpdateTagSettings()
-        UpdateManagedUnitMethod(unit, "UpdateUnitTag", tagDB)
+        UpdateManagedUnitMethod(unit, "UpdateUnitFrame")
+        UUF:RefreshLiveUnitTags(unit)
+        UUFG:UpdateAllTags()
     end
 
     local TagContainer = GUIWidgets.CreateInlineGroup(containerParent, "Tag Settings")
@@ -3474,12 +3495,34 @@ local function CreateGlobalHealthSettings(containerParent)
     ForegroundColourPicker:SetLabel("Foreground Colour")
     ForegroundColourPicker:SetColor(unpack(HealthBarDB.Foreground))
     ForegroundColourPicker:SetHasAlpha(false)
-    ForegroundColourPicker:SetRelativeWidth(0.5)
+    ForegroundColourPicker:SetRelativeWidth(0.33)
     ForegroundColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b)
         ForEachUnitSubDatabase("HealthBar", function(_, db) db.Foreground = {r, g, b} end)
         RefreshConfigPreview()
     end)
     ColourContainer:AddChild(ForegroundColourPicker)
+
+    local BackgroundColourPicker = AG:Create("ColorPicker")
+    BackgroundColourPicker:SetLabel("Background Colour")
+    BackgroundColourPicker:SetColor(unpack(HealthBarDB.Background))
+    BackgroundColourPicker:SetHasAlpha(false)
+    BackgroundColourPicker:SetRelativeWidth(0.33)
+    BackgroundColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b)
+        ForEachUnitSubDatabase("HealthBar", function(_, db) db.Background = {r, g, b} end)
+        RefreshConfigPreview()
+    end)
+    ColourContainer:AddChild(BackgroundColourPicker)
+
+    local DeadBackgroundColourPicker = AG:Create("ColorPicker")
+    DeadBackgroundColourPicker:SetLabel("Dead Background Colour")
+    DeadBackgroundColourPicker:SetColor(unpack(HealthBarDB.DeadBackground or HealthBarDB.Background))
+    DeadBackgroundColourPicker:SetHasAlpha(false)
+    DeadBackgroundColourPicker:SetRelativeWidth(0.33)
+    DeadBackgroundColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b)
+        ForEachUnitSubDatabase("HealthBar", function(_, db) db.DeadBackground = {r, g, b} end)
+        RefreshConfigPreview()
+    end)
+    ColourContainer:AddChild(DeadBackgroundColourPicker)
 
     local ForegroundOpacitySlider = AG:Create("Slider")
     ForegroundOpacitySlider:SetLabel("Foreground Opacity")
@@ -3492,17 +3535,6 @@ local function CreateGlobalHealthSettings(containerParent)
         RefreshConfigPreview()
     end)
     ColourContainer:AddChild(ForegroundOpacitySlider)
-
-    local BackgroundColourPicker = AG:Create("ColorPicker")
-    BackgroundColourPicker:SetLabel("Background Colour")
-    BackgroundColourPicker:SetColor(unpack(HealthBarDB.Background))
-    BackgroundColourPicker:SetHasAlpha(false)
-    BackgroundColourPicker:SetRelativeWidth(0.5)
-    BackgroundColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b)
-        ForEachUnitSubDatabase("HealthBar", function(_, db) db.Background = {r, g, b} end)
-        RefreshConfigPreview()
-    end)
-    ColourContainer:AddChild(BackgroundColourPicker)
 
     local BackgroundOpacitySlider = AG:Create("Slider")
     BackgroundOpacitySlider:SetLabel("Background Opacity")

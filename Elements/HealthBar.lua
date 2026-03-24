@@ -19,6 +19,26 @@ local function GetHealthBarFallbackColor(unit, healthBarDB)
     return healthBarDB.Foreground[1], healthBarDB.Foreground[2], healthBarDB.Foreground[3], healthBarDB.ForegroundOpacity
 end
 
+local function GetHealthBackgroundColor(unitFrame, healthBarDB)
+    if not unitFrame or not healthBarDB then
+        return 0, 0, 0, 1
+    end
+
+    local unit = unitFrame.unit
+    if unit and UnitIsDeadOrGhost(unit) then
+        local deadBackground = healthBarDB.DeadBackground or healthBarDB.Background
+        return deadBackground[1], deadBackground[2], deadBackground[3], healthBarDB.BackgroundOpacity
+    end
+
+    if healthBarDB.ColourBackgroundByClass then
+        local unitToColour = unit ~= "pet" and unit or "player"
+        local r, g, b = UUF:GetUnitColour(unitToColour)
+        return r, g, b, healthBarDB.BackgroundOpacity
+    end
+
+    return healthBarDB.Background[1], healthBarDB.Background[2], healthBarDB.Background[3], healthBarDB.BackgroundOpacity
+end
+
 local function ApplyHealthBarColors(unitFrame, unit, healthBarDB)
     local healthBar = unitFrame.Health
     if not healthBar then return end
@@ -58,7 +78,7 @@ function UUF:CreateUnitHealthBar(unitFrame, unit)
             unitFrame.HealthBackground:SetSize(FrameDB.Width - 2, FrameDB.Height - 2)
             unitFrame.HealthBackground:SetStatusBarTexture(UUF.Media.Background)
             unitFrame.HealthBackground:SetFrameLevel(unitContainer:GetFrameLevel() + 1)
-            unitFrame.HealthBackground:SetStatusBarColor(HealthBarDB.Background[1], HealthBarDB.Background[2], HealthBarDB.Background[3], HealthBarDB.BackgroundOpacity)
+            unitFrame.HealthBackground:SetStatusBarColor(GetHealthBackgroundColor(unitFrame, HealthBarDB))
         end
 
         local HealthBar = CreateFrame("StatusBar", UUF:FetchFrameName(unit) .. "_HealthBar", unitContainer)
@@ -78,11 +98,7 @@ function UUF:CreateUnitHealthBar(unitFrame, unit)
             curHP = curHP or 0
             unitHP:SetMinMaxValues(0, maxHP)
             unitHP:SetValue(UnitHealthMissing(unitFrame.unit, true), interpolationMode)
-            if HealthBarDB.ColourBackgroundByClass then
-                local unitToColour = unitFrame.unit ~= "pet" and unitFrame.unit or "player"
-                local r, g, b = UUF:GetUnitColour(unitToColour)
-                unitFrame.HealthBackground:SetStatusBarColor(r, g, b, HealthBarDB.BackgroundOpacity)
-            end
+            unitFrame.HealthBackground:SetStatusBarColor(GetHealthBackgroundColor(unitFrame, HealthBarDB))
         end
 
         if HealthBarDB.Inverse then
@@ -128,7 +144,7 @@ function UUF:UpdateUnitHealthBar(unitFrame, unit)
 
     if unitFrame.HealthBackground then
         unitFrame.HealthBackground:SetSize(FrameDB.Width - 2, FrameDB.Height - 2)
-        unitFrame.HealthBackground:SetStatusBarColor(HealthBarDB.Background[1], HealthBarDB.Background[2], HealthBarDB.Background[3], HealthBarDB.BackgroundOpacity)
+        unitFrame.HealthBackground:SetStatusBarColor(GetHealthBackgroundColor(unitFrame, HealthBarDB))
         unitFrame.HealthBackground:SetStatusBarTexture(UUF.Media.Background)
     end
 

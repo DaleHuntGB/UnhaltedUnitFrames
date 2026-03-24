@@ -376,9 +376,19 @@ function UUF:IsRangeFrameRegistered(frameName)
     end
 end
 
+local function IsRangeTestModeUnit(unit)
+    if not unit then return false end
+    if UUF.BOSS_TEST_MODE and unit:match("^boss%d+$") then return true end
+    if UUF.PARTY_TEST_MODE and unit:match("^party%d+$") then return true end
+    if UUF.RAID_TEST_MODE and unit:match("^raid%d+$") then return true end
+
+    return false
+end
+
 function UUF:UpdateRangeAlpha(frame, unit)
     local RangeDB = UUF.db.profile.General.Range
     if not RangeDB or not RangeDB.Enabled then frame:SetAlpha(1) return end
+    if IsRangeTestModeUnit(unit) then frame:SetAlpha(1) return end
     if not frame:IsVisible() or not unit or not UnitExists(unit) then return end
     if unit == "player" then frame:SetAlpha(1) return end
 

@@ -1946,5 +1946,11 @@ local Defaults = {
     },
 }
 
+for _, unitDefaults in pairs(Defaults.profile.Units) do
+    if unitDefaults.HealthBar and not unitDefaults.HealthBar.DeadBackground then
+        unitDefaults.HealthBar.DeadBackground = {96/255, 32/255, 32/255}
+    end
+end
+
 ---@return table Defaults Returns the Default Table.
 function UUF:GetDefaultDB() return Defaults end
