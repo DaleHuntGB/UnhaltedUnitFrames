@@ -113,7 +113,21 @@ local function SetupSlashCommands()
     SLASH_UUF1 = "/uuf"
     SLASH_UUF2 = "/unhaltedunitframes"
     SLASH_UUF3 = "/uf"
-    SlashCmdList["UUF"] = function() UUF:CreateGUI() end
+    SlashCmdList["UUF"] = function(msg)
+        local command = msg and strtrim(msg):lower() or ""
+
+        if command == "unlock" or command == "movers" then
+            UUF:UnlockMovers(false)
+            return
+        end
+
+        if command == "lock" then
+            UUF:LockMovers(false)
+            return
+        end
+
+        UUF:CreateGUI()
+    end
     UUF:PrettyPrint("'|cFF8080FF/uuf|r' for in-game configuration.")
 
     -- RL command

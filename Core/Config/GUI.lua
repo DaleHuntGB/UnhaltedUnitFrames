@@ -975,6 +975,15 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
     local ForegroundColourPicker
     local BackgroundColourPicker
 
+    local MoversToggleButton = AG:Create("Button")
+    MoversToggleButton:SetText(UUF:IsMoversUnlocked() and "Lock Movers" or "Unlock Movers")
+    MoversToggleButton:SetRelativeWidth(1)
+    MoversToggleButton:SetCallback("OnClick", function(widget)
+        UUF:ToggleMovers(false)
+        widget:SetText(UUF:IsMoversUnlocked() and "Lock Movers" or "Unlock Movers")
+    end)
+    containerParent:AddChild(MoversToggleButton)
+
     local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
 
     local WidthSlider = AG:Create("Slider")
@@ -4517,7 +4526,11 @@ function UUF:CreateGUI()
     Container:SetWidth(1100)
     Container:SetHeight(600)
     Container:EnableResize(false)
-    Container:SetCallback("OnClose", function(widget) AG:Release(widget) isGUIOpen = false DisableAllTestModes() end)
+    Container:SetCallback("OnClose", function(widget)
+        AG:Release(widget)
+        isGUIOpen = false
+        DisableAllTestModes()
+    end)
 
     local function SelectTab(GUIContainer, _, MainTab)
         GUIContainer:ReleaseChildren()

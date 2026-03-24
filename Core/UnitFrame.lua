@@ -88,17 +88,31 @@ hiddenBlizzardParent:SetAllPoints()
 hiddenBlizzardParent:Hide()
 local blizzardRaidLoadWatcher = CreateFrame("Frame")
 local blizzardReparentWatcher = CreateFrame("Frame")
+local ReparentBlizzardFrame
+
+local function SuppressBlizzardFrame(frame)
+    if not frame or frame:IsForbidden() then return end
+
+    if InCombatLockdown() and frame:IsProtected() then
+        pendingBlizzardReparents[frame] = true
+        return
+    end
+
+    frame:Hide()
+    ReparentBlizzardFrame(frame)
+end
+
 blizzardReparentWatcher:RegisterEvent("PLAYER_REGEN_ENABLED")
 blizzardReparentWatcher:SetScript("OnEvent", function()
     for frame in pairs(pendingBlizzardReparents) do
         if frame and not frame:IsForbidden() then
-            frame:SetParent(hiddenBlizzardParent)
+            SuppressBlizzardFrame(frame)
         end
         pendingBlizzardReparents[frame] = nil
     end
 end)
 
-local function ReparentBlizzardFrame(frame)
+ReparentBlizzardFrame = function(frame)
     if not frame or frame:IsForbidden() or frame:GetParent() == hiddenBlizzardParent then return end
 
     if InCombatLockdown() and frame:IsProtected() then
@@ -118,17 +132,16 @@ local function HideBlizzardFrame(frame)
         frame:UnregisterAllEvents()
     end
 
-    frame:Hide()
-    ReparentBlizzardFrame(frame)
+    SuppressBlizzardFrame(frame)
 
     hooksecurefunc(frame, "Show", function(self)
         if not self:IsForbidden() then
-            self:Hide()
+            SuppressBlizzardFrame(self)
         end
     end)
     hooksecurefunc(frame, "SetShown", function(self, shown)
         if shown and not self:IsForbidden() then
-            self:Hide()
+            SuppressBlizzardFrame(self)
         end
     end)
     hooksecurefunc(frame, "SetParent", function(self, parent)

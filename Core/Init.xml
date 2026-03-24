@@ -4,6 +4,7 @@
     <Script file="Globals.lua"/>
     <Script file="TestEnvironment.lua"/>
     <Script file="UnitFrame.lua"/>
+    <Script file="Movers.lua"/>
 
     <Script file="Config/GUIWidgets.lua"/>
     <Script file="Config/GUI.lua"/>
