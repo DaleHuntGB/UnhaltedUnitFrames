@@ -39,7 +39,9 @@ for i = 1, 10 do
         health    = 8000000 - (i * 600000),
         maxHealth = 8000000,
         missingHealth = i * 600000,
+        incomingHeal = i * 180000,
         absorb    = (i * 300000),
+        healAbsorb = i * 120000,
         percent  = (8000000 - (i * 600000)) / 8000000 * 100,
         maxPower  = 100,
         power     = 100 - (i * 7),
@@ -170,12 +172,95 @@ local function GetTestData(index, label)
         health = baseData.health,
         maxHealth = baseData.maxHealth,
         missingHealth = baseData.missingHealth,
+        incomingHeal = baseData.incomingHeal,
         absorb = baseData.absorb,
+        healAbsorb = baseData.healAbsorb,
         percent = baseData.percent,
         maxPower = baseData.maxPower,
         power = baseData.power,
         powerType = baseData.powerType,
     }
+end
+
+local function UseGroupedRaidHeadersForTestEnvironment()
+    local raidDB = UUF.db and UUF.db.profile and UUF.db.profile.Units and UUF.db.profile.Units.raid
+    if not (raidDB and raidDB.Frame) then return false end
+    if raidDB.Frame.GroupBy == "CLASS" then
+        raidDB.Frame.GroupBy = "GROUP"
+    end
+    return raidDB.Frame.GroupBy == "GROUP"
+end
+
+local function UpdateLiveGroupedFrameVisibility()
+    local hideLiveGroupedFrames = UUF.PARTY_TEST_MODE or UUF.RAID_TEST_MODE
+    local partyDB = UUF.db.profile.Units.party
+    local raidDB = UUF.db.profile.Units.raid
+    local useGroupedRaidHeaders = UseGroupedRaidHeadersForTestEnvironment()
+
+    if UUF.PARTY then
+        if hideLiveGroupedFrames then
+            UUF.PARTY:SetVisibility("hide")
+            UUF.PARTY:Hide()
+        elseif partyDB.Enabled then
+            UUF.PARTY:SetVisibility("custom [group:party,nogroup:raid] show; hide")
+        else
+            UUF.PARTY:SetVisibility("hide")
+            UUF.PARTY:Hide()
+        end
+    end
+
+    if UUF.RAID then
+        if hideLiveGroupedFrames then
+            UUF.RAID:SetVisibility("hide")
+            UUF.RAID:Hide()
+        elseif raidDB.Enabled and not useGroupedRaidHeaders then
+            UUF.RAID:SetVisibility("custom [group:raid] show; hide")
+        else
+            UUF.RAID:SetVisibility("hide")
+            UUF.RAID:Hide()
+        end
+    end
+
+    for _, header in ipairs(UUF.RAID_GROUP_HEADERS) do
+        if header then
+            if hideLiveGroupedFrames then
+                header:SetVisibility("hide")
+                header:Hide()
+            elseif raidDB.Enabled and useGroupedRaidHeaders then
+                header:SetVisibility("custom [group:raid] show; hide")
+            else
+                header:SetVisibility("hide")
+                header:Hide()
+            end
+        end
+    end
+end
+
+local function ApplyTestHealPredictionState(unitFrame, unitToken, testData)
+    if not unitFrame or not unitFrame.Health or not testData then return end
+
+    UUF:UpdateUnitHealPrediction(unitFrame, unitToken)
+
+    local healthPrediction = unitFrame.HealthPrediction
+    if not healthPrediction then return end
+
+    if healthPrediction.healingAll then
+        healthPrediction.healingAll:SetMinMaxValues(0, testData.maxHealth)
+        healthPrediction.healingAll:SetValue(testData.incomingHeal or 0)
+        healthPrediction.healingAll:Show()
+    end
+
+    if healthPrediction.damageAbsorb then
+        healthPrediction.damageAbsorb:SetMinMaxValues(0, testData.maxHealth)
+        healthPrediction.damageAbsorb:SetValue(testData.absorb or 0)
+        healthPrediction.damageAbsorb:Show()
+    end
+
+    if healthPrediction.healAbsorb then
+        healthPrediction.healAbsorb:SetMinMaxValues(0, testData.maxHealth)
+        healthPrediction.healAbsorb:SetValue(testData.healAbsorb or 0)
+        healthPrediction.healAbsorb:Show()
+    end
 end
 
 local function ApplySharedTestFrameState(unitFrame, unitToken, unitDB, tagsDB, label, index, includeCastBar)
@@ -216,6 +301,8 @@ local function ApplySharedTestFrameState(unitFrame, unitToken, unitDB, tagsDB, l
     if unitFrame.Health then
         unitFrame.Health:SetStatusBarColor(GetTestUnitColour(index, healthBarDB.Foreground, healthBarDB.ColourByClass, healthBarDB.ForegroundOpacity))
     end
+
+    ApplyTestHealPredictionState(unitFrame, unitToken, testData)
 
     if unitFrame.Power then
         unitFrame.Power:SetStatusBarTexture(UUF.Media.Foreground)
@@ -288,12 +375,9 @@ function UUF:CreateTestPartyFrames()
 
     UUF:EnsurePartyTestFrames()
     UUF:ResolveLSM()
+    UpdateLiveGroupedFrameVisibility()
 
     if UUF.PARTY_TEST_MODE then
-        if UUF.PARTY then
-            UUF.PARTY:Hide()
-        end
-
         UUF.AURA_TEST_MODE = true
         UUF.CASTBAR_TEST_MODE = true
 
@@ -314,11 +398,9 @@ function UUF:CreateTestPartyFrames()
             partyFrame:Hide()
         end
 
-        if UUF.PARTY then
-            UUF.PARTY:SetShown(partyDB.Enabled)
-        end
     end
 
+    UpdateLiveGroupedFrameVisibility()
     UUF.AURA_TEST_MODE = previousAuraTestMode
     UUF.CASTBAR_TEST_MODE = previousCastBarTestMode
 end
@@ -331,6 +413,7 @@ function UUF:CreateTestRaidFrames()
 
     UUF:EnsureRaidTestFrames()
     UUF:ResolveLSM()
+    UpdateLiveGroupedFrameVisibility()
 
     if UUF.RAID_TEST_MODE then
         local direction = frameDB.GrowthDirection or "DOWN_RIGHT"
@@ -384,16 +467,6 @@ function UUF:CreateTestRaidFrames()
                     visibleGroupCount = visibleGroupCount + 1
                     visibleGroupIndices[groupIndex] = visibleGroupCount
                 end
-            end
-        end
-
-        if UUF.RAID then
-            UUF.RAID:Hide()
-        end
-
-        for _, header in ipairs(UUF.RAID_GROUP_HEADERS) do
-            if header then
-                header:Hide()
             end
         end
 
@@ -452,11 +525,9 @@ function UUF:CreateTestRaidFrames()
             raidFrame:Hide()
         end
 
-        if UUF.RAID then
-            UUF.RAID:SetShown(raidDB.Enabled and frameDB.GroupBy ~= "GROUP")
-        end
     end
 
+    UpdateLiveGroupedFrameVisibility()
     UUF.AURA_TEST_MODE = previousAuraTestMode
 end
 
@@ -470,29 +541,31 @@ function UUF:CreateTestBossFrames()
     local BossDB = UUF.db.profile.Units.boss
     if UUF.BOSS_TEST_MODE then
         for i, BossFrame in ipairs(UUF.BOSS_FRAMES) do
+            local testData = EnvironmenTestData[i]
             BossFrame:SetAttribute("unit", nil)
             UnregisterUnitWatch(BossFrame)
             if BossDB.Enabled then BossFrame:Show() else BossFrame:Hide() end
 
             BossFrame:SetFrameStrata(BossDB.Frame.FrameStrata)
 
-            if BossFrame.Health then
+            if BossFrame.Health and testData then
                 local HealthBarDB = UUF.db.profile.Units.boss.HealthBar
-                BossFrame.Health:SetMinMaxValues(0, EnvironmenTestData[i].maxHealth)
-                BossFrame.Health:SetValue(EnvironmenTestData[i].health)
-                BossFrame.HealthBackground:SetMinMaxValues(0, EnvironmenTestData[i].maxHealth)
-                BossFrame.HealthBackground:SetValue(EnvironmenTestData[i].missingHealth)
+                BossFrame.Health:SetMinMaxValues(0, testData.maxHealth)
+                BossFrame.Health:SetValue(testData.health)
+                BossFrame.HealthBackground:SetMinMaxValues(0, testData.maxHealth)
+                BossFrame.HealthBackground:SetValue(testData.missingHealth)
                 BossFrame.HealthBackground:SetStatusBarColor(GetTestUnitColour(i, HealthBarDB.Background, HealthBarDB.ColourBackgroundByClass, HealthBarDB.BackgroundOpacity))
                 BossFrame.Health:SetStatusBarColor(GetTestUnitColour(i, HealthBarDB.Foreground, HealthBarDB.ColourByClass, HealthBarDB.ForegroundOpacity))
+                ApplyTestHealPredictionState(BossFrame, "boss" .. i, testData)
             end
 
             if BossFrame.Portrait then
                 BossFrame.Portrait:SetTexture("Interface\\ICONS\\" .. PortraitOptions[i])
             end
 
-            if BossFrame.Power then
-                BossFrame.Power:SetMinMaxValues(0, EnvironmenTestData[i].maxPower)
-                BossFrame.Power:SetValue(EnvironmenTestData[i].power)
+            if BossFrame.Power and testData then
+                BossFrame.Power:SetMinMaxValues(0, testData.maxPower)
+                BossFrame.Power:SetValue(testData.power)
             end
 
             if BossFrame.RaidTargetIndicator and i and raidTargetMarkerCoords[i] then
@@ -512,9 +585,18 @@ function UUF:CreateTestBossFrames()
                     BossFrame.Castbar.Text:SetText("Ethereal Portal")
                     BossFrame.Castbar.Time:SetText("0.0")
                     BossFrame.Castbar:SetMinMaxValues(0, 1000)
-                    BossFrame.Castbar:SetScript("OnUpdate", function() local currentValue = BossFrame.Castbar:GetValue() currentValue = currentValue + 1 if currentValue >= 1000 then currentValue = 0 end BossFrame.Castbar:SetValue(currentValue) BossFrame.Castbar.Time:SetText(string.format("%.1f", (currentValue / 1000) * 5)) end)
+                    BossFrame.Castbar.testValue = 0
+                    BossFrame.Castbar:SetScript("OnUpdate", function(self)
+                        self.testValue = (self.testValue or 0) + 1
+                        if self.testValue >= 1000 then self.testValue = 0 end
+                        self:SetValue(self.testValue)
+                        self.Time:SetText(string.format("%.1f", (self.testValue / 1000) * 5))
+                    end)
                     local castBarColour = (false and CastBarDB.NotInterruptibleColour) or (CastBarDB.ColourByClass and UUF:GetClassColour(BossFrame)) or CastBarDB.Foreground
                     BossFrame.Castbar:SetStatusBarColor(castBarColour[1], castBarColour[2], castBarColour[3], castBarColour[4])
+                    if BossFrame.Castbar.NotInterruptibleOverlay then
+                        BossFrame.Castbar.NotInterruptibleOverlay:SetAlpha(0)
+                    end
                     if CastBarDB.Icon.Enabled and BossFrame.Castbar.Icon then BossFrame.Castbar.Icon:SetTexture("Interface\\Icons\\ability_mage_netherwindpresence") BossFrame.Castbar.Icon:Show() end
                 else
                     if CastBarContainer then CastBarContainer:Hide() end
@@ -709,7 +791,7 @@ function UUF:CreateTestBossFrames()
                     BossFrame.Tags.TagOne:SetShadowOffset(0, 0)
                 end
                 BossFrame.Tags.TagOne:SetTextColor(unpack(TagOneDB.Colour))
-                BossFrame.Tags.TagOne:SetText(EnvironmenTestData[i].name)
+                BossFrame.Tags.TagOne:SetText(testData and testData.name or "")
             end
 
             if BossFrame.Tags.TagTwo then
@@ -725,7 +807,7 @@ function UUF:CreateTestBossFrames()
                     BossFrame.Tags.TagTwo:SetShadowOffset(0, 0)
                 end
                 BossFrame.Tags.TagTwo:SetTextColor(unpack(TagTwoDB.Colour))
-                BossFrame.Tags.TagTwo:SetText(string.format("%.1f%%", EnvironmenTestData[i].percent))
+                BossFrame.Tags.TagTwo:SetText(testData and string.format("%.1f%%", testData.percent) or "")
             end
 
             if BossFrame.Tags.TagThree then
@@ -741,7 +823,7 @@ function UUF:CreateTestBossFrames()
                     BossFrame.Tags.TagThree:SetShadowOffset(0, 0)
                 end
                 BossFrame.Tags.TagThree:SetTextColor(unpack(TagThreeDB.Colour))
-                BossFrame.Tags.TagThree:SetText(EnvironmenTestData[i].power)
+                BossFrame.Tags.TagThree:SetText(testData and testData.power or "")
             end
         end
     else
