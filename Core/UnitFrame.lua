@@ -205,6 +205,34 @@ local function GetFilteredRaidGroups(frameDB)
     return groups
 end
 
+local function UpdateGroupedRaidHeaderVisibility(frameDB)
+    local visibleGroups = {}
+    local raidEnabled = UUF.db.profile.Units.raid.Enabled
+    local useGroupedHeaders = UseGroupedRaidHeaders()
+
+    if useGroupedHeaders and frameDB then
+        for _, groupIndex in ipairs(GetFilteredRaidGroups(frameDB)) do
+            visibleGroups[groupIndex] = true
+        end
+    end
+
+    for groupIndex, header in ipairs(UUF.RAID_GROUP_HEADERS) do
+        if header then
+            if raidEnabled and useGroupedHeaders and visibleGroups[groupIndex] then
+                header:SetVisibility("custom [group:raid] show; hide")
+                if not InCombatLockdown() then
+                    header:Show()
+                end
+            else
+                header:SetVisibility("hide")
+                if not InCombatLockdown() then
+                    header:Hide()
+                end
+            end
+        end
+    end
+end
+
 local function GetRaidGroupHeaderDimensions(frameDB)
     local direction = frameDB.GrowthDirection or "DOWN_RIGHT"
     local point = RAID_DIRECTION_TO_POINT[direction] or "TOP"
@@ -406,16 +434,7 @@ local function ApplyHeaderVisibility(unit)
             UUF.RAID:Hide()
         end
 
-        for _, header in ipairs(UUF.RAID_GROUP_HEADERS) do
-            if header then
-                if UUF.db.profile.Units.raid.Enabled and useGroupedHeaders then
-                    header:SetVisibility("custom [group:raid] show; hide")
-                else
-                    header:SetVisibility("hide")
-                    header:Hide()
-                end
-            end
-        end
+        UpdateGroupedRaidHeaderVisibility(UUF.db.profile.Units.raid.Frame)
     end
 end
 
@@ -666,6 +685,8 @@ function UUF:LayoutRaidFrames()
         local groupWidth, groupHeight = GetRaidGroupHeaderDimensions(frameDB)
         local lineStepX, lineStepY, wrapStepX, wrapStepY = GetRaidGroupLayoutOffsets(direction, groupWidth, groupHeight, horizontalSpacing, verticalSpacing)
         local visibleHeaderIndex = 0
+
+        UpdateGroupedRaidHeaderVisibility(frameDB)
 
         if UUF.RAID then
             UUF.RAID:ClearAllPoints()

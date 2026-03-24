@@ -60,14 +60,14 @@ local FrameStrataList = {{ ["BACKGROUND"] = "Background", ["LOW"] = "Low", ["MED
 local TopBottomList = {{ ["TOP"] = "Top", ["BOTTOM"] = "Bottom" }, { "TOP", "BOTTOM" }}
 local RaidGrowthDirectionList = {
     {
-        DOWN_RIGHT = "Down Right",
-        DOWN_LEFT = "Down Left",
-        UP_RIGHT = "Up Right",
-        UP_LEFT = "Up Left",
-        RIGHT_DOWN = "Right Down",
-        RIGHT_UP = "Right Up",
-        LEFT_DOWN = "Left Down",
-        LEFT_UP = "Left Up",
+        DOWN_RIGHT = "Fill Down, New Groups Right",
+        DOWN_LEFT = "Fill Down, New Groups Left",
+        UP_RIGHT = "Fill Up, New Groups Right",
+        UP_LEFT = "Fill Up, New Groups Left",
+        RIGHT_DOWN = "Fill Right, New Groups Down",
+        RIGHT_UP = "Fill Right, New Groups Up",
+        LEFT_DOWN = "Fill Left, New Groups Down",
+        LEFT_UP = "Fill Left, New Groups Up",
     },
     { "DOWN_RIGHT", "DOWN_LEFT", "UP_RIGHT", "UP_LEFT", "RIGHT_DOWN", "RIGHT_UP", "LEFT_DOWN", "LEFT_UP" }
 }
@@ -102,6 +102,72 @@ local RaidRoleList = {
     },
     { "TANK", "HEALER", "DAMAGER" }
 }
+local RaidGroupFilterList = {
+    {
+        [1] = "Group 1",
+        [2] = "Group 2",
+        [3] = "Group 3",
+        [4] = "Group 4",
+        [5] = "Group 5",
+        [6] = "Group 6",
+        [7] = "Group 7",
+        [8] = "Group 8",
+    },
+    { 1, 2, 3, 4, 5, 6, 7, 8 }
+}
+
+local function RaidLayoutUsesRows(direction)
+    return direction == "RIGHT_DOWN"
+        or direction == "RIGHT_UP"
+        or direction == "LEFT_DOWN"
+        or direction == "LEFT_UP"
+end
+
+local function GetRaidMaxColumnsLabel(direction)
+    return RaidLayoutUsesRows(direction) and "Rows" or "Columns"
+end
+
+local function ParseRaidGroupFilter(groupFilter)
+    local groups = {}
+    local seen = {}
+    local filterText = type(groupFilter) == "string" and strtrim(groupFilter) or ""
+
+    if filterText ~= "" then
+        for groupID in filterText:gmatch("%d+") do
+            local groupIndex = tonumber(groupID)
+            if groupIndex and groupIndex >= 1 and groupIndex <= UUF.MAX_RAID_GROUPS and not seen[groupIndex] then
+                groups[#groups + 1] = groupIndex
+                seen[groupIndex] = true
+            end
+        end
+    end
+
+    return groups
+end
+
+local function BuildRaidGroupFilterString(groups)
+    if type(groups) ~= "table" then
+        return ""
+    end
+
+    local filteredGroups = {}
+    local seen = {}
+    for _, groupIndex in ipairs(groups) do
+        if groupIndex and groupIndex >= 1 and groupIndex <= UUF.MAX_RAID_GROUPS and not seen[groupIndex] then
+            filteredGroups[#filteredGroups + 1] = groupIndex
+            seen[groupIndex] = true
+        end
+    end
+
+    table.sort(filteredGroups)
+
+    if #filteredGroups == 0 or #filteredGroups == UUF.MAX_RAID_GROUPS then
+        return ""
+    end
+
+    return table.concat(filteredGroups, ",")
+end
+
 local function GetAuraBaseFilter(auraDB)
     return auraDB == "Buffs" and "HELPFUL" or "HARMFUL"
 end
@@ -834,7 +900,11 @@ local function CreateRaidFrameSortingSettings(containerParent, frameDB, updateCa
     LayoutContainer:AddChild(VerticalSpacingSlider)
 
     local MaxColumnsSlider = AG:Create("Slider")
-    MaxColumnsSlider:SetLabel("Columns")
+    local function UpdateMaxColumnsSliderLabel()
+        MaxColumnsSlider:SetLabel(GetRaidMaxColumnsLabel(frameDB.GrowthDirection))
+    end
+
+    UpdateMaxColumnsSliderLabel()
     MaxColumnsSlider:SetValue(frameDB.MaxColumns or 8)
     MaxColumnsSlider:SetSliderValues(1, 8, 1)
     MaxColumnsSlider:SetRelativeWidth(0.25)
@@ -875,15 +945,44 @@ local function CreateRaidFrameSortingSettings(containerParent, frameDB, updateCa
     SortMethodDropdown:SetCallback("OnValueChanged", function(_, _, value) frameDB.SortMethod = value updateCallback() end)
     SortingContainer:AddChild(SortMethodDropdown)
 
-    local GroupFilterEditBox = AG:Create("EditBox")
-    GroupFilterEditBox:SetLabel("Group Filter")
-    GroupFilterEditBox:SetText(frameDB.GroupFilter or "")
-    GroupFilterEditBox:SetRelativeWidth(0.25)
-    GroupFilterEditBox:DisableButton(true)
-    GroupFilterEditBox:SetCallback("OnEnterPressed", function(_, _, value) frameDB.GroupFilter = value GroupFilterEditBox:SetText(frameDB.GroupFilter or "") updateCallback() end)
-    SortingContainer:AddChild(GroupFilterEditBox)
+    local GroupFilterDropdown = AG:Create("Dropdown")
+    local selectedGroupSet = {}
+    local initiallySelectedGroups = ParseRaidGroupFilter(frameDB.GroupFilter)
 
-    GUIWidgets.CreateInformationTag(SortingContainer, "Leave Group Filter blank to show all groups, or enter values like 1,2,3,4.")
+    if #initiallySelectedGroups == 0 then
+        for groupIndex = 1, UUF.MAX_RAID_GROUPS do
+            selectedGroupSet[groupIndex] = true
+        end
+    else
+        for _, groupIndex in ipairs(initiallySelectedGroups) do
+            selectedGroupSet[groupIndex] = true
+        end
+    end
+
+    GroupFilterDropdown:SetList(RaidGroupFilterList[1], RaidGroupFilterList[2])
+    GroupFilterDropdown:SetLabel("Group Filter")
+    GroupFilterDropdown:SetMultiselect(true)
+    GroupFilterDropdown:SetPulloutWidth(160)
+    GroupFilterDropdown:SetRelativeWidth(0.25)
+    for groupIndex = 1, UUF.MAX_RAID_GROUPS do
+        GroupFilterDropdown:SetItemValue(groupIndex, selectedGroupSet[groupIndex] or false)
+    end
+    GroupFilterDropdown:SetCallback("OnValueChanged", function(_, _, groupIndex, checked)
+        selectedGroupSet[groupIndex] = checked or nil
+
+        local selectedGroups = {}
+        for orderedGroupIndex = 1, UUF.MAX_RAID_GROUPS do
+            if selectedGroupSet[orderedGroupIndex] then
+                selectedGroups[#selectedGroups + 1] = orderedGroupIndex
+            end
+        end
+
+        frameDB.GroupFilter = BuildRaidGroupFilterString(selectedGroups)
+        updateCallback()
+    end)
+    SortingContainer:AddChild(GroupFilterDropdown)
+
+    GUIWidgets.CreateInformationTag(SortingContainer, "Select the raid groups to show. Selecting all groups, or clearing every selection, shows every group.")
 
     local RoleOrderContainer = GUIWidgets.CreateInlineGroup(containerParent, "Role Order")
     for index = 1, 3 do
@@ -899,6 +998,8 @@ local function CreateRaidFrameSortingSettings(containerParent, frameDB, updateCa
         end)
         RoleOrderContainer:AddChild(RoleDropdown)
     end
+
+    return UpdateMaxColumnsSliderLabel
 end
 
 local function GetAffectedUnitsText(affectedUnits)
@@ -974,6 +1075,7 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
     local isGroupedUnit = unit == "boss" or unit == "party" or isRaidUnit
     local ForegroundColourPicker
     local BackgroundColourPicker
+    local UpdateRaidMaxColumnsSliderLabel = function() end
 
     local MoversToggleButton = AG:Create("Button")
     MoversToggleButton:SetText(UUF:IsMoversUnlocked() and "Lock Movers" or "Unlock Movers")
@@ -1039,11 +1141,17 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
     elseif isRaidUnit then
         local GrowthDirectionDropdown = AG:Create("Dropdown")
         GrowthDirectionDropdown:SetList(RaidGrowthDirectionList[1], RaidGrowthDirectionList[2])
-        GrowthDirectionDropdown:SetLabel("Growth Direction")
+        GrowthDirectionDropdown:SetLabel("Raid Layout")
         GrowthDirectionDropdown:SetValue(FrameDB.GrowthDirection)
         GrowthDirectionDropdown:SetRelativeWidth(0.33)
-        GrowthDirectionDropdown:SetCallback("OnValueChanged", function(_, _, value) FrameDB.GrowthDirection = value updateCallback() end)
+        GrowthDirectionDropdown:SetCallback("OnValueChanged", function(_, _, value)
+            FrameDB.GrowthDirection = value
+            UpdateRaidMaxColumnsSliderLabel()
+            updateCallback()
+        end)
         LayoutContainer:AddChild(GrowthDirectionDropdown)
+
+        GUIWidgets.CreateInformationTag(LayoutContainer, "The first direction controls how frames fill inside each group. The second direction controls where the next group appears.")
     end
 
     local XPosSlider = AG:Create("Slider")
@@ -1081,7 +1189,7 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
     LayoutContainer:AddChild(FrameStrataDropdown)
 
     if isRaidUnit then
-        CreateRaidFrameSortingSettings(containerParent, FrameDB, updateCallback)
+        UpdateRaidMaxColumnsSliderLabel = CreateRaidFrameSortingSettings(containerParent, FrameDB, updateCallback)
     end
 
     local function RefreshFrameColourSettings()
