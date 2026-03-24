@@ -260,6 +260,39 @@ local function ConfigureRaidSubGroupHeader(header, frameDB, groupIndex)
     header:SetSize(width, height)
 end
 
+local function RefreshGroupedRaidHeaderChildren(header, frameDB)
+    if not header or not frameDB or InCombatLockdown() then return end
+
+    local direction = frameDB.GrowthDirection or "DOWN_RIGHT"
+    local point = RAID_DIRECTION_TO_POINT[direction] or "TOP"
+    local horizontalSpacing = frameDB.HorizontalSpacing or 0
+    local verticalSpacing = frameDB.VerticalSpacing or 0
+    local xSpacingMultiplier = RAID_DIRECTION_TO_HORIZONTAL_SPACING_MULTIPLIER[direction] or 1
+    local ySpacingMultiplier = RAID_DIRECTION_TO_VERTICAL_SPACING_MULTIPLIER[direction] or -1
+    local visibleChildren = {}
+
+    for _, child in ipairs({ header:GetChildren() }) do
+        local unit = child.unit or child:GetAttribute("unit")
+        if unit and child:IsShown() then
+            visibleChildren[#visibleChildren + 1] = child
+        end
+    end
+
+    for index, child in ipairs(visibleChildren) do
+        local offsetX = 0
+        local offsetY = 0
+
+        if point == "LEFT" or point == "RIGHT" then
+            offsetX = (frameDB.Width + horizontalSpacing) * (index - 1) * xSpacingMultiplier
+        else
+            offsetY = (frameDB.Height + verticalSpacing) * (index - 1) * ySpacingMultiplier
+        end
+
+        child:ClearAllPoints()
+        child:SetPoint(point, header, point, offsetX, offsetY)
+    end
+end
+
 local function BuildOrderedGroupingString(customOrder, defaultOrder, suffixValue)
     local values = {}
     local seen = {}
@@ -637,6 +670,7 @@ function UUF:LayoutRaidFrames()
                 local xPos = frameDB.Layout[3] + (lineStepX * lineIndex) + (wrapStepX * wrapIndex)
                 local yPos = frameDB.Layout[4] + (lineStepY * lineIndex) + (wrapStepY * wrapIndex)
                 header:SetPoint(frameDB.Layout[1], UIParent, frameDB.Layout[2], xPos, yPos)
+                RefreshGroupedRaidHeaderChildren(header, frameDB)
                 visibleHeaderIndex = visibleHeaderIndex + 1
             end
         end
