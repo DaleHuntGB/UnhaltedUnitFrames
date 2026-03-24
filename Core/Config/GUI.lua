@@ -43,6 +43,17 @@ local MainTabToUnit = {
     FocusTarget = "focustarget",
     Boss = "boss",
 }
+local OrderedUnitKeys = {
+    "player",
+    "target",
+    "targettarget",
+    "focus",
+    "focustarget",
+    "pet",
+    "party",
+    "raid",
+    "boss",
+}
 
 local AnchorPoints = { { ["TOPLEFT"] = "Top Left", ["TOP"] = "Top", ["TOPRIGHT"] = "Top Right", ["LEFT"] = "Left", ["CENTER"] = "Center", ["RIGHT"] = "Right", ["BOTTOMLEFT"] = "Bottom Left", ["BOTTOM"] = "Bottom", ["BOTTOMRIGHT"] = "Bottom Right" }, { "TOPLEFT", "TOP", "TOPRIGHT", "LEFT", "CENTER", "RIGHT", "BOTTOMLEFT", "BOTTOM", "BOTTOMRIGHT", } }
 local FrameStrataList = {{ ["BACKGROUND"] = "Background", ["LOW"] = "Low", ["MEDIUM"] = "Medium", ["HIGH"] = "High", ["DIALOG"] = "Dialog", ["FULLSCREEN"] = "Fullscreen", ["FULLSCREEN_DIALOG"] = "Fullscreen Dialog", ["TOOLTIP"] = "Tooltip" }, { "BACKGROUND", "LOW", "MEDIUM", "HIGH", "DIALOG", "FULLSCREEN", "FULLSCREEN_DIALOG", "TOOLTIP" }}
@@ -858,9 +869,35 @@ local function CreateRaidFrameSortingSettings(containerParent, frameDB, updateCa
     end
 end
 
-local function CreateDescribedToggle(containerParent, label, description, value, onValueChanged)
+local function GetAffectedUnitsText(affectedUnits)
+    if type(affectedUnits) ~= "table" or #affectedUnits == 0 then
+        return nil
+    end
+
+    local prettyNames = {}
+    for _, unit in ipairs(affectedUnits) do
+        prettyNames[#prettyNames + 1] = UnitDBToUnitPrettyName[unit] or unit
+    end
+
+    return "Affects: " .. table.concat(prettyNames, ", ")
+end
+
+local function GetUnitsWithSubDatabase(subKey, predicate)
+    local units = {}
+
+    for _, unit in ipairs(OrderedUnitKeys) do
+        local unitDB = UUF.db.profile.Units[unit]
+        if unitDB and unitDB[subKey] and (not predicate or predicate(unit, unitDB[subKey], unitDB)) then
+            units[#units + 1] = unit
+        end
+    end
+
+    return units
+end
+
+local function CreateDescribedToggle(containerParent, label, description, value, onValueChanged, relativeWidth, affectedUnits)
     local toggleGroup = AG:Create("SimpleGroup")
-    toggleGroup:SetRelativeWidth(0.5)
+    toggleGroup:SetRelativeWidth(relativeWidth or 0.5)
     toggleGroup:SetLayout("Flow")
     containerParent:AddChild(toggleGroup)
 
@@ -871,9 +908,26 @@ local function CreateDescribedToggle(containerParent, label, description, value,
     toggle:SetCallback("OnValueChanged", onValueChanged)
     toggleGroup:AddChild(toggle)
 
+    local affectedUnitsText = GetAffectedUnitsText(affectedUnits)
+    local descriptionText = "|cFF9A9A9A" .. description .. "|r"
+    if affectedUnitsText then
+        descriptionText = descriptionText .. "\n|cFF7FB2FF" .. affectedUnitsText .. "|r"
+
+        toggle:SetCallback("OnEnter", function()
+            GameTooltip:SetOwner(toggle.frame, "ANCHOR_CURSOR")
+            GameTooltip:AddLine(label, 1, 1, 1)
+            GameTooltip:AddLine(description, 0.82, 0.82, 0.82, true)
+            GameTooltip:AddLine(affectedUnitsText, 0.5, 0.7, 1, true)
+            GameTooltip:Show()
+        end)
+        toggle:SetCallback("OnLeave", function()
+            GameTooltip:Hide()
+        end)
+    end
+
     local descriptionLabel = AG:Create("Label")
-    descriptionLabel:SetText("|cFF9A9A9A" .. description .. "|r")
-    descriptionLabel:SetRelativeWidth(1)
+    descriptionLabel:SetText(descriptionText)
+    descriptionLabel:SetFullWidth(true)
     descriptionLabel:SetJustifyH("LEFT")
     descriptionLabel:SetJustifyV("TOP")
     toggleGroup:AddChild(descriptionLabel)
@@ -972,7 +1026,7 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
         SpacingSlider:SetLabel("Frame Spacing")
         SpacingSlider:SetValue(FrameDB.Layout[5])
         SpacingSlider:SetSliderValues(-1, 100, 0.1)
-        SpacingSlider:SetRelativeWidth(0.33)
+        SpacingSlider:SetRelativeWidth(0.25)
         SpacingSlider:SetCallback("OnValueChanged", function(_, _, value) FrameDB.Layout[5] = value updateCallback() end)
         LayoutContainer:AddChild(SpacingSlider)
     end
@@ -1003,39 +1057,6 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
 
     CreateDescribedToggle(
         TogglesContainer,
-        "Colour When Tapped",
-        "Uses tapped coloring when a hostile NPC is not tappable by you.",
-        HealthBarDB.ColourWhenTapped,
-        function(_, _, value)
-            HealthBarDB.ColourWhenTapped = value
-            updateCallback()
-        end
-    )
-
-    CreateDescribedToggle(
-        TogglesContainer,
-        "Inverse Growth Direction",
-        "Reverses which side of the frame the health fill grows from.",
-        HealthBarDB.Inverse,
-        function(_, _, value)
-            HealthBarDB.Inverse = value
-            updateCallback()
-        end
-    )
-
-    CreateDescribedToggle(
-        TogglesContainer,
-        "Smoothing",
-        "Animates health and missing-health changes instead of snapping instantly.",
-        HealthBarDB.Smoothing,
-        function(_, _, value)
-            HealthBarDB.Smoothing = value
-            updateCallback()
-        end
-    )
-
-    CreateDescribedToggle(
-        TogglesContainer,
         "Foreground Colour by Class / Reaction",
         "Automatically colors the main health bar from class or reaction instead of the custom foreground color.",
         HealthBarDB.ColourByClass,
@@ -1057,6 +1078,41 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
             updateCallback()
         end
     )
+
+    CreateDescribedToggle(
+        TogglesContainer,
+        "Smoothing",
+        "Animates health and missing-health changes instead of snapping instantly.",
+        HealthBarDB.Smoothing,
+        function(_, _, value)
+            HealthBarDB.Smoothing = value
+            updateCallback()
+        end
+    )
+
+    CreateDescribedToggle(
+        TogglesContainer,
+        "Inverse Growth Direction",
+        "Reverses which side of the frame the health fill grows from.",
+        HealthBarDB.Inverse,
+        function(_, _, value)
+            HealthBarDB.Inverse = value
+            updateCallback()
+        end
+    )
+
+    if unit ~= "party" and unit ~= "raid" then
+        CreateDescribedToggle(
+            TogglesContainer,
+            "Colour When Tapped",
+            "Uses tapped coloring when a hostile NPC is not tappable by you.",
+            HealthBarDB.ColourWhenTapped,
+            function(_, _, value)
+                HealthBarDB.ColourWhenTapped = value
+                updateCallback()
+            end
+        )
+    end
 
     if unit == "player" or unit == "target" then
         local AnchorToCooldownViewerToggle = CreateDescribedToggle(
@@ -2078,12 +2134,14 @@ local function CreateRaidTargetMarkerSettings(containerParent, unit, updateCallb
 
     local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Raid Target Marker Settings")
 
-    local Toggle = AG:Create("CheckBox")
-    Toggle:SetLabel("Enable |cFF8080FFRaid Target Marker|r Indicator")
-    Toggle:SetValue(RaidTargetMarkerDB.Enabled)
-    Toggle:SetCallback("OnValueChanged", function(_, _, value) RaidTargetMarkerDB.Enabled = value updateCallback() RefreshStatusGUI() end)
-    Toggle:SetRelativeWidth(1)
-    ToggleContainer:AddChild(Toggle)
+    local Toggle = CreateDescribedToggle(
+        ToggleContainer,
+        "Enable |cFF8080FFRaid Target Marker|r Indicator",
+        "Displays the raid target icon such as skull, cross, or star on the frame.",
+        RaidTargetMarkerDB.Enabled,
+        function(_, _, value) RaidTargetMarkerDB.Enabled = value updateCallback() RefreshStatusGUI() end,
+        1
+    )
 
     local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
 
@@ -2145,12 +2203,14 @@ local function CreateLeaderAssistaintSettings(containerParent, unit, updateCallb
 
     local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Leader & Assistant Settings")
 
-    local Toggle = AG:Create("CheckBox")
-    Toggle:SetLabel("Enable |cFF8080FFLeader|r & |cFF8080FFAssistant|r Indicator")
-    Toggle:SetValue(LeaderAssistantDB.Enabled)
-    Toggle:SetCallback("OnValueChanged", function(_, _, value) LeaderAssistantDB.Enabled = value updateCallback() RefreshStatusGUI() end)
-    Toggle:SetRelativeWidth(1)
-    ToggleContainer:AddChild(Toggle)
+    local Toggle = CreateDescribedToggle(
+        ToggleContainer,
+        "Enable |cFF8080FFLeader|r & |cFF8080FFAssistant|r Indicator",
+        "Shows party or raid leader and assistant status on the frame.",
+        LeaderAssistantDB.Enabled,
+        function(_, _, value) LeaderAssistantDB.Enabled = value updateCallback() RefreshStatusGUI() end,
+        1
+    )
 
     local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
 
@@ -2212,12 +2272,14 @@ local function CreateRoleIconSettings(containerParent, unit, updateCallback)
 
     local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Role Icon Settings")
 
-    local Toggle = AG:Create("CheckBox")
-    Toggle:SetLabel("Enable |cFF8080FFRole Icon|r Indicator")
-    Toggle:SetValue(RoleIconDB.Enabled)
-    Toggle:SetCallback("OnValueChanged", function(_, _, value) RoleIconDB.Enabled = value updateCallback() RefreshRoleIconGUI() end)
-    Toggle:SetRelativeWidth(1)
-    ToggleContainer:AddChild(Toggle)
+    local Toggle = CreateDescribedToggle(
+        ToggleContainer,
+        "Enable |cFF8080FFRole Icon|r Indicator",
+        "Shows the assigned dungeon or raid role for the unit.",
+        RoleIconDB.Enabled,
+        function(_, _, value) RoleIconDB.Enabled = value updateCallback() RefreshRoleIconGUI() end,
+        1
+    )
 
     local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
 
@@ -2279,12 +2341,14 @@ local function CreateResurrectSettings(containerParent, unit, updateCallback)
 
     local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Resurrection Settings")
 
-    local Toggle = AG:Create("CheckBox")
-    Toggle:SetLabel("Enable |cFF8080FFResurrection|r Indicator")
-    Toggle:SetValue(ResurrectDB.Enabled)
-    Toggle:SetCallback("OnValueChanged", function(_, _, value) ResurrectDB.Enabled = value updateCallback() RefreshResurrectGUI() end)
-    Toggle:SetRelativeWidth(1)
-    ToggleContainer:AddChild(Toggle)
+    local Toggle = CreateDescribedToggle(
+        ToggleContainer,
+        "Enable |cFF8080FFResurrection|r Indicator",
+        "Shows when the unit currently has an incoming resurrection.",
+        ResurrectDB.Enabled,
+        function(_, _, value) ResurrectDB.Enabled = value updateCallback() RefreshResurrectGUI() end,
+        1
+    )
 
     local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
 
@@ -2351,12 +2415,13 @@ local function CreateStatusSettings(containerParent, unit, statusDB, updateCallb
         StatusTextureList[key] = texture
     end
 
-    local Toggle = AG:Create("CheckBox")
-    Toggle:SetLabel("Enable |cFF8080FF"..statusDB.."|r Indicator")
-    Toggle:SetValue(StatusDB.Enabled)
-    Toggle:SetCallback("OnValueChanged", function(_, _, value) StatusDB.Enabled = value updateCallback() RefreshStatusGUI() end)
-    Toggle:SetRelativeWidth(0.5)
-    ToggleContainer:AddChild(Toggle)
+    local Toggle = CreateDescribedToggle(
+        ToggleContainer,
+        "Enable |cFF8080FF" .. statusDB .. "|r Indicator",
+        "Shows the " .. statusDB:lower() .. " status icon when it applies to the unit.",
+        StatusDB.Enabled,
+        function(_, _, value) StatusDB.Enabled = value updateCallback() RefreshStatusGUI() end
+    )
 
     local StatusTextureDropdown = AG:Create("Dropdown")
     StatusTextureDropdown:SetList(StatusTextureList)
@@ -2426,12 +2491,14 @@ local function CreateMouseoverSettings(containerParent, unit, updateCallback)
 
     local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Mouseover Settings")
 
-    local Toggle = AG:Create("CheckBox")
-    Toggle:SetLabel("Enable |cFF8080FFMouseover|r Highlight")
-    Toggle:SetValue(MouseoverDB.Enabled)
-    Toggle:SetCallback("OnValueChanged", function(_, _, value) MouseoverDB.Enabled = value updateCallback() RefreshMouseoverGUI() end)
-    Toggle:SetRelativeWidth(1)
-    ToggleContainer:AddChild(Toggle)
+    local Toggle = CreateDescribedToggle(
+        ToggleContainer,
+        "Enable |cFF8080FFMouseover|r Highlight",
+        "Highlights the frame when your cursor moves over it.",
+        MouseoverDB.Enabled,
+        function(_, _, value) MouseoverDB.Enabled = value updateCallback() RefreshMouseoverGUI() end,
+        1
+    )
 
     local ColourPicker = AG:Create("ColorPicker")
     ColourPicker:SetLabel("Highlight Colour")
@@ -2474,12 +2541,13 @@ local function CreateTargetIndicatorSettings(containerParent, unit, updateCallba
 
     local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Target Indicator Settings")
 
-    local Toggle = AG:Create("CheckBox")
-    Toggle:SetLabel("Enable |cFF8080FFTarget Indicator|r")
-    Toggle:SetValue(TargetIndicatorDB.Enabled)
-    Toggle:SetCallback("OnValueChanged", function(_, _, value) TargetIndicatorDB.Enabled = value updateCallback() RefreshTargetIndicatorGUI() end)
-    Toggle:SetRelativeWidth(0.5)
-    ToggleContainer:AddChild(Toggle)
+    local Toggle = CreateDescribedToggle(
+        ToggleContainer,
+        "Enable |cFF8080FFTarget Indicator|r",
+        "Adds a highlight so it is easier to spot the currently targeted unit.",
+        TargetIndicatorDB.Enabled,
+        function(_, _, value) TargetIndicatorDB.Enabled = value updateCallback() RefreshTargetIndicatorGUI() end
+    )
 
     local ColourPicker = AG:Create("ColorPicker")
     ColourPicker:SetLabel("Indicator Colour")
@@ -2509,6 +2577,7 @@ local function CreateTotemsIndicatorSettings(containerParent, unit, updateCallba
     end
 
     local TotemDurationContainer = GUIWidgets.CreateInlineGroup(containerParent, "Aura Duration Settings")
+    GUIWidgets.CreateInformationTag(TotemDurationContainer, "These options control the cooldown text shown on each active totem icon.")
 
     local ColourPicker = AG:Create("ColorPicker")
     ColourPicker:SetLabel("Cooldown Text Colour")
@@ -2518,12 +2587,13 @@ local function CreateTotemsIndicatorSettings(containerParent, unit, updateCallba
     ColourPicker:SetRelativeWidth(0.5)
     TotemDurationContainer:AddChild(ColourPicker)
 
-    local ScaleByIconSizeCheckbox = AG:Create("CheckBox")
-    ScaleByIconSizeCheckbox:SetLabel("Scale Cooldown Text By Icon Size")
-    ScaleByIconSizeCheckbox:SetValue(TotemDurationDB.ScaleByIconSize)
-    ScaleByIconSizeCheckbox:SetCallback("OnValueChanged", function(_, _, value) TotemDurationDB.ScaleByIconSize = value UpdateTotemSettings() RefreshFontSizeSlider() end)
-    ScaleByIconSizeCheckbox:SetRelativeWidth(0.5)
-    TotemDurationContainer:AddChild(ScaleByIconSizeCheckbox)
+    local ScaleByIconSizeCheckbox = CreateDescribedToggle(
+        TotemDurationContainer,
+        "Scale Cooldown Text By Icon Size",
+        "Automatically resizes the cooldown text when you change the icon size.",
+        TotemDurationDB.ScaleByIconSize,
+        function(_, _, value) TotemDurationDB.ScaleByIconSize = value UpdateTotemSettings() RefreshFontSizeSlider() end
+    )
 
     local AnchorFromDropdown = AG:Create("Dropdown")
     AnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
@@ -2568,12 +2638,13 @@ local function CreateTotemsIndicatorSettings(containerParent, unit, updateCallba
 
     local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Totems Settings")
 
-    local Toggle = AG:Create("CheckBox")
-    Toggle:SetLabel("Enable |cFF8080FFTotems|r")
-    Toggle:SetValue(TotemsIndicatorDB.Enabled)
-    Toggle:SetCallback("OnValueChanged", function(_, _, value) TotemsIndicatorDB.Enabled = value updateCallback() RefreshTotemsIndicatorGUI() end)
-    Toggle:SetRelativeWidth(0.5)
-    ToggleContainer:AddChild(Toggle)
+    local Toggle = CreateDescribedToggle(
+        ToggleContainer,
+        "Enable |cFF8080FFTotems|r",
+        "Shows active totems using compact icons beside the player frame.",
+        TotemsIndicatorDB.Enabled,
+        function(_, _, value) TotemsIndicatorDB.Enabled = value updateCallback() RefreshTotemsIndicatorGUI() end
+    )
 
     local SizeSlider = AG:Create("Slider")
     SizeSlider:SetLabel("Icon Size")
@@ -2743,11 +2814,12 @@ local function CreateTagSetting(containerParent, unit, tagDB)
     end
 
     local TagContainer = GUIWidgets.CreateInlineGroup(containerParent, "Tag Settings")
+    GUIWidgets.CreateInformationTag(TagContainer, "Enter a tag string below and press Enter to apply it. Use the dropdowns further down to insert tags quickly.")
 
     local EditBox = AG:Create("EditBox")
     EditBox:SetLabel("Tag")
     EditBox:SetText(TagDB.Tag)
-    EditBox:SetRelativeWidth(0.5)
+    EditBox:SetRelativeWidth(1)
     EditBox:DisableButton(true)
     EditBox:SetCallback("OnEnterPressed", function(_, _, value) TagDB.Tag = value EditBox:SetText(TagDB.Tag) UpdateTagSettings() end)
     TagContainer:AddChild(EditBox)
@@ -2755,7 +2827,6 @@ local function CreateTagSetting(containerParent, unit, tagDB)
     local ColourPicker = AG:Create("ColorPicker")
     ColourPicker:SetLabel("Colour")
     ColourPicker:SetColor(TagDB.Colour[1], TagDB.Colour[2], TagDB.Colour[3], 1)
-    ColourPicker:SetFullWidth(true)
     ColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) TagDB.Colour = {r, g, b} UpdateTagSettings() end)
     ColourPicker:SetHasAlpha(false)
     ColourPicker:SetRelativeWidth(0.5)
@@ -2804,7 +2875,7 @@ local function CreateTagSetting(containerParent, unit, tagDB)
     LayoutContainer:AddChild(FontSizeSlider)
 
     local TagSelectionContainer = GUIWidgets.CreateInlineGroup(containerParent, "Tag Selection")
-    GUIWidgets.CreateInformationTag(TagSelectionContainer, "You can use the dropdowns below to quickly add tags.\n|cFF8080FFPrefix|r indicates that this should be added to the start of the tag string.")
+    GUIWidgets.CreateInformationTag(TagSelectionContainer, "Use these dropdowns to append tags to the current string. |cFF8080FFPrefix|r indicates a tag that belongs at the start of the text.")
 
     local HealthTagDropdown = AG:Create("Dropdown")
     HealthTagDropdown:SetList(UUF:FetchTagData("Health")[1], UUF:FetchTagData("Health")[2])
@@ -3283,69 +3354,642 @@ local function CreateAuraDurationSettings(containerParent)
     AuraDurationContainer:AddChild(FontSizeSlider)
 end
 
-local function CreateGlobalSettings(containerParent)
+local function ForEachUnitSubDatabase(subKey, callback)
+    for unit, unitDB in pairs(UUF.db.profile.Units) do
+        if unitDB[subKey] then
+            callback(unit, unitDB[subKey], unitDB)
+        end
+    end
+end
 
-    local GlobalContainer = GUIWidgets.CreateInlineGroup(containerParent, "Global Settings")
+local function CreateGlobalOverviewSettings(containerParent)
+    local OverviewContainer = GUIWidgets.CreateInlineGroup(containerParent, "Overview")
 
-    GUIWidgets.CreateInformationTag(GlobalContainer, "The settings below will apply to all unit frames within" .. UUF.PRETTY_ADDON_NAME .. ".\nOptions are not dynamic. They are static but will apply to all unit frames when changed.")
+    GUIWidgets.CreateInformationTag(OverviewContainer, "Use the global tabs to apply the same setting across multiple unit frames at once. Leave unit tabs for layout tweaks and special-case behavior.")
 
-    local ToggleContainer = GUIWidgets.CreateInlineGroup(GlobalContainer, "Toggles")
+    local PresetContainer = GUIWidgets.CreateInlineGroup(OverviewContainer, "Quick Presets")
 
     local ApplyColours = AG:Create("Button")
     ApplyColours:SetText("Colour Mode")
     ApplyColours:SetRelativeWidth(0.5)
     ApplyColours:SetCallback("OnClick", function()
-        for _, unitDB in pairs(UUF.db.profile.Units) do
-            unitDB.HealthBar.ColourByClass = true
-            unitDB.HealthBar.ColourWhenTapped = true
-            unitDB.HealthBar.ColourBackgroundByClass = false
-        end
+        ForEachUnitSubDatabase("HealthBar", function(unit, healthBarDB)
+            healthBarDB.ColourByClass = true
+            healthBarDB.ColourWhenTapped = unit ~= "party" and unit ~= "raid"
+            healthBarDB.ColourBackgroundByClass = false
+        end)
         RefreshConfigPreview()
     end)
-    ToggleContainer:AddChild(ApplyColours)
+    PresetContainer:AddChild(ApplyColours)
 
     local RemoveColours = AG:Create("Button")
     RemoveColours:SetText("Dark Mode")
     RemoveColours:SetRelativeWidth(0.5)
     RemoveColours:SetCallback("OnClick", function()
-        for _, unitDB in pairs(UUF.db.profile.Units) do
-            unitDB.HealthBar.ColourByClass = false
-            unitDB.HealthBar.ColourWhenTapped = false
-            unitDB.HealthBar.ColourBackgroundByClass = false
-        end
+        ForEachUnitSubDatabase("HealthBar", function(_, healthBarDB)
+            healthBarDB.ColourByClass = false
+            healthBarDB.ColourWhenTapped = false
+            healthBarDB.ColourBackgroundByClass = false
+        end)
         RefreshConfigPreview()
     end)
-    ToggleContainer:AddChild(RemoveColours)
+    PresetContainer:AddChild(RemoveColours)
 
-    CreateFontSettings(GlobalContainer)
-    CreateTextureSettings(GlobalContainer)
-    CreateRangeSettings(GlobalContainer)
-    CreateAuraDurationSettings(GlobalContainer)
+    CreateFontSettings(containerParent)
+    CreateTextureSettings(containerParent)
+    CreateRangeSettings(containerParent)
+end
 
-    local TagContainer = GUIWidgets.CreateInlineGroup(GlobalContainer, "Tag Settings")
+local function CreateGlobalHealthSettings(containerParent)
+    local HealthBarDB = UUF.db.profile.Units.player.HealthBar
+    local healthUnits = GetUnitsWithSubDatabase("HealthBar")
+    local nonGroupedHealthUnits = GetUnitsWithSubDatabase("HealthBar", function(unit)
+        return unit ~= "party" and unit ~= "raid"
+    end)
+    local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Shared Health Settings")
 
-    local UseCustomAbbreviationsCheckbox = AG:Create("CheckBox")
-    UseCustomAbbreviationsCheckbox:SetLabel("Custom Abbreviations")
-    UseCustomAbbreviationsCheckbox:SetValue(UUF.db.profile.General.UseCustomAbbreviations)
-    UseCustomAbbreviationsCheckbox:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.General.UseCustomAbbreviations = value UUF:UpdateUnitTags() end)
-    UseCustomAbbreviationsCheckbox:SetRelativeWidth(0.25)
-    TagContainer:AddChild(UseCustomAbbreviationsCheckbox)
+    GUIWidgets.CreateInformationTag(ToggleContainer, "These options write the same health-bar behavior to every unit frame that has a health bar.")
+
+    CreateDescribedToggle(
+        ToggleContainer,
+        "Foreground Colour by Class / Reaction",
+        "Uses class or reaction colors for the health fill across all frames.",
+        HealthBarDB.ColourByClass,
+        function(_, _, value)
+            ForEachUnitSubDatabase("HealthBar", function(_, db) db.ColourByClass = value end)
+            RefreshConfigPreview()
+        end,
+        nil,
+        healthUnits
+    )
+
+    CreateDescribedToggle(
+        ToggleContainer,
+        "Background Colour by Class / Reaction",
+        "Uses class or reaction colors for missing-health backgrounds across all frames.",
+        HealthBarDB.ColourBackgroundByClass,
+        function(_, _, value)
+            ForEachUnitSubDatabase("HealthBar", function(_, db) db.ColourBackgroundByClass = value end)
+            RefreshConfigPreview()
+        end,
+        nil,
+        healthUnits
+    )
+
+    CreateDescribedToggle(
+        ToggleContainer,
+        "Smoothing",
+        "Animates health changes instead of snapping them instantly.",
+        HealthBarDB.Smoothing,
+        function(_, _, value)
+            ForEachUnitSubDatabase("HealthBar", function(_, db) db.Smoothing = value end)
+            RefreshConfigPreview()
+        end,
+        nil,
+        healthUnits
+    )
+
+    CreateDescribedToggle(
+        ToggleContainer,
+        "Colour When Tapped",
+        "Uses tapped coloring on hostile NPC frames where tap ownership matters. Grouped unit frames ignore this.",
+        HealthBarDB.ColourWhenTapped,
+        function(_, _, value)
+            ForEachUnitSubDatabase("HealthBar", function(unit, db)
+                if unit ~= "party" and unit ~= "raid" then
+                    db.ColourWhenTapped = value
+                end
+            end)
+            RefreshConfigPreview()
+        end,
+        nil,
+        nonGroupedHealthUnits
+    )
+
+    local ColourContainer = GUIWidgets.CreateInlineGroup(containerParent, "Shared Health Colours")
+
+    GUIWidgets.CreateInformationTag(ColourContainer, "These colours are only used when the class or reaction colour toggles above are disabled.")
+
+    local ForegroundColourPicker = AG:Create("ColorPicker")
+    ForegroundColourPicker:SetLabel("Foreground Colour")
+    ForegroundColourPicker:SetColor(unpack(HealthBarDB.Foreground))
+    ForegroundColourPicker:SetHasAlpha(false)
+    ForegroundColourPicker:SetRelativeWidth(0.5)
+    ForegroundColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b)
+        ForEachUnitSubDatabase("HealthBar", function(_, db) db.Foreground = {r, g, b} end)
+        RefreshConfigPreview()
+    end)
+    ColourContainer:AddChild(ForegroundColourPicker)
+
+    local ForegroundOpacitySlider = AG:Create("Slider")
+    ForegroundOpacitySlider:SetLabel("Foreground Opacity")
+    ForegroundOpacitySlider:SetValue(HealthBarDB.ForegroundOpacity)
+    ForegroundOpacitySlider:SetSliderValues(0, 1, 0.01)
+    ForegroundOpacitySlider:SetRelativeWidth(0.5)
+    ForegroundOpacitySlider:SetIsPercent(true)
+    ForegroundOpacitySlider:SetCallback("OnValueChanged", function(_, _, value)
+        ForEachUnitSubDatabase("HealthBar", function(_, db) db.ForegroundOpacity = value end)
+        RefreshConfigPreview()
+    end)
+    ColourContainer:AddChild(ForegroundOpacitySlider)
+
+    local BackgroundColourPicker = AG:Create("ColorPicker")
+    BackgroundColourPicker:SetLabel("Background Colour")
+    BackgroundColourPicker:SetColor(unpack(HealthBarDB.Background))
+    BackgroundColourPicker:SetHasAlpha(false)
+    BackgroundColourPicker:SetRelativeWidth(0.5)
+    BackgroundColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b)
+        ForEachUnitSubDatabase("HealthBar", function(_, db) db.Background = {r, g, b} end)
+        RefreshConfigPreview()
+    end)
+    ColourContainer:AddChild(BackgroundColourPicker)
+
+    local BackgroundOpacitySlider = AG:Create("Slider")
+    BackgroundOpacitySlider:SetLabel("Background Opacity")
+    BackgroundOpacitySlider:SetValue(HealthBarDB.BackgroundOpacity)
+    BackgroundOpacitySlider:SetSliderValues(0, 1, 0.01)
+    BackgroundOpacitySlider:SetRelativeWidth(0.5)
+    BackgroundOpacitySlider:SetIsPercent(true)
+    BackgroundOpacitySlider:SetCallback("OnValueChanged", function(_, _, value)
+        ForEachUnitSubDatabase("HealthBar", function(_, db) db.BackgroundOpacity = value end)
+        RefreshConfigPreview()
+    end)
+    ColourContainer:AddChild(BackgroundOpacitySlider)
+end
+
+local function CreateGlobalPowerSettings(containerParent)
+    local PowerBarDB = UUF.db.profile.Units.player.PowerBar
+    local powerUnits = GetUnitsWithSubDatabase("PowerBar")
+    local healerOnlyUnits = GetUnitsWithSubDatabase("PowerBar", function(unit)
+        return unit == "party" or unit == "raid"
+    end)
+    local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Shared Power Bar Settings")
+    local ForegroundColourPicker
+    local BackgroundColourPicker
+    local BackgroundMultiplierSlider
+
+    local function RefreshPowerSettings()
+        if ForegroundColourPicker then
+            ForegroundColourPicker:SetDisabled(PowerBarDB.ColourByType or PowerBarDB.ColourByClass)
+        end
+
+        if BackgroundColourPicker then
+            BackgroundColourPicker:SetDisabled(PowerBarDB.ColourBackgroundByType)
+        end
+
+        if BackgroundMultiplierSlider then
+            BackgroundMultiplierSlider:SetDisabled(not PowerBarDB.ColourBackgroundByType)
+        end
+    end
+
+    GUIWidgets.CreateInformationTag(ToggleContainer, "These settings affect the standard power bar on every unit frame that has one.")
+
+    CreateDescribedToggle(
+        ToggleContainer,
+        "Smooth Updates",
+        "Animates power changes instead of snapping them instantly.",
+        PowerBarDB.Smooth,
+        function(_, _, value)
+            ForEachUnitSubDatabase("PowerBar", function(_, db) db.Smooth = value end)
+            RefreshConfigPreview()
+        end,
+        nil,
+        powerUnits
+    )
+
+    CreateDescribedToggle(
+        ToggleContainer,
+        "Inverse Growth Direction",
+        "Reverses which side the power fill grows from across all power bars.",
+        PowerBarDB.Inverse,
+        function(_, _, value)
+            ForEachUnitSubDatabase("PowerBar", function(_, db) db.Inverse = value end)
+            RefreshConfigPreview()
+        end,
+        nil,
+        powerUnits
+    )
+
+    CreateDescribedToggle(
+        ToggleContainer,
+        "Colour By Type",
+        "Uses each resource type's color instead of the custom foreground colour.",
+        PowerBarDB.ColourByType,
+        function(_, _, value)
+            ForEachUnitSubDatabase("PowerBar", function(_, db) db.ColourByType = value end)
+            RefreshPowerSettings()
+            RefreshConfigPreview()
+        end,
+        nil,
+        powerUnits
+    )
+
+    CreateDescribedToggle(
+        ToggleContainer,
+        "Colour By Class",
+        "Uses class color for power bars where that makes sense instead of the custom foreground colour.",
+        PowerBarDB.ColourByClass,
+        function(_, _, value)
+            ForEachUnitSubDatabase("PowerBar", function(_, db) db.ColourByClass = value end)
+            RefreshPowerSettings()
+            RefreshConfigPreview()
+        end,
+        nil,
+        powerUnits
+    )
+
+    CreateDescribedToggle(
+        ToggleContainer,
+        "Colour Background By Power Type",
+        "Builds power-bar backgrounds from the resource type and the multiplier below.",
+        PowerBarDB.ColourBackgroundByType,
+        function(_, _, value)
+            ForEachUnitSubDatabase("PowerBar", function(_, db) db.ColourBackgroundByType = value end)
+            RefreshPowerSettings()
+            RefreshConfigPreview()
+        end,
+        nil,
+        powerUnits
+    )
+
+    CreateDescribedToggle(
+        ToggleContainer,
+        "Show For Healers Only",
+        "Only applies to party and raid power bars. Helpful when grouped frames are mostly used for healing.",
+        UUF.db.profile.Units.party.PowerBar.OnlyHealers or false,
+        function(_, _, value)
+            for _, unit in ipairs({"party", "raid"}) do
+                if UUF.db.profile.Units[unit] and UUF.db.profile.Units[unit].PowerBar then
+                    UUF.db.profile.Units[unit].PowerBar.OnlyHealers = value
+                end
+            end
+            RefreshConfigPreview()
+        end,
+        nil,
+        healerOnlyUnits
+    )
+
+    local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Shared Power Bar Layout")
+
+    local PositionDropdown = AG:Create("Dropdown")
+    PositionDropdown:SetList(TopBottomList[1], TopBottomList[2])
+    PositionDropdown:SetLabel("Position")
+    PositionDropdown:SetValue(PowerBarDB.Position or "BOTTOM")
+    PositionDropdown:SetRelativeWidth(0.5)
+    PositionDropdown:SetCallback("OnValueChanged", function(_, _, value)
+        ForEachUnitSubDatabase("PowerBar", function(_, db) db.Position = value end)
+        RefreshConfigPreview()
+    end)
+    LayoutContainer:AddChild(PositionDropdown)
+
+    local HeightSlider = AG:Create("Slider")
+    HeightSlider:SetLabel("Height")
+    HeightSlider:SetValue(PowerBarDB.Height)
+    HeightSlider:SetSliderValues(1, 64, 0.1)
+    HeightSlider:SetRelativeWidth(0.5)
+    HeightSlider:SetCallback("OnValueChanged", function(_, _, value)
+        ForEachUnitSubDatabase("PowerBar", function(_, db) db.Height = value end)
+        RefreshConfigPreview()
+    end)
+    LayoutContainer:AddChild(HeightSlider)
+
+    local ColourContainer = GUIWidgets.CreateInlineGroup(containerParent, "Shared Power Bar Colours")
+
+    ForegroundColourPicker = AG:Create("ColorPicker")
+    ForegroundColourPicker:SetLabel("Foreground Colour")
+    ForegroundColourPicker:SetColor(unpack(PowerBarDB.Foreground))
+    ForegroundColourPicker:SetHasAlpha(true)
+    ForegroundColourPicker:SetRelativeWidth(0.33)
+    ForegroundColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a)
+        ForEachUnitSubDatabase("PowerBar", function(_, db) db.Foreground = {r, g, b, a} end)
+        RefreshConfigPreview()
+    end)
+    ColourContainer:AddChild(ForegroundColourPicker)
+
+    BackgroundColourPicker = AG:Create("ColorPicker")
+    BackgroundColourPicker:SetLabel("Background Colour")
+    BackgroundColourPicker:SetColor(unpack(PowerBarDB.Background))
+    BackgroundColourPicker:SetHasAlpha(true)
+    BackgroundColourPicker:SetRelativeWidth(0.33)
+    BackgroundColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a)
+        ForEachUnitSubDatabase("PowerBar", function(_, db) db.Background = {r, g, b, a} end)
+        RefreshConfigPreview()
+    end)
+    ColourContainer:AddChild(BackgroundColourPicker)
+
+    BackgroundMultiplierSlider = AG:Create("Slider")
+    BackgroundMultiplierSlider:SetLabel("Background Multiplier")
+    BackgroundMultiplierSlider:SetValue(PowerBarDB.BackgroundMultiplier)
+    BackgroundMultiplierSlider:SetSliderValues(0, 1, 0.01)
+    BackgroundMultiplierSlider:SetRelativeWidth(0.33)
+    BackgroundMultiplierSlider:SetIsPercent(true)
+    BackgroundMultiplierSlider:SetCallback("OnValueChanged", function(_, _, value)
+        ForEachUnitSubDatabase("PowerBar", function(_, db) db.BackgroundMultiplier = value end)
+        RefreshConfigPreview()
+    end)
+    ColourContainer:AddChild(BackgroundMultiplierSlider)
+
+    RefreshPowerSettings()
+end
+
+local function CreateGlobalCastBarSettings(containerParent)
+    local CastBarDB = UUF.db.profile.Units.player.CastBar
+    local castBarUnits = GetUnitsWithSubDatabase("CastBar")
+    local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Shared Cast Bar Settings")
+
+    GUIWidgets.CreateInformationTag(ToggleContainer, "These controls apply to every unit frame that supports a cast bar.")
+
+    CreateDescribedToggle(
+        ToggleContainer,
+        "Enable Cast Bars",
+        "Turns cast bars on or off for all unit frames that support them.",
+        CastBarDB.Enabled,
+        function(_, _, value)
+            ForEachUnitSubDatabase("CastBar", function(_, db) db.Enabled = value end)
+            RefreshConfigPreview()
+        end,
+        nil,
+        castBarUnits
+    )
+
+    CreateDescribedToggle(
+        ToggleContainer,
+        "Match Frame Width",
+        "Keeps cast bars the same width as their parent frame.",
+        CastBarDB.MatchParentWidth,
+        function(_, _, value)
+            ForEachUnitSubDatabase("CastBar", function(_, db) db.MatchParentWidth = value end)
+            RefreshConfigPreview()
+        end,
+        nil,
+        castBarUnits
+    )
+
+    CreateDescribedToggle(
+        ToggleContainer,
+        "Inverse Growth Direction",
+        "Reverses which side cast progress grows from.",
+        CastBarDB.Inverse,
+        function(_, _, value)
+            ForEachUnitSubDatabase("CastBar", function(_, db) db.Inverse = value end)
+            RefreshConfigPreview()
+        end,
+        nil,
+        castBarUnits
+    )
+
+    CreateDescribedToggle(
+        ToggleContainer,
+        "Show Cast Bar Icon",
+        "Toggles the cast spell icon everywhere it is supported.",
+        CastBarDB.Icon.Enabled,
+        function(_, _, value)
+            ForEachUnitSubDatabase("CastBar", function(_, db)
+                if db.Icon then db.Icon.Enabled = value end
+            end)
+            RefreshConfigPreview()
+        end,
+        nil,
+        castBarUnits
+    )
+
+    CreateDescribedToggle(
+        ToggleContainer,
+        "Show Spell Name",
+        "Shows or hides the spell-name text on all cast bars.",
+        CastBarDB.Text.SpellName.Enabled,
+        function(_, _, value)
+            ForEachUnitSubDatabase("CastBar", function(_, db)
+                if db.Text and db.Text.SpellName then db.Text.SpellName.Enabled = value end
+            end)
+            RefreshConfigPreview()
+        end,
+        nil,
+        castBarUnits
+    )
+
+    CreateDescribedToggle(
+        ToggleContainer,
+        "Show Duration Text",
+        "Shows or hides the duration text on all cast bars.",
+        CastBarDB.Text.Duration.Enabled,
+        function(_, _, value)
+            ForEachUnitSubDatabase("CastBar", function(_, db)
+                if db.Text and db.Text.Duration then db.Text.Duration.Enabled = value end
+            end)
+            RefreshConfigPreview()
+        end,
+        nil,
+        castBarUnits
+    )
+
+    local ColourContainer = GUIWidgets.CreateInlineGroup(containerParent, "Shared Cast Bar Colours")
+
+    local ForegroundColourPicker = AG:Create("ColorPicker")
+    ForegroundColourPicker:SetLabel("Foreground Colour")
+    ForegroundColourPicker:SetColor(unpack(CastBarDB.Foreground))
+    ForegroundColourPicker:SetHasAlpha(true)
+    ForegroundColourPicker:SetRelativeWidth(0.33)
+    ForegroundColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a)
+        ForEachUnitSubDatabase("CastBar", function(_, db) db.Foreground = {r, g, b, a} end)
+        RefreshConfigPreview()
+    end)
+    ColourContainer:AddChild(ForegroundColourPicker)
+
+    local BackgroundColourPicker = AG:Create("ColorPicker")
+    BackgroundColourPicker:SetLabel("Background Colour")
+    BackgroundColourPicker:SetColor(unpack(CastBarDB.Background))
+    BackgroundColourPicker:SetHasAlpha(true)
+    BackgroundColourPicker:SetRelativeWidth(0.33)
+    BackgroundColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a)
+        ForEachUnitSubDatabase("CastBar", function(_, db) db.Background = {r, g, b, a} end)
+        RefreshConfigPreview()
+    end)
+    ColourContainer:AddChild(BackgroundColourPicker)
+
+    local NotInterruptibleColourPicker = AG:Create("ColorPicker")
+    NotInterruptibleColourPicker:SetLabel("Not Interruptible Colour")
+    NotInterruptibleColourPicker:SetColor(unpack(CastBarDB.NotInterruptibleColour))
+    NotInterruptibleColourPicker:SetHasAlpha(true)
+    NotInterruptibleColourPicker:SetRelativeWidth(0.33)
+    NotInterruptibleColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a)
+        ForEachUnitSubDatabase("CastBar", function(_, db) db.NotInterruptibleColour = {r, g, b, a} end)
+        RefreshConfigPreview()
+    end)
+    ColourContainer:AddChild(NotInterruptibleColourPicker)
+end
+
+local function CreateGlobalAurasSettings(containerParent)
+    local BuffsDB = UUF.db.profile.Units.player.Auras.Buffs
+    local DebuffsDB = UUF.db.profile.Units.player.Auras.Debuffs
+    local auraUnits = GetUnitsWithSubDatabase("Auras")
+    local SharedContainer = GUIWidgets.CreateInlineGroup(containerParent, "Shared Aura Settings")
+
+    GUIWidgets.CreateInformationTag(SharedContainer, "Use these controls for broad aura behavior. Per-unit positioning and filter tuning still live on each unit tab.")
+
+    CreateDescribedToggle(
+        SharedContainer,
+        "Enable Buffs",
+        "Shows buff icons on every frame that has a buff container.",
+        BuffsDB.Enabled,
+        function(_, _, value)
+            ForEachUnitSubDatabase("Auras", function(_, db)
+                if db.Buffs then db.Buffs.Enabled = value end
+            end)
+            RefreshConfigPreview()
+        end,
+        nil,
+        auraUnits
+    )
+
+    CreateDescribedToggle(
+        SharedContainer,
+        "Enable Debuffs",
+        "Shows debuff icons on every frame that has a debuff container.",
+        DebuffsDB.Enabled,
+        function(_, _, value)
+            ForEachUnitSubDatabase("Auras", function(_, db)
+                if db.Debuffs then db.Debuffs.Enabled = value end
+            end)
+            RefreshConfigPreview()
+        end,
+        nil,
+        auraUnits
+    )
+
+    CreateDescribedToggle(
+        SharedContainer,
+        "Show Buff Type Border",
+        "Displays aura-type border coloring on buffs where supported.",
+        BuffsDB.ShowType,
+        function(_, _, value)
+            ForEachUnitSubDatabase("Auras", function(_, db)
+                if db.Buffs then db.Buffs.ShowType = value end
+            end)
+            RefreshConfigPreview()
+        end,
+        nil,
+        auraUnits
+    )
+
+    CreateDescribedToggle(
+        SharedContainer,
+        "Show Debuff Type Border",
+        "Displays aura-type border coloring on debuffs where supported.",
+        DebuffsDB.ShowType,
+        function(_, _, value)
+            ForEachUnitSubDatabase("Auras", function(_, db)
+                if db.Debuffs then db.Debuffs.ShowType = value end
+            end)
+            RefreshConfigPreview()
+        end,
+        nil,
+        auraUnits
+    )
+
+    local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Shared Aura Layout")
+
+    local BuffSizeSlider = AG:Create("Slider")
+    BuffSizeSlider:SetLabel("Buff Icon Size")
+    BuffSizeSlider:SetValue(BuffsDB.Size)
+    BuffSizeSlider:SetSliderValues(8, 64, 1)
+    BuffSizeSlider:SetRelativeWidth(0.25)
+    BuffSizeSlider:SetCallback("OnValueChanged", function(_, _, value)
+        ForEachUnitSubDatabase("Auras", function(_, db)
+            if db.Buffs then db.Buffs.Size = value end
+        end)
+        RefreshConfigPreview()
+    end)
+    LayoutContainer:AddChild(BuffSizeSlider)
+
+    local BuffNumSlider = AG:Create("Slider")
+    BuffNumSlider:SetLabel("Buffs To Display")
+    BuffNumSlider:SetValue(BuffsDB.Num)
+    BuffNumSlider:SetSliderValues(1, 24, 1)
+    BuffNumSlider:SetRelativeWidth(0.25)
+    BuffNumSlider:SetCallback("OnValueChanged", function(_, _, value)
+        ForEachUnitSubDatabase("Auras", function(_, db)
+            if db.Buffs then db.Buffs.Num = value end
+        end)
+        RefreshConfigPreview()
+    end)
+    LayoutContainer:AddChild(BuffNumSlider)
+
+    local DebuffSizeSlider = AG:Create("Slider")
+    DebuffSizeSlider:SetLabel("Debuff Icon Size")
+    DebuffSizeSlider:SetValue(DebuffsDB.Size)
+    DebuffSizeSlider:SetSliderValues(8, 64, 1)
+    DebuffSizeSlider:SetRelativeWidth(0.25)
+    DebuffSizeSlider:SetCallback("OnValueChanged", function(_, _, value)
+        ForEachUnitSubDatabase("Auras", function(_, db)
+            if db.Debuffs then db.Debuffs.Size = value end
+        end)
+        RefreshConfigPreview()
+    end)
+    LayoutContainer:AddChild(DebuffSizeSlider)
+
+    local DebuffNumSlider = AG:Create("Slider")
+    DebuffNumSlider:SetLabel("Debuffs To Display")
+    DebuffNumSlider:SetValue(DebuffsDB.Num)
+    DebuffNumSlider:SetSliderValues(1, 24, 1)
+    DebuffNumSlider:SetRelativeWidth(0.25)
+    DebuffNumSlider:SetCallback("OnValueChanged", function(_, _, value)
+        ForEachUnitSubDatabase("Auras", function(_, db)
+            if db.Debuffs then db.Debuffs.Num = value end
+        end)
+        RefreshConfigPreview()
+    end)
+    LayoutContainer:AddChild(DebuffNumSlider)
+
+    CreateAuraDurationSettings(containerParent)
+end
+
+local function CreateGlobalTagSettings(containerParent)
+    local TagContainer = GUIWidgets.CreateInlineGroup(containerParent, "Tag Settings")
+
+    GUIWidgets.CreateInformationTag(TagContainer, "These controls affect shared tag behavior across the profile rather than changing the tag strings on individual unit frames.")
+
+    CreateDescribedToggle(
+        TagContainer,
+        "Use Custom Abbreviations",
+        "Uses Unhalted's abbreviation style in tags that support custom shortened values.",
+        UUF.db.profile.General.UseCustomAbbreviations,
+        function(_, _, value)
+            UUF.db.profile.General.UseCustomAbbreviations = value
+            UUF:UpdateUnitTags()
+        end,
+        1,
+        OrderedUnitKeys
+    )
 
     local TagIntervalSlider = AG:Create("Slider")
     TagIntervalSlider:SetLabel("Tag Updates Per Second")
     TagIntervalSlider:SetValue(1 / UUF.db.profile.General.TagUpdateInterval)
     TagIntervalSlider:SetSliderValues(1, 10, 0.5)
-    TagIntervalSlider:SetRelativeWidth(0.25)
-    TagIntervalSlider:SetCallback("OnValueChanged", function(_, _, value) UUF.TAG_UPDATE_INTERVAL = 1 / value UUF.db.profile.General.TagUpdateInterval = 1 / value UUF:SetTagUpdateInterval() UUF:UpdateUnitTags() end)
+    TagIntervalSlider:SetRelativeWidth(0.33)
+    TagIntervalSlider:SetCallback("OnValueChanged", function(_, _, value)
+        UUF.TAG_UPDATE_INTERVAL = 1 / value
+        UUF.db.profile.General.TagUpdateInterval = 1 / value
+        UUF:SetTagUpdateInterval()
+        UUF:UpdateUnitTags()
+    end)
     TagContainer:AddChild(TagIntervalSlider)
 
     local SeparatorDropdown = AG:Create("Dropdown")
     SeparatorDropdown:SetList(UUF.SEPARATOR_TAGS[1], UUF.SEPARATOR_TAGS[2])
     SeparatorDropdown:SetLabel("Tag Separator")
     SeparatorDropdown:SetValue(UUF.db.profile.General.Separator)
-    SeparatorDropdown:SetRelativeWidth(0.25)
-    SeparatorDropdown:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.General.Separator = value UUF:UpdateUnitTags() end)
-    SeparatorDropdown:SetCallback("OnEnter", function() GameTooltip:SetOwner(SeparatorDropdown.frame, "ANCHOR_BOTTOM") GameTooltip:AddLine("The separator chosen here is only applied to custom tags which are combined. Such as |cFF8080FF[curhpperhp]|r or |cFF8080FF[curhpperhp:abbr]|r", 1, 1, 1) GameTooltip:Show() end)
+    SeparatorDropdown:SetRelativeWidth(0.33)
+    SeparatorDropdown:SetCallback("OnValueChanged", function(_, _, value)
+        UUF.db.profile.General.Separator = value
+        UUF.SEPARATOR = value
+        UUF:UpdateUnitTags()
+    end)
+    SeparatorDropdown:SetCallback("OnEnter", function()
+        GameTooltip:SetOwner(SeparatorDropdown.frame, "ANCHOR_BOTTOM")
+        GameTooltip:AddLine("This separator is used by combined health tags such as |cFF8080FF[curhpperhp]|r.", 1, 1, 1)
+        GameTooltip:Show()
+    end)
     SeparatorDropdown:SetCallback("OnLeave", function() GameTooltip:Hide() end)
     TagContainer:AddChild(SeparatorDropdown)
 
@@ -3353,7 +3997,7 @@ local function CreateGlobalSettings(containerParent)
     ToTSeparatorDropdown:SetList(UUF.TOT_SEPARATOR_TAGS[1], UUF.TOT_SEPARATOR_TAGS[2])
     ToTSeparatorDropdown:SetLabel("ToT Separator")
     ToTSeparatorDropdown:SetValue(UUF.db.profile.General.ToTSeparator)
-    ToTSeparatorDropdown:SetRelativeWidth(0.25)
+    ToTSeparatorDropdown:SetRelativeWidth(0.33)
     ToTSeparatorDropdown:SetCallback("OnValueChanged", function(_, _, value)
         UUF.db.profile.General.ToTSeparator = value
         UUF.TOT_SEPARATOR = value
@@ -3361,13 +4005,52 @@ local function CreateGlobalSettings(containerParent)
     end)
     ToTSeparatorDropdown:SetCallback("OnEnter", function()
         GameTooltip:SetOwner(ToTSeparatorDropdown.frame, "ANCHOR_BOTTOM")
-        GameTooltip:AddLine("Used as the prefix separator for Target of Target tags like |cFF8080FF[name:target]|r on your target frame.", 1, 1, 1)
+        GameTooltip:AddLine("Used as the prefix separator for Target of Target tags like |cFF8080FF[name:target]|r.", 1, 1, 1)
         GameTooltip:Show()
     end)
     ToTSeparatorDropdown:SetCallback("OnLeave", function() GameTooltip:Hide() end)
     TagContainer:AddChild(ToTSeparatorDropdown)
+end
 
-    containerParent:DoLayout()
+local function CreateGlobalSettings(containerParent)
+    local GlobalContainer = GUIWidgets.CreateInlineGroup(containerParent, "Global Settings")
+    GUIWidgets.CreateInformationTag(GlobalContainer, "Global tabs are for shared settings that repeat across multiple frames. Use these first when you want consistency across the whole profile.")
+
+    local function SelectGlobalTab(GlobalTabContainer, _, GlobalTab)
+        SaveSubTab("global", "Global", GlobalTab)
+        GlobalTabContainer:ReleaseChildren()
+
+        if GlobalTab == "Overview" then
+            CreateGlobalOverviewSettings(GlobalTabContainer)
+        elseif GlobalTab == "Health" then
+            CreateGlobalHealthSettings(GlobalTabContainer)
+        elseif GlobalTab == "Power" then
+            CreateGlobalPowerSettings(GlobalTabContainer)
+        elseif GlobalTab == "CastBar" then
+            CreateGlobalCastBarSettings(GlobalTabContainer)
+        elseif GlobalTab == "Auras" then
+            CreateGlobalAurasSettings(GlobalTabContainer)
+        elseif GlobalTab == "Tags" then
+            CreateGlobalTagSettings(GlobalTabContainer)
+        end
+
+        containerParent:DoLayout()
+    end
+
+    local GlobalTabGroup = AG:Create("TabGroup")
+    GlobalTabGroup:SetLayout("Flow")
+    GlobalTabGroup:SetFullWidth(true)
+    GlobalTabGroup:SetTabs({
+        { text = "Overview", value = "Overview" },
+        { text = "Health", value = "Health" },
+        { text = "Power", value = "Power" },
+        { text = "Cast Bar", value = "CastBar" },
+        { text = "Auras", value = "Auras" },
+        { text = "Tags", value = "Tags" },
+    })
+    GlobalTabGroup:SetCallback("OnGroupSelected", SelectGlobalTab)
+    GlobalTabGroup:SelectTab(GetSavedSubTab("global", "Global", "Overview"))
+    GlobalContainer:AddChild(GlobalTabGroup)
 end
 
 local function CreateUnitSettings(containerParent, unit)
