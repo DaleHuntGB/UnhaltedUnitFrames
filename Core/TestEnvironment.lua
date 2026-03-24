@@ -160,6 +160,23 @@ local function ApplyTestTag(fontString, ownerFrame, tagDB, generalDB, text)
     fontString:Show()
 end
 
+local function GetTestTagPreview(tagDB, label, index)
+    if not tagDB or not tagDB.Tag or tagDB.Tag == "" then
+        return ""
+    end
+
+    local tagText = strtrim(tagDB.Tag)
+    if tagText == "[name]" then
+        return string.format("%s %d", label, index)
+    end
+
+    return tagText
+end
+
+local function GetTestUnitLabel(label, index)
+    return string.format("%s %d", label, index)
+end
+
 local function GetTestData(index, label)
     local dataIndex = ((index - 1) % #EnvironmenTestData) + 1
     local baseData = EnvironmenTestData[dataIndex]
@@ -329,11 +346,11 @@ local function ApplySharedTestFrameState(unitFrame, unitToken, unitDB, tagsDB, l
             UUF:CreateUnitTags(unitFrame, unitToken)
         end
 
-        ApplyTestTag(unitFrame.Tags.TagOne, unitFrame, tagsDB.TagOne, generalDB, testData.name)
-        ApplyTestTag(unitFrame.Tags.TagTwo, unitFrame, tagsDB.TagTwo, generalDB, string.format("%.1f%%", testData.percent))
-        ApplyTestTag(unitFrame.Tags.TagThree, unitFrame, tagsDB.TagThree, generalDB, tostring(testData.power))
-        ApplyTestTag(unitFrame.Tags.TagFour, unitFrame, tagsDB.TagFour, generalDB, "")
-        ApplyTestTag(unitFrame.Tags.TagFive, unitFrame, tagsDB.TagFive, generalDB, "")
+        ApplyTestTag(unitFrame.Tags.TagOne, unitFrame, tagsDB.TagOne, generalDB, GetTestUnitLabel(label, index))
+        ApplyTestTag(unitFrame.Tags.TagTwo, unitFrame, tagsDB.TagTwo, generalDB, GetTestTagPreview(tagsDB.TagTwo, label, index))
+        ApplyTestTag(unitFrame.Tags.TagThree, unitFrame, tagsDB.TagThree, generalDB, GetTestTagPreview(tagsDB.TagThree, label, index))
+        ApplyTestTag(unitFrame.Tags.TagFour, unitFrame, tagsDB.TagFour, generalDB, GetTestTagPreview(tagsDB.TagFour, label, index))
+        ApplyTestTag(unitFrame.Tags.TagFive, unitFrame, tagsDB.TagFive, generalDB, GetTestTagPreview(tagsDB.TagFive, label, index))
     end
 end
 
@@ -791,7 +808,7 @@ function UUF:CreateTestBossFrames()
                     BossFrame.Tags.TagOne:SetShadowOffset(0, 0)
                 end
                 BossFrame.Tags.TagOne:SetTextColor(unpack(TagOneDB.Colour))
-                BossFrame.Tags.TagOne:SetText(testData and testData.name or "")
+                BossFrame.Tags.TagOne:SetText(GetTestUnitLabel("Boss", i))
             end
 
             if BossFrame.Tags.TagTwo then
@@ -807,7 +824,7 @@ function UUF:CreateTestBossFrames()
                     BossFrame.Tags.TagTwo:SetShadowOffset(0, 0)
                 end
                 BossFrame.Tags.TagTwo:SetTextColor(unpack(TagTwoDB.Colour))
-                BossFrame.Tags.TagTwo:SetText(testData and string.format("%.1f%%", testData.percent) or "")
+                BossFrame.Tags.TagTwo:SetText(GetTestTagPreview(TagTwoDB, "Boss", i))
             end
 
             if BossFrame.Tags.TagThree then
@@ -823,7 +840,39 @@ function UUF:CreateTestBossFrames()
                     BossFrame.Tags.TagThree:SetShadowOffset(0, 0)
                 end
                 BossFrame.Tags.TagThree:SetTextColor(unpack(TagThreeDB.Colour))
-                BossFrame.Tags.TagThree:SetText(testData and testData.power or "")
+                BossFrame.Tags.TagThree:SetText(GetTestTagPreview(TagThreeDB, "Boss", i))
+            end
+
+            if BossFrame.Tags.TagFour then
+                local TagFourDB = TagsDB.TagFour
+                BossFrame.Tags.TagFour:ClearAllPoints()
+                BossFrame.Tags.TagFour:SetPoint(TagFourDB.Layout[1], BossFrame, TagFourDB.Layout[2], TagFourDB.Layout[3], TagFourDB.Layout[4])
+                BossFrame.Tags.TagFour:SetFont(UUF.Media.Font, TagFourDB.FontSize, General.Fonts.FontFlag)
+                if General.Fonts.Shadow.Enabled then
+                    BossFrame.Tags.TagFour:SetShadowColor(unpack(General.Fonts.Shadow.Colour))
+                    BossFrame.Tags.TagFour:SetShadowOffset(General.Fonts.Shadow.XPos, General.Fonts.Shadow.YPos)
+                else
+                    BossFrame.Tags.TagFour:SetShadowColor(0, 0, 0, 0)
+                    BossFrame.Tags.TagFour:SetShadowOffset(0, 0)
+                end
+                BossFrame.Tags.TagFour:SetTextColor(unpack(TagFourDB.Colour))
+                BossFrame.Tags.TagFour:SetText(GetTestTagPreview(TagFourDB, "Boss", i))
+            end
+
+            if BossFrame.Tags.TagFive then
+                local TagFiveDB = TagsDB.TagFive
+                BossFrame.Tags.TagFive:ClearAllPoints()
+                BossFrame.Tags.TagFive:SetPoint(TagFiveDB.Layout[1], BossFrame, TagFiveDB.Layout[2], TagFiveDB.Layout[3], TagFiveDB.Layout[4])
+                BossFrame.Tags.TagFive:SetFont(UUF.Media.Font, TagFiveDB.FontSize, General.Fonts.FontFlag)
+                if General.Fonts.Shadow.Enabled then
+                    BossFrame.Tags.TagFive:SetShadowColor(unpack(General.Fonts.Shadow.Colour))
+                    BossFrame.Tags.TagFive:SetShadowOffset(General.Fonts.Shadow.XPos, General.Fonts.Shadow.YPos)
+                else
+                    BossFrame.Tags.TagFive:SetShadowColor(0, 0, 0, 0)
+                    BossFrame.Tags.TagFive:SetShadowOffset(0, 0)
+                end
+                BossFrame.Tags.TagFive:SetTextColor(unpack(TagFiveDB.Colour))
+                BossFrame.Tags.TagFive:SetText(GetTestTagPreview(TagFiveDB, "Boss", i))
             end
         end
     else
