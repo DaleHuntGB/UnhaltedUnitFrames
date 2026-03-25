@@ -1035,6 +1035,7 @@ local function CreateDescribedToggle(containerParent, label, description, value,
     containerParent:AddChild(toggleGroup)
 
     local toggle = AG:Create("CheckBox")
+    toggle:SetDescription(description)
     toggle:SetLabel(label)
     toggle:SetValue(value)
     toggle:SetRelativeWidth(1)
@@ -1057,13 +1058,6 @@ local function CreateDescribedToggle(containerParent, label, description, value,
             GameTooltip:Hide()
         end)
     end
-
-    local descriptionLabel = AG:Create("Label")
-    descriptionLabel:SetText(descriptionText)
-    descriptionLabel:SetFullWidth(true)
-    descriptionLabel:SetJustifyH("LEFT")
-    descriptionLabel:SetJustifyV("TOP")
-    toggleGroup:AddChild(descriptionLabel)
 
     return toggle
 end
@@ -1993,6 +1987,8 @@ local function CreateSecondaryPowerBarSettings(containerParent, unit, updateCall
         return not SecondaryPowerBarDB.Enabled or SecondaryPowerBarDB.ColourBackgroundByType
     end
 
+    GUIWidgets.CreateInformationTag(containerParent, "Handles oUF-style player resources like class power, runes, and Brewmaster stagger using the same layout settings.")
+
     local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Power Bar Settings")
 
     local Toggle = AG:Create("CheckBox")
@@ -2502,36 +2498,11 @@ local function CreateReadyCheckSettings(containerParent, unit, updateCallback)
     local Toggle = CreateDescribedToggle(
         ToggleContainer,
         "Enable |cFF8080FFReady Check|r Indicator",
-        "Shows the unit's ready check status, including the final fadeout after a check ends.",
+        "",
         ReadyCheckDB.Enabled,
         function(_, _, value) ReadyCheckDB.Enabled = value updateCallback() RefreshReadyCheckGUI() end,
         1
     )
-
-    local UseAtlasSizeToggle = CreateDescribedToggle(
-        ToggleContainer,
-        "Use Blizzard Atlas Size",
-        "Uses Blizzard's built-in ready check icon size instead of the custom size slider below.",
-        ReadyCheckDB.UseAtlasSize,
-        function(_, _, value) ReadyCheckDB.UseAtlasSize = value updateCallback() RefreshReadyCheckGUI() end,
-        0.5
-    )
-
-    local FinishedTimeSlider = AG:Create("Slider")
-    FinishedTimeSlider:SetLabel("Finished Display Time")
-    FinishedTimeSlider:SetValue(ReadyCheckDB.FinishedTime)
-    FinishedTimeSlider:SetSliderValues(0, 30, 0.1)
-    FinishedTimeSlider:SetRelativeWidth(0.25)
-    FinishedTimeSlider:SetCallback("OnValueChanged", function(_, _, value) ReadyCheckDB.FinishedTime = value updateCallback() end)
-    ToggleContainer:AddChild(FinishedTimeSlider)
-
-    local FadeTimeSlider = AG:Create("Slider")
-    FadeTimeSlider:SetLabel("Fade Time")
-    FadeTimeSlider:SetValue(ReadyCheckDB.FadeTime)
-    FadeTimeSlider:SetSliderValues(0.1, 10, 0.1)
-    FadeTimeSlider:SetRelativeWidth(0.25)
-    FadeTimeSlider:SetCallback("OnValueChanged", function(_, _, value) ReadyCheckDB.FadeTime = value updateCallback() end)
-    ToggleContainer:AddChild(FadeTimeSlider)
 
     local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
 
@@ -2579,8 +2550,6 @@ local function CreateReadyCheckSettings(containerParent, unit, updateCallback)
         local disabled = not ReadyCheckDB.Enabled
         GUIWidgets.DeepDisable(ToggleContainer, disabled, Toggle)
         GUIWidgets.DeepDisable(LayoutContainer, disabled, Toggle)
-        UseAtlasSizeToggle:SetDisabled(disabled)
-        SizeSlider:SetDisabled(disabled or ReadyCheckDB.UseAtlasSize)
     end
 
     RefreshReadyCheckGUI()
@@ -2590,12 +2559,11 @@ local function CreatePhaseIndicatorSettings(containerParent, unit, updateCallbac
     local PhaseDB = UUF.db.profile.Units[unit].Indicators.Phase
 
     local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Phase Indicator Settings")
-    GUIWidgets.CreateInformationTag(ToggleContainer, "Blizzard only reports phasing for player units, so pets and NPCs will not display this icon.")
 
     local Toggle = CreateDescribedToggle(
         ToggleContainer,
         "Enable |cFF8080FFPhase|r Indicator",
-        "Shows when the unit is in a different phase and lets you mouse over the icon for Blizzard's tooltip.",
+        "",
         PhaseDB.Enabled,
         function(_, _, value) PhaseDB.Enabled = value updateCallback() RefreshPhaseGUI() end,
         1
@@ -2664,7 +2632,7 @@ local function CreateResurrectSettings(containerParent, unit, updateCallback)
     local Toggle = CreateDescribedToggle(
         ToggleContainer,
         "Enable |cFF8080FFResurrection|r Indicator",
-        "Shows when the unit currently has an incoming resurrection.",
+        "",
         ResurrectDB.Enabled,
         function(_, _, value) ResurrectDB.Enabled = value updateCallback() RefreshResurrectGUI() end,
         1

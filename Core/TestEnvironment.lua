@@ -368,8 +368,34 @@ local function RefreshTestRaidFrameTags(unitFrame, tagsDB, index)
     ApplyTestTag(unitFrame.Tags.TagFive, unitFrame, tagsDB.TagFive, generalDB, GetTestTagPreview(tagsDB.TagFive, "Raid", index))
 end
 
-function UUF:EnsurePartyTestFrames()
+function UUF:ReleasePartyTestFrames()
+    local pool = UUF.TEST_FRAME_POOL.party
+    for i, frame in ipairs(UUF.PARTY_TEST_FRAMES) do
+        pool[i] = frame
+    end
+    wipe(UUF.PARTY_TEST_FRAMES)
+end
+
+function UUF:ReleaseRaidTestFrames()
+    local pool = UUF.TEST_FRAME_POOL.raid
+    for i, frame in ipairs(UUF.RAID_TEST_FRAMES) do
+        pool[i] = frame
+    end
+    wipe(UUF.RAID_TEST_FRAMES)
+end
+
+function UUF:AcquirePartyTestFrames()
     if #UUF.PARTY_TEST_FRAMES > 0 then return end
+    if not UUF.PARTY_TEST_MODE then return end
+
+    local pool = UUF.TEST_FRAME_POOL.party
+    if #pool >= UUF.MAX_PARTY_FRAMES then
+        for i = 1, UUF.MAX_PARTY_FRAMES do
+            UUF.PARTY_TEST_FRAMES[i] = pool[i]
+        end
+        wipe(pool)
+        return
+    end
 
     oUF:SetActiveStyle(UUF:FetchFrameName("party"))
 
@@ -383,8 +409,18 @@ function UUF:EnsurePartyTestFrames()
     end
 end
 
-function UUF:EnsureRaidTestFrames()
+function UUF:AcquireRaidTestFrames()
     if #UUF.RAID_TEST_FRAMES > 0 then return end
+    if not UUF.RAID_TEST_MODE then return end
+
+    local pool = UUF.TEST_FRAME_POOL.raid
+    if #pool >= UUF.MAX_RAID_FRAMES then
+        for i = 1, UUF.MAX_RAID_FRAMES do
+            UUF.RAID_TEST_FRAMES[i] = pool[i]
+        end
+        wipe(pool)
+        return
+    end
 
     oUF:SetActiveStyle(UUF:FetchFrameName("raid"))
 
@@ -404,7 +440,7 @@ function UUF:CreateTestPartyFrames()
     local previousAuraTestMode = UUF.AURA_TEST_MODE
     local previousCastBarTestMode = UUF.CASTBAR_TEST_MODE
 
-    UUF:EnsurePartyTestFrames()
+    UUF:AcquirePartyTestFrames()
     UUF:ResolveLSM()
     UpdateLiveGroupedFrameVisibility()
 
@@ -428,6 +464,7 @@ function UUF:CreateTestPartyFrames()
             UUF:CreateTestCastBar(partyFrame, "party" .. i)
             partyFrame:Hide()
         end
+        UUF:ReleasePartyTestFrames()
 
     end
 
@@ -442,7 +479,7 @@ function UUF:CreateTestRaidFrames()
     local frameDB = raidDB.Frame
     local previousAuraTestMode = UUF.AURA_TEST_MODE
 
-    UUF:EnsureRaidTestFrames()
+    UUF:AcquireRaidTestFrames()
     UUF:ResolveLSM()
     UpdateLiveGroupedFrameVisibility()
 
@@ -557,6 +594,7 @@ function UUF:CreateTestRaidFrames()
             UUF:CreateTestAuras(raidFrame, "raid" .. index)
             raidFrame:Hide()
         end
+        UUF:ReleaseRaidTestFrames()
 
     end
 

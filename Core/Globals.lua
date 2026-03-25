@@ -14,6 +14,7 @@ UUF.MAX_PARTY_FRAMES = 4
 UUF.RAID_FRAMES = {}
 UUF.RAID_TEST_FRAMES = {}
 UUF.MAX_RAID_FRAMES = 40
+UUF.TEST_FRAME_POOL = { party = {}, raid = {} }
 UUF.RAID_GROUP_HEADERS = {}
 UUF.MAX_RAID_GROUPS = 8
 
@@ -501,7 +502,25 @@ end
 
 function UUF:HasActiveSecondaryPowerBar(unitFrame, unit)
     local SecondaryPowerBarDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].SecondaryPowerBar
-    return SecondaryPowerBarDB and SecondaryPowerBarDB.Enabled and (unitFrame.Runes or unitFrame.ClassPower)
+    if not (SecondaryPowerBarDB and SecondaryPowerBarDB.Enabled and unitFrame) then return false end
+
+    local function IsVisible(element)
+        if not element then return false end
+
+        if element.GetObjectType then
+            return element:IsShown()
+        end
+
+        for i = 1, #element do
+            if element[i] and element[i]:IsShown() then
+                return true
+            end
+        end
+
+        return false
+    end
+
+    return IsVisible(unitFrame.Runes) or IsVisible(unitFrame.ClassPower) or IsVisible(unitFrame.Stagger)
 end
 
 local function NormalizeBarPosition(value, fallback)
@@ -536,8 +555,8 @@ function UUF:GetConfiguredSecondaryPowerBarPosition(unit)
     return "TOP"
 end
 
-function UUF:GetSecondaryPowerBarStackOffset(unitFrame, unit)
-    if not UUF:HasActiveSecondaryPowerBar(unitFrame, unit) then return 0 end
+function UUF:GetSecondaryPowerBarStackOffset(unitFrame, unit, assumeSecondaryVisible)
+    if not assumeSecondaryVisible and not UUF:HasActiveSecondaryPowerBar(unitFrame, unit) then return 0 end
 
     local PowerBarDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].PowerBar
     if not (PowerBarDB and PowerBarDB.Enabled and unitFrame.Power and unitFrame.Power:IsShown()) then

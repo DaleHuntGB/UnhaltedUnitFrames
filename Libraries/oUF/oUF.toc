@@ -1,7 +1,7 @@
-## Interface: 120001
+## Interface: 120001, 120005
 ## Title: oUF
 ## Author: Haste, lightspark, p3lim, Rainrider
-## Version: a7026ef
+## Version: @project-version@
 ## Notes: Unit frame framework. Does nothing by itself.
 ## OptionalDeps: Clique
 ## X-oUF: oUF

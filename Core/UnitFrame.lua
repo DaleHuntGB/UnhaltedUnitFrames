@@ -1025,7 +1025,7 @@ function UUF:UpdatePartyFrames()
     UUF:ForEachPartyFrame(function(unitFrame, actualUnit)
         UUF:UpdateUnitFrame(unitFrame, actualUnit)
     end)
-    UUF:CreateTestPartyFrames()
+    if UUF.PARTY_TEST_MODE then UUF:CreateTestPartyFrames() end
     UUF:LayoutPartyFrames()
 end
 
@@ -1033,7 +1033,7 @@ function UUF:UpdateRaidFrames()
     UUF:ForEachRaidFrame(function(unitFrame, actualUnit)
         UUF:UpdateUnitFrame(unitFrame, actualUnit)
     end)
-    UUF:CreateTestRaidFrames()
+    if UUF.RAID_TEST_MODE then UUF:CreateTestRaidFrames() end
     UUF:LayoutRaidFrames()
 end
 
@@ -1059,11 +1059,11 @@ function UUF:ToggleUnitFrameVisibility(unit)
     if not UnitDB then return end
     if UnitDB.Enabled then
         if unit == "boss" then
-            if not UUF["BOSS1"] then UUF:SpawnUnitFrame(unit) end
+            if not UUF["BOSS1"] and not InCombatLockdown() then UUF:SpawnUnitFrame(unit) end
         elseif unit == "raid" then
-            if not UUF["RAID"] then UUF:SpawnUnitFrame(unit) end
+            if not UUF["RAID"] and not InCombatLockdown() then UUF:SpawnUnitFrame(unit) end
         elseif unit == "party" then
-            if not UUF["PARTY"] then UUF:SpawnUnitFrame(unit) end
+            if not UUF["PARTY"] and not InCombatLockdown() then UUF:SpawnUnitFrame(unit) end
         elseif not UUF[UnitKey] then
             UUF:SpawnUnitFrame(unit)
         end

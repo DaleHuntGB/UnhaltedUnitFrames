@@ -9,6 +9,9 @@
 	<Script file="Positioner.lua"/>
 	<Script file="PowerBar.lua"/>
 	<Script file="SecondaryPowerBar.lua"/>
+	<Script file="ClassPower.lua"/>
+	<Script file="Runes.lua"/>
+	<Script file="Stagger.lua"/>
 	<Script file="DispelHighlight.lua"/>
 	<Script file="Range.lua"/>
 	<Script file="Tags.lua"/>

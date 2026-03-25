@@ -47,7 +47,21 @@ function UnhaltedUnitFrames:OnEnable()
     UUF:SpawnUnitFrame("focus")
     UUF:SpawnUnitFrame("focustarget")
     UUF:SpawnUnitFrame("pet")
-    UUF:SpawnUnitFrame("party")
-    UUF:SpawnUnitFrame("raid")
-    UUF:SpawnUnitFrame("boss")
+
+    local function SpawnGroupFrames()
+        UUF:SpawnUnitFrame("party")
+        UUF:SpawnUnitFrame("raid")
+        UUF:SpawnUnitFrame("boss")
+    end
+
+    if InCombatLockdown() then
+        local combatEndFrame = CreateFrame("Frame")
+        combatEndFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
+        combatEndFrame:SetScript("OnEvent", function(self)
+            self:UnregisterEvent("PLAYER_REGEN_ENABLED")
+            SpawnGroupFrames()
+        end)
+    else
+        SpawnGroupFrames()
+    end
 end
