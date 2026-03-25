@@ -60,14 +60,14 @@ local FrameStrataList = {{ ["BACKGROUND"] = "Background", ["LOW"] = "Low", ["MED
 local TopBottomList = {{ ["TOP"] = "Top", ["BOTTOM"] = "Bottom" }, { "TOP", "BOTTOM" }}
 local RaidGrowthDirectionList = {
     {
-        DOWN_RIGHT = "Fill Down, New Groups Right",
-        DOWN_LEFT = "Fill Down, New Groups Left",
-        UP_RIGHT = "Fill Up, New Groups Right",
-        UP_LEFT = "Fill Up, New Groups Left",
-        RIGHT_DOWN = "Fill Right, New Groups Down",
-        RIGHT_UP = "Fill Right, New Groups Up",
-        LEFT_DOWN = "Fill Left, New Groups Down",
-        LEFT_UP = "Fill Left, New Groups Up",
+        DOWN_RIGHT = "Down & Right",
+        DOWN_LEFT  = "Down & Left",
+        UP_RIGHT   = "Up & Right",
+        UP_LEFT    = "Up & Left",
+        RIGHT_DOWN = "Right & Down",
+        RIGHT_UP   = "Right & Up",
+        LEFT_DOWN  = "Left & Down",
+        LEFT_UP    = "Left & Up",
     },
     { "DOWN_RIGHT", "DOWN_LEFT", "UP_RIGHT", "UP_LEFT", "RIGHT_DOWN", "RIGHT_UP", "LEFT_DOWN", "LEFT_UP" }
 }

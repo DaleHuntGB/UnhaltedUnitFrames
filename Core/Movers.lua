@@ -127,10 +127,8 @@ local function GetMoverSize(unit, unitDB)
     local frameDB = unitDB.Frame
 
     if unit == "party" then
-        if UUF.PARTY then
-            return math.max(UUF.PARTY:GetWidth(), frameDB.Width), math.max(UUF.PARTY:GetHeight(), frameDB.Height)
-        end
-
+        -- Always use theoretical max size so the mover covers all party slots,
+        -- regardless of how many members are currently in the group.
         local spacing = frameDB.Layout[5] or 0
         return frameDB.Width, (frameDB.Height + spacing) * UUF.MAX_PARTY_FRAMES - spacing
     end
@@ -147,11 +145,9 @@ local function GetMoverSize(unit, unitDB)
 
     if unit == "raid" then
         if IsGroupedRaidHeadersEnabled() then
-            local width, height = GetBoundsFromFrames(UUF.RAID_GROUP_HEADERS)
-            if width and height then
-                return width, height
-            end
-
+            -- Always use the theoretical full size (all groups × 5 members).
+            -- GetBoundsFromFrames is unreliable here because SecureGroupHeaders shrinks
+            -- empty group headers to near-zero, so bounds would only cover groups with members.
             local direction = frameDB.GrowthDirection or "DOWN_RIGHT"
             local maxColumns = math.max(1, math.floor(frameDB.MaxColumns or 8))
             local groupCount = GetFilteredRaidGroupCount(frameDB)
@@ -168,9 +164,21 @@ local function GetMoverSize(unit, unitDB)
             return (groupWidth + horizontalSpacing) * lineCount - horizontalSpacing, (groupHeight + verticalSpacing) * wrapCount - verticalSpacing
         end
 
-        if UUF.RAID then
-            return math.max(UUF.RAID:GetWidth(), frameDB.Width), math.max(UUF.RAID:GetHeight(), frameDB.Height)
+        -- Non-grouped: calculate from the configured maxColumns × unitsPerColumn.
+        local direction = frameDB.GrowthDirection or "DOWN_RIGHT"
+        local point = RAID_DIRECTION_TO_POINT[direction] or "TOP"
+        local maxColumns = math.max(1, math.floor(frameDB.MaxColumns or 8))
+        local unitsPerColumn = math.max(1, math.floor(frameDB.UnitsPerColumn or 5))
+        local horizontalSpacing = frameDB.HorizontalSpacing or 0
+        local verticalSpacing = frameDB.VerticalSpacing or 0
+
+        if point == "LEFT" or point == "RIGHT" then
+            return (frameDB.Width * unitsPerColumn) + (horizontalSpacing * (unitsPerColumn - 1)),
+                   (frameDB.Height * maxColumns) + (verticalSpacing * (maxColumns - 1))
         end
+
+        return (frameDB.Width * maxColumns) + (horizontalSpacing * (maxColumns - 1)),
+               (frameDB.Height * unitsPerColumn) + (verticalSpacing * (unitsPerColumn - 1))
     end
 
     local frame = UUF[unit:upper()]
@@ -223,17 +231,44 @@ local function RefreshMover(unit)
     mover:Show()
 end
 
+local function GetAnchorCoords(frame, anchorPoint)
+    local left   = frame:GetLeft()   or 0
+    local right  = frame:GetRight()  or GetScreenWidth()
+    local top    = frame:GetTop()    or GetScreenHeight()
+    local bottom = frame:GetBottom() or 0
+    local cx = (left + right) / 2
+    local cy = (top + bottom) / 2
+
+    if     anchorPoint == "TOPLEFT"     then return left, top
+    elseif anchorPoint == "TOP"         then return cx,   top
+    elseif anchorPoint == "TOPRIGHT"    then return right, top
+    elseif anchorPoint == "LEFT"        then return left, cy
+    elseif anchorPoint == "CENTER"      then return cx,   cy
+    elseif anchorPoint == "RIGHT"       then return right, cy
+    elseif anchorPoint == "BOTTOMLEFT"  then return left, bottom
+    elseif anchorPoint == "BOTTOM"      then return cx,   bottom
+    elseif anchorPoint == "BOTTOMRIGHT" then return right, bottom
+    end
+    return left, top
+end
+
 local function SaveMoverPosition(mover, applyChanges)
     if not mover or not mover.unit then return end
 
     local frameDB = UUF.db.profile.Units[mover.unit] and UUF.db.profile.Units[mover.unit].Frame
     if not frameDB then return end
 
-    local _, _, _, xPos, yPos = mover:GetPoint(1)
-    if not xPos or not yPos then return end
+    -- After StopMovingOrSizing(), WoW re-anchors the frame to BOTTOMLEFT of UIParent,
+    -- so GetPoint(1) no longer reflects the original Layout anchor/point. Instead we
+    -- derive the offset from the mover's actual screen position.
+    local moverX, moverY = GetAnchorCoords(mover, frameDB.Layout[1])
+    local parent = mover:GetParent()
+    local parentX, parentY = GetAnchorCoords(parent, frameDB.Layout[2])
 
-    frameDB.Layout[3] = RoundToTenth(xPos)
-    frameDB.Layout[4] = RoundToTenth(yPos)
+    if not moverX then return end
+
+    frameDB.Layout[3] = RoundToTenth(moverX - parentX)
+    frameDB.Layout[4] = RoundToTenth(moverY - parentY)
 
     if applyChanges then
         ApplyUnitPosition(mover.unit)

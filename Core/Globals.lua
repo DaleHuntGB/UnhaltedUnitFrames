@@ -295,8 +295,55 @@ local function AddAnchorsToBCDM()
     end
 end
 
+local function SetupGameMenu()
+    hooksecurefunc(GameMenuFrame, "InitButtons", function(self)
+        -- Find the AddOns button — it's the first entry in the second section
+        -- and carries the 20px topPadding (section separator) above it.
+        local addOnsButton
+        for btn in self.buttonPool:EnumerateActive() do
+            if btn:GetText() == ADDONS then
+                addOnsButton = btn
+                break
+            end
+        end
+
+        if addOnsButton then
+            local insertAt = addOnsButton.layoutIndex
+
+            -- Shift AddOns and every button below it down by 1 to open a slot.
+            for btn in self.buttonPool:EnumerateActive() do
+                if btn.layoutIndex >= insertAt then
+                    btn.layoutIndex = btn.layoutIndex + 1
+                end
+            end
+
+            -- AddButton appends at the current nextLayoutIndex; we override it.
+            local uufBtn = self:AddButton(UUF.ADDON_NAME, function()
+                PlaySound(SOUNDKIT.IG_MAINMENU_OPTION)
+                HideUIPanel(GameMenuFrame)
+                UUF:CreateGUI()
+            end)
+
+            -- Place the button at the slot we opened and inherit the section gap
+            -- so the visual separator appears above UUF, not above AddOns.
+            uufBtn.layoutIndex    = insertAt
+            uufBtn.topPadding     = addOnsButton.topPadding
+            addOnsButton.topPadding = nil
+        else
+            -- Fallback: ADDONS button absent (Kiosk mode etc.) — append at the end.
+            self:AddSection()
+            self:AddButton(UUF.ADDON_NAME, function()
+                PlaySound(SOUNDKIT.IG_MAINMENU_OPTION)
+                HideUIPanel(GameMenuFrame)
+                UUF:CreateGUI()
+            end)
+        end
+    end)
+end
+
 function UUF:Init()
     SetupSlashCommands()
+    SetupGameMenu()
     UUF:SetUIScale()
     UUF:ResolveLSM()
     UUF:LoadCustomColours()

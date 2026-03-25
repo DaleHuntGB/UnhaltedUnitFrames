@@ -257,6 +257,49 @@ local function GetRaidGroupHeaderDimensions(frameDB)
     return frameDB.Width, (frameDB.Height * 5) + (verticalSpacing * 4)
 end
 
+-- Pre-create all child unit buttons for a secure group header so the visual style is
+-- applied before combat ever starts. SecureGroupHeaderTemplate creates child frames lazily
+-- (only when roster data exists), which means our insecure style code (walkObject/initObject)
+-- would need to run in combat when the first member joins -- which fails on protected frames.
+-- By pre-creating the frames here (outside of combat) we ensure SecureGroupHeader_Update only
+-- ever needs to assign units and position pre-existing styled frames.
+local function PreCreateGroupChildren(header, count, unitGuess)
+    if not header or InCombatLockdown() then return end
+
+    local buttonTemplate = header:GetAttribute("template")
+    if not buttonTemplate then return end
+
+    local headerName = header:GetName()
+    for slot = 1, count do
+        local childAttr = "child" .. slot
+        if not header:GetAttribute(childAttr) then
+            local btnName = headerName and (headerName .. "UnitButton" .. slot)
+            if not (btnName and _G[btnName]) then
+                local btn = CreateFrame("Button", btnName, header, buttonTemplate)
+                -- oUF's initObject reads 'oUF-guessUnit' to build objectUnit.
+                -- The normal path sets this inside the secure initialConfigFunction
+                -- string via CallRestrictedClosure. Since we are calling styleFunction
+                -- directly (outside combat, outside restricted code), we must set it
+                -- ourselves first or initObject will crash with 'objectUnit is nil'.
+                btn:SetAttribute("oUF-guessUnit", unitGuess)
+                btn:SetAttribute("*type1", "target")
+                btn:SetAttribute("*type2", "togglemenu")
+                -- Apply the oUF visual style (registers elements, event hooks, etc.)
+                if header.styleFunction then
+                    header.styleFunction(header, btn:GetName())
+                end
+                -- Keep hidden until SecureGroupHeader_Update assigns a real unit.
+                -- RegisterUnitWatch hides the frame automatically when no unit is set.
+                RegisterUnitWatch(btn)
+                btn:Hide()
+                -- Tell SecureGroupHeader about this child so configureChildren reuses
+                -- this already-styled frame instead of creating a new unstyled one.
+                header:SetAttribute(childAttr, btn)
+            end
+        end
+    end
+end
+
 local function GetRaidGroupLayoutOffsets(direction, groupWidth, groupHeight, horizontalSpacing, verticalSpacing)
     if direction == "DOWN_RIGHT" then
         return groupWidth + horizontalSpacing, 0, 0, -(groupHeight + verticalSpacing)
@@ -310,6 +353,10 @@ local function ConfigureRaidSubGroupHeader(header, frameDB, groupIndex)
     end
 
     header:SetSize(width, height)
+    -- Prevent SecureGroupHeaders' configureChildren from shrinking an empty group
+    -- below its full 5-slot size (it uses minWidth/minHeight when numDisplayed == 0).
+    header:SetAttribute("minWidth", width)
+    header:SetAttribute("minHeight", height)
 end
 
 local function RefreshGroupedRaidHeaderChildren(header, frameDB)
@@ -713,8 +760,6 @@ function UUF:LayoutRaidFrames()
         local lineStepX, lineStepY, wrapStepX, wrapStepY = GetRaidGroupLayoutOffsets(direction, groupWidth, groupHeight, horizontalSpacing, verticalSpacing)
         local visibleHeaderIndex = 0
 
-        UpdateGroupedRaidHeaderVisibility(frameDB)
-
         if UUF.RAID then
             UUF.RAID:ClearAllPoints()
             UUF.RAID:SetSize(1, 1)
@@ -735,6 +780,8 @@ function UUF:LayoutRaidFrames()
                 visibleHeaderIndex = visibleHeaderIndex + 1
             end
         end
+
+        UpdateGroupedRaidHeaderVisibility(frameDB)
     else
         if not UUF.RAID then return end
 
@@ -871,6 +918,14 @@ function UUF:SpawnUnitFrame(unit)
             )
         end
         UUF:LayoutRaidFrames()
+        -- Defer by one frame so SecureGroupHeaders' OnLoad fully completes before
+        -- we manually insert pre-created children into the headers.
+        C_Timer.After(0, function()
+            if InCombatLockdown() then return end
+            for _, header in ipairs(UUF.RAID_GROUP_HEADERS) do
+                PreCreateGroupChildren(header, 5, "raid")
+            end
+        end)
     elseif unit == "party" then
         UUF[unit:upper()] = oUF:SpawnHeader(
             UUF:FetchFrameName(unit),
@@ -883,6 +938,11 @@ function UUF:SpawnUnitFrame(unit)
         )
         UUF.PARTY = UUF[unit:upper()]
         UUF:LayoutPartyFrames()
+        C_Timer.After(0, function()
+            if not InCombatLockdown() then
+                PreCreateGroupChildren(UUF.PARTY, UUF.MAX_PARTY_FRAMES, "party")
+            end
+        end)
     else
         UUF[unit:upper()] = oUF:Spawn(unit, UUF:FetchFrameName(unit))
     end
