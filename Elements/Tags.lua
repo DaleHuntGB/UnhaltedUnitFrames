@@ -1,6 +1,20 @@
 local _, UUF = ...
 local oUF = UUF.oUF
 
+local function GetTagAnchorFrame(unitFrame)
+    return unitFrame and (unitFrame.HighLevelContainer or unitFrame)
+end
+
+local function SetTagPosition(tagFrame, unitFrame, tagDB)
+    local anchorFrame = GetTagAnchorFrame(unitFrame)
+    if not anchorFrame then return end
+
+    local xOffset, yOffset = UUF:GetPixelSnappedOffsets(anchorFrame, tagDB.Layout[2], tagDB.Layout[3], tagDB.Layout[4])
+    tagFrame:ClearAllPoints()
+    tagFrame:SetPoint(tagDB.Layout[1], anchorFrame, tagDB.Layout[2], xOffset, yOffset)
+    tagFrame:SetJustifyH(UUF:SetJustification(tagDB.Layout[1]))
+end
+
 local function CreateUnitTag(unitFrame, unit, tagDB)
     local GeneralDB = UUF.db.profile.General
     local TagDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Tags[tagDB]
@@ -16,8 +30,7 @@ local function CreateUnitTag(unitFrame, unit, tagDB)
             unitFrame.Tags[tagDB]:SetShadowColor(0, 0, 0, 0)
             unitFrame.Tags[tagDB]:SetShadowOffset(0, 0)
         end
-        unitFrame.Tags[tagDB]:SetPoint(TagDB.Layout[1], unitFrame.HighLevelContainer, TagDB.Layout[2], TagDB.Layout[3], TagDB.Layout[4])
-        unitFrame.Tags[tagDB]:SetJustifyH(UUF:SetJustification(TagDB.Layout[1]))
+        SetTagPosition(unitFrame.Tags[tagDB], unitFrame, TagDB)
         unitFrame:Tag(unitFrame.Tags[tagDB], TagDB.Tag)
         unitFrame.Tags[tagDB].UUFTagString = TagDB.Tag
     end
@@ -39,9 +52,7 @@ function UUF:UpdateUnitTag(unitFrame, unit, tagDB)
         tagFrame:SetShadowColor(0, 0, 0, 0)
         tagFrame:SetShadowOffset(0, 0)
     end
-    tagFrame:ClearAllPoints()
-    tagFrame:SetPoint(TagDB.Layout[1], unitFrame.HighLevelContainer, TagDB.Layout[2], TagDB.Layout[3], TagDB.Layout[4])
-    tagFrame:SetJustifyH(UUF:SetJustification(TagDB.Layout[1]))
+    SetTagPosition(tagFrame, unitFrame, TagDB)
 
     if tagFrame.UUFTagString ~= TagDB.Tag then
         unitFrame:Tag(tagFrame, TagDB.Tag)

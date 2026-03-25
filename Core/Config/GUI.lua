@@ -2494,6 +2494,168 @@ local function CreateRoleIconSettings(containerParent, unit, updateCallback)
     RefreshRoleIconGUI()
 end
 
+local function CreateReadyCheckSettings(containerParent, unit, updateCallback)
+    local ReadyCheckDB = UUF.db.profile.Units[unit].Indicators.ReadyCheck
+
+    local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Ready Check Settings")
+
+    local Toggle = CreateDescribedToggle(
+        ToggleContainer,
+        "Enable |cFF8080FFReady Check|r Indicator",
+        "Shows the unit's ready check status, including the final fadeout after a check ends.",
+        ReadyCheckDB.Enabled,
+        function(_, _, value) ReadyCheckDB.Enabled = value updateCallback() RefreshReadyCheckGUI() end,
+        1
+    )
+
+    local UseAtlasSizeToggle = CreateDescribedToggle(
+        ToggleContainer,
+        "Use Blizzard Atlas Size",
+        "Uses Blizzard's built-in ready check icon size instead of the custom size slider below.",
+        ReadyCheckDB.UseAtlasSize,
+        function(_, _, value) ReadyCheckDB.UseAtlasSize = value updateCallback() RefreshReadyCheckGUI() end,
+        0.5
+    )
+
+    local FinishedTimeSlider = AG:Create("Slider")
+    FinishedTimeSlider:SetLabel("Finished Display Time")
+    FinishedTimeSlider:SetValue(ReadyCheckDB.FinishedTime)
+    FinishedTimeSlider:SetSliderValues(0, 30, 0.1)
+    FinishedTimeSlider:SetRelativeWidth(0.25)
+    FinishedTimeSlider:SetCallback("OnValueChanged", function(_, _, value) ReadyCheckDB.FinishedTime = value updateCallback() end)
+    ToggleContainer:AddChild(FinishedTimeSlider)
+
+    local FadeTimeSlider = AG:Create("Slider")
+    FadeTimeSlider:SetLabel("Fade Time")
+    FadeTimeSlider:SetValue(ReadyCheckDB.FadeTime)
+    FadeTimeSlider:SetSliderValues(0.1, 10, 0.1)
+    FadeTimeSlider:SetRelativeWidth(0.25)
+    FadeTimeSlider:SetCallback("OnValueChanged", function(_, _, value) ReadyCheckDB.FadeTime = value updateCallback() end)
+    ToggleContainer:AddChild(FadeTimeSlider)
+
+    local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
+
+    local AnchorFromDropdown = AG:Create("Dropdown")
+    AnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
+    AnchorFromDropdown:SetLabel("Anchor From")
+    AnchorFromDropdown:SetValue(ReadyCheckDB.Layout[1])
+    AnchorFromDropdown:SetRelativeWidth(0.5)
+    AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) ReadyCheckDB.Layout[1] = value updateCallback() end)
+    LayoutContainer:AddChild(AnchorFromDropdown)
+
+    local AnchorToDropdown = AG:Create("Dropdown")
+    AnchorToDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
+    AnchorToDropdown:SetLabel("Anchor To")
+    AnchorToDropdown:SetValue(ReadyCheckDB.Layout[2])
+    AnchorToDropdown:SetRelativeWidth(0.5)
+    AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) ReadyCheckDB.Layout[2] = value updateCallback() end)
+    LayoutContainer:AddChild(AnchorToDropdown)
+
+    local XPosSlider = AG:Create("Slider")
+    XPosSlider:SetLabel("X Position")
+    XPosSlider:SetValue(ReadyCheckDB.Layout[3])
+    XPosSlider:SetSliderValues(-1000, 1000, 0.1)
+    XPosSlider:SetRelativeWidth(0.33)
+    XPosSlider:SetCallback("OnValueChanged", function(_, _, value) ReadyCheckDB.Layout[3] = value updateCallback() end)
+    LayoutContainer:AddChild(XPosSlider)
+
+    local YPosSlider = AG:Create("Slider")
+    YPosSlider:SetLabel("Y Position")
+    YPosSlider:SetValue(ReadyCheckDB.Layout[4])
+    YPosSlider:SetSliderValues(-1000, 1000, 0.1)
+    YPosSlider:SetRelativeWidth(0.33)
+    YPosSlider:SetCallback("OnValueChanged", function(_, _, value) ReadyCheckDB.Layout[4] = value updateCallback() end)
+    LayoutContainer:AddChild(YPosSlider)
+
+    local SizeSlider = AG:Create("Slider")
+    SizeSlider:SetLabel("Size")
+    SizeSlider:SetValue(ReadyCheckDB.Size)
+    SizeSlider:SetSliderValues(8, 64, 1)
+    SizeSlider:SetRelativeWidth(0.33)
+    SizeSlider:SetCallback("OnValueChanged", function(_, _, value) ReadyCheckDB.Size = value updateCallback() end)
+    LayoutContainer:AddChild(SizeSlider)
+
+    function RefreshReadyCheckGUI()
+        local disabled = not ReadyCheckDB.Enabled
+        GUIWidgets.DeepDisable(ToggleContainer, disabled, Toggle)
+        GUIWidgets.DeepDisable(LayoutContainer, disabled, Toggle)
+        UseAtlasSizeToggle:SetDisabled(disabled)
+        SizeSlider:SetDisabled(disabled or ReadyCheckDB.UseAtlasSize)
+    end
+
+    RefreshReadyCheckGUI()
+end
+
+local function CreatePhaseIndicatorSettings(containerParent, unit, updateCallback)
+    local PhaseDB = UUF.db.profile.Units[unit].Indicators.Phase
+
+    local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Phase Indicator Settings")
+    GUIWidgets.CreateInformationTag(ToggleContainer, "Blizzard only reports phasing for player units, so pets and NPCs will not display this icon.")
+
+    local Toggle = CreateDescribedToggle(
+        ToggleContainer,
+        "Enable |cFF8080FFPhase|r Indicator",
+        "Shows when the unit is in a different phase and lets you mouse over the icon for Blizzard's tooltip.",
+        PhaseDB.Enabled,
+        function(_, _, value) PhaseDB.Enabled = value updateCallback() RefreshPhaseGUI() end,
+        1
+    )
+
+    local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
+
+    local AnchorFromDropdown = AG:Create("Dropdown")
+    AnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
+    AnchorFromDropdown:SetLabel("Anchor From")
+    AnchorFromDropdown:SetValue(PhaseDB.Layout[1])
+    AnchorFromDropdown:SetRelativeWidth(0.5)
+    AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) PhaseDB.Layout[1] = value updateCallback() end)
+    LayoutContainer:AddChild(AnchorFromDropdown)
+
+    local AnchorToDropdown = AG:Create("Dropdown")
+    AnchorToDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
+    AnchorToDropdown:SetLabel("Anchor To")
+    AnchorToDropdown:SetValue(PhaseDB.Layout[2])
+    AnchorToDropdown:SetRelativeWidth(0.5)
+    AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) PhaseDB.Layout[2] = value updateCallback() end)
+    LayoutContainer:AddChild(AnchorToDropdown)
+
+    local XPosSlider = AG:Create("Slider")
+    XPosSlider:SetLabel("X Position")
+    XPosSlider:SetValue(PhaseDB.Layout[3])
+    XPosSlider:SetSliderValues(-1000, 1000, 0.1)
+    XPosSlider:SetRelativeWidth(0.33)
+    XPosSlider:SetCallback("OnValueChanged", function(_, _, value) PhaseDB.Layout[3] = value updateCallback() end)
+    LayoutContainer:AddChild(XPosSlider)
+
+    local YPosSlider = AG:Create("Slider")
+    YPosSlider:SetLabel("Y Position")
+    YPosSlider:SetValue(PhaseDB.Layout[4])
+    YPosSlider:SetSliderValues(-1000, 1000, 0.1)
+    YPosSlider:SetRelativeWidth(0.33)
+    YPosSlider:SetCallback("OnValueChanged", function(_, _, value) PhaseDB.Layout[4] = value updateCallback() end)
+    LayoutContainer:AddChild(YPosSlider)
+
+    local SizeSlider = AG:Create("Slider")
+    SizeSlider:SetLabel("Size")
+    SizeSlider:SetValue(PhaseDB.Size)
+    SizeSlider:SetSliderValues(8, 64, 1)
+    SizeSlider:SetRelativeWidth(0.33)
+    SizeSlider:SetCallback("OnValueChanged", function(_, _, value) PhaseDB.Size = value updateCallback() end)
+    LayoutContainer:AddChild(SizeSlider)
+
+    function RefreshPhaseGUI()
+        if PhaseDB.Enabled then
+            GUIWidgets.DeepDisable(ToggleContainer, false, Toggle)
+            GUIWidgets.DeepDisable(LayoutContainer, false, Toggle)
+        else
+            GUIWidgets.DeepDisable(ToggleContainer, true, Toggle)
+            GUIWidgets.DeepDisable(LayoutContainer, true, Toggle)
+        end
+    end
+
+    RefreshPhaseGUI()
+end
+
 local function CreateResurrectSettings(containerParent, unit, updateCallback)
     local ResurrectDB = UUF.db.profile.Units[unit].Indicators.Resurrect
 
@@ -2882,6 +3044,10 @@ local function CreateIndicatorSettings(containerParent, unit)
         IndicatorContainer:ReleaseChildren()
         if IndicatorTab == "RaidTargetMarker" then
             CreateRaidTargetMarkerSettings(IndicatorContainer, unit, function() UpdateManagedUnitMethod(unit, "UpdateUnitRaidTargetMarker") end)
+        elseif IndicatorTab == "ReadyCheck" then
+            CreateReadyCheckSettings(IndicatorContainer, unit, function() UpdateManagedUnitMethod(unit, "UpdateUnitReadyCheckIndicator") end)
+        elseif IndicatorTab == "Phase" then
+            CreatePhaseIndicatorSettings(IndicatorContainer, unit, function() UpdateManagedUnitMethod(unit, "UpdateUnitPhaseIndicator") end)
         elseif IndicatorTab == "RoleIcon" then
             CreateRoleIconSettings(IndicatorContainer, unit, function() UpdateManagedUnitMethod(unit, "UpdateUnitRoleIconIndicator") end)
         elseif IndicatorTab == "Resurrect" then
@@ -2928,6 +3094,8 @@ local function CreateIndicatorSettings(containerParent, unit)
     elseif unit == "target" then
         IndicatorContainerTabGroup:SetTabs({
             { text = "Raid Target Marker", value = "RaidTargetMarker" },
+            { text = "Ready Check", value = "ReadyCheck" },
+            { text = "Phase", value = "Phase" },
             { text = "Leader & Assistant", value = "LeaderAssistant" },
             { text = "Combat", value = "Combat" },
             { text = "Mouseover", value = "Mouseover" },
@@ -2936,6 +3104,8 @@ local function CreateIndicatorSettings(containerParent, unit)
     elseif unit == "party" then
         IndicatorContainerTabGroup:SetTabs({
             { text = "Raid Target Marker", value = "RaidTargetMarker" },
+            { text = "Ready Check", value = "ReadyCheck" },
+            { text = "Phase", value = "Phase" },
             { text = "Role Icon", value = "RoleIcon" },
             { text = "Resurrection", value = "Resurrect" },
             { text = "Leader & Assistant", value = "LeaderAssistant" },
@@ -2944,6 +3114,8 @@ local function CreateIndicatorSettings(containerParent, unit)
     elseif unit == "raid" then
         IndicatorContainerTabGroup:SetTabs({
             { text = "Raid Target Marker", value = "RaidTargetMarker" },
+            { text = "Ready Check", value = "ReadyCheck" },
+            { text = "Phase", value = "Phase" },
             { text = "Role Icon", value = "RoleIcon" },
             { text = "Resurrection", value = "Resurrect" },
             { text = "Leader & Assistant", value = "LeaderAssistant" },
@@ -2952,6 +3124,8 @@ local function CreateIndicatorSettings(containerParent, unit)
     elseif unit == "targettarget" or unit == "focus" or unit == "focustarget" or unit == "pet" or unit == "boss" then
         IndicatorContainerTabGroup:SetTabs({
             { text = "Raid Target Marker", value = "RaidTargetMarker" },
+            { text = "Ready Check", value = "ReadyCheck" },
+            { text = "Phase", value = "Phase" },
             { text = "Mouseover", value = "Mouseover" },
             { text = "Target Indicator", value = "TargetIndicator" },
         })

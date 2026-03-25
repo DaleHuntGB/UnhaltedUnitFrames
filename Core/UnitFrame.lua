@@ -24,6 +24,16 @@ local function UsesRoleIconIndicator(unit)
     return normalizedUnit == "party" or normalizedUnit == "raid"
 end
 
+local function UsesReadyCheckIndicator(unit)
+    local normalizedUnit = UUF:GetNormalizedUnit(unit)
+    return normalizedUnit ~= "player"
+end
+
+local function UsesPhaseIndicator(unit)
+    local normalizedUnit = UUF:GetNormalizedUnit(unit)
+    return normalizedUnit ~= "player"
+end
+
 local function UsesResurrectIndicator(unit)
     local normalizedUnit = UUF:GetNormalizedUnit(unit)
     return normalizedUnit == "party" or normalizedUnit == "raid"
@@ -89,6 +99,7 @@ hiddenBlizzardParent:Hide()
 local blizzardRaidLoadWatcher = CreateFrame("Frame")
 local blizzardReparentWatcher = CreateFrame("Frame")
 local ReparentBlizzardFrame
+local raidTagRefreshPending = false
 
 local function SuppressBlizzardFrame(frame)
     if not frame or frame:IsForbidden() then return end
@@ -438,6 +449,22 @@ local function ApplyHeaderVisibility(unit)
     end
 end
 
+local function ScheduleRaidTagRefresh()
+    if raidTagRefreshPending then return end
+
+    raidTagRefreshPending = true
+    C_Timer.After(0, function()
+        raidTagRefreshPending = false
+
+        if not UUF or not UUF.db or not UUF.db.profile or not UUF.db.profile.Units then return end
+        if not UUF.db.profile.Units.raid or not UUF.db.profile.Units.raid.Enabled then return end
+
+        UUF:ForEachRaidFrame(function(unitFrame, actualUnit)
+            UUF:UpdateUnitFrameTags(unitFrame, actualUnit)
+        end)
+    end)
+end
+
 function UUF:RefreshPartyFrames()
     wipe(UUF.PARTY_FRAMES)
 
@@ -738,6 +765,8 @@ function UUF:LayoutRaidFrames()
         unitFrame:SetSize(frameDB.Width, frameDB.Height)
         unitFrame:SetFrameStrata(frameDB.FrameStrata)
     end)
+
+    ScheduleRaidTagRefresh()
 end
 
 function UUF:CreateUnitFrame(unitFrame, unit)
@@ -758,6 +787,8 @@ function UUF:CreateUnitFrame(unitFrame, unit)
     if isPlayer then UUF:CreateUnitAlternativePowerBar(unitFrame, unit) end
     if isPlayer then UUF:CreateUnitSecondaryPowerBar(unitFrame, unit) end
     UUF:CreateUnitRaidTargetMarker(unitFrame, unit)
+    if UsesReadyCheckIndicator(unit) then UUF:CreateUnitReadyCheckIndicator(unitFrame, unit) end
+    if UsesPhaseIndicator(unit) then UUF:CreateUnitPhaseIndicator(unitFrame, unit) end
     if UsesRoleIconIndicator(unit) then UUF:CreateUnitRoleIconIndicator(unitFrame, unit) end
     if UsesResurrectIndicator(unit) then UUF:CreateUnitResurrectIndicator(unitFrame, unit) end
     if UsesLeaderAssistantIndicator(unit) then UUF:CreateUnitLeaderAssistantIndicator(unitFrame, unit) end
@@ -930,6 +961,23 @@ function UUF:UpdateUnitFrame(unitFrame, unit)
     if isPlayer then UUF:UpdateUnitAlternativePowerBar(unitFrame, unit) end
     if isPlayer then UUF:UpdateUnitSecondaryPowerBar(unitFrame, unit) end
     UUF:UpdateUnitRaidTargetMarker(unitFrame, unit)
+    if UsesReadyCheckIndicator(unit) then
+        UUF:UpdateUnitReadyCheckIndicator(unitFrame, unit)
+    elseif unitFrame.ReadyCheckIndicator then
+        UUF.ReadyCheckIndicatorFrames[unitFrame] = nil
+        if unitFrame.ReadyCheckIndicator.Animation and unitFrame.ReadyCheckIndicator.Animation:IsPlaying() then
+            unitFrame.ReadyCheckIndicator.Animation:Stop()
+        end
+        unitFrame.ReadyCheckIndicator:Hide()
+        unitFrame.ReadyCheckIndicator = nil
+    end
+    if UsesPhaseIndicator(unit) then
+        UUF:UpdateUnitPhaseIndicator(unitFrame, unit)
+    elseif unitFrame.PhaseIndicator then
+        if unitFrame:IsElementEnabled("PhaseIndicator") then unitFrame:DisableElement("PhaseIndicator") end
+        unitFrame.PhaseIndicator:Hide()
+        unitFrame.PhaseIndicator = nil
+    end
     if UsesRoleIconIndicator(unit) then
         UUF:UpdateUnitRoleIconIndicator(unitFrame, unit)
     elseif unitFrame.GroupRoleIndicator then

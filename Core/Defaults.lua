@@ -1946,6 +1946,52 @@ local Defaults = {
     },
 }
 
+local function CreateIndicatorDefaults(size, layout, extraOptions)
+    local defaults = {
+        Enabled = true,
+        Size = size,
+        Layout = {unpack(layout)},
+    }
+
+    if extraOptions then
+        for key, value in pairs(extraOptions) do
+            defaults[key] = value
+        end
+    end
+
+    return defaults
+end
+
+local ReadyCheckIndicatorDefaults = {
+    target = CreateIndicatorDefaults(24, {"CENTER", "CENTER", 0, 0}, {UseAtlasSize = false, FinishedTime = 10, FadeTime = 1.5}),
+    targettarget = CreateIndicatorDefaults(16, {"CENTER", "CENTER", 0, 0}, {UseAtlasSize = false, FinishedTime = 10, FadeTime = 1.5}),
+    focus = CreateIndicatorDefaults(16, {"CENTER", "CENTER", 0, 0}, {UseAtlasSize = false, FinishedTime = 10, FadeTime = 1.5}),
+    focustarget = CreateIndicatorDefaults(16, {"CENTER", "CENTER", 0, 0}, {UseAtlasSize = false, FinishedTime = 10, FadeTime = 1.5}),
+    pet = CreateIndicatorDefaults(16, {"CENTER", "CENTER", 0, 0}, {UseAtlasSize = false, FinishedTime = 10, FadeTime = 1.5}),
+    party = CreateIndicatorDefaults(18, {"CENTER", "CENTER", 0, 0}, {UseAtlasSize = false, FinishedTime = 10, FadeTime = 1.5}),
+    raid = CreateIndicatorDefaults(16, {"CENTER", "CENTER", 0, 0}, {UseAtlasSize = false, FinishedTime = 10, FadeTime = 1.5}),
+    boss = CreateIndicatorDefaults(24, {"CENTER", "CENTER", 0, 0}, {UseAtlasSize = false, FinishedTime = 10, FadeTime = 1.5}),
+}
+
+local PhaseIndicatorDefaults = {
+    target = CreateIndicatorDefaults(16, {"BOTTOMLEFT", "BOTTOMLEFT", 3, 3}),
+    targettarget = CreateIndicatorDefaults(14, {"BOTTOMLEFT", "BOTTOMLEFT", 2, 2}),
+    focus = CreateIndicatorDefaults(14, {"BOTTOMLEFT", "BOTTOMLEFT", 2, 2}),
+    focustarget = CreateIndicatorDefaults(14, {"BOTTOMLEFT", "BOTTOMLEFT", 2, 2}),
+    pet = CreateIndicatorDefaults(14, {"BOTTOMLEFT", "BOTTOMLEFT", 2, 2}),
+    party = CreateIndicatorDefaults(12, {"BOTTOMLEFT", "BOTTOMLEFT", 2, 2}),
+    raid = CreateIndicatorDefaults(10, {"BOTTOMLEFT", "BOTTOMLEFT", 2, 2}),
+    boss = CreateIndicatorDefaults(16, {"BOTTOMLEFT", "BOTTOMLEFT", 3, 3}),
+}
+
+for unit, indicatorDefaults in pairs(ReadyCheckIndicatorDefaults) do
+    Defaults.profile.Units[unit].Indicators.ReadyCheck = Defaults.profile.Units[unit].Indicators.ReadyCheck or indicatorDefaults
+end
+
+for unit, indicatorDefaults in pairs(PhaseIndicatorDefaults) do
+    Defaults.profile.Units[unit].Indicators.Phase = Defaults.profile.Units[unit].Indicators.Phase or indicatorDefaults
+end
+
 for _, unitDefaults in pairs(Defaults.profile.Units) do
     if unitDefaults.HealthBar and not unitDefaults.HealthBar.DeadBackground then
         unitDefaults.HealthBar.DeadBackground = {96/255, 32/255, 32/255}

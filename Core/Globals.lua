@@ -109,6 +109,75 @@ function UUF:GetPixelPerfectScale()
     return pixelSize
 end
 
+local function RoundToNearestPixel(value, scale)
+    if not value or not scale or scale == 0 then
+        return value
+    end
+
+    local scaledValue = value * scale
+    if scaledValue >= 0 then
+        return math.floor(scaledValue + 0.5) / scale
+    end
+
+    return math.ceil(scaledValue - 0.5) / scale
+end
+
+local function GetAnchorCoordinates(frame, point)
+    if not frame then return end
+
+    local left, right = frame:GetLeft(), frame:GetRight()
+    local top, bottom = frame:GetTop(), frame:GetBottom()
+    local centerX, centerY = frame:GetCenter()
+    if not left or not right or not top or not bottom or not centerX or not centerY then
+        return
+    end
+
+    local horizontalPoint = "CENTER"
+    local verticalPoint = "CENTER"
+
+    if point and point:find("LEFT", 1, true) then
+        horizontalPoint = "LEFT"
+    elseif point and point:find("RIGHT", 1, true) then
+        horizontalPoint = "RIGHT"
+    end
+
+    if point and point:find("TOP", 1, true) then
+        verticalPoint = "TOP"
+    elseif point and point:find("BOTTOM", 1, true) then
+        verticalPoint = "BOTTOM"
+    end
+
+    local x = horizontalPoint == "LEFT" and left or (horizontalPoint == "RIGHT" and right or centerX)
+    local y = verticalPoint == "TOP" and top or (verticalPoint == "BOTTOM" and bottom or centerY)
+    return x, y
+end
+
+function UUF:GetPixelSnappedOffsets(relativeFrame, relativePoint, xOffset, yOffset)
+    xOffset = xOffset or 0
+    yOffset = yOffset or 0
+
+    if not relativeFrame then
+        return xOffset, yOffset
+    end
+
+    local effectiveScale = relativeFrame.GetEffectiveScale and relativeFrame:GetEffectiveScale() or UIParent:GetEffectiveScale()
+    if not effectiveScale or effectiveScale == 0 then
+        return xOffset, yOffset
+    end
+
+    local anchorX, anchorY = GetAnchorCoordinates(relativeFrame, relativePoint)
+    if not anchorX or not anchorY then
+        return xOffset, yOffset
+    end
+
+    local targetX = anchorX + xOffset
+    local targetY = anchorY + yOffset
+    local snappedX = RoundToNearestPixel(targetX, effectiveScale)
+    local snappedY = RoundToNearestPixel(targetY, effectiveScale)
+
+    return xOffset + (snappedX - targetX), yOffset + (snappedY - targetY)
+end
+
 local function SetupSlashCommands()
     SLASH_UUF1 = "/uuf"
     SLASH_UUF2 = "/unhaltedunitframes"

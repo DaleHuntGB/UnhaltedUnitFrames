@@ -145,8 +145,11 @@ end
 
 local function ApplyTestTag(fontString, ownerFrame, tagDB, generalDB, text)
     if not fontString or not tagDB then return end
+    local anchorFrame = ownerFrame.HighLevelContainer or ownerFrame
+    local xOffset, yOffset = UUF:GetPixelSnappedOffsets(anchorFrame, tagDB.Layout[2], tagDB.Layout[3], tagDB.Layout[4])
     fontString:ClearAllPoints()
-    fontString:SetPoint(tagDB.Layout[1], ownerFrame, tagDB.Layout[2], tagDB.Layout[3], tagDB.Layout[4])
+    fontString:SetPoint(tagDB.Layout[1], anchorFrame, tagDB.Layout[2], xOffset, yOffset)
+    fontString:SetJustifyH(UUF:SetJustification(tagDB.Layout[1]))
     fontString:SetFont(UUF.Media.Font, tagDB.FontSize, generalDB.Fonts.FontFlag)
     if generalDB.Fonts.Shadow.Enabled then
         fontString:SetShadowColor(unpack(generalDB.Fonts.Shadow.Colour))
@@ -354,6 +357,17 @@ local function ApplySharedTestFrameState(unitFrame, unitToken, unitDB, tagsDB, l
     end
 end
 
+local function RefreshTestRaidFrameTags(unitFrame, tagsDB, index)
+    if not unitFrame or not unitFrame.Tags or not tagsDB then return end
+
+    local generalDB = UUF.db.profile.General
+    ApplyTestTag(unitFrame.Tags.TagOne, unitFrame, tagsDB.TagOne, generalDB, GetTestUnitLabel("Raid", index))
+    ApplyTestTag(unitFrame.Tags.TagTwo, unitFrame, tagsDB.TagTwo, generalDB, GetTestTagPreview(tagsDB.TagTwo, "Raid", index))
+    ApplyTestTag(unitFrame.Tags.TagThree, unitFrame, tagsDB.TagThree, generalDB, GetTestTagPreview(tagsDB.TagThree, "Raid", index))
+    ApplyTestTag(unitFrame.Tags.TagFour, unitFrame, tagsDB.TagFour, generalDB, GetTestTagPreview(tagsDB.TagFour, "Raid", index))
+    ApplyTestTag(unitFrame.Tags.TagFive, unitFrame, tagsDB.TagFive, generalDB, GetTestTagPreview(tagsDB.TagFive, "Raid", index))
+end
+
 function UUF:EnsurePartyTestFrames()
     if #UUF.PARTY_TEST_FRAMES > 0 then return end
 
@@ -532,6 +546,8 @@ function UUF:CreateTestRaidFrames()
 
                     raidFrame:SetPoint(frameDB.Layout[1], UIParent, frameDB.Layout[2], frameDB.Layout[3] + offsetX, frameDB.Layout[4] + offsetY)
                 end
+
+                RefreshTestRaidFrameTags(raidFrame, tagsDB, index)
             end
         end
     else
