@@ -84,6 +84,50 @@ local function ApplyTotemLayout(unitFrame, TotemsDB)
     end
 end
 
+local function UpdateTotemCooldown(cooldown, durationObj)
+    if not cooldown then return end
+
+    if durationObj and cooldown.SetCooldownFromDurationObject then
+        cooldown:SetCooldownFromDurationObject(durationObj)
+        cooldown:Show()
+    elseif durationObj and cooldown.SetCooldownFromDuration then
+        cooldown:SetCooldownFromDuration(durationObj)
+        cooldown:Show()
+    else
+        if cooldown.Clear then
+            cooldown:Clear()
+        end
+        cooldown:Hide()
+    end
+end
+
+local function UpdateTotemBySlot(unitFrame, event, slot)
+    local Totems = unitFrame and unitFrame.Totems
+    if not Totems or slot > #Totems then return end
+
+    if Totems.PreUpdate then
+        Totems:PreUpdate(slot)
+    end
+
+    local displayIndex = TOTEM_PRIORITIES[slot] or slot
+    local Totem = Totems[displayIndex]
+    if not Totem then return end
+
+    local haveTotem, name, start, duration, icon = GetTotemInfo(slot)
+    local durationObj = GetTotemDuration(slot)
+
+    if Totem.Icon then
+        Totem.Icon:SetTexture(icon)
+    end
+
+    UpdateTotemCooldown(Totem.Cooldown, durationObj)
+    Totem:SetAlphaFromBoolean(haveTotem, 1, 0)
+
+    if Totems.PostUpdate then
+        return Totems:PostUpdate(slot, haveTotem, name, start, duration, icon, durationObj)
+    end
+end
+
 local function ApplyAuraDuration(icon, unit)
     local UUFDB = UUF.db.profile
     local FontsDB = UUFDB.General.Fonts
@@ -172,6 +216,7 @@ function UUF:CreateUnitTotems(unitFrame, unit)
         Totems[index] = Totem
     end
 
+    Totems.Override = UpdateTotemBySlot
     unitFrame.Totems = Totems
 end
 
@@ -192,6 +237,7 @@ function UUF:UpdateUnitTotems(unitFrame, unit)
         end
 
         if unitFrame.Totems then
+            unitFrame.Totems.Override = UpdateTotemBySlot
             ApplyTotemLayout(unitFrame, TotemsDB)
             for index = 1, MAX_TOTEM_SLOTS do
                 local Totem = unitFrame.Totems[index]
