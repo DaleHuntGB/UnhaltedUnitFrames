@@ -284,7 +284,6 @@ local function PreCreateGroupChildren(header, count, unitGuess)
                 btn:SetAttribute("oUF-guessUnit", unitGuess)
                 btn:SetAttribute("*type1", "target")
                 btn:SetAttribute("*type2", "togglemenu")
-                -- Apply the oUF visual style (registers elements, event hooks, etc.)
                 if header.styleFunction then
                     header.styleFunction(header, btn:GetName())
                 end

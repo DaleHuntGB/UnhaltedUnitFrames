@@ -6,6 +6,7 @@ UUF.CASTBAR_TEST_MODE = false
 UUF.BOSS_TEST_MODE = false
 UUF.PARTY_TEST_MODE = false
 UUF.RAID_TEST_MODE = false
+UUF.TOTEM_TEST_MODE = false
 UUF.BOSS_FRAMES = {}
 UUF.MAX_BOSS_FRAMES = 5
 UUF.PARTY_FRAMES = {}
@@ -72,23 +73,27 @@ UUF.StatusTextures = {
 
 function UUF:PrettyPrint(MSG) print(UUF.ADDON_NAME .. ":|r " .. MSG) end
 
+local UNIT_FRAME_NAMES = {
+    ["player"]       = "UUF_Player",
+    ["target"]       = "UUF_Target",
+    ["targettarget"] = "UUF_TargetTarget",
+    ["focus"]        = "UUF_Focus",
+    ["focustarget"]  = "UUF_FocusTarget",
+    ["pet"]          = "UUF_Pet",
+    ["party"]        = "UUF_Party",
+    ["raid"]         = "UUF_Raid",
+    ["boss"]         = "UUF_Boss",
+}
+
 function UUF:FetchFrameName(unit)
-    local UnitToFrame = {
-        ["player"] = "UUF_Player",
-        ["target"] = "UUF_Target",
-        ["targettarget"] = "UUF_TargetTarget",
-        ["focus"] = "UUF_Focus",
-        ["focustarget"] = "UUF_FocusTarget",
-        ["pet"] = "UUF_Pet",
-        ["party"] = "UUF_Party",
-        ["raid"] = "UUF_Raid",
-        ["boss"] = "UUF_Boss",
-    }
     if not unit then return end
-    if unit:match("^boss(%d+)$") then local unitID = unit:match("^boss(%d+)$") return "UUF_Boss" .. unitID end
-    if unit:match("^party(%d+)$") then local unitID = unit:match("^party(%d+)$") return "UUF_Party" .. unitID end
-    if unit:match("^raid(%d+)$") then local unitID = unit:match("^raid(%d+)$") return "UUF_Raid" .. unitID end
-    return UnitToFrame[unit]
+    local unitID = unit:match("^boss(%d+)$")
+    if unitID then return "UUF_Boss" .. unitID end
+    unitID = unit:match("^party(%d+)$")
+    if unitID then return "UUF_Party" .. unitID end
+    unitID = unit:match("^raid(%d+)$")
+    if unitID then return "UUF_Raid" .. unitID end
+    return UNIT_FRAME_NAMES[unit]
 end
 
 function UUF:ResolveLSM()
@@ -200,10 +205,30 @@ local function SetupSlashCommands()
     end
     UUF:PrettyPrint("'|cFF8080FF/uuf|r' for in-game configuration.")
 
-    -- RL command
     SLASH_UUFRELOAD1 = "/rl"
     SlashCmdList["UUFRELOAD"] = function() C_UI.Reload() end
 end
+
+local POWER_TYPE_TO_STRING = {
+    [Enum.PowerType.Mana or 0]           = "MANA",
+    [Enum.PowerType.Rage or 1]           = "RAGE",
+    [Enum.PowerType.Focus or 2]          = "FOCUS",
+    [Enum.PowerType.Energy or 3]         = "ENERGY",
+    [Enum.PowerType.ComboPoints or 4]    = "COMBO_POINTS",
+    [Enum.PowerType.Runes or 5]          = "RUNES",
+    [Enum.PowerType.RunicPower or 6]     = "RUNIC_POWER",
+    [Enum.PowerType.SoulShards or 7]     = "SOUL_SHARDS",
+    [Enum.PowerType.LunarPower or 8]     = "LUNAR_POWER",
+    [Enum.PowerType.HolyPower or 9]      = "HOLY_POWER",
+    [Enum.PowerType.Alternate or 10]     = "ALTERNATE",
+    [Enum.PowerType.Maelstrom or 11]     = "MAELSTROM",
+    [Enum.PowerType.Chi or 12]           = "CHI",
+    [Enum.PowerType.Insanity or 13]      = "INSANITY",
+    [Enum.PowerType.ArcaneCharges or 16] = "ARCANE_CHARGES",
+    [Enum.PowerType.Fury or 17]          = "FURY",
+    [Enum.PowerType.Pain or 18]          = "PAIN",
+    [Enum.PowerType.Essence or 19]       = "ESSENCE",
+}
 
 function UUF:SetUIScale()
     local GeneralDB = UUF.db.profile.General
@@ -217,30 +242,8 @@ end
 function UUF:LoadCustomColours()
     local General = UUF.db.profile.General
 
-    -- Map power type enums to their string names
-    local PowerTypesToString = {
-        [Enum.PowerType.Mana or 0] = "MANA",
-        [Enum.PowerType.Rage or 1] = "RAGE",
-        [Enum.PowerType.Focus or 2] = "FOCUS",
-        [Enum.PowerType.Energy or 3] = "ENERGY",
-        [Enum.PowerType.ComboPoints or 4] = "COMBO_POINTS",
-        [Enum.PowerType.Runes or 5] = "RUNES",
-        [Enum.PowerType.RunicPower or 6] = "RUNIC_POWER",
-        [Enum.PowerType.SoulShards or 7] = "SOUL_SHARDS",
-        [Enum.PowerType.LunarPower or 8] = "LUNAR_POWER",
-        [Enum.PowerType.HolyPower or 9] = "HOLY_POWER",
-        [Enum.PowerType.Alternate or 10] = "ALTERNATE",
-        [Enum.PowerType.Maelstrom or 11] = "MAELSTROM",
-        [Enum.PowerType.Chi or 12] = "CHI",
-        [Enum.PowerType.Insanity or 13] = "INSANITY",
-        [Enum.PowerType.ArcaneCharges or 16] = "ARCANE_CHARGES",
-        [Enum.PowerType.Fury or 17] = "FURY",
-        [Enum.PowerType.Pain or 18] = "PAIN",
-        [Enum.PowerType.Essence or 19] = "ESSENCE",
-    }
-
     for powerType, color in pairs(General.Colours.Power) do
-        local powerTypeString = PowerTypesToString[powerType]
+        local powerTypeString = POWER_TYPE_TO_STRING[powerType]
         if powerTypeString then
             oUF.colors.power[powerTypeString] = oUF:CreateColor(color[1], color[2], color[3])
             oUF.colors.power[powerType] = oUF.colors.power[powerTypeString]
@@ -248,7 +251,7 @@ function UUF:LoadCustomColours()
     end
 
     for powerType, color in pairs(General.Colours.SecondaryPower) do
-        local powerTypeString = PowerTypesToString[powerType]
+        local powerTypeString = POWER_TYPE_TO_STRING[powerType]
         if powerTypeString then
             oUF.colors.power[powerTypeString] = oUF:CreateColor(color[1], color[2], color[3])
             oUF.colors.power[powerType] = oUF.colors.power[powerTypeString]
@@ -310,14 +313,12 @@ local function SetupGameMenu()
         if addOnsButton then
             local insertAt = addOnsButton.layoutIndex
 
-            -- Shift AddOns and every button below it down by 1 to open a slot.
             for btn in self.buttonPool:EnumerateActive() do
                 if btn.layoutIndex >= insertAt then
                     btn.layoutIndex = btn.layoutIndex + 1
                 end
             end
 
-            -- AddButton appends at the current nextLayoutIndex; we override it.
             local uufBtn = self:AddButton(UUF.ADDON_NAME, function()
                 PlaySound(SOUNDKIT.IG_MAINMENU_OPTION)
                 HideUIPanel(GameMenuFrame)
@@ -401,32 +402,40 @@ function UUF:GetReactionColour(reaction)
     end
 end
 
+local normalizedUnitCache = {}
+
 function UUF:GetNormalizedUnit(unit)
-    local normalizedUnit = unit
-    if unit:match("^boss%d+$") then
-        normalizedUnit = "boss"
-    elseif unit:match("^party%d+$") then
-        normalizedUnit = "party"
-    elseif unit:match("^raid%d+$") then
-        normalizedUnit = "raid"
+    local cached = normalizedUnitCache[unit]
+    if cached then return cached end
+    local result
+    if unit:find("^boss%d") then
+        result = "boss"
+    elseif unit:find("^party%d") then
+        result = "party"
+    elseif unit:find("^raid%d") then
+        result = "raid"
+    else
+        result = unit
     end
-    return normalizedUnit
+    normalizedUnitCache[unit] = result
+    return result
 end
 
+local SPECS_NEEDING_ALT_POWER = {
+    PRIEST  = { 258 },             -- Shadow
+    MAGE    = { 62, 63, 64 },      -- Arcane, Fire, Frost
+    PALADIN = { 70 },              -- Ret
+    SHAMAN  = { 262, 263 },        -- Ele, Enh
+    EVOKER  = { 1467, 1473 },      -- Dev, Aug
+    DRUID   = { 102, 103, 104 },   -- Balance, Feral, Guardian
+}
+
 function UUF:RequiresAlternativePowerBar()
-    local SpecsNeedingAltPower = {
-        PRIEST = { 258 },           -- Shadow
-        MAGE   = { 62, 63, 64 },        -- Fire, Frost
-        PALADIN = { 70 },           -- Ret
-        SHAMAN  = { 262, 263 },     -- Ele, Enh
-        EVOKER  = { 1467, 1473 },   -- Dev, Aug
-        DRUID = { 102, 103, 104 },    -- Balance, Feral, Guardian
-    }
     local class = select(2, UnitClass("player"))
     local specIndex = GetSpecialization()
     if not specIndex then return false end
     local specID = GetSpecializationInfo(specIndex)
-    local classSpecs = SpecsNeedingAltPower[class]
+    local classSpecs = SPECS_NEEDING_ALT_POWER[class]
     if not classSpecs then return false end
     for _, requiredSpec in ipairs(classSpecs) do if specID == requiredSpec then return true end end
     return false

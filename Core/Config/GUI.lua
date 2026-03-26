@@ -496,9 +496,6 @@ end
 
 local function GenerateSupportText(parentFrame)
     local SupportOptions = {
-        -- "Support Me on |TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Support\\Ko-Fi.png:13:18|t |cFF8080FFKo-Fi|r!",
-        -- "Support Me on |TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Support\\Patreon.png:14:14|t |cFF8080FFPatreon|r!",
-        -- "|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Support\\PayPal.png:20:18|t |cFF8080FFPayPal Donations|r are appreciated!",
         "Join the |TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Support\\Discord.png:18:18|t |cFF8080FFDiscord|r Community!",
         "Report Issues / Feedback on |TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Support\\GitHub.png:18:18|t |cFF8080FFGitHub|r!",
         "Follow Me on |TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Support\\Twitch.png:18:14|t |cFF8080FFTwitch|r!",
@@ -3261,13 +3258,6 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
     Toggle:SetRelativeWidth(0.33)
     AuraContainer:AddChild(Toggle)
 
-    -- local OnlyShowPlayerToggle = AG:Create("CheckBox")
-    -- OnlyShowPlayerToggle:SetLabel("Only Show Player "..auraDB)
-    -- OnlyShowPlayerToggle:SetValue(AuraDB.OnlyShowPlayer)
-    -- OnlyShowPlayerToggle:SetCallback("OnValueChanged", function(_, _, value) AuraDB.OnlyShowPlayer = value if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end end)
-    -- OnlyShowPlayerToggle:SetRelativeWidth(0.33)
-    -- AuraContainer:AddChild(OnlyShowPlayerToggle)
-
     local ShowTypeCheckbox = AG:Create("CheckBox")
     ShowTypeCheckbox:SetLabel("Show " .. auraDB .. " Type Border")
     ShowTypeCheckbox:SetValue(AuraDB.ShowType)
@@ -4803,26 +4793,6 @@ function UUF:CreateGUI()
             SupportMeContainer:SetFullWidth(true)
             ScrollFrame:AddChild(SupportMeContainer)
 
-            -- local KoFiInteractive = AG:Create("InteractiveLabel")
-            -- KoFiInteractive:SetText("|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Support\\Ko-Fi.png:16:21|t |cFF8080FFKo-Fi|r")
-            -- KoFiInteractive:SetFont("Fonts\\FRIZQT__.TTF", 13, "OUTLINE")
-            -- KoFiInteractive:SetJustifyV("MIDDLE")
-            -- KoFiInteractive:SetRelativeWidth(0.33)
-            -- KoFiInteractive:SetCallback("OnClick", function() UUF:OpenURL("Support Me on Ko-Fi", "https://ko-fi.com/unhalted") end)
-            -- KoFiInteractive:SetCallback("OnEnter", function() KoFiInteractive:SetText("|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Support\\Ko-Fi.png:16:21|t |cFFFFFFFFKo-Fi|r") end)
-            -- KoFiInteractive:SetCallback("OnLeave", function() KoFiInteractive:SetText("|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Support\\Ko-Fi.png:16:21|t |cFF8080FFKo-Fi|r") end)
-            -- SupportMeContainer:AddChild(KoFiInteractive)
-
-            -- local PayPalInteractive = AG:Create("InteractiveLabel")
-            -- PayPalInteractive:SetText("|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Support\\PayPal.png:23:21|t |cFF8080FFPayPal|r")
-            -- PayPalInteractive:SetFont("Fonts\\FRIZQT__.TTF", 13, "OUTLINE")
-            -- PayPalInteractive:SetJustifyV("MIDDLE")
-            -- PayPalInteractive:SetRelativeWidth(0.33)
-            -- PayPalInteractive:SetCallback("OnClick", function() UUF:OpenURL("Support Me on PayPal", "https://www.paypal.com/paypalme/dhunt1911") end)
-            -- PayPalInteractive:SetCallback("OnEnter", function() PayPalInteractive:SetText("|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Support\\PayPal.png:23:21|t |cFFFFFFFFPayPal|r") end)
-            -- PayPalInteractive:SetCallback("OnLeave", function() PayPalInteractive:SetText("|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Support\\PayPal.png:23:21|t |cFF8080FFPayPal|r") end)
-            -- SupportMeContainer:AddChild(PayPalInteractive)
-
             local TwitchInteractive = AG:Create("InteractiveLabel")
             TwitchInteractive:SetText("|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Support\\Twitch.png:25:21|t |cFF8080FFTwitch|r")
             TwitchInteractive:SetFont("Fonts\\FRIZQT__.TTF", 13, "OUTLINE")
@@ -4842,16 +4812,6 @@ function UUF:CreateGUI()
             DiscordInteractive:SetCallback("OnEnter", function() DiscordInteractive:SetText("|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Support\\Discord.png:21:21|t |cFFFFFFFFDiscord|r") end)
             DiscordInteractive:SetCallback("OnLeave", function() DiscordInteractive:SetText("|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Support\\Discord.png:21:21|t |cFF8080FFDiscord|r") end)
             SupportMeContainer:AddChild(DiscordInteractive)
-
-            -- local PatreonInteractive = AG:Create("InteractiveLabel")
-            -- PatreonInteractive:SetText("|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Support\\Patreon.png:21:21|t |cFF8080FFPatreon|r")
-            -- PatreonInteractive:SetFont("Fonts\\FRIZQT__.TTF", 13, "OUTLINE")
-            -- PatreonInteractive:SetJustifyV("MIDDLE")
-            -- PatreonInteractive:SetRelativeWidth(0.33)
-            -- PatreonInteractive:SetCallback("OnClick", function() UUF:OpenURL("Support Me on Patreon", "https://www.patreon.com/unhalted") end)
-            -- PatreonInteractive:SetCallback("OnEnter", function() PatreonInteractive:SetText("|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Support\\Patreon.png:21:21|t |cFFFFFFFFPatreon|r") end)
-            -- PatreonInteractive:SetCallback("OnLeave", function() PatreonInteractive:SetText("|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Support\\Patreon.png:21:21|t |cFF8080FFPatreon|r") end)
-            -- SupportMeContainer:AddChild(PatreonInteractive)
 
             local GithubInteractive = AG:Create("InteractiveLabel")
             GithubInteractive:SetText("|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Support\\Github.png:21:21|t |cFF8080FFGithub|r")

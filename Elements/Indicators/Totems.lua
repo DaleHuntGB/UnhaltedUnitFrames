@@ -40,33 +40,26 @@ end
 local function RefreshTotemDisplay(unitFrame)
     if not unitFrame or not unitFrame.Totems then return end
 
-    local unit = unitFrame.unit or unitFrame:GetAttribute("unit") or "player"
-    local TotemsDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Indicators.Totems
-    local anchorFrame = unitFrame.HighLevelContainer or unitFrame
-    local visibleIndex = 0
-
     for slot = 1, MAX_TOTEM_SLOTS do
         local totem = unitFrame.Totems[slot]
         if totem then
-            local haveTotem, _, start, duration, icon = GetTotemInfo(slot)
-            if haveTotem and duration and duration > 0 then
-                visibleIndex = visibleIndex + 1
+            local _, _, _, _, icon = GetTotemInfo(slot)
+            local durationObj = GetTotemDuration(slot)
 
-                totem:SetSize(TotemsDB.Size, TotemsDB.Size)
-                PositionTotem(totem, anchorFrame, TotemsDB, visibleIndex)
-
+            if durationObj then
                 if totem.Icon then
                     totem.Icon:SetTexture(icon)
-                    totem.Icon:Show()
                 end
 
                 if totem.Cooldown then
-                    totem.Cooldown:SetCooldown(start, duration)
+                    if totem.Cooldown.SetCooldownFromDurationObject then
+                        totem.Cooldown:SetCooldownFromDurationObject(durationObj)
+                    end
                 end
 
-                totem:Show()
+                totem:SetAlpha(1)
             else
-                totem:Hide()
+                totem:SetAlpha(0)
             end
         end
     end
@@ -147,7 +140,7 @@ function UUF:CreateUnitTotems(unitFrame, unit)
         Totem.Border = Border
         Totem.Icon = Icon
         Totem.Cooldown = Cooldown
-        Totem:Hide()
+        Totem:SetAlpha(0)
 
         Totems[index] = Totem
     end
