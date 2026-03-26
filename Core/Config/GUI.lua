@@ -341,6 +341,22 @@ local function DisableCastBarTestMode(unit)
     end)
 end
 
+local function EnableTotemsTestMode(unit)
+    if UUF.TOTEM_TEST_MODE then return end
+    UUF.TOTEM_TEST_MODE = true
+    UUF:ForEachManagedUnitFrame(unit, function(unitFrame, actualUnit)
+        UUF:CreateTestTotems(unitFrame, actualUnit)
+    end)
+end
+
+local function DisableTotemsTestMode(unit)
+    if not UUF.TOTEM_TEST_MODE then return end
+    UUF.TOTEM_TEST_MODE = false
+    UUF:ForEachManagedUnitFrame(unit, function(unitFrame, actualUnit)
+        UUF:CreateTestTotems(unitFrame, actualUnit)
+    end)
+end
+
 local function EnableBossFramesTestMode()
     if UUF.BOSS_TEST_MODE then return end
     UUF.BOSS_TEST_MODE = true
@@ -397,10 +413,12 @@ local function DisableAllTestModes()
     UUF.BOSS_TEST_MODE = false
     UUF.PARTY_TEST_MODE = false
     UUF.RAID_TEST_MODE = false
+    UUF.TOTEM_TEST_MODE = false
     for unit, _ in pairs(UUF.db.profile.Units) do
         UUF:ForEachManagedUnitFrame(unit, function(unitFrame, actualUnit)
             UUF:CreateTestAuras(unitFrame, actualUnit)
             UUF:CreateTestCastBar(unitFrame, actualUnit)
+            UUF:CreateTestTotems(unitFrame, actualUnit)
         end)
     end
     UUF:CreateTestBossFrames()
@@ -1012,6 +1030,19 @@ local function GetAffectedUnitsText(affectedUnits)
     return "Affects: " .. table.concat(prettyNames, ", ")
 end
 
+local function AddAffectsTooltip(widget, affectedUnits)
+    local affectedUnitsText = GetAffectedUnitsText(affectedUnits)
+    if not affectedUnitsText then return end
+    widget:SetCallback("OnEnter", function()
+        GameTooltip:SetOwner(widget.frame, "ANCHOR_CURSOR")
+        GameTooltip:AddLine(affectedUnitsText, 0.5, 0.7, 1, true)
+        GameTooltip:Show()
+    end)
+    widget:SetCallback("OnLeave", function()
+        GameTooltip:Hide()
+    end)
+end
+
 local function GetUnitsWithSubDatabase(subKey, predicate)
     local units = {}
 
@@ -1046,8 +1077,6 @@ local function CreateDescribedToggle(containerParent, label, description, value,
 
         toggle:SetCallback("OnEnter", function()
             GameTooltip:SetOwner(toggle.frame, "ANCHOR_CURSOR")
-            GameTooltip:AddLine(label, 1, 1, 1)
-            GameTooltip:AddLine(description, 0.82, 0.82, 0.82, true)
             GameTooltip:AddLine(affectedUnitsText, 0.5, 0.7, 1, true)
             GameTooltip:Show()
         end)
@@ -2859,6 +2888,11 @@ local function CreateTotemsIndicatorSettings(containerParent, unit, updateCallba
 
     local function UpdateTotemSettings()
         updateCallback()
+        if UUF.TOTEM_TEST_MODE then
+            UUF:ForEachManagedUnitFrame(unit, function(unitFrame, actualUnit)
+                UUF:CreateTestTotems(unitFrame, actualUnit)
+            end)
+        end
     end
 
     local TotemDurationContainer = GUIWidgets.CreateInlineGroup(containerParent, "Aura Duration Settings")
@@ -2928,7 +2962,7 @@ local function CreateTotemsIndicatorSettings(containerParent, unit, updateCallba
         "Enable |cFF8080FFTotems|r",
         "Shows active totems using compact icons beside the player frame.",
         TotemsIndicatorDB.Enabled,
-        function(_, _, value) TotemsIndicatorDB.Enabled = value updateCallback() RefreshTotemsIndicatorGUI() end
+        function(_, _, value) TotemsIndicatorDB.Enabled = value UpdateTotemSettings() RefreshTotemsIndicatorGUI() end
     )
 
     local SizeSlider = AG:Create("Slider")
@@ -2936,7 +2970,7 @@ local function CreateTotemsIndicatorSettings(containerParent, unit, updateCallba
     SizeSlider:SetValue(TotemsIndicatorDB.Size)
     SizeSlider:SetSliderValues(8, 64, 1)
     SizeSlider:SetRelativeWidth(0.5)
-    SizeSlider:SetCallback("OnValueChanged", function(_, _, value) TotemsIndicatorDB.Size = value updateCallback() end)
+    SizeSlider:SetCallback("OnValueChanged", function(_, _, value) TotemsIndicatorDB.Size = value UpdateTotemSettings() end)
     ToggleContainer:AddChild(SizeSlider)
 
     local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
@@ -2945,7 +2979,7 @@ local function CreateTotemsIndicatorSettings(containerParent, unit, updateCallba
     AnchorFromDropdown:SetLabel("Anchor From")
     AnchorFromDropdown:SetValue(TotemsIndicatorDB.Layout[1])
     AnchorFromDropdown:SetRelativeWidth(0.33)
-    AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) TotemsIndicatorDB.Layout[1] = value updateCallback() end)
+    AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) TotemsIndicatorDB.Layout[1] = value UpdateTotemSettings() end)
     LayoutContainer:AddChild(AnchorFromDropdown)
 
     local AnchorToDropdown = AG:Create("Dropdown")
@@ -2953,7 +2987,7 @@ local function CreateTotemsIndicatorSettings(containerParent, unit, updateCallba
     AnchorToDropdown:SetLabel("Anchor To")
     AnchorToDropdown:SetValue(TotemsIndicatorDB.Layout[2])
     AnchorToDropdown:SetRelativeWidth(0.33)
-    AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) TotemsIndicatorDB.Layout[2] = value updateCallback() end)
+    AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) TotemsIndicatorDB.Layout[2] = value UpdateTotemSettings() end)
     LayoutContainer:AddChild(AnchorToDropdown)
 
     local GrowthDirectionDropdown = AG:Create("Dropdown")
@@ -2961,7 +2995,7 @@ local function CreateTotemsIndicatorSettings(containerParent, unit, updateCallba
     GrowthDirectionDropdown:SetLabel("Growth Direction")
     GrowthDirectionDropdown:SetValue(TotemsIndicatorDB.GrowthDirection)
     GrowthDirectionDropdown:SetRelativeWidth(0.33)
-    GrowthDirectionDropdown:SetCallback("OnValueChanged", function(_, _, value) TotemsIndicatorDB.GrowthDirection = value updateCallback() end)
+    GrowthDirectionDropdown:SetCallback("OnValueChanged", function(_, _, value) TotemsIndicatorDB.GrowthDirection = value UpdateTotemSettings() end)
     LayoutContainer:AddChild(GrowthDirectionDropdown)
 
     local XPosSlider = AG:Create("Slider")
@@ -2969,7 +3003,7 @@ local function CreateTotemsIndicatorSettings(containerParent, unit, updateCallba
     XPosSlider:SetValue(TotemsIndicatorDB.Layout[3])
     XPosSlider:SetSliderValues(-1000, 1000, 0.1)
     XPosSlider:SetRelativeWidth(0.33)
-    XPosSlider:SetCallback("OnValueChanged", function(_, _, value) TotemsIndicatorDB.Layout[3] = value updateCallback() end)
+    XPosSlider:SetCallback("OnValueChanged", function(_, _, value) TotemsIndicatorDB.Layout[3] = value UpdateTotemSettings() end)
     LayoutContainer:AddChild(XPosSlider)
 
     local YPosSlider = AG:Create("Slider")
@@ -2977,7 +3011,7 @@ local function CreateTotemsIndicatorSettings(containerParent, unit, updateCallba
     YPosSlider:SetValue(TotemsIndicatorDB.Layout[4])
     YPosSlider:SetSliderValues(-1000, 1000, 0.1)
     YPosSlider:SetRelativeWidth(0.33)
-    YPosSlider:SetCallback("OnValueChanged", function(_, _, value) TotemsIndicatorDB.Layout[4] = value updateCallback() end)
+    YPosSlider:SetCallback("OnValueChanged", function(_, _, value) TotemsIndicatorDB.Layout[4] = value UpdateTotemSettings() end)
     LayoutContainer:AddChild(YPosSlider)
 
     local SpacingSlider = AG:Create("Slider")
@@ -2985,7 +3019,7 @@ local function CreateTotemsIndicatorSettings(containerParent, unit, updateCallba
     SpacingSlider:SetValue(TotemsIndicatorDB.Layout[5])
     SpacingSlider:SetSliderValues(0, 100, 1)
     SpacingSlider:SetRelativeWidth(0.33)
-    SpacingSlider:SetCallback("OnValueChanged", function(_, _, value) TotemsIndicatorDB.Layout[5] = value updateCallback() end)
+    SpacingSlider:SetCallback("OnValueChanged", function(_, _, value) TotemsIndicatorDB.Layout[5] = value UpdateTotemSettings() end)
     LayoutContainer:AddChild(SpacingSlider)
 
     function RefreshFontSizeSlider()
@@ -3001,12 +3035,16 @@ local function CreateTotemsIndicatorSettings(containerParent, unit, updateCallba
     end
 
     RefreshTotemsIndicatorGUI()
+    EnableTotemsTestMode(unit)
 end
 
 local function CreateIndicatorSettings(containerParent, unit)
     local function SelectIndicatorTab(IndicatorContainer, _, IndicatorTab)
         SaveSubTab(unit, "Indicators", IndicatorTab)
         IndicatorContainer:ReleaseChildren()
+        if IndicatorTab ~= "Totems" then
+            DisableTotemsTestMode(unit)
+        end
         if IndicatorTab == "RaidTargetMarker" then
             CreateRaidTargetMarkerSettings(IndicatorContainer, unit, function() UpdateManagedUnitMethod(unit, "UpdateUnitRaidTargetMarker") end)
         elseif IndicatorTab == "ReadyCheck" then
@@ -3032,14 +3070,10 @@ local function CreateIndicatorSettings(containerParent, unit)
         end
 
         C_Timer.After(0.001, function()
-            if IndicatorContainer.DoLayout then
-                IndicatorContainer:DoLayout()
-            end
-            if containerParent.DoLayout then
-                containerParent:DoLayout()
-            end
-            if containerParent.parent and containerParent.parent.DoLayout then
-                containerParent.parent:DoLayout()
+            local frame = IndicatorContainer
+            while frame do
+                if frame.DoLayout then frame:DoLayout() end
+                frame = frame.parent
             end
         end)
     end
@@ -3591,7 +3625,7 @@ local function CreateAuraSettings(containerParent, unit)
     containerParent:DoLayout()
 end
 
-local function CreateAuraDurationSettings(containerParent)
+local function CreateAuraDurationSettings(containerParent, affectedUnits)
     local AuraDurationContainer = GUIWidgets.CreateInlineGroup(containerParent, "Aura Duration Settings")
 
     local ColourPicker = AG:Create("ColorPicker")
@@ -3600,6 +3634,7 @@ local function CreateAuraDurationSettings(containerParent)
     ColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) for _, unitDB in pairs(UUF.db.profile.Units) do unitDB.Auras.AuraDuration.Colour = {r, g, b} end RefreshConfigPreview() end)
     ColourPicker:SetHasAlpha(false)
     ColourPicker:SetRelativeWidth(0.5)
+    AddAffectsTooltip(ColourPicker, affectedUnits)
     AuraDurationContainer:AddChild(ColourPicker)
 
     local ScaleByIconSizeCheckbox = AG:Create("CheckBox")
@@ -3607,6 +3642,7 @@ local function CreateAuraDurationSettings(containerParent)
     ScaleByIconSizeCheckbox:SetValue(false)
     ScaleByIconSizeCheckbox:SetCallback("OnValueChanged", function(_, _, value) for _, unitDB in pairs(UUF.db.profile.Units) do unitDB.Auras.AuraDuration.ScaleByIconSize = value end RefreshConfigPreview() end)
     ScaleByIconSizeCheckbox:SetRelativeWidth(0.5)
+    AddAffectsTooltip(ScaleByIconSizeCheckbox, affectedUnits)
     AuraDurationContainer:AddChild(ScaleByIconSizeCheckbox)
 
     local AnchorFromDropdown = AG:Create("Dropdown")
@@ -3615,6 +3651,7 @@ local function CreateAuraDurationSettings(containerParent)
     AnchorFromDropdown:SetValue("CENTER")
     AnchorFromDropdown:SetRelativeWidth(0.5)
     AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) for _, unitDB in pairs(UUF.db.profile.Units) do unitDB.Auras.AuraDuration.Layout[1] = value end RefreshConfigPreview() end)
+    AddAffectsTooltip(AnchorFromDropdown, affectedUnits)
     AuraDurationContainer:AddChild(AnchorFromDropdown)
 
     local AnchorToDropdown = AG:Create("Dropdown")
@@ -3623,6 +3660,7 @@ local function CreateAuraDurationSettings(containerParent)
     AnchorToDropdown:SetValue("CENTER")
     AnchorToDropdown:SetRelativeWidth(0.5)
     AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) for _, unitDB in pairs(UUF.db.profile.Units) do unitDB.Auras.AuraDuration.Layout[2] = value end RefreshConfigPreview() end)
+    AddAffectsTooltip(AnchorToDropdown, affectedUnits)
     AuraDurationContainer:AddChild(AnchorToDropdown)
 
     local XPosSlider = AG:Create("Slider")
@@ -3631,6 +3669,7 @@ local function CreateAuraDurationSettings(containerParent)
     XPosSlider:SetSliderValues(-1000, 1000, 0.1)
     XPosSlider:SetRelativeWidth(0.33)
     XPosSlider:SetCallback("OnValueChanged", function(_, _, value) for _, unitDB in pairs(UUF.db.profile.Units) do unitDB.Auras.AuraDuration.Layout[3] = value end RefreshConfigPreview() end)
+    AddAffectsTooltip(XPosSlider, affectedUnits)
     AuraDurationContainer:AddChild(XPosSlider)
 
     local YPosSlider = AG:Create("Slider")
@@ -3639,6 +3678,7 @@ local function CreateAuraDurationSettings(containerParent)
     YPosSlider:SetSliderValues(-1000, 1000, 0.1)
     YPosSlider:SetRelativeWidth(0.33)
     YPosSlider:SetCallback("OnValueChanged", function(_, _, value) for _, unitDB in pairs(UUF.db.profile.Units) do unitDB.Auras.AuraDuration.Layout[4] = value end RefreshConfigPreview() end)
+    AddAffectsTooltip(YPosSlider, affectedUnits)
     AuraDurationContainer:AddChild(YPosSlider)
 
     local FontSizeSlider = AG:Create("Slider")
@@ -3648,6 +3688,7 @@ local function CreateAuraDurationSettings(containerParent)
     FontSizeSlider:SetRelativeWidth(0.33)
     FontSizeSlider:SetCallback("OnValueChanged", function(_, _, value) for _, unitDB in pairs(UUF.db.profile.Units) do unitDB.Auras.AuraDuration.FontSize = value end RefreshConfigPreview() end)
     FontSizeSlider:SetDisabled(false)
+    AddAffectsTooltip(FontSizeSlider, affectedUnits)
     AuraDurationContainer:AddChild(FontSizeSlider)
 end
 
@@ -3776,6 +3817,7 @@ local function CreateGlobalHealthSettings(containerParent)
         ForEachUnitSubDatabase("HealthBar", function(_, db) db.Foreground = {r, g, b} end)
         RefreshConfigPreview()
     end)
+    AddAffectsTooltip(ForegroundColourPicker, healthUnits)
     ColourContainer:AddChild(ForegroundColourPicker)
 
     local BackgroundColourPicker = AG:Create("ColorPicker")
@@ -3787,6 +3829,7 @@ local function CreateGlobalHealthSettings(containerParent)
         ForEachUnitSubDatabase("HealthBar", function(_, db) db.Background = {r, g, b} end)
         RefreshConfigPreview()
     end)
+    AddAffectsTooltip(BackgroundColourPicker, healthUnits)
     ColourContainer:AddChild(BackgroundColourPicker)
 
     local DeadBackgroundColourPicker = AG:Create("ColorPicker")
@@ -3798,6 +3841,7 @@ local function CreateGlobalHealthSettings(containerParent)
         ForEachUnitSubDatabase("HealthBar", function(_, db) db.DeadBackground = {r, g, b} end)
         RefreshConfigPreview()
     end)
+    AddAffectsTooltip(DeadBackgroundColourPicker, healthUnits)
     ColourContainer:AddChild(DeadBackgroundColourPicker)
 
     local ForegroundOpacitySlider = AG:Create("Slider")
@@ -3810,6 +3854,7 @@ local function CreateGlobalHealthSettings(containerParent)
         ForEachUnitSubDatabase("HealthBar", function(_, db) db.ForegroundOpacity = value end)
         RefreshConfigPreview()
     end)
+    AddAffectsTooltip(ForegroundOpacitySlider, healthUnits)
     ColourContainer:AddChild(ForegroundOpacitySlider)
 
     local BackgroundOpacitySlider = AG:Create("Slider")
@@ -3822,6 +3867,7 @@ local function CreateGlobalHealthSettings(containerParent)
         ForEachUnitSubDatabase("HealthBar", function(_, db) db.BackgroundOpacity = value end)
         RefreshConfigPreview()
     end)
+    AddAffectsTooltip(BackgroundOpacitySlider, healthUnits)
     ColourContainer:AddChild(BackgroundOpacitySlider)
 end
 
@@ -3948,6 +3994,7 @@ local function CreateGlobalPowerSettings(containerParent)
         ForEachUnitSubDatabase("PowerBar", function(_, db) db.Position = value end)
         RefreshConfigPreview()
     end)
+    AddAffectsTooltip(PositionDropdown, powerUnits)
     LayoutContainer:AddChild(PositionDropdown)
 
     local HeightSlider = AG:Create("Slider")
@@ -3959,6 +4006,7 @@ local function CreateGlobalPowerSettings(containerParent)
         ForEachUnitSubDatabase("PowerBar", function(_, db) db.Height = value end)
         RefreshConfigPreview()
     end)
+    AddAffectsTooltip(HeightSlider, powerUnits)
     LayoutContainer:AddChild(HeightSlider)
 
     local ColourContainer = GUIWidgets.CreateInlineGroup(containerParent, "Shared Power Bar Colours")
@@ -3972,6 +4020,7 @@ local function CreateGlobalPowerSettings(containerParent)
         ForEachUnitSubDatabase("PowerBar", function(_, db) db.Foreground = {r, g, b, a} end)
         RefreshConfigPreview()
     end)
+    AddAffectsTooltip(ForegroundColourPicker, powerUnits)
     ColourContainer:AddChild(ForegroundColourPicker)
 
     BackgroundColourPicker = AG:Create("ColorPicker")
@@ -3983,6 +4032,7 @@ local function CreateGlobalPowerSettings(containerParent)
         ForEachUnitSubDatabase("PowerBar", function(_, db) db.Background = {r, g, b, a} end)
         RefreshConfigPreview()
     end)
+    AddAffectsTooltip(BackgroundColourPicker, powerUnits)
     ColourContainer:AddChild(BackgroundColourPicker)
 
     BackgroundMultiplierSlider = AG:Create("Slider")
@@ -3995,6 +4045,7 @@ local function CreateGlobalPowerSettings(containerParent)
         ForEachUnitSubDatabase("PowerBar", function(_, db) db.BackgroundMultiplier = value end)
         RefreshConfigPreview()
     end)
+    AddAffectsTooltip(BackgroundMultiplierSlider, powerUnits)
     ColourContainer:AddChild(BackgroundMultiplierSlider)
 
     RefreshPowerSettings()
@@ -4102,6 +4153,7 @@ local function CreateGlobalCastBarSettings(containerParent)
         ForEachUnitSubDatabase("CastBar", function(_, db) db.Foreground = {r, g, b, a} end)
         RefreshConfigPreview()
     end)
+    AddAffectsTooltip(ForegroundColourPicker, castBarUnits)
     ColourContainer:AddChild(ForegroundColourPicker)
 
     local BackgroundColourPicker = AG:Create("ColorPicker")
@@ -4113,6 +4165,7 @@ local function CreateGlobalCastBarSettings(containerParent)
         ForEachUnitSubDatabase("CastBar", function(_, db) db.Background = {r, g, b, a} end)
         RefreshConfigPreview()
     end)
+    AddAffectsTooltip(BackgroundColourPicker, castBarUnits)
     ColourContainer:AddChild(BackgroundColourPicker)
 
     local NotInterruptibleColourPicker = AG:Create("ColorPicker")
@@ -4124,6 +4177,7 @@ local function CreateGlobalCastBarSettings(containerParent)
         ForEachUnitSubDatabase("CastBar", function(_, db) db.NotInterruptibleColour = {r, g, b, a} end)
         RefreshConfigPreview()
     end)
+    AddAffectsTooltip(NotInterruptibleColourPicker, castBarUnits)
     ColourContainer:AddChild(NotInterruptibleColourPicker)
 end
 
@@ -4208,6 +4262,7 @@ local function CreateGlobalAurasSettings(containerParent)
         end)
         RefreshConfigPreview()
     end)
+    AddAffectsTooltip(BuffSizeSlider, auraUnits)
     LayoutContainer:AddChild(BuffSizeSlider)
 
     local BuffNumSlider = AG:Create("Slider")
@@ -4221,6 +4276,7 @@ local function CreateGlobalAurasSettings(containerParent)
         end)
         RefreshConfigPreview()
     end)
+    AddAffectsTooltip(BuffNumSlider, auraUnits)
     LayoutContainer:AddChild(BuffNumSlider)
 
     local DebuffSizeSlider = AG:Create("Slider")
@@ -4234,6 +4290,7 @@ local function CreateGlobalAurasSettings(containerParent)
         end)
         RefreshConfigPreview()
     end)
+    AddAffectsTooltip(DebuffSizeSlider, auraUnits)
     LayoutContainer:AddChild(DebuffSizeSlider)
 
     local DebuffNumSlider = AG:Create("Slider")
@@ -4247,9 +4304,10 @@ local function CreateGlobalAurasSettings(containerParent)
         end)
         RefreshConfigPreview()
     end)
+    AddAffectsTooltip(DebuffNumSlider, auraUnits)
     LayoutContainer:AddChild(DebuffNumSlider)
 
-    CreateAuraDurationSettings(containerParent)
+    CreateAuraDurationSettings(containerParent, auraUnits)
 end
 
 local function CreateGlobalTagSettings(containerParent)
@@ -4281,6 +4339,7 @@ local function CreateGlobalTagSettings(containerParent)
         UUF:SetTagUpdateInterval()
         UUF:UpdateUnitTags()
     end)
+    AddAffectsTooltip(TagIntervalSlider, OrderedUnitKeys)
     TagContainer:AddChild(TagIntervalSlider)
 
     local SeparatorDropdown = AG:Create("Dropdown")
@@ -4293,12 +4352,7 @@ local function CreateGlobalTagSettings(containerParent)
         UUF.SEPARATOR = value
         UUF:UpdateUnitTags()
     end)
-    SeparatorDropdown:SetCallback("OnEnter", function()
-        GameTooltip:SetOwner(SeparatorDropdown.frame, "ANCHOR_BOTTOM")
-        GameTooltip:AddLine("This separator is used by combined health tags such as |cFF8080FF[curhpperhp]|r.", 1, 1, 1)
-        GameTooltip:Show()
-    end)
-    SeparatorDropdown:SetCallback("OnLeave", function() GameTooltip:Hide() end)
+    AddAffectsTooltip(SeparatorDropdown, OrderedUnitKeys)
     TagContainer:AddChild(SeparatorDropdown)
 
     local ToTSeparatorDropdown = AG:Create("Dropdown")
@@ -4311,12 +4365,7 @@ local function CreateGlobalTagSettings(containerParent)
         UUF.TOT_SEPARATOR = value
         UUF:UpdateUnitTags()
     end)
-    ToTSeparatorDropdown:SetCallback("OnEnter", function()
-        GameTooltip:SetOwner(ToTSeparatorDropdown.frame, "ANCHOR_BOTTOM")
-        GameTooltip:AddLine("Used as the prefix separator for Target of Target tags like |cFF8080FF[name:target]|r.", 1, 1, 1)
-        GameTooltip:Show()
-    end)
-    ToTSeparatorDropdown:SetCallback("OnLeave", function() GameTooltip:Hide() end)
+    AddAffectsTooltip(ToTSeparatorDropdown, OrderedUnitKeys)
     TagContainer:AddChild(ToTSeparatorDropdown)
 end
 

@@ -37,32 +37,61 @@ local function PositionTotem(totem, anchorFrame, TotemsDB, displayIndex)
     totem:SetPoint(anchorFrom, anchorFrame, anchorTo, xOffset, yOffset)
 end
 
+local RefreshTimers = {}
+
 local function RefreshTotemDisplay(unitFrame)
     if not unitFrame or not unitFrame.Totems then return end
 
-    for slot = 1, MAX_TOTEM_SLOTS do
-        local totem = unitFrame.Totems[slot]
-        if totem then
-            local _, _, _, _, icon = GetTotemInfo(slot)
-            local durationObj = GetTotemDuration(slot)
+    if RefreshTimers[unitFrame] then
+        RefreshTimers[unitFrame]:Cancel()
+    end
 
-            if durationObj then
-                if totem.Icon then
-                    totem.Icon:SetTexture(icon)
-                end
+    RefreshTimers[unitFrame] = C_Timer.NewTimer(0.1, function()
+        RefreshTimers[unitFrame] = nil
+        if not unitFrame or not unitFrame.Totems then return end
 
-                if totem.Cooldown then
-                    if totem.Cooldown.SetCooldownFromDurationObject then
-                        totem.Cooldown:SetCooldownFromDurationObject(durationObj)
-                    end
-                end
-
-                totem:SetAlpha(1)
-            else
-                totem:SetAlpha(0)
+        local anchorFrame = unitFrame.HighLevelContainer or unitFrame
+        local TotemsDB
+        local unit = unitFrame.unit
+        if unit then
+            local normalizedUnit = UUF:GetNormalizedUnit(unit)
+            local unitProfile = UUF.db.profile.Units[normalizedUnit]
+            if unitProfile and unitProfile.Indicators and unitProfile.Indicators.Totems then
+                TotemsDB = unitProfile.Indicators.Totems
             end
         end
-    end
+
+        -- collect active totems in slot order, packing into contiguous display positions
+        local activeData = {}
+        for slot = 1, MAX_TOTEM_SLOTS do
+            local _, _, _, _, icon = GetTotemInfo(slot)
+            local durationObj = GetTotemDuration(slot)
+            if durationObj then
+                activeData[#activeData + 1] = { icon = icon, durationObj = durationObj }
+            end
+        end
+
+        for displayIndex = 1, MAX_TOTEM_SLOTS do
+            local totem = unitFrame.Totems[displayIndex]
+            if totem then
+                local data = activeData[displayIndex]
+                if data then
+                    if totem.Icon then
+                        totem.Icon:SetTexture(data.icon)
+                    end
+                    if totem.Cooldown and totem.Cooldown.SetCooldownFromDurationObject then
+                        totem.Cooldown:SetCooldownFromDurationObject(data.durationObj)
+                    end
+                    if TotemsDB and anchorFrame then
+                        PositionTotem(totem, anchorFrame, TotemsDB, displayIndex)
+                    end
+                    totem:SetAlpha(1)
+                else
+                    totem:SetAlpha(0)
+                end
+            end
+        end
+    end)
 end
 
 local function UpdateTotemBySlot(self)
@@ -186,6 +215,89 @@ function UUF:UpdateUnitTotems(unitFrame, unit)
                     unitFrame.Totems[index]:Hide()
                 end
             end
+        end
+    end
+end
+
+local TestTotemIcons = {
+    135770, -- spell_nature_strength
+    135790, -- spell_nature_tranquility
+    136052, -- spell_nature_windfury
+    135730, -- spell_nature_groundingtotem
+}
+
+local TotemTestPool = {}
+
+function UUF:CreateTestTotems(unitFrame, unit)
+    if not unitFrame or not unit then return end
+
+    local normalizedUnit = UUF:GetNormalizedUnit(unit)
+    local unitProfile = UUF.db.profile.Units[normalizedUnit]
+    if not unitProfile or not unitProfile.Indicators or not unitProfile.Indicators.Totems then return end
+    local TotemsDB = unitProfile.Indicators.Totems
+
+    if not TotemsDB.Enabled then return end
+
+    local anchorFrame = unitFrame.HighLevelContainer or unitFrame
+
+    -- Acquire or create pool for this frame
+    if not TotemTestPool[unitFrame] then
+        TotemTestPool[unitFrame] = {}
+    end
+    local pool = TotemTestPool[unitFrame]
+
+    if UUF.TOTEM_TEST_MODE then
+        for index = 1, MAX_TOTEM_SLOTS do
+            local totem = pool[index]
+            if not totem then
+                totem = CreateFrame("Button", nil, anchorFrame, "BackdropTemplate")
+                totem:SetBackdrop(UUF.BACKDROP)
+                totem:SetBackdropColor(0, 0, 0, 1)
+                totem:SetBackdropBorderColor(0, 0, 0, 1)
+
+                local Icon = totem:CreateTexture(nil, "OVERLAY")
+                Icon:SetPoint("TOPLEFT", totem, "TOPLEFT", 1, -1)
+                Icon:SetPoint("BOTTOMRIGHT", totem, "BOTTOMRIGHT", -1, 1)
+                Icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
+                totem.Icon = Icon
+
+                local Duration = totem:CreateFontString(nil, "OVERLAY")
+                totem.Duration = Duration
+
+                pool[index] = totem
+            end
+
+            totem:SetSize(TotemsDB.Size, TotemsDB.Size)
+            PositionTotem(totem, anchorFrame, TotemsDB, index)
+
+            totem.Icon:SetTexture(TestTotemIcons[index] or 134400)
+
+            local FontsDB = UUF.db.profile.General.Fonts
+            local DurationDB = TotemsDB.TotemDuration
+            totem.Duration:ClearAllPoints()
+            totem.Duration:SetPoint(DurationDB.Layout[1], totem, DurationDB.Layout[2], DurationDB.Layout[3], DurationDB.Layout[4])
+            if DurationDB.ScaleByIconSize then
+                local scaleFactor = TotemsDB.Size > 0 and TotemsDB.Size / 36 or 1
+                totem.Duration:SetFont(UUF.Media.Font, DurationDB.FontSize * scaleFactor, FontsDB.FontFlag)
+            else
+                totem.Duration:SetFont(UUF.Media.Font, DurationDB.FontSize, FontsDB.FontFlag)
+            end
+            totem.Duration:SetTextColor(DurationDB.Colour[1], DurationDB.Colour[2], DurationDB.Colour[3], 1)
+            if FontsDB.Shadow.Enabled then
+                totem.Duration:SetShadowColor(FontsDB.Shadow.Colour[1], FontsDB.Shadow.Colour[2], FontsDB.Shadow.Colour[3], FontsDB.Shadow.Colour[4])
+                totem.Duration:SetShadowOffset(FontsDB.Shadow.XPos, FontsDB.Shadow.YPos)
+            else
+                totem.Duration:SetShadowColor(0, 0, 0, 0)
+                totem.Duration:SetShadowOffset(0, 0)
+            end
+            totem.Duration:SetText(string.format("%dm", index * 4))
+
+            totem:Show()
+        end
+    else
+        for index = 1, MAX_TOTEM_SLOTS do
+            local totem = pool[index]
+            if totem then totem:Hide() end
         end
     end
 end
