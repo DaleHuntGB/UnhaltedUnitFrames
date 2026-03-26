@@ -389,9 +389,18 @@ Used to toggle coloring if the unit is offline.
 * state    - the desired state (boolean)
 * isForced - forces the event update even if the state wasn't changed (boolean)
 --]]
-local function SetColorDisconnected(element, state, isForced) -- DEPRECATED
+local function SetColorDisconnected(element, state, isForced)
 	if(element.colorDisconnected ~= state or isForced) then
 		element.colorDisconnected = state
+		if(state) then
+			element.__owner:RegisterEvent('UNIT_CONNECTION', ColorPath)
+			element.__owner:RegisterEvent('PARTY_MEMBER_ENABLE', ColorPath)
+			element.__owner:RegisterEvent('PARTY_MEMBER_DISABLE', ColorPath)
+		else
+			element.__owner:UnregisterEvent('UNIT_CONNECTION', ColorPath)
+			element.__owner:UnregisterEvent('PARTY_MEMBER_ENABLE', ColorPath)
+			element.__owner:UnregisterEvent('PARTY_MEMBER_DISABLE', ColorPath)
+		end
 	end
 end
 
@@ -503,6 +512,10 @@ local function Enable(self, unit)
 			element.smoothing = Enum.StatusBarInterpolation.Immediate
 		end
 
+		if(element.colorDisconnected) then
+			self:RegisterEvent('UNIT_CONNECTION', ColorPath)
+		end
+
 		if(element.colorSelection) then
 			self:RegisterEvent('UNIT_FLAGS', ColorPath)
 		end
@@ -525,12 +538,6 @@ local function Enable(self, unit)
 		self:RegisterEvent('UNIT_MAXPOWER', Path)
 		self:RegisterEvent('UNIT_POWER_BAR_HIDE', Path)
 		self:RegisterEvent('UNIT_POWER_BAR_SHOW', Path)
-		self:RegisterEvent('UNIT_CONNECTION', Path)
-
-		if(unit == 'party' or unit == 'raid') then
-			self:RegisterEvent('PARTY_MEMBER_ENABLE', Path)
-			self:RegisterEvent('PARTY_MEMBER_DISABLE', Path)
-		end
 
 		if(element:IsObjectType('StatusBar') and not element:GetStatusBarTexture()) then
 			element:SetStatusBarTexture([[Interface\TargetingFrame\UI-StatusBar]])
@@ -576,9 +583,7 @@ local function Disable(self)
 		self:UnregisterEvent('UNIT_POWER_BAR_SHOW', Path)
 		self:UnregisterEvent('UNIT_POWER_FREQUENT', Path)
 		self:UnregisterEvent('UNIT_POWER_UPDATE', Path)
-		self:UnregisterEvent('UNIT_CONNECTION', Path)
-		self:UnregisterEvent('PARTY_MEMBER_ENABLE', Path)
-		self:UnregisterEvent('PARTY_MEMBER_DISABLE', Path)
+		self:UnregisterEvent('UNIT_CONNECTION', ColorPath)
 		self:UnregisterEvent('UNIT_FACTION', ColorPath)
 		self:UnregisterEvent('UNIT_FLAGS', ColorPath)
 		self:UnregisterEvent('UNIT_THREAT_LIST_UPDATE', ColorPath)

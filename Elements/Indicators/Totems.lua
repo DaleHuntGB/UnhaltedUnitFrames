@@ -1,5 +1,23 @@
 local _, UUF = ...
 local MAX_TOTEM_SLOTS = _G.MAX_TOTEMS or 4
+local DEFAULT_TOTEM_PRIORITIES = {}
+
+for slot = 1, MAX_TOTEM_SLOTS do
+    DEFAULT_TOTEM_PRIORITIES[slot] = slot
+end
+
+local TOTEM_PRIORITIES = _G.STANDARD_TOTEM_PRIORITIES or DEFAULT_TOTEM_PRIORITIES
+if UnitClassBase and UnitClassBase("player") == "SHAMAN" and _G.SHAMAN_TOTEM_PRIORITIES then
+    TOTEM_PRIORITIES = _G.SHAMAN_TOTEM_PRIORITIES
+end
+
+local DISPLAY_SLOT_MAP = {}
+for slot = 1, MAX_TOTEM_SLOTS do
+    DISPLAY_SLOT_MAP[TOTEM_PRIORITIES[slot] or slot] = slot
+end
+
+local PendingTotemUpdates = {}
+local TotemCombatWatcher = CreateFrame("Frame")
 
 local function FetchAuraDurationRegion(cooldown)
     if not cooldown then return end
@@ -37,65 +55,33 @@ local function PositionTotem(totem, anchorFrame, TotemsDB, displayIndex)
     totem:SetPoint(anchorFrom, anchorFrame, anchorTo, xOffset, yOffset)
 end
 
-local RefreshTimers = {}
-
-local function RefreshTotemDisplay(unitFrame)
-    if not unitFrame or not unitFrame.Totems then return end
-
-    if RefreshTimers[unitFrame] then
-        RefreshTimers[unitFrame]:Cancel()
-    end
-
-    RefreshTimers[unitFrame] = C_Timer.NewTimer(0.1, function()
-        RefreshTimers[unitFrame] = nil
-        if not unitFrame or not unitFrame.Totems then return end
-
-        local anchorFrame = unitFrame.HighLevelContainer or unitFrame
-        local TotemsDB
-        local unit = unitFrame.unit
-        if unit then
-            local normalizedUnit = UUF:GetNormalizedUnit(unit)
-            local unitProfile = UUF.db.profile.Units[normalizedUnit]
-            if unitProfile and unitProfile.Indicators and unitProfile.Indicators.Totems then
-                TotemsDB = unitProfile.Indicators.Totems
-            end
-        end
-
-        -- collect active totems in slot order, packing into contiguous display positions
-        local activeData = {}
-        for slot = 1, MAX_TOTEM_SLOTS do
-            local _, _, _, _, icon = GetTotemInfo(slot)
-            local durationObj = GetTotemDuration(slot)
-            if durationObj then
-                activeData[#activeData + 1] = { icon = icon, durationObj = durationObj }
-            end
-        end
-
-        for displayIndex = 1, MAX_TOTEM_SLOTS do
-            local totem = unitFrame.Totems[displayIndex]
-            if totem then
-                local data = activeData[displayIndex]
-                if data then
-                    if totem.Icon then
-                        totem.Icon:SetTexture(data.icon)
-                    end
-                    if totem.Cooldown and totem.Cooldown.SetCooldownFromDurationObject then
-                        totem.Cooldown:SetCooldownFromDurationObject(data.durationObj)
-                    end
-                    if TotemsDB and anchorFrame then
-                        PositionTotem(totem, anchorFrame, TotemsDB, displayIndex)
-                    end
-                    totem:SetAlpha(1)
-                else
-                    totem:SetAlpha(0)
-                end
-            end
-        end
-    end)
+local function GetTotemSlotForDisplayIndex(displayIndex)
+    return DISPLAY_SLOT_MAP[displayIndex] or displayIndex
 end
 
-local function UpdateTotemBySlot(self)
-    RefreshTotemDisplay(self)
+local function QueueTotemUpdate(unitFrame, unit)
+    if not unitFrame then return end
+
+    PendingTotemUpdates[unitFrame] = unit or unitFrame.unit
+    TotemCombatWatcher:RegisterEvent("PLAYER_REGEN_ENABLED")
+end
+
+local function ApplyTotemLayout(unitFrame, TotemsDB)
+    if not unitFrame or not unitFrame.Totems or not TotemsDB then return end
+
+    local anchorFrame = unitFrame.HighLevelContainer or unitFrame
+    if not anchorFrame then return end
+
+    for displayIndex = 1, MAX_TOTEM_SLOTS do
+        local Totem = unitFrame.Totems[displayIndex]
+        if Totem then
+            local actualSlot = GetTotemSlotForDisplayIndex(displayIndex)
+            Totem:SetSize(TotemsDB.Size, TotemsDB.Size)
+            Totem:SetAttribute("totem-slot2", actualSlot)
+            Totem:SetID(actualSlot)
+            PositionTotem(Totem, anchorFrame, TotemsDB, displayIndex)
+        end
+    end
 end
 
 local function ApplyAuraDuration(icon, unit)
@@ -130,6 +116,17 @@ local function ApplyAuraDuration(icon, unit)
     end)
 end
 
+TotemCombatWatcher:SetScript("OnEvent", function(self)
+    self:UnregisterEvent("PLAYER_REGEN_ENABLED")
+
+    for unitFrame, unit in pairs(PendingTotemUpdates) do
+        PendingTotemUpdates[unitFrame] = nil
+        if unitFrame then
+            UUF:UpdateUnitTotems(unitFrame, unit)
+        end
+    end
+end)
+
 function UUF:CreateUnitTotems(unitFrame, unit)
     local TotemsDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Indicators.Totems
 
@@ -139,12 +136,13 @@ function UUF:CreateUnitTotems(unitFrame, unit)
     local Totems = {}
 
     for index = 1, MAX_TOTEM_SLOTS do
+        local actualSlot = GetTotemSlotForDisplayIndex(index)
         local Totem = CreateFrame('Button', nil, anchorFrame, 'SecureActionButtonTemplate')
         Totem:SetSize(TotemsDB.Size, TotemsDB.Size)
         Totem:RegisterForClicks("RightButtonUp", "RightButtonDown")
         Totem:SetAttribute("type2", "destroytotem")
-        Totem:SetAttribute("totem-slot2", index)
-        Totem:SetID(index)
+        Totem:SetAttribute("totem-slot2", actualSlot)
+        Totem:SetID(actualSlot)
         PositionTotem(Totem, anchorFrame, TotemsDB, index)
 
         local Border = Totem:CreateTexture(nil, 'BACKGROUND')
@@ -174,13 +172,19 @@ function UUF:CreateUnitTotems(unitFrame, unit)
         Totems[index] = Totem
     end
 
-    Totems.Override = UpdateTotemBySlot
     unitFrame.Totems = Totems
 end
 
 function UUF:UpdateUnitTotems(unitFrame, unit)
+    if not unitFrame or not unit then return end
+
     local TotemsDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Indicators.Totems
-    local anchorFrame = unitFrame.HighLevelContainer or unitFrame
+    if not TotemsDB then return end
+
+    if InCombatLockdown() then
+        QueueTotemUpdate(unitFrame, unit)
+        return
+    end
 
     if TotemsDB.Enabled then
         if not unitFrame.Totems then
@@ -188,12 +192,10 @@ function UUF:UpdateUnitTotems(unitFrame, unit)
         end
 
         if unitFrame.Totems then
+            ApplyTotemLayout(unitFrame, TotemsDB)
             for index = 1, MAX_TOTEM_SLOTS do
                 local Totem = unitFrame.Totems[index]
                 if Totem then
-                    Totem:SetSize(TotemsDB.Size, TotemsDB.Size)
-                    Totem:SetAttribute("totem-slot2", index)
-                    Totem:SetID(index)
                     ApplyAuraDuration(Totem.Cooldown, unit)
                 end
             end
@@ -205,6 +207,7 @@ function UUF:UpdateUnitTotems(unitFrame, unit)
             unitFrame.Totems:ForceUpdate()
         end
     else
+        PendingTotemUpdates[unitFrame] = nil
         if unitFrame.Totems then
             if unitFrame:IsElementEnabled("Totems") then
                 unitFrame:DisableElement("Totems")

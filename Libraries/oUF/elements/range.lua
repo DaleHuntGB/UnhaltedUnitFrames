@@ -73,7 +73,7 @@ local function Path(self, ...)
 	return (self.Range.Override or Update) (self, ...)
 end
 
-local function Enable(self, unit)
+local function Enable(self)
 	local element = self.Range
 	if(element) then
 		element.__owner = self
@@ -81,12 +81,6 @@ local function Enable(self, unit)
 		element.outsideAlpha = element.outsideAlpha or 0.55
 
 		self:RegisterEvent('UNIT_IN_RANGE_UPDATE', Path)
-		self:RegisterEvent('UNIT_CONNECTION', Path)
-
-		if(unit == 'party' or unit == 'raid') then
-			self:RegisterEvent('PARTY_MEMBER_ENABLE', Path)
-			self:RegisterEvent('PARTY_MEMBER_DISABLE', Path)
-		end
 
 		return true
 	end
@@ -98,9 +92,6 @@ local function Disable(self)
 		self:SetAlpha(element.insideAlpha)
 
 		self:UnregisterEvent('UNIT_IN_RANGE_UPDATE', Path)
-		self:UnregisterEvent('UNIT_CONNECTION', Path)
-		self:UnregisterEvent('PARTY_MEMBER_ENABLE', Path)
-		self:UnregisterEvent('PARTY_MEMBER_DISABLE', Path)
 	end
 end
 
