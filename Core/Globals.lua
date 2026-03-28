@@ -672,6 +672,7 @@ UUF.AURA_FILTERS = {
             ["RAID"] = {Title = "Raid", Desc = "Buffs that appear on Raid Frames."},
             ["CANCELABLE"] = {Title = "Cancelable", Desc = "Cancelable Buffs."},
             ["NOT_CANCELABLE"] = {Title = "Not Cancelable", Desc = "Un-cancelable Buffs.."},
+            ["RAID_IN_COMBAT"] = {Title = "Raid in Combat", Desc = "Buffs that appear on Raid Frames."},
         },
         Exclusive = {
             ["EXTERNAL_DEFENSIVE"] = {Title = "External Defensives", Desc = "External Defensive - |cFF00B0F7Blizzard|r."},

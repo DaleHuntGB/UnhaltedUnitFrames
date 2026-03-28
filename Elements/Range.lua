@@ -256,6 +256,8 @@ spellUpdateFrame:SetScript("OnEvent", UpdateActiveSpells)
 local RangeEventFrame = CreateFrame("Frame")
 local RANGE_UPDATE_INTERVAL = 0.2
 RangeEventFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
+RangeEventFrame:RegisterEvent("PLAYER_REGEN_DISABLED")
+RangeEventFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
 RangeEventFrame:RegisterEvent("UNIT_TARGET")
 RangeEventFrame:RegisterEvent("SPELL_UPDATE_COOLDOWN")
 RangeEventFrame:RegisterEvent("GROUP_ROSTER_UPDATE")
@@ -362,6 +364,13 @@ local function GroupedUnitInRange(unit)
         return false
     end
 
+    -- Retail can return secure/secret booleans here in combat. Those values are still
+    -- valid for SetAlphaFromBoolean(), so do not discard them or grouped frames get
+    -- stuck appearing in-range until combat ends.
+    if isRetail then
+        return UnitInRange(unit)
+    end
+
     local inRange, checkedRange = UnitInRange(unit)
     if NotSecretValue(checkedRange) and checkedRange then
         if NotSecretValue(inRange) then
@@ -421,7 +430,7 @@ function UUF:UpdateRangeAlpha(frame, unit)
 
     if IsGroupedRangeUnit(unit) and UnitIsConnected(unit) then
         inRange = GroupedUnitInRange(unit)
-        if inRange == nil and not InCombatLockdown() then
+        if inRange == nil then
             inRange = FriendlyIsInRange(unit)
         end
     elseif UnitIsDeadOrGhost(unit) then
