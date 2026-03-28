@@ -55,6 +55,15 @@ local Tags = {
 
 }
 
+local MAX_HP_PERCENT_PRECISION = 3
+
+for i = 1, MAX_HP_PERCENT_PRECISION do
+    local precisionSuffix = ":" .. i
+    Tags["perhp" .. precisionSuffix] = "UNIT_HEALTH UNIT_MAXHEALTH"
+    Tags["curhpperhp" .. precisionSuffix] = "UNIT_HEALTH UNIT_MAXHEALTH"
+    Tags["curhpperhp:abbr" .. precisionSuffix] = "UNIT_HEALTH UNIT_MAXHEALTH"
+end
+
 for i = 1, 25 do
     Tags["name:short:" .. i] = "UNIT_NAME_UPDATE"
 end
@@ -186,6 +195,17 @@ local function AbbreviateValue(value)
     end
 end
 
+local function FormatHealthPercent(unit, precision)
+    local unitHealthPercent = UnitHealthPercent(unit, false, CurveConstants.ScaleTo100)
+    if not unitHealthPercent then return nil end
+
+    if precision and precision > 0 then
+        return string.format("%." .. precision .. "f", unitHealthPercent)
+    else
+        return string.format("%.0f", unitHealthPercent)
+    end
+end
+
 for tagString, tagEvents in pairs(Tags) do
     oUF.Tags.Events[tagString] = (oUF.Tags.Events[tagString] and (oUF.Tags.Events[tagString] .. " ") or "") .. tagEvents
 end
@@ -249,6 +269,65 @@ oUF.Tags.Methods["curhpperhp:abbr"] = function(unit)
             return string.format("%s %.0f%%", AbbreviateValue(unitHealth), unitHealthPercent)
         else
             return string.format("%s %s %.0f%%", AbbreviateValue(unitHealth), UUF.SEPARATOR, unitHealthPercent)
+        end
+    end
+end
+
+for i = 1, MAX_HP_PERCENT_PRECISION do
+    local precision = i
+    oUF.Tags.Methods["perhp:" .. precision] = function(unit)
+        if not unit or not UnitExists(unit) then return "" end
+        local formattedPercent = FormatHealthPercent(unit, precision)
+        if not formattedPercent then return "" end
+        return formattedPercent
+    end
+end
+
+for i = 1, MAX_HP_PERCENT_PRECISION do
+    local precision = i
+
+    oUF.Tags.Methods["curhpperhp:" .. precision] = function(unit)
+        if not unit or not UnitExists(unit) then return "" end
+        local unitHealth = UnitHealth(unit)
+        local unitMaxHealth = UnitHealthMax(unit)
+        local unitHealthPercentText = FormatHealthPercent(unit, precision)
+        local unitStatus = UnitIsDead(unit) and "Dead" or UnitIsGhost(unit) and "Ghost" or not UnitIsConnected(unit) and "Offline"
+        if unitStatus then
+            return unitStatus
+        else
+            if not unitHealthPercentText then return "" end
+            if UUF.SEPARATOR == "[]" then
+                return string.format("%s [%s%%]", unitHealth, unitHealthPercentText)
+            elseif UUF.SEPARATOR == "()" then
+                return string.format("%s (%s%%)", unitHealth, unitHealthPercentText)
+            elseif UUF.SEPARATOR == " " then
+                return string.format("%s %s%%", unitHealth, unitHealthPercentText)
+            else
+                return string.format("%s %s %s%%", unitHealth, UUF.SEPARATOR, unitHealthPercentText)
+            end
+        end
+    end
+
+    oUF.Tags.Methods["curhpperhp:abbr:" .. precision] = function(unit)
+        if not unit or not UnitExists(unit) then return "" end
+        local unitHealth = UnitHealth(unit)
+        local unitMaxHealth = UnitHealthMax(unit)
+        local unitHealthPercentText = FormatHealthPercent(unit, precision)
+        local unitStatus = UnitIsDead(unit) and "Dead" or UnitIsGhost(unit) and "Ghost" or not UnitIsConnected(unit) and "Offline"
+        if unitStatus then
+            return unitStatus
+        else
+            if not unitHealthPercentText then return "" end
+            local abbreviatedHealth = AbbreviateValue(unitHealth)
+            if UUF.SEPARATOR == "[]" then
+                return string.format("%s [%s%%]", abbreviatedHealth, unitHealthPercentText)
+            elseif UUF.SEPARATOR == "()" then
+                return string.format("%s (%s%%)", abbreviatedHealth, unitHealthPercentText)
+            elseif UUF.SEPARATOR == " " then
+                return string.format("%s %s%%", abbreviatedHealth, unitHealthPercentText)
+            else
+                return string.format("%s %s %s%%", abbreviatedHealth, UUF.SEPARATOR, unitHealthPercentText)
+            end
         end
     end
 end
