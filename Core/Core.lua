@@ -48,4 +48,6 @@ function UnhaltedUnitFrames:OnEnable()
     UUF:SpawnUnitFrame("focustarget")
     UUF:SpawnUnitFrame("pet")
     UUF:SpawnUnitFrame("boss")
+    UUF:UpdateOutOfCombatFade()
+    
 end

@@ -37,7 +37,14 @@ function UUF:CreateUnitCastBar(unitFrame, unit)
     local SpellNameDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].CastBar.Text.SpellName
     local DurationDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].CastBar.Text.Duration
 
-    local CastBarContainer = CreateFrame("Frame", UUF:FetchFrameName(unit) .. "_CastBarContainer", unitFrame, "BackdropTemplate")
+    
+    -- Determine parent: UIParent if independent, unitFrame if linked
+    local castBarParent = unitFrame
+    if unit == "player" and CastBarDB.LinkToFrameFade == false then
+        castBarParent = UIParent
+    end
+
+    local CastBarContainer = CreateFrame("Frame", UUF:FetchFrameName(unit) .. "_CastBarContainer", castBarParent, "BackdropTemplate")
     CastBarContainer:SetBackdrop(UUF.BACKDROP)
     CastBarContainer:SetBackdropColor(0, 0, 0, 0)
     CastBarContainer:SetBackdropBorderColor(0, 0, 0, 1)
@@ -153,6 +160,19 @@ function UUF:UpdateUnitCastBar(unitFrame, unit)
     if CastBarDB.Enabled then
         unitFrame.Castbar = unitFrame.Castbar or UUF:CreateUnitCastBar(unitFrame, unit)
         CastBarContainer = unitFrame.Castbar and unitFrame.Castbar:GetParent()
+
+    -- Handle reparenting for player cast bar based on LinkToFrameFade setting
+        if unit == "player" and CastBarContainer then
+            local desiredParent = unitFrame
+            if CastBarDB.LinkToFrameFade == false then
+                desiredParent = UIParent
+            end
+
+            -- Reparent if needed
+            if CastBarContainer:GetParent() ~= desiredParent then
+                CastBarContainer:SetParent(desiredParent)
+            end
+        end
 
         if not unitFrame:IsElementEnabled("Castbar") then unitFrame:EnableElement("Castbar") end
 

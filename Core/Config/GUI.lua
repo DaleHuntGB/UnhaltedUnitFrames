@@ -499,6 +499,43 @@ local function CreateRangeSettings(containerParent)
     GUIWidgets.DeepDisable(Container, not RangeDB.Enabled, Toggle)
 end
 
+local function CreateGlobalOutOfCombatFadeSettings(containerParent)
+    local FadeDB = UUF.db.profile.General.OutOfCombatFade
+    local Container = GUIWidgets.CreateInlineGroup(containerParent, "Out of Combat Fade")
+
+    GUIWidgets.CreateInformationTag(Container, "Fade unit frames when out of combat. Per-frame settings can override this global setting.")
+
+    local UseGlobalToggle = AG:Create("CheckBox")
+    UseGlobalToggle:SetLabel("Use Global Out of Combat Fade")
+    UseGlobalToggle:SetValue(FadeDB.UseGlobal)
+    UseGlobalToggle:SetFullWidth(true)
+    UseGlobalToggle:SetCallback("OnValueChanged", function(_, _, value) FadeDB.UseGlobal = value UUF:UpdateOutOfCombatFade() GUIWidgets.DeepDisable(Container, not value, UseGlobalToggle) end)
+    UseGlobalToggle:SetRelativeWidth(0.5)
+    Container:AddChild(UseGlobalToggle)
+
+    local GlobalOpacitySlider = AG:Create("Slider")
+    GlobalOpacitySlider:SetLabel("Global Out of Combat Opacity")
+    GlobalOpacitySlider:SetValue(FadeDB.GlobalOpacity)
+    GlobalOpacitySlider:SetSliderValues(0.0, 1.0, 0.01)
+    GlobalOpacitySlider:SetFullWidth(true)
+    GlobalOpacitySlider:SetCallback("OnValueChanged", function(_, _, value) FadeDB.GlobalOpacity = value UUF:UpdateOutOfCombatFade() end)
+    GlobalOpacitySlider:SetRelativeWidth(0.5)
+    GlobalOpacitySlider:SetIsPercent(true)
+    Container:AddChild(GlobalOpacitySlider)
+
+    local FadeInWithTargetToggle = AG:Create("CheckBox")
+    FadeInWithTargetToggle:SetLabel("Fade In When Target Is Set")
+    FadeInWithTargetToggle:SetValue(FadeDB.FadeInWithTarget)
+    FadeInWithTargetToggle:SetFullWidth(true)
+    FadeInWithTargetToggle:SetCallback("OnValueChanged", function(_, _, value) FadeDB.FadeInWithTarget = value UUF:UpdateOutOfCombatFade() end)
+    FadeInWithTargetToggle:SetRelativeWidth(0.5)
+    Container:AddChild(FadeInWithTargetToggle)
+
+    GUIWidgets.CreateInformationTag(Container, "When enabled, frames will fade to full opacity if you have a target, even while out of combat.")
+
+    GUIWidgets.DeepDisable(Container, not FadeDB.UseGlobal, UseGlobalToggle)
+end
+
 local function CreateColourSettings(containerParent)
     local Container = GUIWidgets.CreateInlineGroup(containerParent, "Colours")
 
@@ -690,6 +727,21 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
     FrameStrataDropdown:SetRelativeWidth(unit == "boss" and 0.25 or 0.33)
     FrameStrataDropdown:SetCallback("OnValueChanged", function(_, _, value) FrameDB.FrameStrata = value updateCallback() end)
     LayoutContainer:AddChild(FrameStrataDropdown)
+
+    -- Player-only: Cast bar fade independence option
+    if unit == "player" then
+        local LinkToFrameFadeToggle = AG:Create("CheckBox")
+        LinkToFrameFadeToggle:SetLabel("Link Cast Bar to Frame Fade")
+        LinkToFrameFadeToggle:SetValue(CastBarDB.LinkToFrameFade)
+        LinkToFrameFadeToggle:SetCallback("OnValueChanged", function(_, _, value)
+            CastBarDB.LinkToFrameFade = value
+            updateCallback()  -- Rebuild cast bar to reparent
+            UUF:UpdateOutOfCombatFade()  -- Update fade state immediately
+        end)
+        LinkToFrameFadeToggle:SetRelativeWidth(0.33)
+        LayoutContainer:AddChild(LinkToFrameFadeToggle)
+    end
+
 
     local ColourContainer = GUIWidgets.CreateInlineGroup(containerParent, "Colours & Toggles")
 
@@ -2799,6 +2851,7 @@ local function CreateGlobalSettings(containerParent)
     end)
     ToggleContainer:AddChild(RemoveColours)
 
+    CreateGlobalOutOfCombatFadeSettings(GlobalContainer)
     CreateFontSettings(GlobalContainer)
     CreateTextureSettings(GlobalContainer)
     CreateRangeSettings(GlobalContainer)
