@@ -117,6 +117,23 @@ local function EncodeAuraFilterStringForStorage(filterString)
     return decodedFilterString:gsub("|", "||")
 end
 
+local function BlockListToString(blockList)
+    if not blockList or not next(blockList) then return "" end
+    local ids = {}
+    for id in pairs(blockList) do ids[#ids + 1] = tostring(id) end
+    table.sort(ids, function(a, b) return tonumber(a) < tonumber(b) end)
+    return table.concat(ids, ", ")
+end
+
+local function StringToBlockList(str)
+    local blockList = {}
+    for idStr in str:gmatch("%d+") do
+        local id = tonumber(idStr)
+        if id then blockList[id] = true end
+    end
+    return blockList
+end
+
 local Power = {
     [0] = "Mana",
     [1] = "Rage",
@@ -2453,6 +2470,19 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
     end
 
     RefreshFilterToggles()
+
+    GUIWidgets.CreateHeader(AuraContainer, "Spell ID Block List")
+
+    local SpellIDInput = AG:Create("EditBox")
+    SpellIDInput:SetLabel("Blocked Spell IDs (comma-separated) — press Enter to apply")
+    SpellIDInput:SetText(BlockListToString(AuraDB.BlockList))
+    SpellIDInput:SetFullWidth(true)
+    SpellIDInput:SetCallback("OnEnterPressed", function(_, _, text)
+        AuraDB.BlockList = StringToBlockList(text)
+        SpellIDInput:SetText(BlockListToString(AuraDB.BlockList))
+        if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end
+    end)
+    AuraContainer:AddChild(SpellIDInput)
 
     local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
 

@@ -171,6 +171,11 @@ local function CreateUnitBuffs(unitFrame, unit)
         BuffsDB.Filter = EncodeAuraFilterStringForStorage(buffFilter)
         unitFrame.BuffContainer.filter = buffFilter
         unitFrame.BuffContainer.PostCreateButton = function(_, button) StyleAuras(_, button, unit, "HELPFUL") end
+        unitFrame.BuffContainer.FilterAura = function(element, auraUnit, data)
+            local buffsDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(auraUnit)].Auras.Buffs
+            if buffsDB.BlockList and buffsDB.BlockList[data.spellId] then return false end
+            return (element.onlyShowPlayer and data.isPlayerAura) or not element.onlyShowPlayer
+        end
         unitFrame.BuffContainer.anchoredButtons = 0
         unitFrame.BuffContainer.createdButtons = 0
         unitFrame.BuffContainer.tooltipAnchor = "ANCHOR_CURSOR"
@@ -217,6 +222,11 @@ local function CreateUnitDebuffs(unitFrame, unit)
         unitFrame.DebuffContainer.anchoredButtons = 0
         unitFrame.DebuffContainer.createdButtons = 0
         unitFrame.DebuffContainer.PostCreateButton = function(_, button) StyleAuras(_, button, unit, "HARMFUL") end
+        unitFrame.DebuffContainer.FilterAura = function(element, auraUnit, data)
+            local debuffsDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(auraUnit)].Auras.Debuffs
+            if debuffsDB.BlockList and debuffsDB.BlockList[data.spellId] then return false end
+            return (element.onlyShowPlayer and data.isPlayerAura) or not element.onlyShowPlayer
+        end
         unitFrame.DebuffContainer.tooltipAnchor = "ANCHOR_CURSOR"
         unitFrame.DebuffContainer.showType = DebuffsDB.ShowType
         unitFrame.DebuffContainer.showDebuffType = DebuffsDB.ShowType
