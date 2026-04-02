@@ -448,6 +448,7 @@ function UUF:GetSecondaryPowerBarStackOffset(unitFrame, unit)
 end
 
 function UUF:UpdateHealthBarLayout(unitFrame, unit)
+    local HealthBarDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].HealthBar
     local PowerBarDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].PowerBar
     local SecondaryPowerBarDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].SecondaryPowerBar
 
@@ -473,8 +474,9 @@ function UUF:UpdateHealthBarLayout(unitFrame, unit)
         end
     end
 
-    local topOffset = (PowerBarDB.ShowBorder and -1 or 0) - topDepth
-    local bottomOffset = (PowerBarDB.ShowBorder and 1 or 0) + bottomDepth
+    local noOffset = (PowerBarDB.Enabled and not PowerBarDB.ShowBorder)
+    local topOffset = -1 - topDepth
+    local bottomOffset = (noOffset and 0 or 1) + bottomDepth
 
     unitFrame.HealthBackground:ClearAllPoints()
     unitFrame.HealthBackground:SetPoint("TOPLEFT", unitFrame.Container, "TOPLEFT", 1, topOffset)

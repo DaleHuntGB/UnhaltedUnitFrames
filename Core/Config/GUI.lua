@@ -1671,6 +1671,24 @@ local function CreateAlternativePowerBarSettings(containerParent, unit, updateCa
     BackgroundColourPicker:SetRelativeWidth(0.33)
     ColourContainer:AddChild(BackgroundColourPicker)
 
+    local BorderColourPicker = AG:Create("ColorPicker")
+    BorderColourPicker:SetLabel("Border Colour")
+    local R3, G3, B3, A3 = unpack(AlternativePowerBarDB.BorderColour)
+    BorderColourPicker:SetColor(R3, G3, B3, A3)
+    BorderColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) AlternativePowerBarDB.BorderColour = {r, g, b, a} updateCallback() end)
+    BorderColourPicker:SetHasAlpha(true)
+    BorderColourPicker:SetRelativeWidth(0.25)
+    BorderColourPicker:SetDisabled(not AlternativePowerBarDB.ShowBorder)
+    ColourContainer:AddChild(BorderColourPicker)
+    UUFGUI.FrameBorderColourPicker = BorderColourPicker
+
+    local ShowBorderToggle = AG:Create("CheckBox")
+    ShowBorderToggle:SetLabel("Show Border")
+    ShowBorderToggle:SetValue(AlternativePowerBarDB.ShowBorder)
+    ShowBorderToggle:SetCallback("OnValueChanged", function(_, _, value) AlternativePowerBarDB.ShowBorder = value UUFGUI.FrameBorderColourPicker:SetDisabled(not AlternativePowerBarDB.ShowBorder) updateCallback() end)
+    ShowBorderToggle:SetRelativeWidth(0.25)
+    ColourContainer:AddChild(ShowBorderToggle)
+
     function RefreshAlternativePowerBarGUI()
         if AlternativePowerBarDB.Enabled then
             GUIWidgets.DeepDisable(LayoutContainer, false, Toggle)

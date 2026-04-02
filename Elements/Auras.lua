@@ -129,6 +129,7 @@ local function ApplyAuraVisuals(button, unit, auraType, applyOverlay)
         ApplyAuraDuration(auraCooldown, unit)
     end
 
+    button.Border:SetBackdropBorderColor(0, 0, 0, auraConfig.ShowBorder and 1 or 0)
     ApplyAuraCountStyle(button.Count, auraConfig, button, fontsDB)
 
     if applyOverlay then
@@ -141,7 +142,7 @@ local function StyleAuras(_, button, unit, auraType)
     local buttonBorder = CreateFrame("Frame", nil, button, "BackdropTemplate")
     buttonBorder:SetAllPoints()
     buttonBorder:SetBackdrop({ edgeFile = "Interface\\Buttons\\WHITE8X8", edgeSize = 1, insets = {left = 0, right = 0, top = 0, bottom = 0} })
-    buttonBorder:SetBackdropBorderColor(0, 0, 0, 1)
+    button.Border = buttonBorder
     ApplyAuraVisuals(button, unit, auraType, true)
 end
 
