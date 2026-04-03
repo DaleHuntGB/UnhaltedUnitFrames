@@ -1554,6 +1554,24 @@ local function CreateSecondaryPowerBarSettings(containerParent, unit, updateCall
     BackgroundColourPicker:SetDisabled(SecondaryPowerBarDB.ColourBackgroundByType)
     ColourContainer:AddChild(BackgroundColourPicker)
 
+    local BorderColourPicker = AG:Create("ColorPicker")
+    BorderColourPicker:SetLabel("Divider Colour")
+    local R3, G3, B3, A3 = unpack(SecondaryPowerBarDB.BorderColour)
+    BorderColourPicker:SetColor(R3, G3, B3, A3)
+    BorderColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) SecondaryPowerBarDB.BorderColour = {r, g, b, a} updateCallback() end)
+    BorderColourPicker:SetHasAlpha(true)
+    BorderColourPicker:SetRelativeWidth(0.5)
+    BorderColourPicker:SetDisabled(not SecondaryPowerBarDB.ShowBorder)
+    ColourContainer:AddChild(BorderColourPicker)
+    UUFGUI.FrameBorderColourPicker = BorderColourPicker
+
+    local ShowBorderToggle = AG:Create("CheckBox")
+    ShowBorderToggle:SetLabel("Show Divider")
+    ShowBorderToggle:SetValue(SecondaryPowerBarDB.ShowBorder)
+    ShowBorderToggle:SetCallback("OnValueChanged", function(_, _, value) SecondaryPowerBarDB.ShowBorder = value UUFGUI.FrameBorderColourPicker:SetDisabled(not SecondaryPowerBarDB.ShowBorder) updateCallback() end)
+    ShowBorderToggle:SetRelativeWidth(0.5)
+    ColourContainer:AddChild(ShowBorderToggle)
+
     function RefreshSecondaryPowerBarGUI()
         if SecondaryPowerBarDB.Enabled then
             GUIWidgets.DeepDisable(LayoutContainer, false, Toggle)

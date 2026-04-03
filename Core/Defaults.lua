@@ -144,6 +144,8 @@ local Defaults = {
                     ColourByType = true,
                     Foreground = {8/255, 8/255, 8/255},
                     Background = {128/255, 128/255, 128/255},
+                    ShowBorder = true,
+                    BorderColour = {0/255, 0/255, 0/255, 1.0},
                 },
                 AlternativePowerBar = {
                     Enabled = true,
