@@ -96,8 +96,10 @@ function UUF:RefreshLiveUnitTags(unit)
 
     for _, obj in next, oUF.objects do
         local actualUnit = obj.unit or (obj.GetAttribute and obj:GetAttribute("unit"))
-        if actualUnit and UUF:GetNormalizedUnit(actualUnit) == normalizedUnit then
-            UUF:UpdateUnitFrameTags(obj, actualUnit)
+        if actualUnit and UUF:GetFrameNormalizedUnit(obj, actualUnit) == normalizedUnit then
+            UUF:WithUnitConfigurationOverride(obj, actualUnit, function()
+                UUF:UpdateUnitFrameTags(obj, actualUnit)
+            end)
         end
     end
 end

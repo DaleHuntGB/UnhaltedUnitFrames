@@ -11,7 +11,7 @@ UUF.BOSS_FRAMES = {}
 UUF.MAX_BOSS_FRAMES = 5
 UUF.PARTY_FRAMES = {}
 UUF.PARTY_TEST_FRAMES = {}
-UUF.MAX_PARTY_FRAMES = 4
+UUF.MAX_PARTY_FRAMES = 5
 UUF.RAID_FRAMES = {}
 UUF.RAID_TEST_FRAMES = {}
 UUF.MAX_RAID_FRAMES = 40
@@ -403,8 +403,16 @@ function UUF:GetReactionColour(reaction)
 end
 
 local normalizedUnitCache = {}
+local normalizedUnitOverrides = {}
 
 function UUF:GetNormalizedUnit(unit)
+    if not unit then return end
+
+    local overrides = normalizedUnitOverrides[unit]
+    if overrides and #overrides > 0 then
+        return overrides[#overrides]
+    end
+
     local cached = normalizedUnitCache[unit]
     if cached then return cached end
     local result
@@ -418,6 +426,55 @@ function UUF:GetNormalizedUnit(unit)
         result = unit
     end
     normalizedUnitCache[unit] = result
+    return result
+end
+
+function UUF:ShouldShowPlayerInPartyFrames()
+    local partyDB = UUF.db and UUF.db.profile and UUF.db.profile.Units and UUF.db.profile.Units.party
+    return partyDB and partyDB.ShowPlayer == true or false
+end
+
+function UUF:GetPartyFrameCount()
+    return UUF:ShouldShowPlayerInPartyFrames() and UUF.MAX_PARTY_FRAMES or (UUF.MAX_PARTY_FRAMES - 1)
+end
+
+function UUF:GetUnitConfigurationOverride(unitFrame, unit)
+    if not unitFrame or unit ~= "player" then return nil end
+    if UUF.PARTY and unitFrame:GetParent() == UUF.PARTY then
+        return "party"
+    end
+end
+
+function UUF:GetFrameNormalizedUnit(unitFrame, unit)
+    return UUF:GetUnitConfigurationOverride(unitFrame, unit) or UUF:GetNormalizedUnit(unit)
+end
+
+function UUF:WithUnitConfigurationOverride(unitFrame, unit, callback)
+    if type(callback) ~= "function" then return end
+
+    local override = UUF:GetUnitConfigurationOverride(unitFrame, unit)
+    if not override then
+        return callback()
+    end
+
+    local stack = normalizedUnitOverrides[unit]
+    if not stack then
+        stack = {}
+        normalizedUnitOverrides[unit] = stack
+    end
+    stack[#stack + 1] = override
+
+    local ok, result = pcall(callback)
+
+    stack[#stack] = nil
+    if #stack == 0 then
+        normalizedUnitOverrides[unit] = nil
+    end
+
+    if not ok then
+        error(result)
+    end
+
     return result
 end
 

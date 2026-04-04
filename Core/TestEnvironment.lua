@@ -399,10 +399,11 @@ end
 function UUF:AcquirePartyTestFrames()
     if #UUF.PARTY_TEST_FRAMES > 0 then return end
     if not UUF.PARTY_TEST_MODE then return end
+    local partyFrameCount = UUF:GetPartyFrameCount()
 
     local pool = UUF.TEST_FRAME_POOL.party
-    if #pool >= UUF.MAX_PARTY_FRAMES then
-        for i = 1, UUF.MAX_PARTY_FRAMES do
+    if #pool >= partyFrameCount then
+        for i = 1, partyFrameCount do
             UUF.PARTY_TEST_FRAMES[i] = pool[i]
         end
         wipe(pool)
@@ -411,7 +412,7 @@ function UUF:AcquirePartyTestFrames()
 
     oUF:SetActiveStyle(UUF:FetchFrameName("party"))
 
-    for i = 1, UUF.MAX_PARTY_FRAMES do
+    for i = 1, partyFrameCount do
         local frameName = "UUF_PartyTest" .. i
         local unitFrame = _G[frameName] or oUF:Spawn("party" .. i, frameName)
         unitFrame:SetAttribute("unit", nil)

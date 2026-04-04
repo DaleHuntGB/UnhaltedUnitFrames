@@ -1319,6 +1319,7 @@ local Defaults = {
             party = {
                 Enabled = true,
                 ForceHideBlizzard = true,
+                ShowPlayer = false,
                 Frame = {
                     Width = 182,
                     Height = 32,
@@ -1995,6 +1996,10 @@ end
 for _, unitDefaults in pairs(Defaults.profile.Units) do
     if unitDefaults.HealthBar and not unitDefaults.HealthBar.DeadBackground then
         unitDefaults.HealthBar.DeadBackground = {96/255, 32/255, 32/255}
+    end
+
+    if unitDefaults.HealthBar and unitDefaults.HealthBar.UseDeadBackground == nil then
+        unitDefaults.HealthBar.UseDeadBackground = true
     end
 end
 

@@ -130,7 +130,7 @@ local function GetMoverSize(unit, unitDB)
         -- Always use theoretical max size so the mover covers all party slots,
         -- regardless of how many members are currently in the group.
         local spacing = frameDB.Layout[5] or 0
-        return frameDB.Width, (frameDB.Height + spacing) * UUF.MAX_PARTY_FRAMES - spacing
+        return frameDB.Width, (frameDB.Height + spacing) * UUF:GetPartyFrameCount() - spacing
     end
 
     if unit == "boss" then

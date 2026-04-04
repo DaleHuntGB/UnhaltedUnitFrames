@@ -1088,6 +1088,32 @@ local function CreateDescribedToggle(containerParent, label, description, value,
     return toggle
 end
 
+local function PromptReload(onAccept, onCancel)
+    StaticPopupDialogs["UUF_RELOAD_UI"] = {
+        text = "You must reload to apply this change, do you want to reload now?",
+        button1 = "Reload Now",
+        button2 = "Later",
+        showAlert = true,
+        OnAccept = function()
+            if onAccept then
+                onAccept()
+            end
+            C_UI.Reload()
+        end,
+        OnCancel = function()
+            if onCancel then
+                onCancel()
+            end
+        end,
+        timeout = 0,
+        whileDead = true,
+        hideOnEscape = true,
+        preferredIndex = 3,
+    }
+
+    StaticPopup_Show("UUF_RELOAD_UI")
+end
+
 local function CreateFrameSettings(containerParent, unit, unitHasParent, updateCallback)
     local FrameDB = UUF.db.profile.Units[unit].Frame
     local HealthBarDB = UUF.db.profile.Units[unit].HealthBar
@@ -1283,6 +1309,26 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
         )
     end
 
+    if unit == "party" then
+        local ShowPlayerToggle
+        ShowPlayerToggle = CreateDescribedToggle(
+            TogglesContainer,
+            "Show Player In Party Frames",
+            "Adds your player unit to the party header. This requires a reload because the secure party header must be rebuilt.",
+            UUF.db.profile.Units.party.ShowPlayer,
+            function(_, _, value)
+                PromptReload(
+                    function()
+                        UUF.db.profile.Units.party.ShowPlayer = value
+                    end,
+                    function()
+                        ShowPlayerToggle:SetValue(UUF.db.profile.Units.party.ShowPlayer)
+                    end
+                )
+            end
+        )
+    end
+
     if unit == "player" or unit == "target" then
         local AnchorToCooldownViewerToggle = CreateDescribedToggle(
             TogglesContainer,
@@ -1332,13 +1378,20 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
 
     GUIWidgets.CreateInformationTag(ColourContainer, "Foreground and background opacity can be set using the sliders below.")
 
+    local DeadBackgroundColourPicker
+    local function RefreshDeadBackgroundSettings()
+        if DeadBackgroundColourPicker then
+            DeadBackgroundColourPicker:SetDisabled(HealthBarDB.UseDeadBackground == false)
+        end
+    end
+
     ForegroundColourPicker = AG:Create("ColorPicker")
     ForegroundColourPicker:SetLabel("Foreground Colour")
     local R, G, B = unpack(HealthBarDB.Foreground)
     ForegroundColourPicker:SetColor(R, G, B)
     ForegroundColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) HealthBarDB.Foreground = {r, g, b} updateCallback() end)
     ForegroundColourPicker:SetHasAlpha(false)
-    ForegroundColourPicker:SetRelativeWidth(0.33)
+    ForegroundColourPicker:SetRelativeWidth(0.25)
     ColourContainer:AddChild(ForegroundColourPicker)
 
     BackgroundColourPicker = AG:Create("ColorPicker")
@@ -1347,17 +1400,31 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
     BackgroundColourPicker:SetColor(R2, G2, B2)
     BackgroundColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) HealthBarDB.Background = {r, g, b} updateCallback() end)
     BackgroundColourPicker:SetHasAlpha(false)
-    BackgroundColourPicker:SetRelativeWidth(0.33)
+    BackgroundColourPicker:SetRelativeWidth(0.25)
     ColourContainer:AddChild(BackgroundColourPicker)
 
-    local DeadBackgroundColourPicker = AG:Create("ColorPicker")
+    CreateDescribedToggle(
+        ColourContainer,
+        "Use Dead Background",
+        "",
+        HealthBarDB.UseDeadBackground ~= false,
+        function(_, _, value)
+            HealthBarDB.UseDeadBackground = value
+            RefreshDeadBackgroundSettings()
+            updateCallback()
+        end,
+        0.25
+    )
+
+    DeadBackgroundColourPicker = AG:Create("ColorPicker")
     DeadBackgroundColourPicker:SetLabel("Dead Background Colour")
     local DR, DG, DB = unpack(HealthBarDB.DeadBackground or HealthBarDB.Background)
     DeadBackgroundColourPicker:SetColor(DR, DG, DB)
     DeadBackgroundColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) HealthBarDB.DeadBackground = {r, g, b} updateCallback() end)
     DeadBackgroundColourPicker:SetHasAlpha(false)
-    DeadBackgroundColourPicker:SetRelativeWidth(0.33)
+    DeadBackgroundColourPicker:SetRelativeWidth(0.25)
     ColourContainer:AddChild(DeadBackgroundColourPicker)
+    RefreshDeadBackgroundSettings()
 
     local ForegroundOpacitySlider = AG:Create("Slider")
     ForegroundOpacitySlider:SetLabel("Foreground Opacity")
@@ -3733,6 +3800,28 @@ local function CreateGlobalOverviewSettings(containerParent)
     end)
     PresetContainer:AddChild(RemoveColours)
 
+    local GroupedFrameContainer = GUIWidgets.CreateInlineGroup(OverviewContainer, "Grouped Frame Settings")
+
+    local ShowPlayerInPartyToggle
+    ShowPlayerInPartyToggle = CreateDescribedToggle(
+        GroupedFrameContainer,
+        "Show Player In Party Frames",
+        "Adds your player unit to the party header. This requires a reload because the secure party header must be rebuilt.",
+        UUF.db.profile.Units.party.ShowPlayer,
+        function(_, _, value)
+            PromptReload(
+                function()
+                    UUF.db.profile.Units.party.ShowPlayer = value
+                end,
+                function()
+                    ShowPlayerInPartyToggle:SetValue(UUF.db.profile.Units.party.ShowPlayer)
+                end
+            )
+        end,
+        1,
+        {"party"}
+    )
+
     CreateFontSettings(containerParent)
     CreateTextureSettings(containerParent)
     CreateRangeSettings(containerParent)
@@ -3744,6 +3833,12 @@ local function CreateGlobalHealthSettings(containerParent)
     local nonGroupedHealthUnits = GetUnitsWithSubDatabase("HealthBar", function(unit)
         return unit ~= "party" and unit ~= "raid"
     end)
+    local DeadBackgroundColourPicker
+    local function RefreshDeadBackgroundSettings()
+        if DeadBackgroundColourPicker then
+            DeadBackgroundColourPicker:SetDisabled(HealthBarDB.UseDeadBackground == false)
+        end
+    end
     local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Shared Health Settings")
 
     GUIWidgets.CreateInformationTag(ToggleContainer, "These options write the same health-bar behavior to every unit frame that has a health bar.")
@@ -3804,6 +3899,21 @@ local function CreateGlobalHealthSettings(containerParent)
         nonGroupedHealthUnits
     )
 
+    CreateDescribedToggle(
+        ToggleContainer,
+        "Use Dead Background Colour",
+        "When enabled, dead or ghost units use the dedicated dead background colour. When disabled, they keep each frame's normal background colour instead.",
+        HealthBarDB.UseDeadBackground ~= false,
+        function(_, _, value)
+            ForEachUnitSubDatabase("HealthBar", function(_, db) db.UseDeadBackground = value end)
+            HealthBarDB.UseDeadBackground = value
+            RefreshDeadBackgroundSettings()
+            RefreshConfigPreview()
+        end,
+        nil,
+        healthUnits
+    )
+
     local ColourContainer = GUIWidgets.CreateInlineGroup(containerParent, "Shared Health Colours")
 
     GUIWidgets.CreateInformationTag(ColourContainer, "These colours are only used when the class or reaction colour toggles above are disabled.")
@@ -3832,7 +3942,7 @@ local function CreateGlobalHealthSettings(containerParent)
     AddAffectsTooltip(BackgroundColourPicker, healthUnits)
     ColourContainer:AddChild(BackgroundColourPicker)
 
-    local DeadBackgroundColourPicker = AG:Create("ColorPicker")
+    DeadBackgroundColourPicker = AG:Create("ColorPicker")
     DeadBackgroundColourPicker:SetLabel("Dead Background Colour")
     DeadBackgroundColourPicker:SetColor(unpack(HealthBarDB.DeadBackground or HealthBarDB.Background))
     DeadBackgroundColourPicker:SetHasAlpha(false)
@@ -3843,6 +3953,7 @@ local function CreateGlobalHealthSettings(containerParent)
     end)
     AddAffectsTooltip(DeadBackgroundColourPicker, healthUnits)
     ColourContainer:AddChild(DeadBackgroundColourPicker)
+    RefreshDeadBackgroundSettings()
 
     local ForegroundOpacitySlider = AG:Create("Slider")
     ForegroundOpacitySlider:SetLabel("Foreground Opacity")
@@ -4415,18 +4526,15 @@ local function CreateUnitSettings(containerParent, unit)
     EnableUnitFrameToggle:SetLabel("Enable |cFFFFCC00"..(UnitDBToUnitPrettyName[unit] or unit) .."|r")
     EnableUnitFrameToggle:SetValue(UUF.db.profile.Units[unit].Enabled)
     EnableUnitFrameToggle:SetCallback("OnValueChanged", function(_, _, value)
-        StaticPopupDialogs["UUF_RELOAD_UI"] = {
-            text = "You must reload to apply this change, do you want to reload now?",
-            button1 = "Reload Now",
-            button2 = "Later",
-            showAlert = true,
-            OnAccept = function() UUF.db.profile.Units[unit].Enabled= value C_UI.Reload() end,
-            OnCancel = function() EnableUnitFrameToggle:SetValue(UUF.db.profile.Units[unit].Enabled) containerParent:DoLayout() end,
-            timeout = 0,
-            whileDead = true,
-            hideOnEscape = true,
-        }
-        StaticPopup_Show("UUF_RELOAD_UI")
+        PromptReload(
+            function()
+                UUF.db.profile.Units[unit].Enabled = value
+            end,
+            function()
+                EnableUnitFrameToggle:SetValue(UUF.db.profile.Units[unit].Enabled)
+                containerParent:DoLayout()
+            end
+        )
     end)
     EnableUnitFrameToggle:SetRelativeWidth(0.5)
     containerParent:AddChild(EnableUnitFrameToggle)
@@ -4435,18 +4543,15 @@ local function CreateUnitSettings(containerParent, unit)
     HideBlizzardToggle:SetLabel("Hide Blizzard |cFFFFCC00"..(UnitDBToUnitPrettyName[unit] or unit) .."|r")
     HideBlizzardToggle:SetValue(UUF.db.profile.Units[unit].ForceHideBlizzard)
     HideBlizzardToggle:SetCallback("OnValueChanged", function(_, _, value)
-            StaticPopupDialogs["UUF_RELOAD_UI"] = {
-            text = "You must reload to apply this change, do you want to reload now?",
-            button1 = "Reload Now",
-            button2 = "Later",
-            showAlert = true,
-            OnAccept = function() UUF.db.profile.Units[unit].ForceHideBlizzard = value C_UI.Reload() end,
-            OnCancel = function() HideBlizzardToggle:SetValue(UUF.db.profile.Units[unit].ForceHideBlizzard) containerParent:DoLayout() end,
-            timeout = 0,
-            whileDead = true,
-            hideOnEscape = true,
-        }
-        StaticPopup_Show("UUF_RELOAD_UI")
+        PromptReload(
+            function()
+                UUF.db.profile.Units[unit].ForceHideBlizzard = value
+            end,
+            function()
+                HideBlizzardToggle:SetValue(UUF.db.profile.Units[unit].ForceHideBlizzard)
+                containerParent:DoLayout()
+            end
+        )
     end)
     HideBlizzardToggle:SetRelativeWidth(0.5)
     HideBlizzardToggle:SetDisabled(UUF.db.profile.Units[unit].Enabled)

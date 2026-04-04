@@ -515,7 +515,7 @@ function UUF:RefreshPartyFrames()
     wipe(UUF.PARTY_FRAMES)
 
     if UUF.PARTY_TEST_MODE and #UUF.PARTY_TEST_FRAMES > 0 then
-        for i = 1, UUF.MAX_PARTY_FRAMES do
+        for i = 1, UUF:GetPartyFrameCount() do
             local unitFrame = UUF.PARTY_TEST_FRAMES[i]
             if unitFrame then
                 UUF.PARTY_FRAMES[i] = unitFrame
@@ -528,9 +528,8 @@ function UUF:RefreshPartyFrames()
 
     for _, child in ipairs({ UUF.PARTY:GetChildren() }) do
         local unit = child.unit or child:GetAttribute("unit")
-        local unitIndex = unit and tonumber(unit:match("^party(%d+)$"))
-        if unitIndex then
-            UUF.PARTY_FRAMES[unitIndex] = child
+        if unit == "player" or (unit and unit:match("^party%d+$")) then
+            UUF.PARTY_FRAMES[#UUF.PARTY_FRAMES + 1] = child
         end
     end
 
@@ -540,10 +539,17 @@ end
 function UUF:ForEachPartyFrame(callback)
     if type(callback) ~= "function" then return end
     local partyFrames = UUF:RefreshPartyFrames()
-    for i = 1, UUF.MAX_PARTY_FRAMES do
-        local unitFrame = partyFrames[i]
+    for index, unitFrame in ipairs(partyFrames) do
         if unitFrame then
-            callback(unitFrame, "party" .. i, i)
+            local actualUnit = unitFrame.unit or unitFrame:GetAttribute("unit")
+            if not actualUnit and UUF.PARTY_TEST_MODE then
+                actualUnit = "party" .. index
+            end
+            if actualUnit then
+                UUF:WithUnitConfigurationOverride(unitFrame, actualUnit, function()
+                    callback(unitFrame, actualUnit, index)
+                end)
+            end
         end
     end
 end
@@ -661,10 +667,11 @@ end
 function UUF:LayoutPartyFrames()
     local frameDB = UUF.db.profile.Units.party and UUF.db.profile.Units.party.Frame
     if not frameDB then return end
+    local partyFrameCount = UUF:GetPartyFrameCount()
 
     if UUF.PARTY_TEST_MODE and #UUF.PARTY_TEST_FRAMES > 0 then
         local partyFrames = {}
-        for i = 1, UUF.MAX_PARTY_FRAMES do
+        for i = 1, partyFrameCount do
             if UUF.PARTY_TEST_FRAMES[i] then
                 partyFrames[#partyFrames + 1] = UUF.PARTY_TEST_FRAMES[i]
             end
@@ -704,13 +711,13 @@ function UUF:LayoutPartyFrames()
         xOffset = 0,
         yOffset = spacing,
         width = frameDB.Width,
-        height = (frameDB.Height + spacing) * UUF.MAX_PARTY_FRAMES - spacing,
+        height = (frameDB.Height + spacing) * partyFrameCount - spacing,
     } or {
         point = "TOP",
         xOffset = 0,
         yOffset = -spacing,
         width = frameDB.Width,
-        height = (frameDB.Height + spacing) * UUF.MAX_PARTY_FRAMES - spacing,
+        height = (frameDB.Height + spacing) * partyFrameCount - spacing,
     }
 
     UUF.PARTY:ClearAllPoints()
@@ -930,7 +937,7 @@ function UUF:SpawnUnitFrame(unit)
             UUF:FetchFrameName(unit),
             nil,
             "showParty", true,
-            "showPlayer", false,
+            "showPlayer", UUF:ShouldShowPlayerInPartyFrames(),
             "showRaid", false,
             "sortMethod", "INDEX",
             "oUF-onlyProcessChildren", true
@@ -939,7 +946,7 @@ function UUF:SpawnUnitFrame(unit)
         UUF:LayoutPartyFrames()
         C_Timer.After(0, function()
             if not InCombatLockdown() then
-                PreCreateGroupChildren(UUF.PARTY, UUF.MAX_PARTY_FRAMES, "party")
+                PreCreateGroupChildren(UUF.PARTY, UUF:GetPartyFrameCount(), "party")
             end
         end)
     else

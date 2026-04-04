@@ -25,7 +25,7 @@ local function GetHealthBackgroundColor(unitFrame, healthBarDB)
     end
 
     local unit = unitFrame.unit
-    if unit and UnitIsDeadOrGhost(unit) then
+    if unit and UnitIsDeadOrGhost(unit) and healthBarDB.UseDeadBackground ~= false then
         local deadBackground = healthBarDB.DeadBackground or healthBarDB.Background
         return deadBackground[1], deadBackground[2], deadBackground[3], healthBarDB.BackgroundOpacity
     end

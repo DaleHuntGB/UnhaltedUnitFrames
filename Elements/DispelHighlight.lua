@@ -93,42 +93,44 @@ function UUF:UpdateUnitDispelHighlight(unitFrame, unit)
 end
 
 function UUF:UpdateUnitDispelState(unitFrame, unit)
-    if not unitFrame.DispelHighlight then return end
-    if not UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].HealthBar.DispelHighlight.Enabled then return end
+    return UUF:WithUnitConfigurationOverride(unitFrame, unit, function()
+        if not unitFrame.DispelHighlight then return end
+        if not UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].HealthBar.DispelHighlight.Enabled then return end
 
-    local LibDispel = UUF.LD
-    if not LibDispel then return end
+        local LibDispel = UUF.LD
+        if not LibDispel then return end
 
-    if unitFrame.dispelColorCurve and unitFrame.dispelColorCurveGeneration ~= UUF.dispelColorGeneration then
-        UUF:UpdateDispelColorCurve(unitFrame)
-    end
+        if unitFrame.dispelColorCurve and unitFrame.dispelColorCurveGeneration ~= UUF.dispelColorGeneration then
+            UUF:UpdateDispelColorCurve(unitFrame)
+        end
 
-    if not UnitIsUnit(unit, "player") and not UnitIsFriend("player", unit) then
-        unitFrame.DispelHighlight:Hide()
-        return
-    end
+        if not UnitIsUnit(unit, "player") and not UnitIsFriend("player", unit) then
+            unitFrame.DispelHighlight:Hide()
+            return
+        end
 
-    local dispelList = LibDispel:GetMyDispelTypes()
-    if not (dispelList.Magic or dispelList.Curse or dispelList.Disease or dispelList.Poison or dispelList.Bleed) then
-        unitFrame.DispelHighlight:Hide()
-        return
-    end
+        local dispelList = LibDispel:GetMyDispelTypes()
+        if not (dispelList.Magic or dispelList.Curse or dispelList.Disease or dispelList.Poison or dispelList.Bleed) then
+            unitFrame.DispelHighlight:Hide()
+            return
+        end
 
-    local bestAura = C_UnitAuras.GetAuraDataByIndex(unit, 1, "HARMFUL|RAID")
-    local bestAuraInstanceID = bestAura and bestAura.auraInstanceID or nil
+        local bestAura = C_UnitAuras.GetAuraDataByIndex(unit, 1, "HARMFUL|RAID")
+        local bestAuraInstanceID = bestAura and bestAura.auraInstanceID or nil
 
-    if bestAuraInstanceID then
-        local color = C_UnitAuras.GetAuraDispelTypeColor(unit, bestAuraInstanceID, unitFrame.dispelColorCurve)
+        if bestAuraInstanceID then
+            local color = C_UnitAuras.GetAuraDispelTypeColor(unit, bestAuraInstanceID, unitFrame.dispelColorCurve)
 
-        if color then
-            unitFrame.DispelHighlight:SetVertexColor(color:GetRGBA())
-            unitFrame.DispelHighlight:Show()
+            if color then
+                unitFrame.DispelHighlight:SetVertexColor(color:GetRGBA())
+                unitFrame.DispelHighlight:Show()
+            else
+                unitFrame.DispelHighlight:Hide()
+            end
         else
             unitFrame.DispelHighlight:Hide()
         end
-    else
-        unitFrame.DispelHighlight:Hide()
-    end
+    end)
 end
 
 function UUF:RegisterDispelHighlightEvents(unitFrame, unit)
@@ -137,7 +139,10 @@ function UUF:RegisterDispelHighlightEvents(unitFrame, unit)
 
     if not unitFrame.DispelHighlightHandler then
         unitFrame.DispelHighlightHandler = CreateFrame("Frame")
-        unitFrame.DispelHighlightHandler:SetScript("OnEvent", function(self, event, ...) UUF:UpdateUnitDispelState(unitFrame, unit) end)
+        unitFrame.DispelHighlightHandler:SetScript("OnEvent", function()
+            local actualUnit = unitFrame.unit or unitFrame:GetAttribute("unit") or unit
+            UUF:UpdateUnitDispelState(unitFrame, actualUnit)
+        end)
     end
 
     unitFrame.DispelHighlightHandler:RegisterUnitEvent("UNIT_AURA", unit)
