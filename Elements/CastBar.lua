@@ -55,10 +55,30 @@ function UUF:CreateUnitCastBar(unitFrame, unit)
     CastBar:SetFrameLevel(CastBarContainer:GetFrameLevel() + 1)
     CastBar:SetStatusBarColor(unpack(CastBarDB.Foreground))
 
-    CastBar.Background = CastBar:CreateTexture(nil, "BACKGROUND")
+    CastBar.Background = CastBar:CreateTexture(nil, "BACKGROUND", nil, 0)
     CastBar.Background:SetAllPoints(CastBar)
     CastBar.Background:SetTexture(UUF.Media.Background)
-    CastBar.Background:SetVertexColor(unpack(CastBarDB.Background))
+    if CastBarDB.ColourBackgroundByCast then
+        local r, g, b = unpack(CastBarDB.Foreground)
+        local mult = CastBarDB.CastBackgroundMultiplier or 0.75
+        CastBar.Background:SetVertexColor(r * mult, g * mult, b * mult, CastBarDB.Background[4] or 1)
+    else
+        CastBar.Background:SetVertexColor(unpack(CastBarDB.Background))
+    end
+
+    -- Mirrors NotInterruptibleOverlay but for the background layer.
+    -- SetAlphaFromBoolean is the only safe way to act on the secret notInterruptible boolean.
+    CastBar.NotInterruptibleBackground = CastBar:CreateTexture(nil, "BACKGROUND", nil, 1)
+    CastBar.NotInterruptibleBackground:SetAllPoints(CastBar)
+    CastBar.NotInterruptibleBackground:SetTexture(UUF.Media.Background)
+    if CastBarDB.ColourBackgroundByCast then
+        local r, g, b = unpack(CastBarDB.NotInterruptibleColour)
+        local mult = CastBarDB.CastBackgroundMultiplier or 0.75
+        CastBar.NotInterruptibleBackground:SetVertexColor(r * mult, g * mult, b * mult, CastBarDB.Background[4] or 1)
+    else
+        CastBar.NotInterruptibleBackground:SetVertexColor(unpack(CastBarDB.Background))
+    end
+    CastBar.NotInterruptibleBackground:SetAlpha(0)
 
     CastBar.NotInterruptibleOverlay = CastBar:CreateTexture(nil, "ARTWORK", nil, 1)
     CastBar.NotInterruptibleOverlay:SetPoint("TOPLEFT", CastBar:GetStatusBarTexture(), "TOPLEFT")
@@ -110,8 +130,16 @@ function UUF:CreateUnitCastBar(unitFrame, unit)
         unitFrame.Castbar:HookScript("OnHide", function() CastBarContainer:Hide() end)
 
         local function UpdateNotInterruptibleOverlay(frameCastBar)
-            if frameCastBar.NotInterruptibleOverlay and frameCastBar.notInterruptible ~= nil then
-                frameCastBar.NotInterruptibleOverlay:SetAlphaFromBoolean(frameCastBar.notInterruptible, 1, 0)
+            if frameCastBar.notInterruptible ~= nil then
+                if frameCastBar.NotInterruptibleOverlay then
+                    frameCastBar.NotInterruptibleOverlay:SetAlphaFromBoolean(frameCastBar.notInterruptible, 1, 0)
+                end
+                -- Mirror the same toggle on the background layer so the unfilled portion
+                -- also reflects the cast type. SetAlphaFromBoolean is the only safe way
+                -- to branch on the secret boolean without tainting addon code.
+                if CastBarDB.ColourBackgroundByCast and frameCastBar.NotInterruptibleBackground then
+                    frameCastBar.NotInterruptibleBackground:SetAlphaFromBoolean(frameCastBar.notInterruptible, 1, 0)
+                end
             end
         end
 
@@ -176,7 +204,24 @@ function UUF:UpdateUnitCastBar(unitFrame, unit)
             unitFrame.Castbar:SetStatusBarTexture(UUF.Media.Foreground)
             unitFrame.Castbar.Background:SetTexture(UUF.Media.Background)
             unitFrame.Castbar:SetStatusBarColor(unpack(CastBarDB.Foreground))
-            unitFrame.Castbar.Background:SetVertexColor(unpack(CastBarDB.Background))
+            if CastBarDB.ColourBackgroundByCast then
+                local r, g, b = unpack(CastBarDB.Foreground)
+                local mult = CastBarDB.CastBackgroundMultiplier or 0.75
+                unitFrame.Castbar.Background:SetVertexColor(r * mult, g * mult, b * mult, CastBarDB.Background[4] or 1)
+            else
+                unitFrame.Castbar.Background:SetVertexColor(unpack(CastBarDB.Background))
+            end
+
+            if unitFrame.Castbar.NotInterruptibleBackground then
+                unitFrame.Castbar.NotInterruptibleBackground:SetTexture(UUF.Media.Background)
+                if CastBarDB.ColourBackgroundByCast then
+                    local r, g, b = unpack(CastBarDB.NotInterruptibleColour)
+                    local mult = CastBarDB.CastBackgroundMultiplier or 0.75
+                    unitFrame.Castbar.NotInterruptibleBackground:SetVertexColor(r * mult, g * mult, b * mult, CastBarDB.Background[4] or 1)
+                else
+                    unitFrame.Castbar.NotInterruptibleBackground:SetVertexColor(unpack(CastBarDB.Background))
+                end
+            end
 
             if unitFrame.Castbar.NotInterruptibleOverlay then
                 unitFrame.Castbar.NotInterruptibleOverlay:SetTexture(UUF.Media.Foreground)

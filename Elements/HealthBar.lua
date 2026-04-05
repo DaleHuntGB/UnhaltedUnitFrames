@@ -107,6 +107,20 @@ function UUF:CreateUnitHealthBar(unitFrame, unit)
             end
         end
 
+        unitFrame.Health.PostUpdateColor = function(element, _, color)
+            if not HealthBarDB.ColourBackgroundByHealth then return end
+            local r, g, b
+            if color then
+                r, g, b = color:GetRGB()
+            else
+                r, g, b = element:GetStatusBarColor()
+            end
+            if r and g and b then
+                local mult = HealthBarDB.HealthBackgroundMultiplier or 0.75
+                unitFrame.HealthBackground:SetStatusBarColor(r * mult, g * mult, b * mult, HealthBarDB.BackgroundOpacity)
+            end
+        end
+
         if HealthBarDB.Inverse then
             unitFrame.Health:SetReverseFill(true)
             unitFrame.HealthBackground:SetReverseFill(false)

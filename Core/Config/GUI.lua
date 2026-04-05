@@ -1665,6 +1665,13 @@ local function CreateCastBarBarSettings(containerParent, unit, updateCallback)
 
     local ColourContainer = GUIWidgets.CreateInlineGroup(containerParent, "Colours & Toggles")
 
+    local ColourBackgroundByCastToggle = AG:Create("CheckBox")
+    ColourBackgroundByCastToggle:SetLabel("Colour Background By Cast")
+    ColourBackgroundByCastToggle:SetValue(CastBarDB.ColourBackgroundByCast or false)
+    ColourBackgroundByCastToggle:SetCallback("OnValueChanged", function(_, _, value) CastBarDB.ColourBackgroundByCast = value updateCallback() RefreshCastBarBarSettings() end)
+    ColourBackgroundByCastToggle:SetRelativeWidth(0.33)
+    ColourContainer:AddChild(ColourBackgroundByCastToggle)
+
     local ForegroundColourPicker = AG:Create("ColorPicker")
     ForegroundColourPicker:SetLabel("Foreground")
     local R, G, B, A = unpack(CastBarDB.Foreground)
@@ -1692,6 +1699,16 @@ local function CreateCastBarBarSettings(containerParent, unit, updateCallback)
     NotInterruptibleColourPicker:SetRelativeWidth(0.33)
     ColourContainer:AddChild(NotInterruptibleColourPicker)
 
+    local CastBackgroundMultiplierSlider = AG:Create("Slider")
+    CastBackgroundMultiplierSlider:SetLabel("Background Multiplier")
+    CastBackgroundMultiplierSlider:SetValue(CastBarDB.CastBackgroundMultiplier or 0.75)
+    CastBackgroundMultiplierSlider:SetSliderValues(0, 1, 0.01)
+    CastBackgroundMultiplierSlider:SetRelativeWidth(0.33)
+    CastBackgroundMultiplierSlider:SetCallback("OnValueChanged", function(_, _, value) CastBarDB.CastBackgroundMultiplier = value updateCallback() end)
+    CastBackgroundMultiplierSlider:SetIsPercent(true)
+    CastBackgroundMultiplierSlider:SetDisabled(not CastBarDB.ColourBackgroundByCast)
+    ColourContainer:AddChild(CastBackgroundMultiplierSlider)
+
     function RefreshCastBarBarSettings()
         if CastBarDB.Enabled then
             MatchParentWidthToggle:SetDisabled(false)
@@ -1702,8 +1719,9 @@ local function CreateCastBarBarSettings(containerParent, unit, updateCallback)
             XPosSlider:SetDisabled(false)
             YPosSlider:SetDisabled(false)
             ForegroundColourPicker:SetDisabled(CastBarDB.ColourByClass)
-            BackgroundColourPicker:SetDisabled(false)
+            BackgroundColourPicker:SetDisabled(CastBarDB.ColourBackgroundByCast)
             NotInterruptibleColourPicker:SetDisabled(false)
+            CastBackgroundMultiplierSlider:SetDisabled(not CastBarDB.ColourBackgroundByCast)
         else
             MatchParentWidthToggle:SetDisabled(true)
             WidthSlider:SetDisabled(true)
@@ -1715,6 +1733,7 @@ local function CreateCastBarBarSettings(containerParent, unit, updateCallback)
             ForegroundColourPicker:SetDisabled(true)
             BackgroundColourPicker:SetDisabled(true)
             NotInterruptibleColourPicker:SetDisabled(true)
+            CastBackgroundMultiplierSlider:SetDisabled(true)
         end
     end
 
