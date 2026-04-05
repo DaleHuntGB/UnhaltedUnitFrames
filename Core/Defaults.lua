@@ -1985,12 +1985,21 @@ local PhaseIndicatorDefaults = {
     boss = CreateIndicatorDefaults(16, {"BOTTOMLEFT", "BOTTOMLEFT", 3, 3}),
 }
 
+local SummonIndicatorDefaults = {
+    party = CreateIndicatorDefaults(14, {"BOTTOM", "BOTTOM", 0, 2}, {UseAtlasSize = false}),
+    raid = CreateIndicatorDefaults(12, {"BOTTOM", "BOTTOM", 0, 2}, {UseAtlasSize = false}),
+}
+
 for unit, indicatorDefaults in pairs(ReadyCheckIndicatorDefaults) do
     Defaults.profile.Units[unit].Indicators.ReadyCheck = Defaults.profile.Units[unit].Indicators.ReadyCheck or indicatorDefaults
 end
 
 for unit, indicatorDefaults in pairs(PhaseIndicatorDefaults) do
     Defaults.profile.Units[unit].Indicators.Phase = Defaults.profile.Units[unit].Indicators.Phase or indicatorDefaults
+end
+
+for unit, indicatorDefaults in pairs(SummonIndicatorDefaults) do
+    Defaults.profile.Units[unit].Indicators.Summon = Defaults.profile.Units[unit].Indicators.Summon or indicatorDefaults
 end
 
 for _, unitDefaults in pairs(Defaults.profile.Units) do

@@ -24,6 +24,11 @@ local function UsesRoleIconIndicator(unit)
     return normalizedUnit == "party" or normalizedUnit == "raid"
 end
 
+local function UsesSummonIndicator(unit)
+    local normalizedUnit = UUF:GetNormalizedUnit(unit)
+    return normalizedUnit == "party" or normalizedUnit == "raid"
+end
+
 local function UsesReadyCheckIndicator(unit)
     local normalizedUnit = UUF:GetNormalizedUnit(unit)
     return normalizedUnit ~= "player"
@@ -844,6 +849,7 @@ function UUF:CreateUnitFrame(unitFrame, unit)
     if UsesPhaseIndicator(unit) then UUF:CreateUnitPhaseIndicator(unitFrame, unit) end
     if UsesRoleIconIndicator(unit) then UUF:CreateUnitRoleIconIndicator(unitFrame, unit) end
     if UsesResurrectIndicator(unit) then UUF:CreateUnitResurrectIndicator(unitFrame, unit) end
+    if UsesSummonIndicator(unit) then UUF:CreateUnitSummonIndicator(unitFrame, unit) end
     if UsesLeaderAssistantIndicator(unit) then UUF:CreateUnitLeaderAssistantIndicator(unitFrame, unit) end
     if UsesCombatIndicator(unit) then UUF:CreateUnitCombatIndicator(unitFrame, unit) end
     if isPlayer then UUF:CreateUnitRestingIndicator(unitFrame, unit) end
@@ -1057,6 +1063,13 @@ function UUF:UpdateUnitFrame(unitFrame, unit)
         if unitFrame:IsElementEnabled("ResurrectIndicator") then unitFrame:DisableElement("ResurrectIndicator") end
         unitFrame.ResurrectIndicator:Hide()
         unitFrame.ResurrectIndicator = nil
+    end
+    if UsesSummonIndicator(unit) then
+        UUF:UpdateUnitSummonIndicator(unitFrame, unit)
+    elseif unitFrame.SummonIndicator then
+        if unitFrame:IsElementEnabled("SummonIndicator") then unitFrame:DisableElement("SummonIndicator") end
+        unitFrame.SummonIndicator:Hide()
+        unitFrame.SummonIndicator = nil
     end
     if UsesLeaderAssistantIndicator(unit) then UUF:UpdateUnitLeaderAssistantIndicator(unitFrame, unit) end
     if UsesCombatIndicator(unit) then

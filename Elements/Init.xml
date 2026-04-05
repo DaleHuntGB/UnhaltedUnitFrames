@@ -23,6 +23,7 @@
 	<Script file="Indicators/ReadyCheck.lua"/>
 	<Script file="Indicators/Resurrect.lua"/>
 	<Script file="Indicators/RoleIcon.lua"/>
+	<Script file="Indicators/Summon.lua"/>
 	<Script file="Indicators/Resting.lua"/>
 	<Script file="Indicators/Combat.lua"/>
 	<Script file="Indicators/TargetGlow.lua"/>

@@ -2786,6 +2786,81 @@ local function CreateResurrectSettings(containerParent, unit, updateCallback)
     RefreshResurrectGUI()
 end
 
+local function CreateSummonSettings(containerParent, unit, updateCallback)
+    local SummonDB = UUF.db.profile.Units[unit].Indicators.Summon
+
+    local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Summon Settings")
+
+    local Toggle = CreateDescribedToggle(
+        ToggleContainer,
+        "Enable |cFF8080FFSummon|r Indicator",
+        "Shows pending, accepted, or declined summon status for the unit.",
+        SummonDB.Enabled,
+        function(_, _, value) SummonDB.Enabled = value updateCallback() RefreshSummonGUI() end,
+        0.5
+    )
+
+    CreateDescribedToggle(
+        ToggleContainer,
+        "Use Blizzard Atlas Size",
+        "Uses Blizzard's native summon icon size instead of the custom size slider.",
+        SummonDB.UseAtlasSize,
+        function(_, _, value) SummonDB.UseAtlasSize = value updateCallback() RefreshSummonGUI() end,
+        0.5
+    )
+
+    local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
+
+    local AnchorFromDropdown = AG:Create("Dropdown")
+    AnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
+    AnchorFromDropdown:SetLabel("Anchor From")
+    AnchorFromDropdown:SetValue(SummonDB.Layout[1])
+    AnchorFromDropdown:SetRelativeWidth(0.5)
+    AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) SummonDB.Layout[1] = value updateCallback() end)
+    LayoutContainer:AddChild(AnchorFromDropdown)
+
+    local AnchorToDropdown = AG:Create("Dropdown")
+    AnchorToDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
+    AnchorToDropdown:SetLabel("Anchor To")
+    AnchorToDropdown:SetValue(SummonDB.Layout[2])
+    AnchorToDropdown:SetRelativeWidth(0.5)
+    AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) SummonDB.Layout[2] = value updateCallback() end)
+    LayoutContainer:AddChild(AnchorToDropdown)
+
+    local XPosSlider = AG:Create("Slider")
+    XPosSlider:SetLabel("X Position")
+    XPosSlider:SetValue(SummonDB.Layout[3])
+    XPosSlider:SetSliderValues(-1000, 1000, 0.1)
+    XPosSlider:SetRelativeWidth(0.33)
+    XPosSlider:SetCallback("OnValueChanged", function(_, _, value) SummonDB.Layout[3] = value updateCallback() end)
+    LayoutContainer:AddChild(XPosSlider)
+
+    local YPosSlider = AG:Create("Slider")
+    YPosSlider:SetLabel("Y Position")
+    YPosSlider:SetValue(SummonDB.Layout[4])
+    YPosSlider:SetSliderValues(-1000, 1000, 0.1)
+    YPosSlider:SetRelativeWidth(0.33)
+    YPosSlider:SetCallback("OnValueChanged", function(_, _, value) SummonDB.Layout[4] = value updateCallback() end)
+    LayoutContainer:AddChild(YPosSlider)
+
+    local SizeSlider = AG:Create("Slider")
+    SizeSlider:SetLabel("Size")
+    SizeSlider:SetValue(SummonDB.Size)
+    SizeSlider:SetSliderValues(8, 64, 1)
+    SizeSlider:SetRelativeWidth(0.33)
+    SizeSlider:SetCallback("OnValueChanged", function(_, _, value) SummonDB.Size = value updateCallback() end)
+    LayoutContainer:AddChild(SizeSlider)
+
+    function RefreshSummonGUI()
+        local disabled = not SummonDB.Enabled
+        GUIWidgets.DeepDisable(ToggleContainer, disabled, Toggle)
+        GUIWidgets.DeepDisable(LayoutContainer, disabled, Toggle)
+        SizeSlider:SetDisabled(disabled or SummonDB.UseAtlasSize)
+    end
+
+    RefreshSummonGUI()
+end
+
 local function CreateStatusSettings(containerParent, unit, statusDB, updateCallback)
     local StatusDB = UUF.db.profile.Units[unit].Indicators[statusDB]
 
@@ -3122,6 +3197,8 @@ local function CreateIndicatorSettings(containerParent, unit)
             CreateRoleIconSettings(IndicatorContainer, unit, function() UpdateManagedUnitMethod(unit, "UpdateUnitRoleIconIndicator") end)
         elseif IndicatorTab == "Resurrect" then
             CreateResurrectSettings(IndicatorContainer, unit, function() UpdateManagedUnitMethod(unit, "UpdateUnitResurrectIndicator") end)
+        elseif IndicatorTab == "Summon" then
+            CreateSummonSettings(IndicatorContainer, unit, function() UpdateManagedUnitMethod(unit, "UpdateUnitSummonIndicator") end)
         elseif IndicatorTab == "LeaderAssistant" then
             CreateLeaderAssistaintSettings(IndicatorContainer, unit, function() UpdateManagedUnitMethod(unit, "UpdateUnitLeaderAssistantIndicator") end)
         elseif IndicatorTab == "Resting" then
@@ -3174,6 +3251,7 @@ local function CreateIndicatorSettings(containerParent, unit)
             { text = "Phase", value = "Phase" },
             { text = "Role Icon", value = "RoleIcon" },
             { text = "Resurrection", value = "Resurrect" },
+            { text = "Summon", value = "Summon" },
             { text = "Leader & Assistant", value = "LeaderAssistant" },
             { text = "Mouseover", value = "Mouseover" },
         })
@@ -3184,6 +3262,7 @@ local function CreateIndicatorSettings(containerParent, unit)
             { text = "Phase", value = "Phase" },
             { text = "Role Icon", value = "RoleIcon" },
             { text = "Resurrection", value = "Resurrect" },
+            { text = "Summon", value = "Summon" },
             { text = "Leader & Assistant", value = "LeaderAssistant" },
             { text = "Mouseover", value = "Mouseover" },
         })
