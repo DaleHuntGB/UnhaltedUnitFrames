@@ -1504,8 +1504,9 @@ local function CreateHealPredictionSettings(containerParent, unit, updateCallbac
         ["LEFT"] = "Left",
         ["RIGHT"] = "Right",
         ["ATTACH"] = "Attach To Missing Health",
+        ["ATTACH_OVERLAY"] = "Attach & Overlay",
     }
-    local positionOrder = {"TOPLEFT", "TOPRIGHT", "BOTTOMLEFT", "BOTTOMRIGHT", "LEFT", "RIGHT", "ATTACH"}
+    local positionOrder = {"TOPLEFT", "TOPRIGHT", "BOTTOMLEFT", "BOTTOMRIGHT", "LEFT", "RIGHT", "ATTACH", "ATTACH_OVERLAY"}
     local sections = {}
 
     local function CreatePredictionSection(title, db, showLabel, colourLabel)
@@ -1547,7 +1548,7 @@ local function CreateHealPredictionSettings(containerParent, unit, updateCallbac
         heightSlider:SetSliderValues(1, FrameDB.Height - 2, 0.1)
         heightSlider:SetRelativeWidth(0.33)
         heightSlider:SetCallback("OnValueChanged", function(_, _, value) db.Height = value updateCallback() end)
-        heightSlider:SetDisabled(db.MatchParentHeight or db.Position == "ATTACH")
+        heightSlider:SetDisabled(db.MatchParentHeight or db.Position == "ATTACH" or db.Position == "ATTACH_OVERLAY")
         settings:AddChild(heightSlider)
 
         local positionDropdown = AG:Create("Dropdown")
@@ -1573,7 +1574,7 @@ local function CreateHealPredictionSettings(containerParent, unit, updateCallbac
     function RefreshHealPredictionSettings()
         for _, section in ipairs(sections) do
             GUIWidgets.DeepDisable(section.container, not section.db.Enabled, section.toggle)
-            section.heightSlider:SetDisabled(section.db.MatchParentHeight or section.db.Position == "ATTACH")
+            section.heightSlider:SetDisabled(section.db.MatchParentHeight or section.db.Position == "ATTACH" or section.db.Position == "ATTACH_OVERLAY")
         end
     end
 

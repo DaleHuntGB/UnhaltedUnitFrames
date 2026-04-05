@@ -25,6 +25,19 @@ local function ConfigurePredictionBar(predictionBar, unitFrame, db, attachTextur
             predictionBar:SetPoint("TOPLEFT", attachTexture, "TOPRIGHT", 0, 0)
             predictionBar:SetReverseFill(false)
         end
+    elseif position == "ATTACH_OVERLAY" then
+        -- Anchors to the leading edge of the health fill and fills in the reverse direction,
+        -- overlaying the health bar so the shield is visible without extending outside the frame.
+        unitFrame.Health:SetClipsChildren(true)
+        if unitFrame.Health:GetReverseFill() then
+            -- Health fills right-to-left; overlay fills left-to-right from the fill's left (leading) edge.
+            predictionBar:SetPoint("TOPLEFT", attachTexture, "TOPLEFT", 0, 0)
+            predictionBar:SetReverseFill(false)
+        else
+            -- Health fills left-to-right; overlay fills right-to-left from the fill's right (leading) edge.
+            predictionBar:SetPoint("TOPRIGHT", attachTexture, "TOPRIGHT", 0, 0)
+            predictionBar:SetReverseFill(true)
+        end
     elseif position == "TOPLEFT" then
         predictionBar:SetPoint("TOPLEFT", unitFrame.Health, "TOPLEFT", 0, 0)
         predictionBar:SetReverseFill(false)
