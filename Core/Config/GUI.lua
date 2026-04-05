@@ -2797,16 +2797,7 @@ local function CreateSummonSettings(containerParent, unit, updateCallback)
         "Shows pending, accepted, or declined summon status for the unit.",
         SummonDB.Enabled,
         function(_, _, value) SummonDB.Enabled = value updateCallback() RefreshSummonGUI() end,
-        0.5
-    )
-
-    CreateDescribedToggle(
-        ToggleContainer,
-        "Use Blizzard Atlas Size",
-        "Uses Blizzard's native summon icon size instead of the custom size slider.",
-        SummonDB.UseAtlasSize,
-        function(_, _, value) SummonDB.UseAtlasSize = value updateCallback() RefreshSummonGUI() end,
-        0.5
+        1
     )
 
     local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
@@ -2855,7 +2846,6 @@ local function CreateSummonSettings(containerParent, unit, updateCallback)
         local disabled = not SummonDB.Enabled
         GUIWidgets.DeepDisable(ToggleContainer, disabled, Toggle)
         GUIWidgets.DeepDisable(LayoutContainer, disabled, Toggle)
-        SizeSlider:SetDisabled(disabled or SummonDB.UseAtlasSize)
     end
 
     RefreshSummonGUI()

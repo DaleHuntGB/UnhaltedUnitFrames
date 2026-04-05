@@ -1986,8 +1986,8 @@ local PhaseIndicatorDefaults = {
 }
 
 local SummonIndicatorDefaults = {
-    party = CreateIndicatorDefaults(14, {"BOTTOM", "BOTTOM", 0, 2}, {UseAtlasSize = false}),
-    raid = CreateIndicatorDefaults(12, {"BOTTOM", "BOTTOM", 0, 2}, {UseAtlasSize = false}),
+    party = CreateIndicatorDefaults(14, {"BOTTOM", "BOTTOM", 0, 2}),
+    raid = CreateIndicatorDefaults(12, {"BOTTOM", "BOTTOM", 0, 2}),
 }
 
 for unit, indicatorDefaults in pairs(ReadyCheckIndicatorDefaults) do

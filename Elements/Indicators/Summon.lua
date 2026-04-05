@@ -8,7 +8,7 @@ function UUF:CreateUnitSummonIndicator(unitFrame, unit)
     local SummonIndicator = unitFrame.HighLevelContainer:CreateTexture(UUF:FetchFrameName(unit) .. "_SummonIndicator", "OVERLAY")
     SummonIndicator:SetSize(SummonDB.Size, SummonDB.Size)
     SummonIndicator:SetPoint(SummonDB.Layout[1], unitFrame.HighLevelContainer, SummonDB.Layout[2], SummonDB.Layout[3], SummonDB.Layout[4])
-    SummonIndicator.useAtlasSize = SummonDB.UseAtlasSize
+    SummonIndicator.useAtlasSize = false
     SummonIndicator:Hide()
     unitFrame.__UUFSummonIndicator = SummonIndicator
 
@@ -39,7 +39,7 @@ function UUF:UpdateUnitSummonIndicator(unitFrame, unit)
             unitFrame.SummonIndicator:ClearAllPoints()
             unitFrame.SummonIndicator:SetSize(SummonDB.Size, SummonDB.Size)
             unitFrame.SummonIndicator:SetPoint(SummonDB.Layout[1], unitFrame.HighLevelContainer, SummonDB.Layout[2], SummonDB.Layout[3], SummonDB.Layout[4])
-            unitFrame.SummonIndicator.useAtlasSize = SummonDB.UseAtlasSize
+            unitFrame.SummonIndicator.useAtlasSize = false
             unitFrame.SummonIndicator:ForceUpdate()
         end
     else
