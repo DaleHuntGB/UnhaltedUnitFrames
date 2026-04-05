@@ -23,6 +23,7 @@ function UUF:IsRunePower()
 end
 
 local function LayoutUnitSecondaryPowerBar(unitFrame, unit, secondaryPowerBarElement, maxPower, totalWidth, elementHeight)
+    local DB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].SecondaryPowerBar
     local unitFrameWidth = totalWidth / maxPower
     local position = UUF:GetConfiguredSecondaryPowerBarPosition(unit)
     local isTopAnchored = position == "TOP"
@@ -35,7 +36,11 @@ local function LayoutUnitSecondaryPowerBar(unitFrame, unit, secondaryPowerBarEle
     secondaryPowerBarElement.ContainerBackground:SetPoint(anchorPoint, unitFrame.Container, anchorPoint, 1, anchorY)
 
     secondaryPowerBarElement.PowerBarBorder:ClearAllPoints()
-    secondaryPowerBarElement.PowerBarBorder:SetVertexColor(0, 0, 0, 1)
+    if DB.ShowBorder then
+        secondaryPowerBarElement.PowerBarBorder:SetVertexColor(unpack(DB.BorderColour))
+    else
+        secondaryPowerBarElement.PowerBarBorder:SetVertexColor(0, 0, 0, 0)
+    end
     secondaryPowerBarElement.PowerBarBorder:SetHeight(1)
     if isTopAnchored then
         secondaryPowerBarElement.PowerBarBorder:SetPoint("TOPLEFT", unitFrame.Container, "TOPLEFT", 1, -1 - elementHeight)
