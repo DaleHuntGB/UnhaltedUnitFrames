@@ -1238,13 +1238,18 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
         UpdateRaidMaxColumnsSliderLabel = CreateRaidFrameSortingSettings(containerParent, FrameDB, updateCallback)
     end
 
+    local HealthBackgroundMultiplierSlider
     local function RefreshFrameColourSettings()
         if ForegroundColourPicker then
             ForegroundColourPicker:SetDisabled(HealthBarDB.ColourByClass)
         end
 
         if BackgroundColourPicker then
-            BackgroundColourPicker:SetDisabled(HealthBarDB.ColourBackgroundByClass)
+            BackgroundColourPicker:SetDisabled(HealthBarDB.ColourBackgroundByClass or HealthBarDB.ColourBackgroundByHealth)
+        end
+
+        if HealthBackgroundMultiplierSlider then
+            HealthBackgroundMultiplierSlider:SetDisabled(not HealthBarDB.ColourBackgroundByHealth)
         end
     end
 
@@ -1269,6 +1274,18 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
         HealthBarDB.ColourBackgroundByClass,
         function(_, _, value)
             HealthBarDB.ColourBackgroundByClass = value
+            RefreshFrameColourSettings()
+            updateCallback()
+        end
+    )
+
+    CreateDescribedToggle(
+        TogglesContainer,
+        "Background Colour by Health",
+        "Automatically colors the missing-health background to match the foreground health bar color scaled by the background multiplier.",
+        HealthBarDB.ColourBackgroundByHealth,
+        function(_, _, value)
+            HealthBarDB.ColourBackgroundByHealth = value
             RefreshFrameColourSettings()
             updateCallback()
         end
@@ -1443,6 +1460,16 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
     BackgroundOpacitySlider:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.BackgroundOpacity = value updateCallback() end)
     BackgroundOpacitySlider:SetIsPercent(true)
     ColourContainer:AddChild(BackgroundOpacitySlider)
+
+    HealthBackgroundMultiplierSlider = AG:Create("Slider")
+    HealthBackgroundMultiplierSlider:SetLabel("Health Background Multiplier")
+    HealthBackgroundMultiplierSlider:SetValue(HealthBarDB.HealthBackgroundMultiplier or 0.75)
+    HealthBackgroundMultiplierSlider:SetSliderValues(0, 1, 0.01)
+    HealthBackgroundMultiplierSlider:SetRelativeWidth(0.5)
+    HealthBackgroundMultiplierSlider:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.HealthBackgroundMultiplier = value updateCallback() end)
+    HealthBackgroundMultiplierSlider:SetIsPercent(true)
+    HealthBackgroundMultiplierSlider:SetDisabled(not HealthBarDB.ColourBackgroundByHealth)
+    ColourContainer:AddChild(HealthBackgroundMultiplierSlider)
 
     RefreshFrameColourSettings()
 

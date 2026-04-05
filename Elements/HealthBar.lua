@@ -98,7 +98,13 @@ function UUF:CreateUnitHealthBar(unitFrame, unit)
             curHP = curHP or 0
             unitHP:SetMinMaxValues(0, maxHP)
             unitHP:SetValue(UnitHealthMissing(unitFrame.unit, true), interpolationMode)
-            unitFrame.HealthBackground:SetStatusBarColor(GetHealthBackgroundColor(unitFrame, HealthBarDB))
+            if HealthBarDB.ColourBackgroundByHealth then
+                local r, g, b = unitFrame.Health:GetStatusBarColor()
+                local mult = HealthBarDB.HealthBackgroundMultiplier or 0.75
+                unitFrame.HealthBackground:SetStatusBarColor(r * mult, g * mult, b * mult, HealthBarDB.BackgroundOpacity)
+            else
+                unitFrame.HealthBackground:SetStatusBarColor(GetHealthBackgroundColor(unitFrame, HealthBarDB))
+            end
         end
 
         if HealthBarDB.Inverse then
