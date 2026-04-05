@@ -2528,6 +2528,14 @@ local function CreateRoleIconSettings(containerParent, unit, updateCallback)
         1
     )
 
+    local StyleDropdown = AG:Create("Dropdown")
+    StyleDropdown:SetList(UUF.RoleIconStyleList or {["Default"] = "Default"}, UUF.RoleIconStyleOrder or {"Default"})
+    StyleDropdown:SetLabel("Role Icon Style")
+    StyleDropdown:SetValue((UUF.RoleIconStyleList and UUF.RoleIconStyleList[RoleIconDB.Style]) and RoleIconDB.Style or "Default")
+    StyleDropdown:SetRelativeWidth(0.5)
+    StyleDropdown:SetCallback("OnValueChanged", function(_, _, value) RoleIconDB.Style = value updateCallback() end)
+    ToggleContainer:AddChild(StyleDropdown)
+
     local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
 
     local AnchorFromDropdown = AG:Create("Dropdown")

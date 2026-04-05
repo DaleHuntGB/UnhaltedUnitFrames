@@ -1434,6 +1434,7 @@ local Defaults = {
                         Enabled = true,
                         Size = 14,
                         Layout = {"LEFT", "TOPLEFT", 2, -2},
+                        Style = "Default",
                     },
                     Resurrect = {
                         Enabled = true,
@@ -1655,6 +1656,7 @@ local Defaults = {
                         Enabled = true,
                         Size = 12,
                         Layout = {"LEFT", "TOPLEFT", 2, -2},
+                        Style = "Default",
                     },
                     Resurrect = {
                         Enabled = true,
@@ -2009,6 +2011,10 @@ for _, unitDefaults in pairs(Defaults.profile.Units) do
 
     if unitDefaults.HealthBar and unitDefaults.HealthBar.UseDeadBackground == nil then
         unitDefaults.HealthBar.UseDeadBackground = true
+    end
+
+    if unitDefaults.Indicators and unitDefaults.Indicators.RoleIcon and not unitDefaults.Indicators.RoleIcon.Style then
+        unitDefaults.Indicators.RoleIcon.Style = "Default"
     end
 end
 
