@@ -210,10 +210,34 @@ end
 function UUF:LayoutPartyFrames()
     local Frame = UUF.db.profile.Units.party.Frame
     if #UUF.PARTY_FRAMES == 0 then return end
-    local partyFrames = UUF.PARTY_FRAMES
+
+    local partyFrames = {}
+    for i = 1, #UUF.PARTY_FRAMES do partyFrames[i] = UUF.PARTY_FRAMES[i] end
+
+    if Frame.SortBy == "NAME" then
+        table.sort(partyFrames, function(a, b)
+            local nameA = UnitName(a.unit) or ""
+            local nameB = UnitName(b.unit) or ""
+            return nameA < nameB
+        end)
+    elseif Frame.SortBy == "ROLE" then
+        local rolePriority = {}
+        for i, role in ipairs(Frame.SortOrder) do rolePriority[role] = i end
+        rolePriority["NONE"] = #Frame.SortOrder + 1
+        table.sort(partyFrames, function(a, b)
+            local roleA = UnitGroupRolesAssigned(a.unit) or "NONE"
+            local roleB = UnitGroupRolesAssigned(b.unit) or "NONE"
+            local prioA = rolePriority[roleA] or rolePriority["NONE"]
+            local prioB = rolePriority[roleB] or rolePriority["NONE"]
+            if prioA == prioB then return a.unit < b.unit end
+            return prioA < prioB
+        end)
+    end
+
     if Frame.GrowthDirection == "UP" or Frame.GrowthDirection == "LEFT" then
-        partyFrames = {}
-        for i = #UUF.PARTY_FRAMES, 1, -1 do partyFrames[#partyFrames+1] = UUF.PARTY_FRAMES[i] end
+        local reversed = {}
+        for i = #partyFrames, 1, -1 do reversed[#reversed+1] = partyFrames[i] end
+        partyFrames = reversed
     end
     local layoutConfig = UUF.LayoutConfig[Frame.Layout[1]]
     if Frame.GrowthDirection == "LEFT" or Frame.GrowthDirection == "RIGHT" then

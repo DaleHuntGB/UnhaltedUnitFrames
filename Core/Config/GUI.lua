@@ -736,6 +736,55 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
     FrameStrataDropdown:SetCallback("OnValueChanged", function(_, _, value) FrameDB.FrameStrata = value updateCallback() end)
     LayoutContainer:AddChild(FrameStrataDropdown)
 
+    if unit == "party" then
+        local SortContainer = GUIWidgets.CreateInlineGroup(containerParent, "Sorting")
+
+        local RoleOrder1Dropdown = AG:Create("Dropdown")
+        local RoleOrder2Dropdown = AG:Create("Dropdown")
+        local RoleOrder3Dropdown = AG:Create("Dropdown")
+
+        local function RefreshSortGUI()
+            local isRole = FrameDB.SortBy == "ROLE"
+            RoleOrder1Dropdown:SetDisabled(not isRole)
+            RoleOrder2Dropdown:SetDisabled(not isRole)
+            RoleOrder3Dropdown:SetDisabled(not isRole)
+        end
+
+        local SortByDropdown = AG:Create("Dropdown")
+        SortByDropdown:SetList({["INDEX"] = "Sort By Index", ["NAME"] = "Sort By Name", ["ROLE"] = "Sort By Role"})
+        SortByDropdown:SetLabel("Sort By")
+        SortByDropdown:SetValue(FrameDB.SortBy)
+        SortByDropdown:SetRelativeWidth(1.0)
+        SortByDropdown:SetCallback("OnValueChanged", function(_, _, value) FrameDB.SortBy = value updateCallback() RefreshSortGUI() end)
+        SortContainer:AddChild(SortByDropdown)
+
+        local RoleList = {["TANK"] = "Tank", ["HEALER"] = "Healer", ["DAMAGER"] = "DPS"}
+
+        RoleOrder1Dropdown:SetList(RoleList)
+        RoleOrder1Dropdown:SetLabel("Role #1")
+        RoleOrder1Dropdown:SetValue(FrameDB.SortOrder[1])
+        RoleOrder1Dropdown:SetRelativeWidth(0.33)
+        RoleOrder1Dropdown:SetDisabled(FrameDB.SortBy ~= "ROLE")
+        RoleOrder1Dropdown:SetCallback("OnValueChanged", function(_, _, value) FrameDB.SortOrder[1] = value updateCallback() end)
+        SortContainer:AddChild(RoleOrder1Dropdown)
+
+        RoleOrder2Dropdown:SetList(RoleList)
+        RoleOrder2Dropdown:SetLabel("Role #2")
+        RoleOrder2Dropdown:SetValue(FrameDB.SortOrder[2])
+        RoleOrder2Dropdown:SetRelativeWidth(0.33)
+        RoleOrder2Dropdown:SetDisabled(FrameDB.SortBy ~= "ROLE")
+        RoleOrder2Dropdown:SetCallback("OnValueChanged", function(_, _, value) FrameDB.SortOrder[2] = value updateCallback() end)
+        SortContainer:AddChild(RoleOrder2Dropdown)
+
+        RoleOrder3Dropdown:SetList(RoleList)
+        RoleOrder3Dropdown:SetLabel("Role #3")
+        RoleOrder3Dropdown:SetValue(FrameDB.SortOrder[3])
+        RoleOrder3Dropdown:SetRelativeWidth(0.33)
+        RoleOrder3Dropdown:SetDisabled(FrameDB.SortBy ~= "ROLE")
+        RoleOrder3Dropdown:SetCallback("OnValueChanged", function(_, _, value) FrameDB.SortOrder[3] = value updateCallback() end)
+        SortContainer:AddChild(RoleOrder3Dropdown)
+    end
+
     local ColourContainer = GUIWidgets.CreateInlineGroup(containerParent, "Colours & Toggles")
 
     local ColourWhenTappedToggle = AG:Create("CheckBox")
