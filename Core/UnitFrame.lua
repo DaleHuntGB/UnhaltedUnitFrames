@@ -155,7 +155,11 @@ end
 
 function UUF:UpdateAllUnitFrames()
     for unit, _ in pairs(UUF.db.profile.Units) do
-        if UUF[unit:upper()] then
+        if unit == "boss" then
+            UUF:UpdateBossFrames()
+        elseif unit == "party" then
+            UUF:UpdatePartyFrames()
+        elseif UUF[unit:upper()] then
             UUF:UpdateUnitFrame(UUF[unit:upper()], unit)
         end
     end
@@ -169,6 +173,8 @@ function UUF:ToggleUnitFrameVisibility(unit)
     if UnitDB.Enabled then
         if unit == "boss" then
             if not UUF["BOSS1"] then UUF:SpawnUnitFrame(unit) end
+        elseif unit == "party" then
+            if not UUF["PARTY1"] then UUF:SpawnPartyFrames() end
         elseif not UUF[UnitKey] then
             UUF:SpawnUnitFrame(unit)
         end
@@ -179,6 +185,14 @@ function UUF:ToggleUnitFrameVisibility(unit)
     if unit == "boss" then
         for i = 1, UUF.MAX_BOSS_FRAMES do
             local unitFrame = UUF["BOSS"..i]
+            if unitFrame then (UnitDB.Enabled and RegisterUnitWatch or UnregisterUnitWatch)(unitFrame) unitFrame:SetShown(UnitDB.Enabled) end
+        end
+        return
+    end
+
+    if unit == "party" then
+        for i = 1, UUF.MAX_PARTY_MEMBERS do
+            local unitFrame = UUF["PARTY"..i]
             if unitFrame then (UnitDB.Enabled and RegisterUnitWatch or UnregisterUnitWatch)(unitFrame) unitFrame:SetShown(UnitDB.Enabled) end
         end
         return

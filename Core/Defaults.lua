@@ -1447,11 +1447,13 @@ local Defaults = {
                 ForceHideBlizzard = true,
                 Frame = {
                     Width = 244,
-                    Height = 42,
+                    Height = 52,
                     -- AnchorFrom, AnchorTo, XOffset, YOffset, GroupSpacing
-                    Layout = {"CENTER", "CENTER", -550.1, -0.1, 26},
+                    Layout = {"CENTER", "CENTER", -550.1, -0.1, 1},
                     GrowthDirection = "DOWN",
                     FrameStrata = "LOW",
+                    SortBy = "INDEX",
+                    SortOrder = {"TANK", "HEALER", "DAMAGER"},
                 },
                 HealthBar = {
                     ColourByClass = true,
@@ -1463,6 +1465,10 @@ local Defaults = {
                     ForegroundOpacity = 0.8,
                     Background = {34/255, 34/255, 34/255},
                     BackgroundOpacity = 1.0,
+                    DispelHighlight = {
+                        Enabled = true,
+                        Style = "GRADIENT",
+                    },
                 },
                 HealPrediction = {
                     Absorbs = {
@@ -1495,7 +1501,7 @@ local Defaults = {
                     BackgroundMultiplier = 0.75,
                 },
                 CastBar = {
-                    Enabled = true,
+                    Enabled = false,
                     Width = 244,
                     Height = 24,
                     Layout = {"TOPLEFT", "BOTTOMLEFT", 0, -1},
@@ -1527,9 +1533,9 @@ local Defaults = {
                     }
                 },
                 Portrait = {
-                    Enabled = true,
-                    Width = 42,
-                    Height = 42,
+                    Enabled = false,
+                    Width = 52,
+                    Height = 52,
                     Layout = {"RIGHT", "LEFT", -1, 0},
                     Zoom = 0.3,
                     UseClassPortrait = false,
@@ -1569,7 +1575,7 @@ local Defaults = {
                     },
                     Target = {
                         Enabled = true,
-                        Colour = {1, 1, 1},
+                        Colour = {1, 1, 1, 1},
                     }
                 },
                 Auras = {
