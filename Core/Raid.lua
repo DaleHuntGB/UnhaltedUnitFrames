@@ -67,26 +67,45 @@ function UUF:LayoutRaidFrames()
     local framesPerGroup = 5
     local sortBy         = Frame.SortBy or "GROUP"
 
-    local orderedFrames = {}
-    for i = 1, UUF.MAX_RAID_MEMBERS do
-        if UUF.RAID_FRAMES[i] then
-            orderedFrames[#orderedFrames + 1] = UUF.RAID_FRAMES[i]
-        end
-    end
+    -- placements: array of { frame, col, row } to be positioned after sorting
+    local placements = {}
 
-    if sortBy == "GROUP" then
-        table.sort(orderedFrames, function(a, b)
-            local idxA = tonumber(a.unit:match("^raid(%d+)$")) or 0
-            local idxB = tonumber(b.unit:match("^raid(%d+)$")) or 0
-            local _, _, subgroupA = GetRaidRosterInfo(idxA)
-            local _, _, subgroupB = GetRaidRosterInfo(idxB)
-            subgroupA = subgroupA or 9
-            subgroupB = subgroupB or 9
-            if subgroupA == subgroupB then return idxA < idxB end
-            return subgroupA < subgroupB
-        end)
-    elseif sortBy == "ROLE" then
+    if sortBy == "GROUP" and IsInRaid() then
+        -- Each frame is placed at a fixed column determined by its actual subgroup from
+        -- GetRaidRosterInfo. Empty subgroups leave a visible gap in the layout because the
+        -- next occupied group's column is offset by the correct amount. Within a subgroup,
+        -- frames are ordered by ascending raid index.
+        local groupSlots = {}
+        for g = 1, 8 do groupSlots[g] = {} end
+
+        for i = 1, UUF.MAX_RAID_MEMBERS do
+            if UUF.RAID_FRAMES[i] then
+                local _, _, subgroup = GetRaidRosterInfo(i)
+                if subgroup and subgroup >= 1 and subgroup <= 8 then
+                    groupSlots[subgroup][#groupSlots[subgroup] + 1] = i
+                end
+            end
+        end
+
+        for g = 1, 8 do
+            table.sort(groupSlots[g], function(a, b) return a < b end)
+        end
+
+        for g = 1, 8 do
+            for slotIdx, raidIndex in ipairs(groupSlots[g]) do
+                placements[#placements + 1] = { UUF.RAID_FRAMES[raidIndex], g - 1, slotIdx - 1 }
+            end
+        end
+
+    elseif sortBy == "ROLE" and IsInRaid() then
+        -- Consecutive layout sorted by role priority; no fixed-position gaps.
         local rolePriority = { TANK = 1, HEALER = 2, DAMAGER = 3, NONE = 4 }
+        local orderedFrames = {}
+        for i = 1, UUF.MAX_RAID_MEMBERS do
+            if UUF.RAID_FRAMES[i] then
+                orderedFrames[#orderedFrames + 1] = UUF.RAID_FRAMES[i]
+            end
+        end
         table.sort(orderedFrames, function(a, b)
             local roleA = UnitGroupRolesAssigned(a.unit) or "NONE"
             local roleB = UnitGroupRolesAssigned(b.unit) or "NONE"
@@ -97,14 +116,24 @@ function UUF:LayoutRaidFrames()
             end
             return prioA < prioB
         end)
+        for idx, raidFrame in ipairs(orderedFrames) do
+            local i = idx - 1
+            placements[#placements + 1] = { raidFrame, math.floor(i / framesPerGroup), i % framesPerGroup }
+        end
+
+    else
+        -- INDEX sort, or not in raid (test mode / preview): fixed positions directly from
+        -- raid slot index so that raid1-5 are always col 0, raid6-10 col 1, raid11-15 col 2,
+        -- etc. Hidden frames (empty slots) create natural visual gaps.
+        for i = 1, UUF.MAX_RAID_MEMBERS do
+            if UUF.RAID_FRAMES[i] then
+                placements[#placements + 1] = { UUF.RAID_FRAMES[i], math.floor((i - 1) / framesPerGroup), (i - 1) % framesPerGroup }
+            end
+        end
     end
-    -- SortBy == "INDEX": orderedFrames already in raid1..raid40 order; no sort needed
 
-    for idx, raidFrame in ipairs(orderedFrames) do
-        local i          = idx - 1
-        local col        = math.floor(i / framesPerGroup)
-        local row        = i % framesPerGroup
-
+    for _, p in ipairs(placements) do
+        local raidFrame, col, row = p[1], p[2], p[3]
         local xOff, yOff
 
         if growDir == "DOWN_RIGHT" then
@@ -152,12 +181,64 @@ function UUF:SpawnRaidFrames()
     local UnitDB = UUF.db.profile.Units.raid
     if not UnitDB then return end
     if UnitDB.ForceHideBlizzard then oUF:DisableBlizzard("raid") end
+
+    -- The GroupTypeEventFrame enforces party/raid mutual exclusivity and keeps the raid
+    -- layout in sync whenever the group roster changes. It is created once regardless of
+    -- whether raid frames are Enabled so that party visibility is always managed.
+    if not UUF.GroupTypeEventFrame then
+        UUF.GroupTypeEventFrame = CreateFrame("Frame")
+        UUF.GroupTypeEventFrame:RegisterEvent("GROUP_ROSTER_UPDATE")
+        UUF.GroupTypeEventFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
+        UUF.GroupTypeEventFrame:SetScript("OnEvent", function(self, event)
+            if InCombatLockdown() then return end
+            local inRaid  = IsInRaid()
+            local inParty = IsInGroup() and not inRaid
+
+            -- Raid frames: visible only when the player is in a raid and the slot's actual
+            -- subgroup (from GetRaidRosterInfo) is within the configured GroupsToShow limit.
+            local raidDB       = UUF.db.profile.Units.raid
+            local groupsToShow = tonumber(raidDB.Frame.GroupsToShow) or 8
+            for i = 1, UUF.MAX_RAID_MEMBERS do
+                local raidFrame = UUF["RAID"..i]
+                if raidFrame then
+                    local _, _, subgroup = GetRaidRosterInfo(i)
+                    if raidDB.Enabled and inRaid and subgroup and subgroup <= groupsToShow then
+                        RegisterUnitWatch(raidFrame)
+                    else
+                        UnregisterUnitWatch(raidFrame)
+                        raidFrame:Hide()
+                    end
+                end
+            end
+
+            -- Party frames: visible only when the player is in a party that is NOT a raid.
+            local partyDB = UUF.db.profile.Units.party
+            for i = 1, UUF.MAX_PARTY_MEMBERS do
+                local partyFrame = UUF["PARTY"..i]
+                if partyFrame then
+                    if partyDB and partyDB.Enabled and inParty then
+                        RegisterUnitWatch(partyFrame)
+                    else
+                        UnregisterUnitWatch(partyFrame)
+                        partyFrame:Hide()
+                    end
+                end
+            end
+
+            -- Re-layout raid frames so any subgroup changes are reflected immediately.
+            if inRaid then
+                UUF:LayoutRaidFrames()
+            end
+        end)
+    end
+
     if not UnitDB.Enabled then return end
 
-    local FrameDB     = UnitDB.Frame
-    local groupsToShow = tonumber(FrameDB.GroupsToShow) or 8
-    local framesPerGroup = 5
+    local FrameDB = UnitDB.Frame
 
+    -- All 40 frames are created on load. RegisterUnitWatch is intentionally omitted here;
+    -- the GroupTypeEventFrame handles visibility for all raid frames on PLAYER_ENTERING_WORLD
+    -- and every subsequent GROUP_ROSTER_UPDATE.
     for i = 1, UUF.MAX_RAID_MEMBERS do
         local unit = "raid"..i
         oUF:RegisterStyle(UUF:FetchFrameName(unit), function(unitFrame) UUF:CreateRaidUnitFrame(unitFrame, unit) end)
@@ -169,11 +250,6 @@ function UUF:SpawnRaidFrames()
         UUF:RegisterTargetGlowIndicatorFrame(UUF:FetchFrameName(unit), unit)
         UUF:RegisterRangeFrame(UUF:FetchFrameName(unit), unit)
         UUF:RegisterDispelHighlightEvents(UUF["RAID"..i], unit)
-
-        local groupIndex = math.ceil(i / framesPerGroup)
-        if groupIndex <= groupsToShow then
-            RegisterUnitWatch(UUF["RAID"..i])
-        end
     end
 
     UUF:LayoutRaidFrames()
@@ -184,10 +260,10 @@ end
 -----------------------------------------------------------------------
 
 function UUF:UpdateRaidFrames()
-    local UnitDB  = UUF.db.profile.Units.raid
-    local FrameDB = UnitDB.Frame
-    local groupsToShow   = tonumber(FrameDB.GroupsToShow) or 8
-    local framesPerGroup = 5
+    local UnitDB       = UUF.db.profile.Units.raid
+    local FrameDB      = UnitDB.Frame
+    local groupsToShow = tonumber(FrameDB.GroupsToShow) or 8
+    local inRaid       = IsInRaid()
 
     for i = 1, UUF.MAX_RAID_MEMBERS do
         local raidFrame = UUF["RAID"..i]
@@ -195,8 +271,8 @@ function UUF:UpdateRaidFrames()
             UUF:UpdateRaidUnitFrame(raidFrame, "raid"..i)
             raidFrame:SetSize(FrameDB.Width, FrameDB.Height)
 
-            local groupIndex = math.ceil(i / framesPerGroup)
-            if UnitDB.Enabled and groupIndex <= groupsToShow then
+            local _, _, subgroup = GetRaidRosterInfo(i)
+            if UnitDB.Enabled and inRaid and subgroup and subgroup <= groupsToShow then
                 RegisterUnitWatch(raidFrame)
             else
                 UnregisterUnitWatch(raidFrame)
@@ -214,16 +290,16 @@ end
 -----------------------------------------------------------------------
 
 function UUF:ToggleRaidFrameVisibility()
-    local UnitDB         = UUF.db.profile.Units.raid
+    local UnitDB       = UUF.db.profile.Units.raid
     if not UnitDB then return end
-    local groupsToShow   = tonumber(UnitDB.Frame.GroupsToShow) or 8
-    local framesPerGroup = 5
+    local groupsToShow = tonumber(UnitDB.Frame.GroupsToShow) or 8
+    local inRaid       = IsInRaid()
 
     for i = 1, UUF.MAX_RAID_MEMBERS do
         local raidFrame = UUF["RAID"..i]
         if raidFrame then
-            local groupIndex = math.ceil(i / framesPerGroup)
-            if UnitDB.Enabled and groupIndex <= groupsToShow then
+            local _, _, subgroup = GetRaidRosterInfo(i)
+            if UnitDB.Enabled and inRaid and subgroup and subgroup <= groupsToShow then
                 RegisterUnitWatch(raidFrame)
             else
                 UnregisterUnitWatch(raidFrame)

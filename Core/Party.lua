@@ -125,7 +125,8 @@ function UUF:SpawnPartyFrames()
         UUF:RegisterTargetGlowIndicatorFrame(UUF:FetchFrameName(unit), unit)
         UUF:RegisterRangeFrame(UUF:FetchFrameName(unit), unit)
         UUF:RegisterDispelHighlightEvents(UUF["PARTY"..i], unit)
-        RegisterUnitWatch(UUF["PARTY"..i])
+        -- RegisterUnitWatch is intentionally omitted; GroupTypeEventFrame in Raid.lua
+        -- manages party frame visibility based on whether the player is in a party or raid.
     end
     UUF:LayoutPartyFrames()
 end
@@ -149,8 +150,16 @@ end
 function UUF:TogglePartyFrameVisibility()
     local UnitDB = UUF.db.profile.Units.party
     if not UnitDB then return end
+    local inParty = IsInGroup() and not IsInRaid()
     for i = 1, UUF.MAX_PARTY_MEMBERS do
         local unitFrame = UUF["PARTY"..i]
-        if unitFrame then (UnitDB.Enabled and RegisterUnitWatch or UnregisterUnitWatch)(unitFrame) unitFrame:SetShown(UnitDB.Enabled) end
+        if unitFrame then
+            if UnitDB.Enabled and inParty then
+                RegisterUnitWatch(unitFrame)
+            else
+                UnregisterUnitWatch(unitFrame)
+                unitFrame:Hide()
+            end
+        end
     end
 end
