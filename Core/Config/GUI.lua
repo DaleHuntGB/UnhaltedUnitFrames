@@ -1123,14 +1123,14 @@ local function CreateHealPredictionSettings(containerParent, unit, updateCallbac
     ShowIncomingHealToggle:SetLabel("Show Incoming Heals")
     ShowIncomingHealToggle:SetValue(HealPredictionDB.Incoming.Enabled)
     ShowIncomingHealToggle:SetCallback("OnValueChanged", function(_, _, value) HealPredictionDB.Incoming.Enabled = value updateCallback() RefreshHealPredictionSettings() end)
-    ShowIncomingHealToggle:SetRelativeWidth(0.33)
+    ShowIncomingHealToggle:SetRelativeWidth(0.5)
     IncomingHealSettings:AddChild(ShowIncomingHealToggle)
 
     local MatchParentHeightIncomingToggle = AG:Create("CheckBox")
     MatchParentHeightIncomingToggle:SetLabel("Match Parent Height")
     MatchParentHeightIncomingToggle:SetValue(HealPredictionDB.Incoming.MatchParentHeight)
     MatchParentHeightIncomingToggle:SetCallback("OnValueChanged", function(_, _, value) HealPredictionDB.Incoming.MatchParentHeight = value updateCallback() RefreshHealPredictionSettings() end)
-    MatchParentHeightIncomingToggle:SetRelativeWidth(0.33)
+    MatchParentHeightIncomingToggle:SetRelativeWidth(0.5)
     IncomingHealSettings:AddChild(MatchParentHeightIncomingToggle)
 
     local IncomingHealColourPicker = AG:Create("ColorPicker")
@@ -1152,7 +1152,7 @@ local function CreateHealPredictionSettings(containerParent, unit, updateCallbac
     IncomingHealSettings:AddChild(IncomingHealHeightSlider)
 
     local IncomingHealPositionDropdown = AG:Create("Dropdown")
-    IncomingHealPositionDropdown:SetList({["TOPLEFT"] = "Top Left", ["TOPRIGHT"] = "Top Right", ["BOTTOMLEFT"] = "Bottom Left", ["BOTTOMRIGHT"] = "Bottom Right", ["LEFT"] = "Left", ["RIGHT"] = "Right", ["ATTACH"] = "Attach To Health Bar Fill"}, {"TOPLEFT", "TOPRIGHT", "BOTTOMLEFT", "BOTTOMRIGHT", "LEFT", "RIGHT", "ATTACH"})
+    IncomingHealPositionDropdown:SetList({["TOPLEFT"] = "Top Left", ["TOPRIGHT"] = "Top Right", ["BOTTOMLEFT"] = "Bottom Left", ["BOTTOMRIGHT"] = "Bottom Right", ["LEFT"] = "Left", ["RIGHT"] = "Right", ["ATTACH"] = "Attach To Missing Health"}, {"TOPLEFT", "TOPRIGHT", "BOTTOMLEFT", "BOTTOMRIGHT", "LEFT", "RIGHT", "ATTACH"})
     IncomingHealPositionDropdown:SetLabel("Position")
     IncomingHealPositionDropdown:SetValue(HealPredictionDB.Incoming.Position)
     IncomingHealPositionDropdown:SetRelativeWidth(0.33)
