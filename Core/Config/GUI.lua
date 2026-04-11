@@ -30,6 +30,7 @@ local UnitDBToUnitPrettyName = {
     pet = "Pet",
     boss = "Boss",
     party = "Party",
+    raid = "Raid",
 }
 
 local AnchorPoints = { { ["TOPLEFT"] = "Top Left", ["TOP"] = "Top", ["TOPRIGHT"] = "Top Right", ["LEFT"] = "Left", ["CENTER"] = "Center", ["RIGHT"] = "Right", ["BOTTOMLEFT"] = "Bottom Left", ["BOTTOM"] = "Bottom", ["BOTTOMRIGHT"] = "Bottom Right" }, { "TOPLEFT", "TOP", "TOPRIGHT", "LEFT", "CENTER", "RIGHT", "BOTTOMLEFT", "BOTTOM", "BOTTOMRIGHT", } }
@@ -183,6 +184,10 @@ local function EnableAurasTestMode(unit)
         for i = 1, UUF.MAX_PARTY_MEMBERS do
             UUF:CreateTestAuras(UUF["PARTY"..i], "party"..i)
         end
+    elseif unit == "raid" then
+        for i = 1, UUF.MAX_RAID_MEMBERS do
+            UUF:CreateTestAuras(UUF["RAID"..i], "raid"..i)
+        end
     else
         UUF:CreateTestAuras(UUF[unit:upper()], unit)
     end
@@ -193,6 +198,10 @@ local function DisableAurasTestMode(unit)
     if unit == "party" then
         for i = 1, UUF.MAX_PARTY_MEMBERS do
             UUF:CreateTestAuras(UUF["PARTY"..i], "party"..i)
+        end
+    elseif unit == "raid" then
+        for i = 1, UUF.MAX_RAID_MEMBERS do
+            UUF:CreateTestAuras(UUF["RAID"..i], "raid"..i)
         end
     else
         UUF:CreateTestAuras(UUF[unit:upper()], unit)
@@ -205,6 +214,8 @@ local function EnableCastBarTestMode(unit)
         for i = 1, UUF.MAX_PARTY_MEMBERS do
             UUF:CreateTestCastBar(UUF["PARTY"..i], "party"..i)
         end
+    elseif unit == "raid" then
+        -- raid frames do not have cast bars
     else
         UUF:CreateTestCastBar(UUF[unit:upper()], unit)
     end
@@ -216,6 +227,8 @@ local function DisableCastBarTestMode(unit)
         for i = 1, UUF.MAX_PARTY_MEMBERS do
             UUF:CreateTestCastBar(UUF["PARTY"..i], "party"..i)
         end
+    elseif unit == "raid" then
+        -- raid frames do not have cast bars
     else
         UUF:CreateTestCastBar(UUF[unit:upper()], unit)
     end
@@ -241,17 +254,34 @@ local function DisablePartyFramesTestMode()
     UUF:CreateTestPartyFrames()
 end
 
+local function EnableRaidFramesTestMode()
+    UUF.RAID_TEST_MODE = true
+    UUF:CreateTestRaidFrames()
+end
+
+local function DisableRaidFramesTestMode()
+    UUF.RAID_TEST_MODE = false
+    UUF:CreateTestRaidFrames()
+end
+
 local function DisableAllTestModes()
     UUF.AURA_TEST_MODE = false
     UUF.CASTBAR_TEST_MODE = false
     UUF.BOSS_TEST_MODE = false
     UUF.PARTY_TEST_MODE = false
+    UUF.RAID_TEST_MODE = false
     for unit, _ in pairs(UUF.db.profile.Units) do
         if unit == "party" then
             for i = 1, UUF.MAX_PARTY_MEMBERS do
                 if UUF["PARTY"..i] then
                     UUF:CreateTestAuras(UUF["PARTY"..i], "party"..i)
                     UUF:CreateTestCastBar(UUF["PARTY"..i], "party"..i)
+                end
+            end
+        elseif unit == "raid" then
+            for i = 1, UUF.MAX_RAID_MEMBERS do
+                if UUF["RAID"..i] then
+                    UUF:CreateTestAuras(UUF["RAID"..i], "raid"..i)
                 end
             end
         elseif UUF[unit:upper()] then
@@ -261,6 +291,7 @@ local function DisableAllTestModes()
     end
     UUF:CreateTestBossFrames()
     UUF:CreateTestPartyFrames()
+    UUF:CreateTestRaidFrames()
 end
 
 local function GenerateSupportText(parentFrame)
@@ -288,6 +319,7 @@ local function BuildMainNavigationTree()
         { text = "Focus Target", value = "FocusTarget" },
         { text = "Boss", value = "Boss" },
         { text = "Party", value = "Party" },
+        { text = "Raid", value = "Raid" },
         { text = "Tags", value = "Tags" },
         { text = "Profiles", value = "Profiles" },
     }
@@ -670,7 +702,7 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
     AnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
     AnchorFromDropdown:SetLabel("Anchor From")
     AnchorFromDropdown:SetValue(FrameDB.Layout[1])
-    AnchorFromDropdown:SetRelativeWidth((unitHasParent or unit == "boss" or unit == "party") and 0.33 or 0.5)
+    AnchorFromDropdown:SetRelativeWidth((unitHasParent or unit == "boss" or unit == "party" or unit == "raid") and 0.33 or 0.5)
     AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) FrameDB.Layout[1] = value updateCallback() end)
     LayoutContainer:AddChild(AnchorFromDropdown)
 
@@ -688,7 +720,7 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
     AnchorToDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
     AnchorToDropdown:SetLabel("Anchor To")
     AnchorToDropdown:SetValue(FrameDB.Layout[2])
-    AnchorToDropdown:SetRelativeWidth((unitHasParent or unit == "boss" or unit == "party") and 0.33 or 0.5)
+    AnchorToDropdown:SetRelativeWidth((unitHasParent or unit == "boss" or unit == "party" or unit == "raid") and 0.33 or 0.5)
     AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) FrameDB.Layout[2] = value updateCallback() end)
     LayoutContainer:AddChild(AnchorToDropdown)
 
@@ -700,13 +732,30 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
         GrowthDirectionDropdown:SetRelativeWidth(0.33)
         GrowthDirectionDropdown:SetCallback("OnValueChanged", function(_, _, value) FrameDB.GrowthDirection = value updateCallback() end)
         LayoutContainer:AddChild(GrowthDirectionDropdown)
+    elseif unit == "raid" then
+        local GrowthDirectionDropdown = AG:Create("Dropdown")
+        GrowthDirectionDropdown:SetList({
+            ["DOWN_RIGHT"] = "Down → Right",
+            ["DOWN_LEFT"]  = "Down → Left",
+            ["UP_RIGHT"]   = "Up → Right",
+            ["UP_LEFT"]    = "Up → Left",
+            ["RIGHT_DOWN"] = "Right → Down",
+            ["RIGHT_UP"]   = "Right → Up",
+            ["LEFT_DOWN"]  = "Left → Down",
+            ["LEFT_UP"]    = "Left → Up",
+        })
+        GrowthDirectionDropdown:SetLabel("Growth Direction")
+        GrowthDirectionDropdown:SetValue(FrameDB.GrowthDirection)
+        GrowthDirectionDropdown:SetRelativeWidth(0.33)
+        GrowthDirectionDropdown:SetCallback("OnValueChanged", function(_, _, value) FrameDB.GrowthDirection = value updateCallback() end)
+        LayoutContainer:AddChild(GrowthDirectionDropdown)
     end
 
     local XPosSlider = AG:Create("Slider")
     XPosSlider:SetLabel("X Position")
     XPosSlider:SetValue(FrameDB.Layout[3])
     XPosSlider:SetSliderValues(-1000, 1000, 0.1)
-    XPosSlider:SetRelativeWidth((unit == "boss" or unit == "party") and 0.25 or 0.33)
+    XPosSlider:SetRelativeWidth((unit == "boss" or unit == "party" or unit == "raid") and 0.25 or 0.33)
     XPosSlider:SetCallback("OnValueChanged", function(_, _, value) FrameDB.Layout[3] = value updateCallback() end)
     LayoutContainer:AddChild(XPosSlider)
 
@@ -714,7 +763,7 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
     YPosSlider:SetLabel("Y Position")
     YPosSlider:SetValue(FrameDB.Layout[4])
     YPosSlider:SetSliderValues(-1000, 1000, 0.1)
-    YPosSlider:SetRelativeWidth((unit == "boss" or unit == "party") and 0.25 or 0.33)
+    YPosSlider:SetRelativeWidth((unit == "boss" or unit == "party" or unit == "raid") and 0.25 or 0.33)
     YPosSlider:SetCallback("OnValueChanged", function(_, _, value) FrameDB.Layout[4] = value updateCallback() end)
     LayoutContainer:AddChild(YPosSlider)
 
@@ -726,13 +775,29 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
         SpacingSlider:SetRelativeWidth(0.25)
         SpacingSlider:SetCallback("OnValueChanged", function(_, _, value) FrameDB.Layout[5] = value updateCallback() end)
         LayoutContainer:AddChild(SpacingSlider)
+    elseif unit == "raid" then
+        local VSpacingSlider = AG:Create("Slider")
+        VSpacingSlider:SetLabel("Vertical Spacing")
+        VSpacingSlider:SetValue(FrameDB.Layout[5])
+        VSpacingSlider:SetSliderValues(-1, 100, 0.1)
+        VSpacingSlider:SetRelativeWidth(0.125)
+        VSpacingSlider:SetCallback("OnValueChanged", function(_, _, value) FrameDB.Layout[5] = value updateCallback() end)
+        LayoutContainer:AddChild(VSpacingSlider)
+
+        local HSpacingSlider = AG:Create("Slider")
+        HSpacingSlider:SetLabel("Horizontal Spacing")
+        HSpacingSlider:SetValue(FrameDB.Layout[6])
+        HSpacingSlider:SetSliderValues(-1, 100, 0.1)
+        HSpacingSlider:SetRelativeWidth(0.125)
+        HSpacingSlider:SetCallback("OnValueChanged", function(_, _, value) FrameDB.Layout[6] = value updateCallback() end)
+        LayoutContainer:AddChild(HSpacingSlider)
     end
 
     local FrameStrataDropdown = AG:Create("Dropdown")
     FrameStrataDropdown:SetList(FrameStrataList[1], FrameStrataList[2])
     FrameStrataDropdown:SetLabel("Frame Strata")
     FrameStrataDropdown:SetValue(FrameDB.FrameStrata)
-    FrameStrataDropdown:SetRelativeWidth((unit == "boss" or unit == "party") and 0.25 or 0.33)
+    FrameStrataDropdown:SetRelativeWidth((unit == "boss" or unit == "party" or unit == "raid") and 0.25 or 0.33)
     FrameStrataDropdown:SetCallback("OnValueChanged", function(_, _, value) FrameDB.FrameStrata = value updateCallback() end)
     LayoutContainer:AddChild(FrameStrataDropdown)
 
@@ -783,6 +848,35 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
         RoleOrder3Dropdown:SetDisabled(FrameDB.SortBy ~= "ROLE")
         RoleOrder3Dropdown:SetCallback("OnValueChanged", function(_, _, value) FrameDB.SortOrder[3] = value updateCallback() end)
         SortContainer:AddChild(RoleOrder3Dropdown)
+    end
+
+    if unit == "raid" then
+        local RaidSortContainer = GUIWidgets.CreateInlineGroup(containerParent, "Raid Configuration")
+
+        local GroupsToShowDropdown = AG:Create("Dropdown")
+        GroupsToShowDropdown:SetList({
+            ["1"] = "1 Group  (5 members)",
+            ["2"] = "2 Groups (10 members)",
+            ["3"] = "3 Groups (15 members)",
+            ["4"] = "4 Groups (20 members)",
+            ["5"] = "5 Groups (25 members)",
+            ["6"] = "6 Groups (30 members)",
+            ["7"] = "7 Groups (35 members)",
+            ["8"] = "8 Groups (40 members)",
+        })
+        GroupsToShowDropdown:SetLabel("Groups to Show")
+        GroupsToShowDropdown:SetValue(FrameDB.GroupsToShow)
+        GroupsToShowDropdown:SetRelativeWidth(0.5)
+        GroupsToShowDropdown:SetCallback("OnValueChanged", function(_, _, value) FrameDB.GroupsToShow = value updateCallback() end)
+        RaidSortContainer:AddChild(GroupsToShowDropdown)
+
+        local SortByDropdown = AG:Create("Dropdown")
+        SortByDropdown:SetList({["GROUP"] = "Sort By Group", ["INDEX"] = "Sort By Index", ["ROLE"] = "Sort By Role"})
+        SortByDropdown:SetLabel("Sort By")
+        SortByDropdown:SetValue(FrameDB.SortBy)
+        SortByDropdown:SetRelativeWidth(0.5)
+        SortByDropdown:SetCallback("OnValueChanged", function(_, _, value) FrameDB.SortBy = value updateCallback() end)
+        RaidSortContainer:AddChild(SortByDropdown)
     end
 
     local ColourContainer = GUIWidgets.CreateInlineGroup(containerParent, "Colours & Toggles")
@@ -902,7 +996,7 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
     BackgroundOpacitySlider:SetIsPercent(true)
     ColourContainer:AddChild(BackgroundOpacitySlider)
 
-    if unit == "player" or unit == "target" or unit == "focus" then
+    if unit == "player" or unit == "target" or unit == "focus" or unit == "party" or unit == "raid" then
         local DispelHighlightContainer = GUIWidgets.CreateInlineGroup(containerParent, "Dispel Highlighting")
 
         local EnableDispelHighlightingToggle = AG:Create("CheckBox")
@@ -2464,23 +2558,23 @@ local function CreateIndicatorSettings(containerParent, unit)
         SaveSubTab(unit, "Indicators", IndicatorTab)
         IndicatorContainer:ReleaseChildren()
         if IndicatorTab == "RaidTargetMarker" then
-            CreateRaidTargetMarkerSettings(IndicatorContainer, unit, function() if unit == "boss" then UUF:UpdateBossFrames() elseif unit == "party" then UUF:UpdatePartyFrames() else UUF:UpdateUnitRaidTargetMarker(UUF[unit:upper()], unit) end end)
+            CreateRaidTargetMarkerSettings(IndicatorContainer, unit, function() if unit == "boss" then UUF:UpdateBossFrames() elseif unit == "party" then UUF:UpdatePartyFrames() elseif unit == "raid" then UUF:UpdateRaidFrames() else UUF:UpdateUnitRaidTargetMarker(UUF[unit:upper()], unit) end end)
         elseif IndicatorTab == "LeaderAssistant" then
-            CreateLeaderAssistaintSettings(IndicatorContainer, unit, function() if unit == "party" then UUF:UpdatePartyFrames() else UUF:UpdateUnitLeaderAssistantIndicator(UUF[unit:upper()], unit) end end)
+            CreateLeaderAssistaintSettings(IndicatorContainer, unit, function() if unit == "party" then UUF:UpdatePartyFrames() elseif unit == "raid" then UUF:UpdateRaidFrames() else UUF:UpdateUnitLeaderAssistantIndicator(UUF[unit:upper()], unit) end end)
         elseif IndicatorTab == "Resting" then
             CreateStatusSettings(IndicatorContainer, unit, "Resting", function() UUF:UpdateUnitRestingIndicator(UUF[unit:upper()], unit) end)
         elseif IndicatorTab == "Combat" then
             CreateStatusSettings(IndicatorContainer, unit, "Combat", function() UUF:UpdateUnitCombatIndicator(UUF[unit:upper()], unit) end)
         elseif IndicatorTab == "Role" then
-            CreateRoleIndicatorSettings(IndicatorContainer, unit, function() UUF:UpdatePartyFrames() end)
+            CreateRoleIndicatorSettings(IndicatorContainer, unit, function() if unit == "party" then UUF:UpdatePartyFrames() elseif unit == "raid" then UUF:UpdateRaidFrames() end end)
         elseif IndicatorTab == "Summon" then
-            CreateSummonIndicatorSettings(IndicatorContainer, unit, function() UUF:UpdatePartyFrames() end)
+            CreateSummonIndicatorSettings(IndicatorContainer, unit, function() if unit == "party" then UUF:UpdatePartyFrames() elseif unit == "raid" then UUF:UpdateRaidFrames() end end)
         elseif IndicatorTab == "Phase" then
-            CreatePhaseIndicatorSettings(IndicatorContainer, unit, function() UUF:UpdatePartyFrames() end)
+            CreatePhaseIndicatorSettings(IndicatorContainer, unit, function() if unit == "party" then UUF:UpdatePartyFrames() elseif unit == "raid" then UUF:UpdateRaidFrames() end end)
         elseif IndicatorTab == "Mouseover" then
-            CreateMouseoverSettings(IndicatorContainer, unit, function() if unit == "boss" then UUF:UpdateBossFrames() elseif unit == "party" then UUF:UpdatePartyFrames() else UUF:UpdateUnitMouseoverIndicator(UUF[unit:upper()], unit) end end)
+            CreateMouseoverSettings(IndicatorContainer, unit, function() if unit == "boss" then UUF:UpdateBossFrames() elseif unit == "party" then UUF:UpdatePartyFrames() elseif unit == "raid" then UUF:UpdateRaidFrames() else UUF:UpdateUnitMouseoverIndicator(UUF[unit:upper()], unit) end end)
         elseif IndicatorTab == "TargetIndicator" then
-            CreateTargetIndicatorSettings(IndicatorContainer, unit, function() if unit == "boss" then UUF:UpdateBossFrames() elseif unit == "party" then UUF:UpdatePartyFrames() else UUF:UpdateUnitTargetGlowIndicator(UUF[unit:upper()], unit) end end)
+            CreateTargetIndicatorSettings(IndicatorContainer, unit, function() if unit == "boss" then UUF:UpdateBossFrames() elseif unit == "party" then UUF:UpdatePartyFrames() elseif unit == "raid" then UUF:UpdateRaidFrames() else UUF:UpdateUnitTargetGlowIndicator(UUF[unit:upper()], unit) end end)
         elseif IndicatorTab == "Totems" then
             -- CreateTotemsIndicatorSettings(IndicatorContainer, unit, function() UUF:UpdateUnitTotems(UUF[unit:upper()], unit) end)
         end
@@ -2513,6 +2607,16 @@ local function CreateIndicatorSettings(containerParent, unit)
             { text = "Target Indicator", value = "TargetIndicator" },
         })
     elseif unit == "party" then
+        IndicatorContainerTabGroup:SetTabs({
+            { text = "Raid Target Marker", value = "RaidTargetMarker" },
+            { text = "Leader & Assistant", value = "LeaderAssistant" },
+            { text = "Role", value = "Role" },
+            { text = "Summon", value = "Summon" },
+            { text = "Phase", value = "Phase" },
+            { text = "Mouseover", value = "Mouseover" },
+            { text = "Target Indicator", value = "TargetIndicator" },
+        })
+    elseif unit == "raid" then
         IndicatorContainerTabGroup:SetTabs({
             { text = "Raid Target Marker", value = "RaidTargetMarker" },
             { text = "Leader & Assistant", value = "LeaderAssistant" },
@@ -3209,21 +3313,21 @@ local function CreateUnitSettings(containerParent, unit)
         lastSelectedUnitTabs[unit].mainTab = UnitTab
         SubContainer:ReleaseChildren()
         if UnitTab == "Frame" then
-            CreateFrameSettings(SubContainer, unit, UUF.db.profile.Units[unit].Frame.AnchorParent and true or false, function() if unit == "boss" then UUF:UpdateBossFrames() elseif unit == "party" then UUF:UpdatePartyFrames() else UUF:UpdateUnitFrame(UUF[unit:upper()], unit) end end)
+            CreateFrameSettings(SubContainer, unit, UUF.db.profile.Units[unit].Frame.AnchorParent and true or false, function() if unit == "boss" then UUF:UpdateBossFrames() elseif unit == "party" then UUF:UpdatePartyFrames() elseif unit == "raid" then UUF:UpdateRaidFrames() else UUF:UpdateUnitFrame(UUF[unit:upper()], unit) end end)
         elseif UnitTab == "HealPrediction" then
-            CreateHealPredictionSettings(SubContainer, unit, function() if unit == "boss" then UUF:UpdateBossFrames() elseif unit == "party" then UUF:UpdatePartyFrames() else UUF:UpdateUnitHealPrediction(UUF[unit:upper()], unit) end end)
+            CreateHealPredictionSettings(SubContainer, unit, function() if unit == "boss" then UUF:UpdateBossFrames() elseif unit == "party" then UUF:UpdatePartyFrames() elseif unit == "raid" then UUF:UpdateRaidFrames() else UUF:UpdateUnitHealPrediction(UUF[unit:upper()], unit) end end)
         elseif UnitTab == "Auras" then
             CreateAuraSettings(SubContainer, unit)
         elseif UnitTab == "PowerBar" then
-            CreatePowerBarSettings(SubContainer, unit, function() if unit == "boss" then UUF:UpdateBossFrames() elseif unit == "party" then UUF:UpdatePartyFrames() else UUF:UpdateUnitPowerBar(UUF[unit:upper()], unit) end end)
+            CreatePowerBarSettings(SubContainer, unit, function() if unit == "boss" then UUF:UpdateBossFrames() elseif unit == "party" then UUF:UpdatePartyFrames() elseif unit == "raid" then UUF:UpdateRaidFrames() else UUF:UpdateUnitPowerBar(UUF[unit:upper()], unit) end end)
         elseif UnitTab == "SecondaryPowerBar" then
             CreateSecondaryPowerBarSettings(SubContainer, unit, function() UUF:UpdateUnitSecondaryPowerBar(UUF[unit:upper()], unit) end)
         elseif UnitTab == "AlternativePowerBar" then
-            CreateAlternativePowerBarSettings(SubContainer, unit, function() if unit == "boss" then UUF:UpdateBossFrames() elseif unit == "party" then UUF:UpdatePartyFrames() else UUF:UpdateUnitAlternativePowerBar(UUF[unit:upper()], unit) end end)
+            CreateAlternativePowerBarSettings(SubContainer, unit, function() if unit == "boss" then UUF:UpdateBossFrames() elseif unit == "party" then UUF:UpdatePartyFrames() elseif unit == "raid" then UUF:UpdateRaidFrames() else UUF:UpdateUnitAlternativePowerBar(UUF[unit:upper()], unit) end end)
         elseif UnitTab == "CastBar" then
             CreateCastBarSettings(SubContainer, unit)
         elseif UnitTab == "Portrait" then
-            CreatePortraitSettings(SubContainer, unit, function() if unit == "boss" then UUF:UpdateBossFrames() elseif unit == "party" then UUF:UpdatePartyFrames() else UUF:UpdateUnitPortrait(UUF[unit:upper()], unit) end end)
+            CreatePortraitSettings(SubContainer, unit, function() if unit == "boss" then UUF:UpdateBossFrames() elseif unit == "party" then UUF:UpdatePartyFrames() elseif unit == "raid" then UUF:UpdateRaidFrames() else UUF:UpdateUnitPortrait(UUF[unit:upper()], unit) end end)
         elseif UnitTab == "Indicators" then
             CreateIndicatorSettings(SubContainer, unit)
         elseif UnitTab == "Tags" then
@@ -3262,7 +3366,7 @@ local function CreateUnitSettings(containerParent, unit)
             { text = "Indicators", value = "Indicators"},
             { text = "Tags", value = "Tags"},
         })
-    elseif unit ~= "targettarget" and unit ~= "focustarget" then
+    elseif unit ~= "targettarget" and unit ~= "focustarget" and unit ~= "raid" then
         SubContainerTabGroup:SetTabs({
             { text = "Frame", value = "Frame"},
             { text = "Heal Prediction", value = "HealPrediction"},
@@ -3270,6 +3374,15 @@ local function CreateUnitSettings(containerParent, unit)
             { text = "Power Bar", value = "PowerBar"},
             { text = "Cast Bar", value = "CastBar"},
             { text = "Portrait", value = "Portrait"},
+            { text = "Indicators", value = "Indicators"},
+            { text = "Tags", value = "Tags"},
+        })
+    elseif unit == "raid" then
+        SubContainerTabGroup:SetTabs({
+            { text = "Frame", value = "Frame"},
+            { text = "Heal Prediction", value = "HealPrediction"},
+            { text = "Auras", value = "Auras"},
+            { text = "Power Bar", value = "PowerBar"},
             { text = "Indicators", value = "Indicators"},
             { text = "Tags", value = "Tags"},
         })
@@ -3687,6 +3800,12 @@ function UUF:CreateGUI()
             CreateUnitSettings(ScrollFrame, "party")
 
             ScrollFrame:DoLayout()
+        elseif MainTab == "Raid" then
+            local ScrollFrame = GUIWidgets.CreateScrollFrame(Wrapper)
+
+            CreateUnitSettings(ScrollFrame, "raid")
+
+            ScrollFrame:DoLayout()
         elseif MainTab == "Tags" then
             local ScrollFrame = GUIWidgets.CreateScrollFrame(Wrapper)
             CreateTagSettings(ScrollFrame)
@@ -3700,6 +3819,7 @@ function UUF:CreateGUI()
         end
         if MainTab == "Boss" then EnableBossFramesTestMode() else DisableBossFramesTestMode() end
         if MainTab == "Party" then EnablePartyFramesTestMode() else DisablePartyFramesTestMode() end
+        if MainTab == "Raid" then EnableRaidFramesTestMode() else DisableRaidFramesTestMode() end
         GenerateSupportText(Container)
     end
 

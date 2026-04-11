@@ -702,3 +702,325 @@ function UUF:CreateTestPartyFrames()
         end
     end
 end
+
+-----------------------------------------------------------------------
+-- Raid Test Data
+-- 40 entries cycling through the available class / power data so the
+-- full grid is populated when test mode is active.
+-----------------------------------------------------------------------
+
+local RaidTestData = {}
+for i = 1, 40 do
+    local dataIndex = ((i - 1) % 10) + 1
+    RaidTestData[i] = {
+        name         = "Raid " .. i,
+        class        = EnvironmenTestData[dataIndex].class,
+        reaction     = 5,
+        health       = 150000 - (((i - 1) % 10) * 12000),
+        maxHealth    = 150000,
+        missingHealth = ((i - 1) % 10) * 12000,
+        absorb       = (((i - 1) % 10) + 1) * 5000,
+        percent      = (150000 - (((i - 1) % 10) * 12000)) / 150000 * 100,
+        maxPower     = 100,
+        power        = 100 - (((i - 1) % 10) * 8),
+        powerType    = EnvironmenTestData[dataIndex].powerType,
+    }
+end
+
+function UUF:CreateTestRaidFrames()
+    local General        = UUF.db.profile.General
+    local AuraDurationDB = UUF.db.profile.Units.raid.Auras.AuraDuration
+    local BuffsDB        = UUF.db.profile.Units.raid.Auras.Buffs
+    local DebuffsDB      = UUF.db.profile.Units.raid.Auras.Debuffs
+    local TagsDB         = UUF.db.profile.Units.raid.Tags
+    local RaidDB         = UUF.db.profile.Units.raid
+    UUF:ResolveLSM()
+
+    if UUF.RAID_TEST_MODE then
+        local groupsToShow   = tonumber(RaidDB.Frame.GroupsToShow) or 8
+        local framesPerGroup = 5
+
+        for i, RaidFrame in ipairs(UUF.RAID_FRAMES) do
+            local groupIndex = math.ceil(i / framesPerGroup)
+            if groupIndex > groupsToShow then
+                RaidFrame:Hide()
+            else
+                RaidFrame:SetAttribute("unit", nil)
+                UnregisterUnitWatch(RaidFrame)
+                if RaidDB.Enabled then RaidFrame:Show() else RaidFrame:Hide() end
+
+                RaidFrame:SetFrameStrata(RaidDB.Frame.FrameStrata)
+
+                if RaidFrame.Health then
+                    local HealthBarDB = UUF.db.profile.Units.raid.HealthBar
+                    RaidFrame.Health:SetMinMaxValues(0, RaidTestData[i].maxHealth)
+                    RaidFrame.Health:SetValue(RaidTestData[i].health)
+                    RaidFrame.HealthBackground:SetMinMaxValues(0, RaidTestData[i].maxHealth)
+                    RaidFrame.HealthBackground:SetValue(RaidTestData[i].missingHealth)
+                    RaidFrame.HealthBackground:SetStatusBarColor(GetTestUnitColour(((i - 1) % 10) + 1, HealthBarDB.Background, HealthBarDB.ColourBackgroundByClass, HealthBarDB.BackgroundOpacity))
+                    RaidFrame.Health:SetStatusBarColor(GetTestUnitColour(((i - 1) % 10) + 1, HealthBarDB.Foreground, HealthBarDB.ColourByClass, HealthBarDB.ForegroundOpacity))
+                end
+
+                if RaidFrame.Power then
+                    RaidFrame.Power:SetMinMaxValues(0, RaidTestData[i].maxPower)
+                    RaidFrame.Power:SetValue(RaidTestData[i].power)
+                end
+
+                local raidTargetMarkerCoords = {
+                    {0,0.25,0,0.25},{0.25,0.5,0,0.25},{0.5,0.75,0,0.25},{0.75,1,0,0.25},
+                    {0,0.25,0.25,0.5},{0.25,0.5,0.25,0.5},{0.5,0.75,0.25,0.5},{0.75,1,0.25,0.5},
+                }
+                local coordIndex = ((i - 1) % 8) + 1
+                if RaidFrame.RaidTargetIndicator and raidTargetMarkerCoords[coordIndex] then
+                    RaidFrame.RaidTargetIndicator:SetTexture("Interface\\TargetingFrame\\UI-RaidTargetingIcons")
+                    RaidFrame.RaidTargetIndicator:SetTexCoord(unpack(raidTargetMarkerCoords[coordIndex]))
+                    if i % 5 == 1 then
+                        RaidFrame.RaidTargetIndicator:Show()
+                    else
+                        RaidFrame.RaidTargetIndicator:Hide()
+                    end
+                end
+
+                if RaidFrame.BuffContainer then
+                    if BuffsDB.Enabled then
+                        RaidFrame.BuffContainer:ClearAllPoints()
+                        RaidFrame.BuffContainer:SetPoint(BuffsDB.Layout[1], RaidFrame, BuffsDB.Layout[2], BuffsDB.Layout[3], BuffsDB.Layout[4])
+                        RaidFrame.BuffContainer:Show()
+
+                        for j = 1, BuffsDB.Num do
+                            local button = RaidFrame.BuffContainer["fake" .. j]
+                            if not button then
+                                button = CreateFrame("Button", nil, RaidFrame.BuffContainer, "BackdropTemplate")
+                                button:SetBackdrop(UUF.BACKDROP)
+                                button:SetBackdropColor(0, 0, 0, 0)
+                                button:SetBackdropBorderColor(0, 0, 0, 1)
+                                button:SetFrameStrata("MEDIUM")
+
+                                button.Icon = button:CreateTexture(nil, "BORDER")
+                                button.Icon:SetAllPoints()
+
+                                button.Count = button:CreateFontString(nil, "OVERLAY")
+                                RaidFrame.BuffContainer["fake" .. j] = button
+                            end
+
+                            button:SetSize(BuffsDB.Size, BuffsDB.Size)
+                            button.Count:ClearAllPoints()
+                            button.Count:SetPoint(BuffsDB.Count.Layout[1], button, BuffsDB.Count.Layout[2], BuffsDB.Count.Layout[3], BuffsDB.Count.Layout[4])
+                            button.Count:SetFont(UUF.Media.Font, BuffsDB.Count.FontSize, General.Fonts.FontFlag)
+                            if General.Fonts.Shadow.Enabled then
+                                button.Count:SetShadowColor(unpack(General.Fonts.Shadow.Colour))
+                                button.Count:SetShadowOffset(General.Fonts.Shadow.XPos, General.Fonts.Shadow.YPos)
+                            else
+                                button.Count:SetShadowColor(0, 0, 0, 0)
+                                button.Count:SetShadowOffset(0, 0)
+                            end
+                            button.Count:SetTextColor(unpack(BuffsDB.Count.Colour))
+
+                            local bRow = math.floor((j - 1) / BuffsDB.Wrap)
+                            local bCol = (j - 1) % BuffsDB.Wrap
+                            local bx   = bCol * (BuffsDB.Size + BuffsDB.Layout[5])
+                            local by   = bRow * (BuffsDB.Size + BuffsDB.Layout[5])
+                            if BuffsDB.GrowthDirection == "LEFT" then bx = -bx end
+                            if BuffsDB.WrapDirection == "DOWN" then by = -by end
+
+                            button:ClearAllPoints()
+                            button:SetPoint(BuffsDB.Layout[1], RaidFrame.BuffContainer, BuffsDB.Layout[1], bx, by)
+
+                            button.Icon:SetTexture(135769)
+                            button.Icon:SetPoint("TOPLEFT", button, "TOPLEFT", 1, -1)
+                            button.Icon:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", -1, 1)
+                            button.Icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
+                            button.Count:SetText(j)
+                            button.Duration = button.Duration or button:CreateFontString(nil, "OVERLAY")
+                            button.Duration:ClearAllPoints()
+                            button.Duration:SetPoint(AuraDurationDB.Layout[1], button, AuraDurationDB.Layout[2], AuraDurationDB.Layout[3], AuraDurationDB.Layout[4])
+                            if AuraDurationDB.ScaleByIconSize then
+                                local iconWidth  = button:GetWidth()
+                                local scaleFactor = iconWidth / 36
+                                button.Duration:SetFont(UUF.Media.Font, AuraDurationDB.FontSize * scaleFactor, General.Fonts.FontFlag)
+                            else
+                                button.Duration:SetFont(UUF.Media.Font, AuraDurationDB.FontSize, General.Fonts.FontFlag)
+                            end
+                            if General.Fonts.Shadow.Enabled then
+                                button.Duration:SetShadowColor(unpack(General.Fonts.Shadow.Colour))
+                                button.Duration:SetShadowOffset(General.Fonts.Shadow.XPos, General.Fonts.Shadow.YPos)
+                            else
+                                button.Duration:SetShadowColor(0, 0, 0, 0)
+                                button.Duration:SetShadowOffset(0, 0)
+                            end
+                            button.Duration:SetTextColor(AuraDurationDB.Colour[1], AuraDurationDB.Colour[2], AuraDurationDB.Colour[3], 1)
+                            button.Duration:SetText("10m")
+                            button:Show()
+                        end
+
+                        local maxFake = BuffsDB.Num
+                        for j = maxFake + 1, (RaidFrame.BuffContainer.maxFake or maxFake) do
+                            local button = RaidFrame.BuffContainer["fake" .. j]
+                            if button then button:Hide() end
+                        end
+                        RaidFrame.BuffContainer.maxFake = BuffsDB.Num
+                    else
+                        RaidFrame.BuffContainer:Hide()
+                    end
+                end
+
+                if RaidFrame.DebuffContainer then
+                    if DebuffsDB.Enabled then
+                        RaidFrame.DebuffContainer:ClearAllPoints()
+                        RaidFrame.DebuffContainer:SetPoint(DebuffsDB.Layout[1], RaidFrame, DebuffsDB.Layout[2], DebuffsDB.Layout[3], DebuffsDB.Layout[4])
+                        RaidFrame.DebuffContainer:Show()
+
+                        for j = 1, DebuffsDB.Num do
+                            local button = RaidFrame.DebuffContainer["fake" .. j]
+                            if not button then
+                                button = CreateFrame("Button", nil, RaidFrame.DebuffContainer, "BackdropTemplate")
+                                button:SetBackdrop(UUF.BACKDROP)
+                                button:SetBackdropColor(0, 0, 0, 0)
+                                button:SetBackdropBorderColor(0, 0, 0, 1)
+                                button:SetFrameStrata("MEDIUM")
+
+                                button.Icon = button:CreateTexture(nil, "BORDER")
+                                button.Icon:SetAllPoints()
+
+                                button.Count = button:CreateFontString(nil, "OVERLAY")
+                                RaidFrame.DebuffContainer["fake" .. j] = button
+                            end
+
+                            button:SetSize(DebuffsDB.Size, DebuffsDB.Size)
+                            button.Count:ClearAllPoints()
+                            button.Count:SetPoint(DebuffsDB.Count.Layout[1], button, DebuffsDB.Count.Layout[2], DebuffsDB.Count.Layout[3], DebuffsDB.Count.Layout[4])
+                            button.Count:SetFont(UUF.Media.Font, DebuffsDB.Count.FontSize, General.Fonts.FontFlag)
+                            if General.Fonts.Shadow.Enabled then
+                                button.Count:SetShadowColor(unpack(General.Fonts.Shadow.Colour))
+                                button.Count:SetShadowOffset(General.Fonts.Shadow.XPos, General.Fonts.Shadow.YPos)
+                            else
+                                button.Count:SetShadowColor(0, 0, 0, 0)
+                                button.Count:SetShadowOffset(0, 0)
+                            end
+                            button.Count:SetTextColor(unpack(DebuffsDB.Count.Colour))
+
+                            local bRow = math.floor((j - 1) / DebuffsDB.Wrap)
+                            local bCol = (j - 1) % DebuffsDB.Wrap
+                            local bx   = bCol * (DebuffsDB.Size + DebuffsDB.Layout[5])
+                            local by   = bRow * (DebuffsDB.Size + DebuffsDB.Layout[5])
+                            if DebuffsDB.GrowthDirection == "LEFT" then bx = -bx end
+                            if DebuffsDB.WrapDirection == "DOWN" then by = -by end
+
+                            button:ClearAllPoints()
+                            button:SetPoint(DebuffsDB.Layout[1], RaidFrame.DebuffContainer, DebuffsDB.Layout[1], bx, by)
+                            button.Icon:SetTexture(135768)
+                            button.Icon:SetPoint("TOPLEFT", button, "TOPLEFT", 1, -1)
+                            button.Icon:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", -1, 1)
+                            button.Icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
+                            button.Count:SetText(j)
+                            button.Duration = button.Duration or button:CreateFontString(nil, "OVERLAY")
+                            button.Duration:ClearAllPoints()
+                            button.Duration:SetPoint(AuraDurationDB.Layout[1], button, AuraDurationDB.Layout[2], AuraDurationDB.Layout[3], AuraDurationDB.Layout[4])
+                            if AuraDurationDB.ScaleByIconSize then
+                                local iconWidth   = button:GetWidth()
+                                local scaleFactor = iconWidth / 36
+                                button.Duration:SetFont(UUF.Media.Font, AuraDurationDB.FontSize * scaleFactor, General.Fonts.FontFlag)
+                            else
+                                button.Duration:SetFont(UUF.Media.Font, AuraDurationDB.FontSize, General.Fonts.FontFlag)
+                            end
+                            if General.Fonts.Shadow.Enabled then
+                                button.Duration:SetShadowColor(unpack(General.Fonts.Shadow.Colour))
+                                button.Duration:SetShadowOffset(General.Fonts.Shadow.XPos, General.Fonts.Shadow.YPos)
+                            else
+                                button.Duration:SetShadowColor(0, 0, 0, 0)
+                                button.Duration:SetShadowOffset(0, 0)
+                            end
+                            button.Duration:SetTextColor(AuraDurationDB.Colour[1], AuraDurationDB.Colour[2], AuraDurationDB.Colour[3], 1)
+                            button.Duration:SetText("10m")
+                            button:Show()
+                        end
+
+                        local maxFake = DebuffsDB.Num
+                        for j = maxFake + 1, (RaidFrame.DebuffContainer.maxFake or maxFake) do
+                            local button = RaidFrame.DebuffContainer["fake" .. j]
+                            if button then button:Hide() end
+                        end
+                        RaidFrame.DebuffContainer.maxFake = DebuffsDB.Num
+                    else
+                        RaidFrame.DebuffContainer:Hide()
+                    end
+                end
+
+                if RaidFrame.TargetIndicator then
+                    local TargetIndicatorDB = UUF.db.profile.Units.raid.Indicators.Target
+                    if TargetIndicatorDB.Enabled and i % 5 == 1 then
+                        RaidFrame.TargetIndicator:Show()
+                    else
+                        RaidFrame.TargetIndicator:Hide()
+                    end
+                end
+
+                if RaidFrame.Tags.TagOne then
+                    local TagOneDB = TagsDB.TagOne
+                    RaidFrame.Tags.TagOne:ClearAllPoints()
+                    RaidFrame.Tags.TagOne:SetPoint(TagOneDB.Layout[1], RaidFrame, TagOneDB.Layout[2], TagOneDB.Layout[3], TagOneDB.Layout[4])
+                    RaidFrame.Tags.TagOne:SetFont(UUF.Media.Font, TagOneDB.FontSize, General.Fonts.FontFlag)
+                    if General.Fonts.Shadow.Enabled then
+                        RaidFrame.Tags.TagOne:SetShadowColor(unpack(General.Fonts.Shadow.Colour))
+                        RaidFrame.Tags.TagOne:SetShadowOffset(General.Fonts.Shadow.XPos, General.Fonts.Shadow.YPos)
+                    else
+                        RaidFrame.Tags.TagOne:SetShadowColor(0, 0, 0, 0)
+                        RaidFrame.Tags.TagOne:SetShadowOffset(0, 0)
+                    end
+                    RaidFrame.Tags.TagOne:SetTextColor(unpack(TagOneDB.Colour))
+                    RaidFrame.Tags.TagOne:SetText(RaidTestData[i].name)
+                end
+
+                if RaidFrame.Tags.TagTwo then
+                    local TagTwoDB = TagsDB.TagTwo
+                    RaidFrame.Tags.TagTwo:ClearAllPoints()
+                    RaidFrame.Tags.TagTwo:SetPoint(TagTwoDB.Layout[1], RaidFrame, TagTwoDB.Layout[2], TagTwoDB.Layout[3], TagTwoDB.Layout[4])
+                    RaidFrame.Tags.TagTwo:SetFont(UUF.Media.Font, TagTwoDB.FontSize, General.Fonts.FontFlag)
+                    if General.Fonts.Shadow.Enabled then
+                        RaidFrame.Tags.TagTwo:SetShadowColor(unpack(General.Fonts.Shadow.Colour))
+                        RaidFrame.Tags.TagTwo:SetShadowOffset(General.Fonts.Shadow.XPos, General.Fonts.Shadow.YPos)
+                    else
+                        RaidFrame.Tags.TagTwo:SetShadowColor(0, 0, 0, 0)
+                        RaidFrame.Tags.TagTwo:SetShadowOffset(0, 0)
+                    end
+                    RaidFrame.Tags.TagTwo:SetTextColor(unpack(TagTwoDB.Colour))
+                    RaidFrame.Tags.TagTwo:SetText(string.format("%.1f%%", RaidTestData[i].percent))
+                end
+
+                if RaidFrame.Tags.TagThree then
+                    local TagThreeDB = TagsDB.TagThree
+                    RaidFrame.Tags.TagThree:ClearAllPoints()
+                    RaidFrame.Tags.TagThree:SetPoint(TagThreeDB.Layout[1], RaidFrame, TagThreeDB.Layout[2], TagThreeDB.Layout[3], TagThreeDB.Layout[4])
+                    RaidFrame.Tags.TagThree:SetFont(UUF.Media.Font, TagThreeDB.FontSize, General.Fonts.FontFlag)
+                    if General.Fonts.Shadow.Enabled then
+                        RaidFrame.Tags.TagThree:SetShadowColor(unpack(General.Fonts.Shadow.Colour))
+                        RaidFrame.Tags.TagThree:SetShadowOffset(General.Fonts.Shadow.XPos, General.Fonts.Shadow.YPos)
+                    else
+                        RaidFrame.Tags.TagThree:SetShadowColor(0, 0, 0, 0)
+                        RaidFrame.Tags.TagThree:SetShadowOffset(0, 0)
+                    end
+                    RaidFrame.Tags.TagThree:SetTextColor(unpack(TagThreeDB.Colour))
+                    RaidFrame.Tags.TagThree:SetText(RaidTestData[i].power)
+                end
+            end
+        end
+    else
+        for i, RaidFrame in ipairs(UUF.RAID_FRAMES) do
+            RaidFrame:SetAttribute("unit", "raid" .. i)
+            local groupsToShow   = tonumber(UUF.db.profile.Units.raid.Frame.GroupsToShow) or 8
+            local groupIndex     = math.ceil(i / 5)
+            if groupIndex <= groupsToShow then
+                RegisterUnitWatch(RaidFrame)
+            end
+            for j = 1, (RaidFrame.BuffContainer and RaidFrame.BuffContainer.maxFake or 0) do
+                local button = RaidFrame.BuffContainer["fake" .. j]
+                if button then button:Hide() end
+            end
+            for j = 1, (RaidFrame.DebuffContainer and RaidFrame.DebuffContainer.maxFake or 0) do
+                local button = RaidFrame.DebuffContainer["fake" .. j]
+                if button then button:Hide() end
+            end
+            RaidFrame:Hide()
+        end
+    end
+end

@@ -1654,6 +1654,186 @@ local Defaults = {
                     },
                 }
             },
+            raid = {
+                Enabled = true,
+                ForceHideBlizzard = true,
+                Frame = {
+                    Width = 90,
+                    Height = 52,
+                    -- AnchorFrom, AnchorTo, XOffset, YOffset, Vertical Spacing, Horizontal Spacing
+                    Layout = {"CENTER", "CENTER", -550.1, -0.1, 1, 1},
+                    -- Growth Directions
+                    -- DOWN_RIGHT = grow down first, then right
+                    -- DOWN_LEFT = grow down first, then left
+                    -- UP_RIGHT = grow up first, then right
+                    -- UP_LEFT = grow up first, then left
+                    -- LEFT_DOWN = grow left first, then down
+                    -- LEFT_UP = grow left first, then up
+                    -- RIGHT_DOWN = grow right first, then down
+                    -- RIGHT_UP = grow right first, then up
+                    GrowthDirection = "DOWN_RIGHT",
+                    FrameStrata = "LOW",
+                    SortBy = "GROUP",
+                    GroupsToShow = "8",
+                },
+                HealthBar = {
+                    ColourByClass = true,
+                    ColourBackgroundByClass = false,
+                    ColourByReaction = true,
+                    ColourWhenTapped = true,
+                    Inverse = false,
+                    Foreground = {8/255, 8/255, 8/255},
+                    ForegroundOpacity = 0.8,
+                    Background = {34/255, 34/255, 34/255},
+                    BackgroundOpacity = 1.0,
+                    DispelHighlight = {
+                        Enabled = true,
+                        Style = "GRADIENT",
+                    },
+                },
+                HealPrediction = {
+                    Absorbs = {
+                        Enabled = true,
+                        UseStripedTexture = true,
+                        MatchParentHeight = true,
+                        Colour = {255/255, 204/255, 0/255, 1.0},
+                        Position = "LEFT",
+                        Height = 40,
+                    },
+                    HealAbsorbs = {
+                        Enabled = true,
+                        UseStripedTexture = false,
+                        MatchParentHeight = true,
+                        Colour = {128/255, 64/255, 255/255, 1.0},
+                        Position = "RIGHT",
+                        Height = 40,
+                    },
+                },
+                PowerBar = {
+                    Enabled = false,
+                    Height = 3,
+                    Foreground = {8/255, 8/255, 8/255},
+                    Background = {128/255, 128/255, 128/255},
+                    ColourByType = true,
+                    ColourBackgroundByType = false,
+                    ColourByClass = false,
+                    Smooth = true,
+                    Inverse = false,
+                    BackgroundMultiplier = 0.75,
+                },
+                Indicators = {
+                    RaidTargetMarker = {
+                        Enabled = true,
+                        Size = 24,
+                        Layout = {"CENTER", "TOP", 0, 0},
+                    },
+                    Summon = {
+                        Enabled = true,
+                        Size = 24,
+                        Layout = {"CENTER", "CENTER", 0, 0},
+                    },
+                    Phase = {
+                        Enabled = true,
+                        Size = 24,
+                        Layout = {"CENTER", "CENTER", 0, 0},
+                    },
+                    LeaderAssistantIndicator = {
+                        Enabled = true,
+                        Size = 16,
+                        Layout = {"TOPRIGHT", "TOPRIGHT", -3, -3},
+                    },
+                    Role = {
+                        Enabled = true,
+                        Size = 16,
+                        Layout = {"TOPLEFT", "TOPLEFT", 3, -3},
+                    },
+                    Mouseover = {
+                        Enabled = true,
+                        Colour = {1, 1, 1},
+                        HighlightOpacity = 0.75,
+                        Style = "GRADIENT"
+                    },
+                    Target = {
+                        Enabled = false,
+                        Colour = {1, 1, 1, 1},
+                    }
+                },
+                Auras = {
+                    FrameStrata = "LOW",
+                    AuraDuration = {
+                        Layout = {"CENTER", "CENTER", 0, 0},
+                        FontSize = 12,
+                        ScaleByIconSize = false,
+                        Colour = {1, 1, 1},
+                    },
+                    Buffs = {
+                        Enabled = true,
+                        OnlyShowPlayer = false,
+                        Size = 30,
+                        Layout = {"BOTTOMLEFT", "BOTTOMLEFT", 1, 1, 1},
+                        Num = 1,
+                        Wrap = 1,
+                        GrowthDirection = "RIGHT",
+                        WrapDirection = "UP",
+                        ShowType = false,
+                        Filter = "HELPFUL",
+                        Count = {
+                            Layout = {"BOTTOMRIGHT", "BOTTOMRIGHT", 0, 2},
+                            FontSize = 12,
+                            Colour = {1, 1, 1, 1}
+                        }
+                    },
+                    Debuffs = {
+                        Enabled = false,
+                        OnlyShowPlayer = false,
+                        Size = 30,
+                        Layout = {"BOTTOMRIGHT", "TOPRIGHT", -1, 1, 1},
+                        Num = 2,
+                        Wrap = 2,
+                        GrowthDirection = "LEFT",
+                        WrapDirection = "UP",
+                        ShowType = false,
+                        Filter = "HARMFUL",
+                        Count = {
+                            Layout = {"BOTTOMRIGHT", "BOTTOMRIGHT", 0, 2},
+                            FontSize = 12,
+                            Colour = {1, 1, 1, 1}
+                        }
+                    },
+                },
+                Tags = {
+                    TagOne = {
+                        FontSize = 12,
+                        Layout = {"TOPLEFT", "TOPLEFT", 3, -3},
+                        Colour = {1, 1, 1},
+                        Tag = "[name]",
+                    },
+                    TagTwo = {
+                        FontSize = 12,
+                        Layout = {"CENTER", "CENTER", 0, 0},
+                        Colour = {1, 1, 1},
+                        Tag = "",
+                    },
+                    TagThree = {
+                        FontSize = 12,
+                        Layout = {"CENTER", "CENTER", 0, 0},
+                        Colour = {1, 1, 1},
+                        Tag = "",
+                    },
+                    TagFour = {
+                        FontSize = 12,
+                        Layout = {"CENTER", "CENTER", 0, 0},
+                        Colour = {1, 1, 1},
+                        Tag = "",
+                    },
+                    TagFive = {
+                        FontSize = 12,
+                        Layout = {"CENTER", "CENTER", 0, 0},
+                        Colour = {1, 1, 1},
+                        Tag = "",
+                    },
+                }
+            },
         }
     },
 }

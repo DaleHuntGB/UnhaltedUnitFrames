@@ -49,4 +49,5 @@ function UnhaltedUnitFrames:OnEnable()
     UUF:SpawnUnitFrame("pet")
     UUF:SpawnUnitFrame("boss")
     UUF:SpawnPartyFrames()
+    UUF:SpawnRaidFrames()
 end

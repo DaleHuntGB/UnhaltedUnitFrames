@@ -159,6 +159,8 @@ function UUF:UpdateAllUnitFrames()
             UUF:UpdateBossFrames()
         elseif unit == "party" then
             UUF:UpdatePartyFrames()
+        elseif unit == "raid" then
+            UUF:UpdateRaidFrames()
         elseif UUF[unit:upper()] then
             UUF:UpdateUnitFrame(UUF[unit:upper()], unit)
         end
@@ -175,6 +177,8 @@ function UUF:ToggleUnitFrameVisibility(unit)
             if not UUF["BOSS1"] then UUF:SpawnUnitFrame(unit) end
         elseif unit == "party" then
             if not UUF["PARTY1"] then UUF:SpawnPartyFrames() end
+        elseif unit == "raid" then
+            if not UUF["RAID1"] then UUF:SpawnRaidFrames() end
         elseif not UUF[UnitKey] then
             UUF:SpawnUnitFrame(unit)
         end
@@ -195,6 +199,11 @@ function UUF:ToggleUnitFrameVisibility(unit)
             local unitFrame = UUF["PARTY"..i]
             if unitFrame then (UnitDB.Enabled and RegisterUnitWatch or UnregisterUnitWatch)(unitFrame) unitFrame:SetShown(UnitDB.Enabled) end
         end
+        return
+    end
+
+    if unit == "raid" then
+        UUF:ToggleRaidFrameVisibility()
         return
     end
 
