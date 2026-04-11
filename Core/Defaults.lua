@@ -122,7 +122,7 @@ local Defaults = {
                     Incoming = {
                         Enabled = false,
                         MatchParentHeight = true,
-                        Colour = {64/255, 128/255, 64/255, 1.0},
+                        Colour = {64/255, 255/255, 64/255, 1.0},
                         Position = "ATTACH",
                         Height = 40,
                     }
@@ -362,7 +362,7 @@ local Defaults = {
                     Incoming = {
                         Enabled = false,
                         MatchParentHeight = true,
-                        Colour = {64/255, 128/255, 64/255, 1.0},
+                        Colour = {64/255, 255/255, 64/255, 1.0},
                         Position = "ATTACH",
                         Height = 40,
                     },
@@ -570,7 +570,7 @@ local Defaults = {
                     Incoming = {
                         Enabled = false,
                         MatchParentHeight = true,
-                        Colour = {64/255, 128/255, 64/255, 1.0},
+                        Colour = {64/255, 255/255, 64/255, 1.0},
                         Position = "ATTACH",
                         Height = 20,
                     },
@@ -765,7 +765,7 @@ local Defaults = {
                     Incoming = {
                         Enabled = false,
                         MatchParentHeight = true,
-                        Colour = {64/255, 128/255, 64/255, 1.0},
+                        Colour = {64/255, 255/255, 64/255, 1.0},
                         Position = "ATTACH",
                         Height = 20,
                     },
@@ -957,7 +957,7 @@ local Defaults = {
                     Incoming = {
                         Enabled = false,
                         MatchParentHeight = true,
-                        Colour = {64/255, 128/255, 64/255, 1.0},
+                        Colour = {64/255, 255/255, 64/255, 1.0},
                         Position = "ATTACH",
                         Height = 20,
                     },
@@ -1148,7 +1148,7 @@ local Defaults = {
                     Incoming = {
                         Enabled = false,
                         MatchParentHeight = true,
-                        Colour = {64/255, 128/255, 64/255, 1.0},
+                        Colour = {64/255, 255/255, 64/255, 1.0},
                         Position = "ATTACH",
                         Height = 20,
                     },
@@ -1340,7 +1340,7 @@ local Defaults = {
                     Incoming = {
                         Enabled = false,
                         MatchParentHeight = true,
-                        Colour = {64/255, 128/255, 64/255, 1.0},
+                        Colour = {64/255, 255/255, 64/255, 1.0},
                         Position = "ATTACH",
                         Height = 40,
                     },
@@ -1539,7 +1539,7 @@ local Defaults = {
                     Incoming = {
                         Enabled = false,
                         MatchParentHeight = true,
-                        Colour = {64/255, 128/255, 64/255, 1.0},
+                        Colour = {64/255, 255/255, 64/255, 1.0},
                         Position = "ATTACH",
                         Height = 40,
                     },
@@ -1767,7 +1767,7 @@ local Defaults = {
                     Incoming = {
                         Enabled = false,
                         MatchParentHeight = true,
-                        Colour = {64/255, 128/255, 64/255, 1.0},
+                        Colour = {64/255, 255/255, 64/255, 1.0},
                         Position = "ATTACH",
                         Height = 40,
                     },
