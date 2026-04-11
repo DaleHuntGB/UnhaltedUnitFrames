@@ -75,6 +75,7 @@ function UUF:CreateTestBossFrames()
         for i, BossFrame in ipairs(UUF.BOSS_FRAMES) do
             BossFrame:SetAttribute("unit", nil)
             UnregisterUnitWatch(BossFrame)
+            if BossFrame:IsElementEnabled("Auras") then BossFrame:DisableElement("Auras") end
             if BossDB.Enabled then BossFrame:Show() else BossFrame:Hide() end
 
             BossFrame:SetFrameStrata(BossDB.Frame.FrameStrata)
@@ -372,6 +373,7 @@ function UUF:CreateTestBossFrames()
                 local button = BossFrame.DebuffContainer["fake" .. j]
                 if button then button:Hide() end
             end
+            if not BossFrame:IsElementEnabled("Auras") then BossFrame:EnableElement("Auras") end
             BossFrame:Hide()
         end
     end
@@ -406,6 +408,7 @@ function UUF:CreateTestPartyFrames()
         for i, PartyFrame in ipairs(UUF.PARTY_FRAMES) do
             PartyFrame:SetAttribute("unit", nil)
             UnregisterUnitWatch(PartyFrame)
+            if PartyFrame:IsElementEnabled("Auras") then PartyFrame:DisableElement("Auras") end
             if PartyDB.Enabled then PartyFrame:Show() else PartyFrame:Hide() end
 
             PartyFrame:SetFrameStrata(PartyDB.Frame.FrameStrata)
@@ -638,6 +641,68 @@ function UUF:CreateTestPartyFrames()
                 end
             end
 
+            if PartyFrame.LeaderIndicator then
+                local LeaderAssistantDB = UUF.db.profile.Units.party.Indicators.LeaderAssistantIndicator
+                if LeaderAssistantDB.Enabled then
+                    PartyFrame.LeaderIndicator:SetSize(LeaderAssistantDB.Size, LeaderAssistantDB.Size)
+                    PartyFrame.LeaderIndicator:ClearAllPoints()
+                    PartyFrame.LeaderIndicator:SetPoint(LeaderAssistantDB.Layout[1], PartyFrame.HighLevelContainer, LeaderAssistantDB.Layout[2], LeaderAssistantDB.Layout[3], LeaderAssistantDB.Layout[4])
+                    if i == 1 then PartyFrame.LeaderIndicator:Show() else PartyFrame.LeaderIndicator:Hide() end
+                else
+                    PartyFrame.LeaderIndicator:Hide()
+                end
+            end
+
+            if PartyFrame.AssistantIndicator then
+                local LeaderAssistantDB = UUF.db.profile.Units.party.Indicators.LeaderAssistantIndicator
+                if LeaderAssistantDB.Enabled then
+                    PartyFrame.AssistantIndicator:SetSize(LeaderAssistantDB.Size, LeaderAssistantDB.Size)
+                    PartyFrame.AssistantIndicator:ClearAllPoints()
+                    PartyFrame.AssistantIndicator:SetPoint(LeaderAssistantDB.Layout[1], PartyFrame.HighLevelContainer, LeaderAssistantDB.Layout[2], LeaderAssistantDB.Layout[3], LeaderAssistantDB.Layout[4])
+                    if i == 2 then PartyFrame.AssistantIndicator:Show() else PartyFrame.AssistantIndicator:Hide() end
+                else
+                    PartyFrame.AssistantIndicator:Hide()
+                end
+            end
+
+            if PartyFrame.RoleIndicator then
+                local RoleDB = UUF.db.profile.Units.party.Indicators.Role
+                if RoleDB.Enabled then
+                    PartyFrame.RoleIndicator:SetSize(RoleDB.Size, RoleDB.Size)
+                    PartyFrame.RoleIndicator:ClearAllPoints()
+                    PartyFrame.RoleIndicator:SetPoint(RoleDB.Layout[1], PartyFrame.HighLevelContainer, RoleDB.Layout[2], RoleDB.Layout[3], RoleDB.Layout[4])
+                    local roles = { "roleIcon-tank", "roleIcon-healer", "roleIcon-dps", "roleIcon-dps" }
+                    PartyFrame.RoleIndicator:SetAtlas(roles[i] or "roleIcon-dps", true)
+                    PartyFrame.RoleIndicator:Show()
+                else
+                    PartyFrame.RoleIndicator:Hide()
+                end
+            end
+
+            if PartyFrame.SummonIndicator then
+                local SummonDB = UUF.db.profile.Units.party.Indicators.Summon
+                if SummonDB.Enabled then
+                    PartyFrame.SummonIndicator:SetSize(SummonDB.Size, SummonDB.Size)
+                    PartyFrame.SummonIndicator:ClearAllPoints()
+                    PartyFrame.SummonIndicator:SetPoint(SummonDB.Layout[1], PartyFrame.HighLevelContainer, SummonDB.Layout[2], SummonDB.Layout[3], SummonDB.Layout[4])
+                    if i == 3 then PartyFrame.SummonIndicator:Show() else PartyFrame.SummonIndicator:Hide() end
+                else
+                    PartyFrame.SummonIndicator:Hide()
+                end
+            end
+
+            if PartyFrame.PhaseIndicator then
+                local PhaseDB = UUF.db.profile.Units.party.Indicators.Phase
+                if PhaseDB.Enabled then
+                    PartyFrame.PhaseIndicator:SetSize(PhaseDB.Size, PhaseDB.Size)
+                    PartyFrame.PhaseIndicator:ClearAllPoints()
+                    PartyFrame.PhaseIndicator:SetPoint(PhaseDB.Layout[1], PartyFrame.HighLevelContainer, PhaseDB.Layout[2], PhaseDB.Layout[3], PhaseDB.Layout[4])
+                    if i == 4 then PartyFrame.PhaseIndicator:Show() else PartyFrame.PhaseIndicator:Hide() end
+                else
+                    PartyFrame.PhaseIndicator:Hide()
+                end
+            end
+
             if PartyFrame.Tags.TagOne then
                 local TagOneDB = TagsDB.TagOne
                 PartyFrame.Tags.TagOne:ClearAllPoints()
@@ -698,6 +763,7 @@ function UUF:CreateTestPartyFrames()
                 local button = PartyFrame.DebuffContainer["fake" .. j]
                 if button then button:Hide() end
             end
+            if not PartyFrame:IsElementEnabled("Auras") then PartyFrame:EnableElement("Auras") end
             PartyFrame:Hide()
         end
     end
@@ -747,6 +813,7 @@ function UUF:CreateTestRaidFrames()
             else
                 RaidFrame:SetAttribute("unit", nil)
                 UnregisterUnitWatch(RaidFrame)
+                if RaidFrame:IsElementEnabled("Auras") then RaidFrame:DisableElement("Auras") end
                 if RaidDB.Enabled then RaidFrame:Show() else RaidFrame:Hide() end
 
                 RaidFrame:SetFrameStrata(RaidDB.Frame.FrameStrata)
@@ -955,6 +1022,69 @@ function UUF:CreateTestRaidFrames()
                     end
                 end
 
+                if RaidFrame.LeaderIndicator then
+                    local LeaderAssistantDB = UUF.db.profile.Units.raid.Indicators.LeaderAssistantIndicator
+                    if LeaderAssistantDB.Enabled then
+                        RaidFrame.LeaderIndicator:SetSize(LeaderAssistantDB.Size, LeaderAssistantDB.Size)
+                        RaidFrame.LeaderIndicator:ClearAllPoints()
+                        RaidFrame.LeaderIndicator:SetPoint(LeaderAssistantDB.Layout[1], RaidFrame.HighLevelContainer, LeaderAssistantDB.Layout[2], LeaderAssistantDB.Layout[3], LeaderAssistantDB.Layout[4])
+                        if i % 5 == 1 then RaidFrame.LeaderIndicator:Show() else RaidFrame.LeaderIndicator:Hide() end
+                    else
+                        RaidFrame.LeaderIndicator:Hide()
+                    end
+                end
+
+                if RaidFrame.AssistantIndicator then
+                    local LeaderAssistantDB = UUF.db.profile.Units.raid.Indicators.LeaderAssistantIndicator
+                    if LeaderAssistantDB.Enabled then
+                        RaidFrame.AssistantIndicator:SetSize(LeaderAssistantDB.Size, LeaderAssistantDB.Size)
+                        RaidFrame.AssistantIndicator:ClearAllPoints()
+                        RaidFrame.AssistantIndicator:SetPoint(LeaderAssistantDB.Layout[1], RaidFrame.HighLevelContainer, LeaderAssistantDB.Layout[2], LeaderAssistantDB.Layout[3], LeaderAssistantDB.Layout[4])
+                        if i % 5 == 2 then RaidFrame.AssistantIndicator:Show() else RaidFrame.AssistantIndicator:Hide() end
+                    else
+                        RaidFrame.AssistantIndicator:Hide()
+                    end
+                end
+
+                if RaidFrame.RoleIndicator then
+                    local RoleDB = UUF.db.profile.Units.raid.Indicators.Role
+                    if RoleDB.Enabled then
+                        RaidFrame.RoleIndicator:SetSize(RoleDB.Size, RoleDB.Size)
+                        RaidFrame.RoleIndicator:ClearAllPoints()
+                        RaidFrame.RoleIndicator:SetPoint(RoleDB.Layout[1], RaidFrame.HighLevelContainer, RoleDB.Layout[2], RoleDB.Layout[3], RoleDB.Layout[4])
+                        local roleSlot = (i - 1) % 5
+                        local roles = { "roleIcon-tank", "roleIcon-healer", "roleIcon-dps", "roleIcon-dps", "roleIcon-dps" }
+                        RaidFrame.RoleIndicator:SetAtlas(roles[roleSlot + 1] or "roleIcon-dps", true)
+                        RaidFrame.RoleIndicator:Show()
+                    else
+                        RaidFrame.RoleIndicator:Hide()
+                    end
+                end
+
+                if RaidFrame.SummonIndicator then
+                    local SummonDB = UUF.db.profile.Units.raid.Indicators.Summon
+                    if SummonDB.Enabled then
+                        RaidFrame.SummonIndicator:SetSize(SummonDB.Size, SummonDB.Size)
+                        RaidFrame.SummonIndicator:ClearAllPoints()
+                        RaidFrame.SummonIndicator:SetPoint(SummonDB.Layout[1], RaidFrame.HighLevelContainer, SummonDB.Layout[2], SummonDB.Layout[3], SummonDB.Layout[4])
+                        if i % 5 == 3 then RaidFrame.SummonIndicator:Show() else RaidFrame.SummonIndicator:Hide() end
+                    else
+                        RaidFrame.SummonIndicator:Hide()
+                    end
+                end
+
+                if RaidFrame.PhaseIndicator then
+                    local PhaseDB = UUF.db.profile.Units.raid.Indicators.Phase
+                    if PhaseDB.Enabled then
+                        RaidFrame.PhaseIndicator:SetSize(PhaseDB.Size, PhaseDB.Size)
+                        RaidFrame.PhaseIndicator:ClearAllPoints()
+                        RaidFrame.PhaseIndicator:SetPoint(PhaseDB.Layout[1], RaidFrame.HighLevelContainer, PhaseDB.Layout[2], PhaseDB.Layout[3], PhaseDB.Layout[4])
+                        if i % 5 == 4 then RaidFrame.PhaseIndicator:Show() else RaidFrame.PhaseIndicator:Hide() end
+                    else
+                        RaidFrame.PhaseIndicator:Hide()
+                    end
+                end
+
                 if RaidFrame.Tags.TagOne then
                     local TagOneDB = TagsDB.TagOne
                     RaidFrame.Tags.TagOne:ClearAllPoints()
@@ -1020,6 +1150,7 @@ function UUF:CreateTestRaidFrames()
                 local button = RaidFrame.DebuffContainer["fake" .. j]
                 if button then button:Hide() end
             end
+            if not RaidFrame:IsElementEnabled("Auras") then RaidFrame:EnableElement("Auras") end
             RaidFrame:Hide()
         end
     end
