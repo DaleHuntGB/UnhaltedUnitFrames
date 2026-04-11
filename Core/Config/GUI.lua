@@ -735,14 +735,14 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
     elseif unit == "raid" then
         local GrowthDirectionDropdown = AG:Create("Dropdown")
         GrowthDirectionDropdown:SetList({
-            ["DOWN_RIGHT"] = "Down → Right",
-            ["DOWN_LEFT"]  = "Down → Left",
-            ["UP_RIGHT"]   = "Up → Right",
-            ["UP_LEFT"]    = "Up → Left",
-            ["RIGHT_DOWN"] = "Right → Down",
-            ["RIGHT_UP"]   = "Right → Up",
-            ["LEFT_DOWN"]  = "Left → Down",
-            ["LEFT_UP"]    = "Left → Up",
+            ["DOWN_RIGHT"] = "Down > Right",
+            ["DOWN_LEFT"]  = "Down > Left",
+            ["UP_RIGHT"]   = "Up > Right",
+            ["UP_LEFT"]    = "Up > Left",
+            ["RIGHT_DOWN"] = "Right > Down",
+            ["RIGHT_UP"]   = "Right > Up",
+            ["LEFT_DOWN"]  = "Left > Down",
+            ["LEFT_UP"]    = "Left > Up",
         })
         GrowthDirectionDropdown:SetLabel("Growth Direction")
         GrowthDirectionDropdown:SetValue(FrameDB.GrowthDirection)
@@ -780,7 +780,7 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
         VSpacingSlider:SetLabel("Vertical")
         VSpacingSlider:SetValue(FrameDB.Layout[5])
         VSpacingSlider:SetSliderValues(-1, 100, 0.1)
-        VSpacingSlider:SetRelativeWidth(0.125)
+        VSpacingSlider:SetRelativeWidth(0.25)
         VSpacingSlider:SetCallback("OnValueChanged", function(_, _, value) FrameDB.Layout[5] = value updateCallback() end)
         LayoutContainer:AddChild(VSpacingSlider)
 
@@ -788,7 +788,7 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
         HSpacingSlider:SetLabel("Horizontal")
         HSpacingSlider:SetValue(FrameDB.Layout[6])
         HSpacingSlider:SetSliderValues(-1, 100, 0.1)
-        HSpacingSlider:SetRelativeWidth(0.125)
+        HSpacingSlider:SetRelativeWidth(0.25)
         HSpacingSlider:SetCallback("OnValueChanged", function(_, _, value) FrameDB.Layout[6] = value updateCallback() end)
         LayoutContainer:AddChild(HSpacingSlider)
     end
@@ -797,7 +797,7 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
     FrameStrataDropdown:SetList(FrameStrataList[1], FrameStrataList[2])
     FrameStrataDropdown:SetLabel("Frame Strata")
     FrameStrataDropdown:SetValue(FrameDB.FrameStrata)
-    FrameStrataDropdown:SetRelativeWidth((unit == "boss" or unit == "party" or unit == "raid") and 0.25 or 0.33)
+    FrameStrataDropdown:SetRelativeWidth((unit == "boss" or unit == "party") and 0.25 or unit == "raid" and 1 or 0.33)
     FrameStrataDropdown:SetCallback("OnValueChanged", function(_, _, value) FrameDB.FrameStrata = value updateCallback() end)
     LayoutContainer:AddChild(FrameStrataDropdown)
 
