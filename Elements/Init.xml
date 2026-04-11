@@ -19,5 +19,8 @@
 	<Script file="Indicators/Resting.lua"/>
 	<Script file="Indicators/Combat.lua"/>
 	<Script file="Indicators/TargetGlow.lua"/>
+	<Script file="Indicators/RoleIndicator.lua"/>
+	<Script file="Indicators/SummonIndicator.lua"/>
+	<Script file="Indicators/PhaseIndicator.lua"/>
 	<!-- <Script file="Indicators/Totems.lua"/> -->
 </Ui>
