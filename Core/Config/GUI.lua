@@ -777,7 +777,7 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
         LayoutContainer:AddChild(SpacingSlider)
     elseif unit == "raid" then
         local VSpacingSlider = AG:Create("Slider")
-        VSpacingSlider:SetLabel("Vertical Spacing")
+        VSpacingSlider:SetLabel("Vertical")
         VSpacingSlider:SetValue(FrameDB.Layout[5])
         VSpacingSlider:SetSliderValues(-1, 100, 0.1)
         VSpacingSlider:SetRelativeWidth(0.125)
@@ -785,7 +785,7 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
         LayoutContainer:AddChild(VSpacingSlider)
 
         local HSpacingSlider = AG:Create("Slider")
-        HSpacingSlider:SetLabel("Horizontal Spacing")
+        HSpacingSlider:SetLabel("Horizontal")
         HSpacingSlider:SetValue(FrameDB.Layout[6])
         HSpacingSlider:SetSliderValues(-1, 100, 0.1)
         HSpacingSlider:SetRelativeWidth(0.125)
