@@ -16,30 +16,11 @@ local function CreateUnitAbsorbs(unitFrame, unit)
         unitFrame.Health:SetClipsChildren(true)
         if unitFrame.Health:GetReverseFill() then
             AbsorbBar:SetPoint("TOPRIGHT", unitFrame.Health:GetStatusBarTexture(), "TOPLEFT", 0, 0)
-            AbsorbBar:SetReverseFill(false)
+            AbsorbBar:SetReverseFill(true)
         else
             AbsorbBar:SetPoint("TOPLEFT", unitFrame.Health:GetStatusBarTexture(), "TOPRIGHT", 0, 0)
-            AbsorbBar:SetReverseFill(true)
-        end
-    elseif position == "OVERLAY" then
-        unitFrame.Health:SetClipsChildren(false)
-        AbsorbBar:SetAllPoints(unitFrame.Health)
-        if unitFrame.Health:GetReverseFill() then
-            AbsorbBar:SetReverseFill(true)
-        else
             AbsorbBar:SetReverseFill(false)
         end
-        AbsorbBar:SetScript("OnUpdate", function(self)
-            local uf = self:GetParent():GetParent()
-            if not uf.unit then return end
-            local hp = UnitHealth(uf.unit)
-            local maxhp = UnitHealthMax(uf.unit)
-            if maxhp > 0 and hp >= maxhp then
-                self:SetReverseFill(not self:GetParent():GetReverseFill())
-            else
-                self:SetReverseFill(self:GetParent():GetReverseFill())
-            end
-        end)
     elseif position == "TOPLEFT" then
         AbsorbBar:SetPoint("TOPLEFT", unitFrame.Health, "TOPLEFT", 0, 0)
         AbsorbBar:SetReverseFill(false)
@@ -69,6 +50,27 @@ local function CreateUnitAbsorbs(unitFrame, unit)
     AbsorbBar:Show()
 
     return AbsorbBar
+end
+
+local function CreateUnitOverDamageAbsorbIndicator(unitFrame, unit)
+    -- Parented to HighLevelContainer (not Health) so it is never clipped by Health:SetClipsChildren(true).
+    -- Anchored just outside the trailing edge of the health bar frame.
+    -- oUF's Update calls SetAlphaFromBoolean(damageAbsorbClamped, 1, 0) each event which calls SetAlpha()
+    -- only -- it does NOT call Show(). The texture must therefore never be Hide()d; alpha=0 is used
+    -- instead so oUF can make it visible by raising the alpha to 1 when clamped.
+    local indicator = unitFrame.HighLevelContainer:CreateTexture(UUF:FetchFrameName(unit) .. "_OverDamageAbsorbIndicator", "OVERLAY")
+    indicator:SetTexture("Interface\\RaidFrame\\Shield-Overshield")
+    indicator:SetBlendMode("ADD")
+    indicator:SetWidth(8)
+    indicator:SetPoint("TOP", unitFrame.Health, "TOP", 0, 0)
+    indicator:SetPoint("BOTTOM", unitFrame.Health, "BOTTOM", 0, 0)
+    if unitFrame.Health:GetReverseFill() then
+        indicator:SetPoint("RIGHT", unitFrame.Health, "LEFT", 0, 0)
+    else
+        indicator:SetPoint("LEFT", unitFrame.Health, "RIGHT", 0, 0)
+    end
+    indicator:SetAlpha(0)
+    return indicator
 end
 
 local function CreateUnitIncomingHeal(unitFrame, unit)
@@ -175,13 +177,10 @@ function UUF:CreateUnitHealPrediction(unitFrame, unit)
     local HealAbsorbDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].HealPrediction.HealAbsorbs
     local IncomingDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].HealPrediction.Incoming
 
-    CreateUnitAbsorbs(unitFrame, unit)
-    CreateUnitHealAbsorbs(unitFrame, unit)
-    CreateUnitIncomingHeal(unitFrame, unit)
-
     unitFrame.HealthPrediction = {
         damageAbsorb = AbsorbDB.Enabled and CreateUnitAbsorbs(unitFrame, unit),
         damageAbsorbClampMode = 2,
+        overDamageAbsorbIndicator = AbsorbDB.Enabled and CreateUnitOverDamageAbsorbIndicator(unitFrame, unit),
         healAbsorb = HealAbsorbDB.Enabled and CreateUnitHealAbsorbs(unitFrame, unit),
         healAbsorbClampMode = 1,
         healAbsorbMode = 1,
@@ -203,10 +202,21 @@ function UUF:UpdateUnitHealPrediction(unitFrame, unit)
             if AbsorbDB.UseStripedTexture then unitFrame.HealthPrediction.damageAbsorb:SetStatusBarTexture("Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\ThinStripes.png") else unitFrame.HealthPrediction.damageAbsorb:SetStatusBarTexture(UUF.Media.Foreground) end
             unitFrame.HealthPrediction.damageAbsorb:SetStatusBarColor(AbsorbDB.Colour[1], AbsorbDB.Colour[2], AbsorbDB.Colour[3], AbsorbDB.Colour[4])
             unitFrame.HealthPrediction.damageAbsorb:ClearAllPoints()
-            unitFrame.HealthPrediction.damageAbsorb:SetScript("OnUpdate", nil)
             local position = AbsorbDB.Position
             local height = AbsorbDB.MatchParentHeight and unitFrame.Health:GetHeight() or AbsorbDB.Height
             unitFrame.HealthPrediction.damageAbsorb:SetHeight(height)
+
+            -- Create the over-absorb indicator lazily if it does not exist yet, then re-anchor it
+            -- in case the health bar orientation has changed since the frame was first created.
+            unitFrame.HealthPrediction.overDamageAbsorbIndicator = unitFrame.HealthPrediction.overDamageAbsorbIndicator or CreateUnitOverDamageAbsorbIndicator(unitFrame, unit)
+            unitFrame.HealthPrediction.overDamageAbsorbIndicator:ClearAllPoints()
+            unitFrame.HealthPrediction.overDamageAbsorbIndicator:SetPoint("TOP", unitFrame.Health, "TOP", 0, 0)
+            unitFrame.HealthPrediction.overDamageAbsorbIndicator:SetPoint("BOTTOM", unitFrame.Health, "BOTTOM", 0, 0)
+            if unitFrame.Health:GetReverseFill() then
+                unitFrame.HealthPrediction.overDamageAbsorbIndicator:SetPoint("RIGHT", unitFrame.Health, "LEFT", 0, 0)
+            else
+                unitFrame.HealthPrediction.overDamageAbsorbIndicator:SetPoint("LEFT", unitFrame.Health, "RIGHT", 0, 0)
+            end
 
             if position == "ATTACH" then
                 unitFrame.Health:SetClipsChildren(true)
@@ -214,30 +224,11 @@ function UUF:UpdateUnitHealPrediction(unitFrame, unit)
                 unitFrame.HealthPrediction.damageAbsorb:SetPoint("BOTTOM", unitFrame.Health, "BOTTOM", 0, 0)
                 if unitFrame.Health:GetReverseFill() then
                     unitFrame.HealthPrediction.damageAbsorb:SetPoint("RIGHT", unitFrame.Health:GetStatusBarTexture(), "LEFT", 0, 0)
-                    unitFrame.HealthPrediction.damageAbsorb:SetReverseFill(false)
+                    unitFrame.HealthPrediction.damageAbsorb:SetReverseFill(true)
                 else
                     unitFrame.HealthPrediction.damageAbsorb:SetPoint("LEFT", unitFrame.Health:GetStatusBarTexture(), "RIGHT", 0, 0)
-                    unitFrame.HealthPrediction.damageAbsorb:SetReverseFill(true)
-                end
-            elseif position == "OVERLAY" then
-                unitFrame.Health:SetClipsChildren(false)
-                unitFrame.HealthPrediction.damageAbsorb:SetAllPoints(unitFrame.Health)
-                if unitFrame.Health:GetReverseFill() then
-                    unitFrame.HealthPrediction.damageAbsorb:SetReverseFill(true)
-                else
                     unitFrame.HealthPrediction.damageAbsorb:SetReverseFill(false)
                 end
-                unitFrame.HealthPrediction.damageAbsorb:SetScript("OnUpdate", function(self)
-                    local uf = self:GetParent():GetParent()
-                    if not uf.unit then return end
-                    local hp = UnitHealth(uf.unit)
-                    local maxhp = UnitHealthMax(uf.unit)
-                    if maxhp > 0 and hp >= maxhp then
-                        self:SetReverseFill(not self:GetParent():GetReverseFill())
-                    else
-                        self:SetReverseFill(self:GetParent():GetReverseFill())
-                    end
-                end)
             elseif position == "TOPLEFT" then
                 unitFrame.HealthPrediction.damageAbsorb:SetPoint("TOPLEFT", unitFrame.Health, "TOPLEFT", 0, 0)
                 unitFrame.HealthPrediction.damageAbsorb:SetReverseFill(false)
@@ -264,6 +255,9 @@ function UUF:UpdateUnitHealPrediction(unitFrame, unit)
         else
             if unitFrame.HealthPrediction.damageAbsorb then
                 unitFrame.HealthPrediction.damageAbsorb:Hide()
+            end
+            if unitFrame.HealthPrediction.overDamageAbsorbIndicator then
+                unitFrame.HealthPrediction.overDamageAbsorbIndicator:Hide()
             end
         end
         if HealAbsorbDB.Enabled then
