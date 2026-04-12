@@ -52,27 +52,6 @@ local function CreateUnitAbsorbs(unitFrame, unit)
     return AbsorbBar
 end
 
-local function CreateUnitOverDamageAbsorbIndicator(unitFrame, unit)
-    -- Parented to HighLevelContainer (not Health) so it is never clipped by Health:SetClipsChildren(true).
-    -- Anchored just outside the trailing edge of the health bar frame.
-    -- oUF's Update calls SetAlphaFromBoolean(damageAbsorbClamped, 1, 0) each event which calls SetAlpha()
-    -- only -- it does NOT call Show(). The texture must therefore never be Hide()d; alpha=0 is used
-    -- instead so oUF can make it visible by raising the alpha to 1 when clamped.
-    local indicator = unitFrame.HighLevelContainer:CreateTexture(UUF:FetchFrameName(unit) .. "_OverDamageAbsorbIndicator", "OVERLAY")
-    indicator:SetTexture("Interface\\RaidFrame\\Shield-Overshield")
-    indicator:SetBlendMode("ADD")
-    indicator:SetWidth(8)
-    indicator:SetPoint("TOP", unitFrame.Health, "TOP", 0, 0)
-    indicator:SetPoint("BOTTOM", unitFrame.Health, "BOTTOM", 0, 0)
-    if unitFrame.Health:GetReverseFill() then
-        indicator:SetPoint("RIGHT", unitFrame.Health, "LEFT", 0, 0)
-    else
-        indicator:SetPoint("LEFT", unitFrame.Health, "RIGHT", 0, 0)
-    end
-    indicator:SetAlpha(0)
-    return indicator
-end
-
 local function CreateUnitIncomingHeal(unitFrame, unit)
     local IncomingDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].HealPrediction.Incoming
     if not unitFrame.Health then return end
@@ -172,6 +151,26 @@ local function CreateUnitHealAbsorbs(unitFrame, unit)
     return HealAbsorbBar
 end
 
+local function CreateUnitOverDamageAbsorbIndicator(unitFrame, unit)
+    if not unitFrame.Health then return end
+
+    local Indicator = unitFrame.HighLevelContainer:CreateTexture(UUF:FetchFrameName(unit) .. "_OverDamageAbsorbIndicator", "OVERLAY")
+    Indicator:SetTexture("Interface\\RaidFrame\\Shield-Overshield")
+    Indicator:SetBlendMode("ADD")
+    Indicator:SetWidth(8)
+    Indicator:SetPoint("TOP", unitFrame.Health, "TOP", 0, 0)
+    Indicator:SetPoint("BOTTOM", unitFrame.Health, "BOTTOM", 0, 0)
+    if unitFrame.Health:GetReverseFill() then
+        Indicator:SetPoint("RIGHT", unitFrame.Health, "LEFT", 0, 0)
+    else
+        Indicator:SetPoint("LEFT", unitFrame.Health, "RIGHT", 0, 0)
+    end
+    Indicator:SetAlpha(0)
+    Indicator:Show()
+
+    return Indicator
+end
+
 function UUF:CreateUnitHealPrediction(unitFrame, unit)
     local AbsorbDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].HealPrediction.Absorbs
     local HealAbsorbDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].HealPrediction.HealAbsorbs
@@ -180,7 +179,7 @@ function UUF:CreateUnitHealPrediction(unitFrame, unit)
     unitFrame.HealthPrediction = {
         damageAbsorb = AbsorbDB.Enabled and CreateUnitAbsorbs(unitFrame, unit),
         damageAbsorbClampMode = 2,
-        overDamageAbsorbIndicator = AbsorbDB.Enabled and CreateUnitOverDamageAbsorbIndicator(unitFrame, unit),
+        overDamageAbsorbIndicator = AbsorbDB.Enabled and AbsorbDB.Position == "ATTACH" and CreateUnitOverDamageAbsorbIndicator(unitFrame, unit) or nil,
         healAbsorb = HealAbsorbDB.Enabled and CreateUnitHealAbsorbs(unitFrame, unit),
         healAbsorbClampMode = 1,
         healAbsorbMode = 1,
@@ -206,20 +205,18 @@ function UUF:UpdateUnitHealPrediction(unitFrame, unit)
             local height = AbsorbDB.MatchParentHeight and unitFrame.Health:GetHeight() or AbsorbDB.Height
             unitFrame.HealthPrediction.damageAbsorb:SetHeight(height)
 
-            -- Create the over-absorb indicator lazily if it does not exist yet, then re-anchor it
-            -- in case the health bar orientation has changed since the frame was first created.
-            unitFrame.HealthPrediction.overDamageAbsorbIndicator = unitFrame.HealthPrediction.overDamageAbsorbIndicator or CreateUnitOverDamageAbsorbIndicator(unitFrame, unit)
-            unitFrame.HealthPrediction.overDamageAbsorbIndicator:ClearAllPoints()
-            unitFrame.HealthPrediction.overDamageAbsorbIndicator:SetPoint("TOP", unitFrame.Health, "TOP", 0, 0)
-            unitFrame.HealthPrediction.overDamageAbsorbIndicator:SetPoint("BOTTOM", unitFrame.Health, "BOTTOM", 0, 0)
-            if unitFrame.Health:GetReverseFill() then
-                unitFrame.HealthPrediction.overDamageAbsorbIndicator:SetPoint("RIGHT", unitFrame.Health, "LEFT", 0, 0)
-            else
-                unitFrame.HealthPrediction.overDamageAbsorbIndicator:SetPoint("LEFT", unitFrame.Health, "RIGHT", 0, 0)
-            end
-
             if position == "ATTACH" then
                 unitFrame.Health:SetClipsChildren(true)
+                unitFrame.HealthPrediction.overDamageAbsorbIndicator = unitFrame.HealthPrediction.overDamageAbsorbIndicator or CreateUnitOverDamageAbsorbIndicator(unitFrame, unit)
+                unitFrame.HealthPrediction.overDamageAbsorbIndicator:ClearAllPoints()
+                unitFrame.HealthPrediction.overDamageAbsorbIndicator:SetPoint("TOP", unitFrame.Health, "TOP", 0, 0)
+                unitFrame.HealthPrediction.overDamageAbsorbIndicator:SetPoint("BOTTOM", unitFrame.Health, "BOTTOM", 0, 0)
+                if unitFrame.Health:GetReverseFill() then
+                    unitFrame.HealthPrediction.overDamageAbsorbIndicator:SetPoint("RIGHT", unitFrame.Health, "LEFT", 0, 0)
+                else
+                    unitFrame.HealthPrediction.overDamageAbsorbIndicator:SetPoint("LEFT", unitFrame.Health, "RIGHT", 0, 0)
+                end
+                unitFrame.HealthPrediction.overDamageAbsorbIndicator:Show()
                 unitFrame.HealthPrediction.damageAbsorb:SetPoint("TOP", unitFrame.Health, "TOP", 0, 0)
                 unitFrame.HealthPrediction.damageAbsorb:SetPoint("BOTTOM", unitFrame.Health, "BOTTOM", 0, 0)
                 if unitFrame.Health:GetReverseFill() then
@@ -230,24 +227,31 @@ function UUF:UpdateUnitHealPrediction(unitFrame, unit)
                     unitFrame.HealthPrediction.damageAbsorb:SetReverseFill(false)
                 end
             elseif position == "TOPLEFT" then
+                if unitFrame.HealthPrediction.overDamageAbsorbIndicator then unitFrame.HealthPrediction.overDamageAbsorbIndicator:Hide() end
                 unitFrame.HealthPrediction.damageAbsorb:SetPoint("TOPLEFT", unitFrame.Health, "TOPLEFT", 0, 0)
                 unitFrame.HealthPrediction.damageAbsorb:SetReverseFill(false)
             elseif position == "TOPRIGHT" then
+                if unitFrame.HealthPrediction.overDamageAbsorbIndicator then unitFrame.HealthPrediction.overDamageAbsorbIndicator:Hide() end
                 unitFrame.HealthPrediction.damageAbsorb:SetPoint("TOPRIGHT", unitFrame.Health, "TOPRIGHT", 0, 0)
                 unitFrame.HealthPrediction.damageAbsorb:SetReverseFill(true)
             elseif position == "BOTTOMLEFT" then
+                if unitFrame.HealthPrediction.overDamageAbsorbIndicator then unitFrame.HealthPrediction.overDamageAbsorbIndicator:Hide() end
                 unitFrame.HealthPrediction.damageAbsorb:SetPoint("BOTTOMLEFT", unitFrame.Health, "BOTTOMLEFT", 0, 0)
                 unitFrame.HealthPrediction.damageAbsorb:SetReverseFill(false)
             elseif position == "BOTTOMRIGHT" then
+                if unitFrame.HealthPrediction.overDamageAbsorbIndicator then unitFrame.HealthPrediction.overDamageAbsorbIndicator:Hide() end
                 unitFrame.HealthPrediction.damageAbsorb:SetPoint("BOTTOMRIGHT", unitFrame.Health, "BOTTOMRIGHT", 0, 0)
                 unitFrame.HealthPrediction.damageAbsorb:SetReverseFill(true)
             elseif position == "LEFT" then
+                if unitFrame.HealthPrediction.overDamageAbsorbIndicator then unitFrame.HealthPrediction.overDamageAbsorbIndicator:Hide() end
                 unitFrame.HealthPrediction.damageAbsorb:SetPoint("LEFT", unitFrame.Health, "LEFT", 0, 0)
                 unitFrame.HealthPrediction.damageAbsorb:SetReverseFill(false)
             elseif position == "RIGHT" then
+                if unitFrame.HealthPrediction.overDamageAbsorbIndicator then unitFrame.HealthPrediction.overDamageAbsorbIndicator:Hide() end
                 unitFrame.HealthPrediction.damageAbsorb:SetPoint("RIGHT", unitFrame.Health, "RIGHT", 0, 0)
                 unitFrame.HealthPrediction.damageAbsorb:SetReverseFill(true)
             else
+                if unitFrame.HealthPrediction.overDamageAbsorbIndicator then unitFrame.HealthPrediction.overDamageAbsorbIndicator:Hide() end
                 unitFrame.HealthPrediction.damageAbsorb:SetPoint("TOPLEFT", unitFrame.Health, "TOPLEFT", 0, 0)
                 unitFrame.HealthPrediction.damageAbsorb:SetReverseFill(false)
             end
