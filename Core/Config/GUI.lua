@@ -2532,6 +2532,73 @@ local function CreateSummonIndicatorSettings(containerParent, unit, updateCallba
     RefreshSummonIndicatorGUI()
 end
 
+local function CreateResurrectIndicatorSettings(containerParent, unit, updateCallback)
+    local ResurrectDB = UUF.db.profile.Units[unit].Indicators.Resurrection
+
+    local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Resurrection Indicator Settings")
+
+    local Toggle = AG:Create("CheckBox")
+    Toggle:SetLabel("Enable |cFF8080FFResurrection|r Indicator")
+    Toggle:SetValue(ResurrectDB.Enabled)
+    Toggle:SetCallback("OnValueChanged", function(_, _, value) ResurrectDB.Enabled = value updateCallback() RefreshResurrectIndicatorGUI() end)
+    Toggle:SetRelativeWidth(0.5)
+    ToggleContainer:AddChild(Toggle)
+
+    local SizeSlider = AG:Create("Slider")
+    SizeSlider:SetLabel("Icon Size")
+    SizeSlider:SetValue(ResurrectDB.Size)
+    SizeSlider:SetSliderValues(8, 64, 1)
+    SizeSlider:SetRelativeWidth(0.5)
+    SizeSlider:SetCallback("OnValueChanged", function(_, _, value) ResurrectDB.Size = value updateCallback() end)
+    ToggleContainer:AddChild(SizeSlider)
+
+    local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
+
+    local AnchorFromDropdown = AG:Create("Dropdown")
+    AnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
+    AnchorFromDropdown:SetLabel("Anchor From")
+    AnchorFromDropdown:SetValue(ResurrectDB.Layout[1])
+    AnchorFromDropdown:SetRelativeWidth(0.33)
+    AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) ResurrectDB.Layout[1] = value updateCallback() end)
+    LayoutContainer:AddChild(AnchorFromDropdown)
+
+    local AnchorToDropdown = AG:Create("Dropdown")
+    AnchorToDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
+    AnchorToDropdown:SetLabel("Anchor To")
+    AnchorToDropdown:SetValue(ResurrectDB.Layout[2])
+    AnchorToDropdown:SetRelativeWidth(0.33)
+    AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) ResurrectDB.Layout[2] = value updateCallback() end)
+    LayoutContainer:AddChild(AnchorToDropdown)
+
+    local XPosSlider = AG:Create("Slider")
+    XPosSlider:SetLabel("X Position")
+    XPosSlider:SetValue(ResurrectDB.Layout[3])
+    XPosSlider:SetSliderValues(-1000, 1000, 0.1)
+    XPosSlider:SetRelativeWidth(0.33)
+    XPosSlider:SetCallback("OnValueChanged", function(_, _, value) ResurrectDB.Layout[3] = value updateCallback() end)
+    LayoutContainer:AddChild(XPosSlider)
+
+    local YPosSlider = AG:Create("Slider")
+    YPosSlider:SetLabel("Y Position")
+    YPosSlider:SetValue(ResurrectDB.Layout[4])
+    YPosSlider:SetSliderValues(-1000, 1000, 0.1)
+    YPosSlider:SetRelativeWidth(0.33)
+    YPosSlider:SetCallback("OnValueChanged", function(_, _, value) ResurrectDB.Layout[4] = value updateCallback() end)
+    LayoutContainer:AddChild(YPosSlider)
+
+    function RefreshResurrectIndicatorGUI()
+        if ResurrectDB.Enabled then
+            GUIWidgets.DeepDisable(ToggleContainer, false, Toggle)
+            GUIWidgets.DeepDisable(LayoutContainer, false, Toggle)
+        else
+            GUIWidgets.DeepDisable(ToggleContainer, true, Toggle)
+            GUIWidgets.DeepDisable(LayoutContainer, true, Toggle)
+        end
+    end
+
+    RefreshResurrectIndicatorGUI()
+end
+
 local function CreatePhaseIndicatorSettings(containerParent, unit, updateCallback)
     local PhaseDB = UUF.db.profile.Units[unit].Indicators.Phase
 
@@ -2613,6 +2680,8 @@ local function CreateIndicatorSettings(containerParent, unit)
             CreateRoleIndicatorSettings(IndicatorContainer, unit, function() if unit == "party" then UUF:UpdatePartyFrames() elseif unit == "raid" then UUF:UpdateRaidFrames() end end)
         elseif IndicatorTab == "Summon" then
             CreateSummonIndicatorSettings(IndicatorContainer, unit, function() if unit == "party" then UUF:UpdatePartyFrames() elseif unit == "raid" then UUF:UpdateRaidFrames() end end)
+        elseif IndicatorTab == "Resurrection" then
+            CreateResurrectIndicatorSettings(IndicatorContainer, unit, function() if unit == "party" then UUF:UpdatePartyFrames() elseif unit == "raid" then UUF:UpdateRaidFrames() end end)
         elseif IndicatorTab == "Phase" then
             CreatePhaseIndicatorSettings(IndicatorContainer, unit, function() if unit == "party" then UUF:UpdatePartyFrames() elseif unit == "raid" then UUF:UpdateRaidFrames() end end)
         elseif IndicatorTab == "Mouseover" then
@@ -2656,6 +2725,7 @@ local function CreateIndicatorSettings(containerParent, unit)
             { text = "Leader & Assistant", value = "LeaderAssistant" },
             { text = "Role", value = "Role" },
             { text = "Summon", value = "Summon" },
+            { text = "Resurrection", value = "Resurrection" },
             { text = "Phase", value = "Phase" },
             { text = "Mouseover", value = "Mouseover" },
             { text = "Target Indicator", value = "TargetIndicator" },
@@ -2666,6 +2736,7 @@ local function CreateIndicatorSettings(containerParent, unit)
             { text = "Leader & Assistant", value = "LeaderAssistant" },
             { text = "Role", value = "Role" },
             { text = "Summon", value = "Summon" },
+            { text = "Resurrection", value = "Resurrection" },
             { text = "Phase", value = "Phase" },
             { text = "Mouseover", value = "Mouseover" },
             { text = "Target Indicator", value = "TargetIndicator" },

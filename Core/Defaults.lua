@@ -1608,6 +1608,11 @@ local Defaults = {
                         Size = 24,
                         Layout = {"CENTER", "CENTER", 0, 0},
                     },
+                    Resurrection = {
+                        Enabled = true,
+                        Size = 24,
+                        Layout = {"CENTER", "CENTER", 0, 0},
+                    },
                     Phase = {
                         Enabled = true,
                         Size = 24,
@@ -1791,6 +1796,11 @@ local Defaults = {
                         Layout = {"CENTER", "TOP", 0, 0},
                     },
                     Summon = {
+                        Enabled = true,
+                        Size = 24,
+                        Layout = {"CENTER", "CENTER", 0, 0},
+                    },
+                    Resurrection = {
                         Enabled = true,
                         Size = 24,
                         Layout = {"CENTER", "CENTER", 0, 0},

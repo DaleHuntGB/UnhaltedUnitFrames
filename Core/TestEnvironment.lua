@@ -691,6 +691,18 @@ function UUF:CreateTestPartyFrames()
                 end
             end
 
+            if PartyFrame.ResurrectIndicator then
+                local ResurrectDB = UUF.db.profile.Units.party.Indicators.Resurrection
+                if ResurrectDB.Enabled then
+                    PartyFrame.ResurrectIndicator:SetSize(ResurrectDB.Size, ResurrectDB.Size)
+                    PartyFrame.ResurrectIndicator:ClearAllPoints()
+                    PartyFrame.ResurrectIndicator:SetPoint(ResurrectDB.Layout[1], PartyFrame.HighLevelContainer, ResurrectDB.Layout[2], ResurrectDB.Layout[3], ResurrectDB.Layout[4])
+                    if i == 2 then PartyFrame.ResurrectIndicator:Show() else PartyFrame.ResurrectIndicator:Hide() end
+                else
+                    PartyFrame.ResurrectIndicator:Hide()
+                end
+            end
+
             if PartyFrame.PhaseIndicator then
                 local PhaseDB = UUF.db.profile.Units.party.Indicators.Phase
                 if PhaseDB.Enabled then
@@ -1070,6 +1082,18 @@ function UUF:CreateTestRaidFrames()
                         if i % 5 == 3 then RaidFrame.SummonIndicator:Show() else RaidFrame.SummonIndicator:Hide() end
                     else
                         RaidFrame.SummonIndicator:Hide()
+                    end
+                end
+
+                if RaidFrame.ResurrectIndicator then
+                    local ResurrectDB = UUF.db.profile.Units.raid.Indicators.Resurrection
+                    if ResurrectDB.Enabled then
+                        RaidFrame.ResurrectIndicator:SetSize(ResurrectDB.Size, ResurrectDB.Size)
+                        RaidFrame.ResurrectIndicator:ClearAllPoints()
+                        RaidFrame.ResurrectIndicator:SetPoint(ResurrectDB.Layout[1], RaidFrame.HighLevelContainer, ResurrectDB.Layout[2], ResurrectDB.Layout[3], ResurrectDB.Layout[4])
+                        if i % 5 == 2 then RaidFrame.ResurrectIndicator:Show() else RaidFrame.ResurrectIndicator:Hide() end
+                    else
+                        RaidFrame.ResurrectIndicator:Hide()
                     end
                 end
 

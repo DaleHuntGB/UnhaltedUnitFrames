@@ -21,6 +21,7 @@
 	<Script file="Indicators/TargetGlow.lua"/>
 	<Script file="Indicators/RoleIndicator.lua"/>
 	<Script file="Indicators/SummonIndicator.lua"/>
+	<Script file="Indicators/ResurrectIndicator.lua"/>
 	<Script file="Indicators/PhaseIndicator.lua"/>
 	<!-- <Script file="Indicators/Totems.lua"/> -->
 </Ui>
