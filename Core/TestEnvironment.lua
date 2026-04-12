@@ -665,17 +665,17 @@ function UUF:CreateTestPartyFrames()
                 end
             end
 
-            if PartyFrame.RoleIndicator then
+            if PartyFrame.GroupRoleIndicator then
                 local RoleDB = UUF.db.profile.Units.party.Indicators.Role
                 if RoleDB.Enabled then
-                    PartyFrame.RoleIndicator:SetSize(RoleDB.Size, RoleDB.Size)
-                    PartyFrame.RoleIndicator:ClearAllPoints()
-                    PartyFrame.RoleIndicator:SetPoint(RoleDB.Layout[1], PartyFrame.HighLevelContainer, RoleDB.Layout[2], RoleDB.Layout[3], RoleDB.Layout[4])
+                    PartyFrame.GroupRoleIndicator:SetSize(RoleDB.Size, RoleDB.Size)
+                    PartyFrame.GroupRoleIndicator:ClearAllPoints()
+                    PartyFrame.GroupRoleIndicator:SetPoint(RoleDB.Layout[1], PartyFrame.HighLevelContainer, RoleDB.Layout[2], RoleDB.Layout[3], RoleDB.Layout[4])
                     local roles = { "roleIcon-tank", "roleIcon-healer", "roleIcon-dps", "roleIcon-dps" }
-                    PartyFrame.RoleIndicator:SetAtlas(roles[i] or "roleIcon-dps", true)
-                    PartyFrame.RoleIndicator:Show()
+                    PartyFrame.GroupRoleIndicator:SetAtlas(roles[i] or "roleIcon-dps", true)
+                    PartyFrame.GroupRoleIndicator:Show()
                 else
-                    PartyFrame.RoleIndicator:Hide()
+                    PartyFrame.GroupRoleIndicator:Hide()
                 end
             end
 
@@ -1058,18 +1058,18 @@ function UUF:CreateTestRaidFrames()
                     end
                 end
 
-                if RaidFrame.RoleIndicator then
+                if RaidFrame.GroupRoleIndicator then
                     local RoleDB = UUF.db.profile.Units.raid.Indicators.Role
                     if RoleDB.Enabled then
-                        RaidFrame.RoleIndicator:SetSize(RoleDB.Size, RoleDB.Size)
-                        RaidFrame.RoleIndicator:ClearAllPoints()
-                        RaidFrame.RoleIndicator:SetPoint(RoleDB.Layout[1], RaidFrame.HighLevelContainer, RoleDB.Layout[2], RoleDB.Layout[3], RoleDB.Layout[4])
+                        RaidFrame.GroupRoleIndicator:SetSize(RoleDB.Size, RoleDB.Size)
+                        RaidFrame.GroupRoleIndicator:ClearAllPoints()
+                        RaidFrame.GroupRoleIndicator:SetPoint(RoleDB.Layout[1], RaidFrame.HighLevelContainer, RoleDB.Layout[2], RoleDB.Layout[3], RoleDB.Layout[4])
                         local roleSlot = (i - 1) % 5
                         local roles = { "roleIcon-tank", "roleIcon-healer", "roleIcon-dps", "roleIcon-dps", "roleIcon-dps" }
-                        RaidFrame.RoleIndicator:SetAtlas(roles[roleSlot + 1] or "roleIcon-dps", true)
-                        RaidFrame.RoleIndicator:Show()
+                        RaidFrame.GroupRoleIndicator:SetAtlas(roles[roleSlot + 1] or "roleIcon-dps", true)
+                        RaidFrame.GroupRoleIndicator:Show()
                     else
-                        RaidFrame.RoleIndicator:Hide()
+                        RaidFrame.GroupRoleIndicator:Hide()
                     end
                 end
 
