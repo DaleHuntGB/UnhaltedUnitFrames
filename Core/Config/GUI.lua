@@ -2487,6 +2487,13 @@ local function CreateSummonIndicatorSettings(containerParent, unit, updateCallba
     SizeSlider:SetCallback("OnValueChanged", function(_, _, value) SummonDB.Size = value updateCallback() end)
     ToggleContainer:AddChild(SizeSlider)
 
+    local UseAtlasSizeToggle = AG:Create("CheckBox")
+    UseAtlasSizeToggle:SetLabel("Use Atlas Size")
+    UseAtlasSizeToggle:SetValue(SummonDB.UseAtlasSize or false)
+    UseAtlasSizeToggle:SetCallback("OnValueChanged", function(_, _, value) SummonDB.UseAtlasSize = value updateCallback() end)
+    UseAtlasSizeToggle:SetFullWidth(true)
+    ToggleContainer:AddChild(UseAtlasSizeToggle)
+
     local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
 
     local AnchorFromDropdown = AG:Create("Dropdown")
@@ -2530,6 +2537,96 @@ local function CreateSummonIndicatorSettings(containerParent, unit, updateCallba
     end
 
     RefreshSummonIndicatorGUI()
+end
+
+local function CreateReadyCheckIndicatorSettings(containerParent, unit, updateCallback)
+    local ReadyCheckDB = UUF.db.profile.Units[unit].Indicators.ReadyCheck
+
+    local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Ready Check Indicator Settings")
+
+    local Toggle = AG:Create("CheckBox")
+    Toggle:SetLabel("Enable |cFF8080FFReady Check|r Indicator")
+    Toggle:SetValue(ReadyCheckDB.Enabled)
+    Toggle:SetCallback("OnValueChanged", function(_, _, value) ReadyCheckDB.Enabled = value updateCallback() RefreshReadyCheckIndicatorGUI() end)
+    Toggle:SetRelativeWidth(0.5)
+    ToggleContainer:AddChild(Toggle)
+
+    local SizeSlider = AG:Create("Slider")
+    SizeSlider:SetLabel("Icon Size")
+    SizeSlider:SetValue(ReadyCheckDB.Size)
+    SizeSlider:SetSliderValues(8, 64, 1)
+    SizeSlider:SetRelativeWidth(0.5)
+    SizeSlider:SetCallback("OnValueChanged", function(_, _, value) ReadyCheckDB.Size = value updateCallback() end)
+    ToggleContainer:AddChild(SizeSlider)
+
+    local UseAtlasSizeToggle = AG:Create("CheckBox")
+    UseAtlasSizeToggle:SetLabel("Use Atlas Size")
+    UseAtlasSizeToggle:SetValue(ReadyCheckDB.UseAtlasSize or false)
+    UseAtlasSizeToggle:SetCallback("OnValueChanged", function(_, _, value) ReadyCheckDB.UseAtlasSize = value updateCallback() end)
+    UseAtlasSizeToggle:SetRelativeWidth(0.5)
+    ToggleContainer:AddChild(UseAtlasSizeToggle)
+
+    local FinishedTimeSlider = AG:Create("Slider")
+    FinishedTimeSlider:SetLabel("Stick Duration")
+    FinishedTimeSlider:SetValue(ReadyCheckDB.FinishedTime or 10)
+    FinishedTimeSlider:SetSliderValues(0, 30, 0.1)
+    FinishedTimeSlider:SetRelativeWidth(0.5)
+    FinishedTimeSlider:SetCallback("OnValueChanged", function(_, _, value) ReadyCheckDB.FinishedTime = value updateCallback() end)
+    ToggleContainer:AddChild(FinishedTimeSlider)
+
+    local FadeTimeSlider = AG:Create("Slider")
+    FadeTimeSlider:SetLabel("Fade Duration")
+    FadeTimeSlider:SetValue(ReadyCheckDB.FadeTime or 1.5)
+    FadeTimeSlider:SetSliderValues(0.1, 10, 0.1)
+    FadeTimeSlider:SetRelativeWidth(0.5)
+    FadeTimeSlider:SetCallback("OnValueChanged", function(_, _, value) ReadyCheckDB.FadeTime = value updateCallback() end)
+    ToggleContainer:AddChild(FadeTimeSlider)
+
+    local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
+
+    local AnchorFromDropdown = AG:Create("Dropdown")
+    AnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
+    AnchorFromDropdown:SetLabel("Anchor From")
+    AnchorFromDropdown:SetValue(ReadyCheckDB.Layout[1])
+    AnchorFromDropdown:SetRelativeWidth(0.33)
+    AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) ReadyCheckDB.Layout[1] = value updateCallback() end)
+    LayoutContainer:AddChild(AnchorFromDropdown)
+
+    local AnchorToDropdown = AG:Create("Dropdown")
+    AnchorToDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
+    AnchorToDropdown:SetLabel("Anchor To")
+    AnchorToDropdown:SetValue(ReadyCheckDB.Layout[2])
+    AnchorToDropdown:SetRelativeWidth(0.33)
+    AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) ReadyCheckDB.Layout[2] = value updateCallback() end)
+    LayoutContainer:AddChild(AnchorToDropdown)
+
+    local XPosSlider = AG:Create("Slider")
+    XPosSlider:SetLabel("X Position")
+    XPosSlider:SetValue(ReadyCheckDB.Layout[3])
+    XPosSlider:SetSliderValues(-1000, 1000, 0.1)
+    XPosSlider:SetRelativeWidth(0.33)
+    XPosSlider:SetCallback("OnValueChanged", function(_, _, value) ReadyCheckDB.Layout[3] = value updateCallback() end)
+    LayoutContainer:AddChild(XPosSlider)
+
+    local YPosSlider = AG:Create("Slider")
+    YPosSlider:SetLabel("Y Position")
+    YPosSlider:SetValue(ReadyCheckDB.Layout[4])
+    YPosSlider:SetSliderValues(-1000, 1000, 0.1)
+    YPosSlider:SetRelativeWidth(0.33)
+    YPosSlider:SetCallback("OnValueChanged", function(_, _, value) ReadyCheckDB.Layout[4] = value updateCallback() end)
+    LayoutContainer:AddChild(YPosSlider)
+
+    function RefreshReadyCheckIndicatorGUI()
+        if ReadyCheckDB.Enabled then
+            GUIWidgets.DeepDisable(ToggleContainer, false, Toggle)
+            GUIWidgets.DeepDisable(LayoutContainer, false, Toggle)
+        else
+            GUIWidgets.DeepDisable(ToggleContainer, true, Toggle)
+            GUIWidgets.DeepDisable(LayoutContainer, true, Toggle)
+        end
+    end
+
+    RefreshReadyCheckIndicatorGUI()
 end
 
 local function CreateResurrectIndicatorSettings(containerParent, unit, updateCallback)
@@ -2680,6 +2777,8 @@ local function CreateIndicatorSettings(containerParent, unit)
             CreateRoleIndicatorSettings(IndicatorContainer, unit, function() if unit == "party" then UUF:UpdatePartyFrames() elseif unit == "raid" then UUF:UpdateRaidFrames() end end)
         elseif IndicatorTab == "Summon" then
             CreateSummonIndicatorSettings(IndicatorContainer, unit, function() if unit == "party" then UUF:UpdatePartyFrames() elseif unit == "raid" then UUF:UpdateRaidFrames() end end)
+        elseif IndicatorTab == "ReadyCheck" then
+            CreateReadyCheckIndicatorSettings(IndicatorContainer, unit, function() if unit == "party" then UUF:UpdatePartyFrames() elseif unit == "raid" then UUF:UpdateRaidFrames() end end)
         elseif IndicatorTab == "Resurrection" then
             CreateResurrectIndicatorSettings(IndicatorContainer, unit, function() if unit == "party" then UUF:UpdatePartyFrames() elseif unit == "raid" then UUF:UpdateRaidFrames() end end)
         elseif IndicatorTab == "Phase" then
@@ -2725,6 +2824,7 @@ local function CreateIndicatorSettings(containerParent, unit)
             { text = "Leader & Assistant", value = "LeaderAssistant" },
             { text = "Role", value = "Role" },
             { text = "Summon", value = "Summon" },
+            { text = "Ready Check", value = "ReadyCheck" },
             { text = "Resurrection", value = "Resurrection" },
             { text = "Phase", value = "Phase" },
             { text = "Mouseover", value = "Mouseover" },
@@ -2736,6 +2836,7 @@ local function CreateIndicatorSettings(containerParent, unit)
             { text = "Leader & Assistant", value = "LeaderAssistant" },
             { text = "Role", value = "Role" },
             { text = "Summon", value = "Summon" },
+            { text = "Ready Check", value = "ReadyCheck" },
             { text = "Resurrection", value = "Resurrection" },
             { text = "Phase", value = "Phase" },
             { text = "Mouseover", value = "Mouseover" },
@@ -3210,6 +3311,143 @@ local function CreateAuraSettings(containerParent, unit)
         end
     end
 
+    local function CreatePrivateAuraSettings(AuraContainer)
+        local PrivateAurasDB = UUF.db.profile.Units[unit].Auras.PrivateAuras
+
+        local PrivateAuraContainer = GUIWidgets.CreateInlineGroup(AuraContainer, "Private Auras Settings")
+
+        local Toggle = AG:Create("CheckBox")
+        Toggle:SetLabel("Enable |cFF8080FFPrivate Auras|r")
+        Toggle:SetValue(PrivateAurasDB.Enabled)
+        Toggle:SetCallback("OnValueChanged", function(_, _, value) PrivateAurasDB.Enabled = value if unit == "party" then UUF:UpdatePartyFrames() elseif unit == "raid" then UUF:UpdateRaidFrames() end RefreshPrivateAuraGUI() end)
+        Toggle:SetRelativeWidth(0.5)
+        PrivateAuraContainer:AddChild(Toggle)
+
+        local DisableCooldownSwipeToggle = AG:Create("CheckBox")
+        DisableCooldownSwipeToggle:SetLabel("Disable Cooldown Swipe")
+        DisableCooldownSwipeToggle:SetValue(PrivateAurasDB.DisableCooldownSwipe)
+        DisableCooldownSwipeToggle:SetCallback("OnValueChanged", function(_, _, value) PrivateAurasDB.DisableCooldownSwipe = value if unit == "party" then UUF:UpdatePartyFrames() elseif unit == "raid" then UUF:UpdateRaidFrames() end end)
+        DisableCooldownSwipeToggle:SetRelativeWidth(0.5)
+        PrivateAuraContainer:AddChild(DisableCooldownSwipeToggle)
+
+        local DisableCooldownTextToggle = AG:Create("CheckBox")
+        DisableCooldownTextToggle:SetLabel("Disable Cooldown Text")
+        DisableCooldownTextToggle:SetValue(PrivateAurasDB.DisableCooldownText)
+        DisableCooldownTextToggle:SetCallback("OnValueChanged", function(_, _, value) PrivateAurasDB.DisableCooldownText = value if unit == "party" then UUF:UpdatePartyFrames() elseif unit == "raid" then UUF:UpdateRaidFrames() end end)
+        DisableCooldownTextToggle:SetFullWidth(true)
+        PrivateAuraContainer:AddChild(DisableCooldownTextToggle)
+
+        local LayoutContainer = GUIWidgets.CreateInlineGroup(AuraContainer, "Layout")
+
+        local SizeSlider = AG:Create("Slider")
+        SizeSlider:SetLabel("Size")
+        SizeSlider:SetValue(PrivateAurasDB.Size or 16)
+        SizeSlider:SetSliderValues(8, 128, 1)
+        SizeSlider:SetRelativeWidth(0.5)
+        SizeSlider:SetCallback("OnValueChanged", function(_, _, value) PrivateAurasDB.Size = value if unit == "party" then UUF:UpdatePartyFrames() elseif unit == "raid" then UUF:UpdateRaidFrames() end end)
+        LayoutContainer:AddChild(SizeSlider)
+
+        local NumSlider = AG:Create("Slider")
+        NumSlider:SetLabel("Auras To Display")
+        NumSlider:SetValue(PrivateAurasDB.Num or 6)
+        NumSlider:SetSliderValues(1, 24, 1)
+        NumSlider:SetRelativeWidth(0.5)
+        NumSlider:SetCallback("OnValueChanged", function(_, _, value) PrivateAurasDB.Num = value if unit == "party" then UUF:UpdatePartyFrames() elseif unit == "raid" then UUF:UpdateRaidFrames() end end)
+        LayoutContainer:AddChild(NumSlider)
+
+        local WrapSlider = AG:Create("Slider")
+        WrapSlider:SetLabel("Wrap")
+        WrapSlider:SetValue(PrivateAurasDB.Wrap or 6)
+        WrapSlider:SetSliderValues(1, 24, 1)
+        WrapSlider:SetRelativeWidth(0.5)
+        WrapSlider:SetCallback("OnValueChanged", function(_, _, value) PrivateAurasDB.Wrap = value if unit == "party" then UUF:UpdatePartyFrames() elseif unit == "raid" then UUF:UpdateRaidFrames() end end)
+        LayoutContainer:AddChild(WrapSlider)
+
+        local SpacingSlider = AG:Create("Slider")
+        SpacingSlider:SetLabel("Spacing")
+        SpacingSlider:SetValue(PrivateAurasDB.Spacing or 0)
+        SpacingSlider:SetSliderValues(-5, 16, 1)
+        SpacingSlider:SetRelativeWidth(0.5)
+        SpacingSlider:SetCallback("OnValueChanged", function(_, _, value) PrivateAurasDB.Spacing = value if unit == "party" then UUF:UpdatePartyFrames() elseif unit == "raid" then UUF:UpdateRaidFrames() end end)
+        LayoutContainer:AddChild(SpacingSlider)
+
+        local WidthSlider = AG:Create("Slider")
+        WidthSlider:SetLabel("Width")
+        WidthSlider:SetValue(PrivateAurasDB.Width or (PrivateAurasDB.Size or 16))
+        WidthSlider:SetSliderValues(8, 128, 1)
+        WidthSlider:SetRelativeWidth(0.5)
+        WidthSlider:SetCallback("OnValueChanged", function(_, _, value) PrivateAurasDB.Width = value if unit == "party" then UUF:UpdatePartyFrames() elseif unit == "raid" then UUF:UpdateRaidFrames() end end)
+        LayoutContainer:AddChild(WidthSlider)
+
+        local HeightSlider = AG:Create("Slider")
+        HeightSlider:SetLabel("Height")
+        HeightSlider:SetValue(PrivateAurasDB.Height or (PrivateAurasDB.Size or 16))
+        HeightSlider:SetSliderValues(8, 128, 1)
+        HeightSlider:SetRelativeWidth(0.5)
+        HeightSlider:SetCallback("OnValueChanged", function(_, _, value) PrivateAurasDB.Height = value if unit == "party" then UUF:UpdatePartyFrames() elseif unit == "raid" then UUF:UpdateRaidFrames() end end)
+        LayoutContainer:AddChild(HeightSlider)
+
+        local SpacingXSlider = AG:Create("Slider")
+        SpacingXSlider:SetLabel("Spacing X")
+        SpacingXSlider:SetValue(PrivateAurasDB.SpacingX or (PrivateAurasDB.Spacing or 0))
+        SpacingXSlider:SetSliderValues(-5, 16, 1)
+        SpacingXSlider:SetRelativeWidth(0.5)
+        SpacingXSlider:SetCallback("OnValueChanged", function(_, _, value) PrivateAurasDB.SpacingX = value if unit == "party" then UUF:UpdatePartyFrames() elseif unit == "raid" then UUF:UpdateRaidFrames() end end)
+        LayoutContainer:AddChild(SpacingXSlider)
+
+        local SpacingYSlider = AG:Create("Slider")
+        SpacingYSlider:SetLabel("Spacing Y")
+        SpacingYSlider:SetValue(PrivateAurasDB.SpacingY or (PrivateAurasDB.Spacing or 0))
+        SpacingYSlider:SetSliderValues(-5, 16, 1)
+        SpacingYSlider:SetRelativeWidth(0.5)
+        SpacingYSlider:SetCallback("OnValueChanged", function(_, _, value) PrivateAurasDB.SpacingY = value if unit == "party" then UUF:UpdatePartyFrames() elseif unit == "raid" then UUF:UpdateRaidFrames() end end)
+        LayoutContainer:AddChild(SpacingYSlider)
+
+        local GrowthXDropdown = AG:Create("Dropdown")
+        GrowthXDropdown:SetList({ ["LEFT"] = "Left", ["RIGHT"] = "Right" })
+        GrowthXDropdown:SetLabel("Growth X")
+        GrowthXDropdown:SetValue(PrivateAurasDB.GrowthX or "RIGHT")
+        GrowthXDropdown:SetRelativeWidth(0.5)
+        GrowthXDropdown:SetCallback("OnValueChanged", function(_, _, value) PrivateAurasDB.GrowthX = value if unit == "party" then UUF:UpdatePartyFrames() elseif unit == "raid" then UUF:UpdateRaidFrames() end end)
+        LayoutContainer:AddChild(GrowthXDropdown)
+
+        local GrowthYDropdown = AG:Create("Dropdown")
+        GrowthYDropdown:SetList({ ["UP"] = "Up", ["DOWN"] = "Down" })
+        GrowthYDropdown:SetLabel("Growth Y")
+        GrowthYDropdown:SetValue(PrivateAurasDB.GrowthY or "UP")
+        GrowthYDropdown:SetRelativeWidth(0.5)
+        GrowthYDropdown:SetCallback("OnValueChanged", function(_, _, value) PrivateAurasDB.GrowthY = value if unit == "party" then UUF:UpdatePartyFrames() elseif unit == "raid" then UUF:UpdateRaidFrames() end end)
+        LayoutContainer:AddChild(GrowthYDropdown)
+
+        local InitialAnchorDropdown = AG:Create("Dropdown")
+        InitialAnchorDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
+        InitialAnchorDropdown:SetLabel("Initial Anchor")
+        InitialAnchorDropdown:SetValue(PrivateAurasDB.InitialAnchor or "BOTTOMLEFT")
+        InitialAnchorDropdown:SetRelativeWidth(0.5)
+        InitialAnchorDropdown:SetCallback("OnValueChanged", function(_, _, value) PrivateAurasDB.InitialAnchor = value if unit == "party" then UUF:UpdatePartyFrames() elseif unit == "raid" then UUF:UpdateRaidFrames() end end)
+        LayoutContainer:AddChild(InitialAnchorDropdown)
+
+        local BorderSlider = AG:Create("Slider")
+        BorderSlider:SetLabel("Border")
+        BorderSlider:SetValue(PrivateAurasDB.Border or 0)
+        BorderSlider:SetSliderValues(-5, 5, 0.1)
+        BorderSlider:SetRelativeWidth(0.5)
+        BorderSlider:SetCallback("OnValueChanged", function(_, _, value) PrivateAurasDB.Border = value if unit == "party" then UUF:UpdatePartyFrames() elseif unit == "raid" then UUF:UpdateRaidFrames() end end)
+        LayoutContainer:AddChild(BorderSlider)
+
+        function RefreshPrivateAuraGUI()
+            if PrivateAurasDB.Enabled then
+                GUIWidgets.DeepDisable(PrivateAuraContainer, false, Toggle)
+                GUIWidgets.DeepDisable(LayoutContainer, false, Toggle)
+            else
+                GUIWidgets.DeepDisable(PrivateAuraContainer, true, Toggle)
+                GUIWidgets.DeepDisable(LayoutContainer, true, Toggle)
+            end
+        end
+
+        RefreshPrivateAuraGUI()
+    end
+
     local function SelectAuraTab(AuraContainer, _, AuraTab)
         SaveSubTab(unit, "Auras", AuraTab)
         AuraContainer:ReleaseChildren()
@@ -3217,6 +3455,8 @@ local function CreateAuraSettings(containerParent, unit)
             CreateSpecificAuraSettings(AuraContainer, unit, "Buffs")
         elseif AuraTab == "Debuffs" then
             CreateSpecificAuraSettings(AuraContainer, unit, "Debuffs")
+        elseif AuraTab == "PrivateAuras" then
+            CreatePrivateAuraSettings(AuraContainer)
         end
         C_Timer.After(0.001, RefreshFontSizeSlider)
         containerParent:DoLayout()
@@ -3225,7 +3465,11 @@ local function CreateAuraSettings(containerParent, unit)
     local AuraContainerTabGroup = AG:Create("TabGroup")
     AuraContainerTabGroup:SetLayout("Flow")
     AuraContainerTabGroup:SetFullWidth(true)
-    AuraContainerTabGroup:SetTabs({ { text = "Buffs", value = "Buffs"}, { text = "Debuffs", value = "Debuffs"}, })
+    if unit == "party" or unit == "raid" then
+        AuraContainerTabGroup:SetTabs({ { text = "Buffs", value = "Buffs"}, { text = "Debuffs", value = "Debuffs"}, { text = "Private Auras", value = "PrivateAuras"}, })
+    else
+        AuraContainerTabGroup:SetTabs({ { text = "Buffs", value = "Buffs"}, { text = "Debuffs", value = "Debuffs"}, })
+    end
     AuraContainerTabGroup:SetCallback("OnGroupSelected", SelectAuraTab)
     AuraContainerTabGroup:SelectTab(GetSavedSubTab(unit, "Auras", "Buffs"))
     containerParent:AddChild(AuraContainerTabGroup)
@@ -3973,6 +4217,8 @@ end
 
 function UUFG:CloseUUFGUI()
     if isGUIOpen and Container then
-        Container:Hide()
+        AG:Release(Container)
+        isGUIOpen = false
+        DisableAllTestModes()
     end
 end

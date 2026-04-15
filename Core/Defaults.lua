@@ -1613,6 +1613,11 @@ local Defaults = {
                         Size = 24,
                         Layout = {"CENTER", "CENTER", 0, 0},
                     },
+                    ReadyCheck = {
+                        Enabled = true,
+                        Size = 24,
+                        Layout = {"CENTER", "CENTER", 0, 0},
+                    },
                     Phase = {
                         Enabled = true,
                         Size = 24,
@@ -1681,6 +1686,19 @@ local Defaults = {
                             Colour = {1, 1, 1, 1}
                         }
                     },
+                    PrivateAuras = {
+                        Enabled = true,
+                        DisableCooldownText = false,
+                        DisableCooldownSwipe = false,
+                        Size = 48,
+                        Spacing = 1,
+                        GrowthX = "RIGHT",
+                        GrowthY = "UP",
+                        InitialAnchor = "CENTER",
+                        Num = 3,
+                        Wrap = 3,
+                        Border = -1,
+                    }
                 },
                 Tags = {
                     TagOne = {
@@ -1805,6 +1823,11 @@ local Defaults = {
                         Size = 24,
                         Layout = {"CENTER", "CENTER", 0, 0},
                     },
+                    ReadyCheck = {
+                        Enabled = true,
+                        Size = 24,
+                        Layout = {"CENTER", "CENTER", 0, 0},
+                    },
                     Phase = {
                         Enabled = true,
                         Size = 24,
@@ -1873,6 +1896,19 @@ local Defaults = {
                             Colour = {1, 1, 1, 1}
                         }
                     },
+                    PrivateAuras = {
+                        Enabled = true,
+                        DisableCooldownText = false,
+                        DisableCooldownSwipe = false,
+                        Size = 32,
+                        Spacing = 1,
+                        GrowthX = "RIGHT",
+                        GrowthY = "UP",
+                        InitialAnchor = "CENTER",
+                        Num = 3,
+                        Wrap = 3,
+                        Border = -1,
+                    }
                 },
                 Tags = {
                     TagOne = {

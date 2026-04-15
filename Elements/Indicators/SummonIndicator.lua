@@ -7,34 +7,40 @@ local _, UUF = ...
 function UUF:CreateRaidSummonIndicator(unitFrame, unit)
     local SummonDB = UUF.db.profile.Units.raid.Indicators.Summon
     if not SummonDB then return end
-    unitFrame.SummonIndicator = unitFrame.HighLevelContainer:CreateTexture(UUF:FetchFrameName(unit).."_SummonIndicator", "OVERLAY")
-    unitFrame.SummonIndicator:SetSize(SummonDB.Size, SummonDB.Size)
-    unitFrame.SummonIndicator:SetPoint(SummonDB.Layout[1], unitFrame.HighLevelContainer, SummonDB.Layout[2], SummonDB.Layout[3], SummonDB.Layout[4])
-    unitFrame.SummonIndicator:Hide()
-    unitFrame.SummonIndicator.Override = function(self, event, unit)
-        local DB = UUF.db.profile.Units.raid.Indicators.Summon
-        if not DB or not DB.Enabled then
-            self.SummonIndicator:Hide()
-            return
-        end
-        if C_IncomingSummon.HasIncomingSummon(self.unit) then
-            self.SummonIndicator:Show()
-        else
-            self.SummonIndicator:Hide()
-        end
+    if not unitFrame.SummonIndicatorObject then
+        unitFrame.SummonIndicatorObject = unitFrame.HighLevelContainer:CreateTexture(UUF:FetchFrameName(unit).."_SummonIndicator", "OVERLAY")
+    end
+    unitFrame.SummonIndicatorObject:SetSize(SummonDB.Size, SummonDB.Size)
+    unitFrame.SummonIndicatorObject:SetPoint(SummonDB.Layout[1], unitFrame.HighLevelContainer, SummonDB.Layout[2], SummonDB.Layout[3], SummonDB.Layout[4])
+    unitFrame.SummonIndicatorObject.useAtlasSize = SummonDB.UseAtlasSize
+    unitFrame.SummonIndicatorObject:Hide()
+    if not SummonDB.Enabled then
+        unitFrame.SummonIndicatorObject:Hide()
+        unitFrame.SummonIndicator = nil
+    else
+        unitFrame.SummonIndicator = unitFrame.SummonIndicatorObject
     end
 end
 
 function UUF:UpdateRaidSummonIndicatorSettings(unitFrame, unit)
     local SummonDB = UUF.db.profile.Units.raid.Indicators.Summon
-    if not unitFrame or not unitFrame.SummonIndicator or not SummonDB then return end
-    unitFrame.SummonIndicator:SetSize(SummonDB.Size, SummonDB.Size)
-    unitFrame.SummonIndicator:ClearAllPoints()
-    unitFrame.SummonIndicator:SetPoint(SummonDB.Layout[1], unitFrame.HighLevelContainer, SummonDB.Layout[2], SummonDB.Layout[3], SummonDB.Layout[4])
-    if not SummonDB.Enabled then
-        unitFrame.SummonIndicator:Hide()
+    if not unitFrame or not SummonDB then return end
+
+    if SummonDB.Enabled then
+        if not unitFrame.SummonIndicatorObject then
+            unitFrame.SummonIndicatorObject = unitFrame.HighLevelContainer:CreateTexture(UUF:FetchFrameName(unit).."_SummonIndicator", "OVERLAY")
+        end
+        unitFrame.SummonIndicatorObject:SetSize(SummonDB.Size, SummonDB.Size)
+        unitFrame.SummonIndicatorObject:ClearAllPoints()
+        unitFrame.SummonIndicatorObject:SetPoint(SummonDB.Layout[1], unitFrame.HighLevelContainer, SummonDB.Layout[2], SummonDB.Layout[3], SummonDB.Layout[4])
+        unitFrame.SummonIndicatorObject.useAtlasSize = SummonDB.UseAtlasSize
+        unitFrame.SummonIndicator = unitFrame.SummonIndicatorObject
+        if not unitFrame:IsElementEnabled("SummonIndicator") then unitFrame:EnableElement("SummonIndicator") end
+        if unitFrame.SummonIndicatorObject.ForceUpdate then unitFrame.SummonIndicatorObject:ForceUpdate() end
     else
-        unitFrame.SummonIndicator:ForceUpdate()
+        if unitFrame:IsElementEnabled("SummonIndicator") then unitFrame:DisableElement("SummonIndicator") end
+        if unitFrame.SummonIndicatorObject then unitFrame.SummonIndicatorObject:Hide() end
+        unitFrame.SummonIndicator = nil
     end
 end
 
@@ -45,33 +51,39 @@ end
 function UUF:CreateUnitSummonIndicator(unitFrame, unit)
     local SummonDB = UUF.db.profile.Units.party.Indicators.Summon
     if not SummonDB then return end
-    unitFrame.SummonIndicator = unitFrame.HighLevelContainer:CreateTexture(UUF:FetchFrameName(unit).."_SummonIndicator", "OVERLAY")
-    unitFrame.SummonIndicator:SetSize(SummonDB.Size, SummonDB.Size)
-    unitFrame.SummonIndicator:SetPoint(SummonDB.Layout[1], unitFrame.HighLevelContainer, SummonDB.Layout[2], SummonDB.Layout[3], SummonDB.Layout[4])
-    unitFrame.SummonIndicator:Hide()
-    unitFrame.SummonIndicator.Override = function(self, event, unit)
-        local DB = UUF.db.profile.Units.party.Indicators.Summon
-        if not DB or not DB.Enabled then
-            self.SummonIndicator:Hide()
-            return
-        end
-        if C_IncomingSummon.HasIncomingSummon(self.unit) then
-            self.SummonIndicator:Show()
-        else
-            self.SummonIndicator:Hide()
-        end
+    if not unitFrame.SummonIndicatorObject then
+        unitFrame.SummonIndicatorObject = unitFrame.HighLevelContainer:CreateTexture(UUF:FetchFrameName(unit).."_SummonIndicator", "OVERLAY")
+    end
+    unitFrame.SummonIndicatorObject:SetSize(SummonDB.Size, SummonDB.Size)
+    unitFrame.SummonIndicatorObject:SetPoint(SummonDB.Layout[1], unitFrame.HighLevelContainer, SummonDB.Layout[2], SummonDB.Layout[3], SummonDB.Layout[4])
+    unitFrame.SummonIndicatorObject.useAtlasSize = SummonDB.UseAtlasSize
+    unitFrame.SummonIndicatorObject:Hide()
+    if not SummonDB.Enabled then
+        unitFrame.SummonIndicatorObject:Hide()
+        unitFrame.SummonIndicator = nil
+    else
+        unitFrame.SummonIndicator = unitFrame.SummonIndicatorObject
     end
 end
 
 function UUF:UpdateUnitSummonIndicator(unitFrame, unit)
     local SummonDB = UUF.db.profile.Units.party.Indicators.Summon
-    if not unitFrame or not unitFrame.SummonIndicator or not SummonDB then return end
-    unitFrame.SummonIndicator:SetSize(SummonDB.Size, SummonDB.Size)
-    unitFrame.SummonIndicator:ClearAllPoints()
-    unitFrame.SummonIndicator:SetPoint(SummonDB.Layout[1], unitFrame.HighLevelContainer, SummonDB.Layout[2], SummonDB.Layout[3], SummonDB.Layout[4])
-    if not SummonDB.Enabled then
-        unitFrame.SummonIndicator:Hide()
+    if not unitFrame or not SummonDB then return end
+
+    if SummonDB.Enabled then
+        if not unitFrame.SummonIndicatorObject then
+            unitFrame.SummonIndicatorObject = unitFrame.HighLevelContainer:CreateTexture(UUF:FetchFrameName(unit).."_SummonIndicator", "OVERLAY")
+        end
+        unitFrame.SummonIndicatorObject:SetSize(SummonDB.Size, SummonDB.Size)
+        unitFrame.SummonIndicatorObject:ClearAllPoints()
+        unitFrame.SummonIndicatorObject:SetPoint(SummonDB.Layout[1], unitFrame.HighLevelContainer, SummonDB.Layout[2], SummonDB.Layout[3], SummonDB.Layout[4])
+        unitFrame.SummonIndicatorObject.useAtlasSize = SummonDB.UseAtlasSize
+        unitFrame.SummonIndicator = unitFrame.SummonIndicatorObject
+        if not unitFrame:IsElementEnabled("SummonIndicator") then unitFrame:EnableElement("SummonIndicator") end
+        if unitFrame.SummonIndicatorObject.ForceUpdate then unitFrame.SummonIndicatorObject:ForceUpdate() end
     else
-        unitFrame.SummonIndicator:ForceUpdate()
+        if unitFrame:IsElementEnabled("SummonIndicator") then unitFrame:DisableElement("SummonIndicator") end
+        if unitFrame.SummonIndicatorObject then unitFrame.SummonIndicatorObject:Hide() end
+        unitFrame.SummonIndicator = nil
     end
 end

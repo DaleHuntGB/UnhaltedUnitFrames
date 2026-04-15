@@ -691,6 +691,19 @@ function UUF:CreateTestPartyFrames()
                 end
             end
 
+            if PartyFrame.ReadyCheckIndicator then
+                local ReadyCheckDB = UUF.db.profile.Units.party.Indicators.ReadyCheck
+                if ReadyCheckDB.Enabled then
+                    PartyFrame.ReadyCheckIndicator:SetSize(ReadyCheckDB.Size, ReadyCheckDB.Size)
+                    PartyFrame.ReadyCheckIndicator:ClearAllPoints()
+                    PartyFrame.ReadyCheckIndicator:SetPoint(ReadyCheckDB.Layout[1], PartyFrame.HighLevelContainer, ReadyCheckDB.Layout[2], ReadyCheckDB.Layout[3], ReadyCheckDB.Layout[4])
+                    PartyFrame.ReadyCheckIndicator:SetAtlas("UI-LFG-ReadyMark-Raid", ReadyCheckDB.UseAtlasSize)
+                    if i == 1 then PartyFrame.ReadyCheckIndicator:Show() else PartyFrame.ReadyCheckIndicator:Hide() end
+                else
+                    PartyFrame.ReadyCheckIndicator:Hide()
+                end
+            end
+
             if PartyFrame.ResurrectIndicator then
                 local ResurrectDB = UUF.db.profile.Units.party.Indicators.Resurrection
                 if ResurrectDB.Enabled then
@@ -1082,6 +1095,19 @@ function UUF:CreateTestRaidFrames()
                         if i % 5 == 3 then RaidFrame.SummonIndicator:Show() else RaidFrame.SummonIndicator:Hide() end
                     else
                         RaidFrame.SummonIndicator:Hide()
+                    end
+                end
+
+                if RaidFrame.ReadyCheckIndicator then
+                    local ReadyCheckDB = UUF.db.profile.Units.raid.Indicators.ReadyCheck
+                    if ReadyCheckDB.Enabled then
+                        RaidFrame.ReadyCheckIndicator:SetSize(ReadyCheckDB.Size, ReadyCheckDB.Size)
+                        RaidFrame.ReadyCheckIndicator:ClearAllPoints()
+                        RaidFrame.ReadyCheckIndicator:SetPoint(ReadyCheckDB.Layout[1], RaidFrame.HighLevelContainer, ReadyCheckDB.Layout[2], ReadyCheckDB.Layout[3], ReadyCheckDB.Layout[4])
+                        RaidFrame.ReadyCheckIndicator:SetAtlas("UI-LFG-ReadyMark-Raid", ReadyCheckDB.UseAtlasSize)
+                        if i % 5 == 1 then RaidFrame.ReadyCheckIndicator:Show() else RaidFrame.ReadyCheckIndicator:Hide() end
+                    else
+                        RaidFrame.ReadyCheckIndicator:Hide()
                     end
                 end
 
