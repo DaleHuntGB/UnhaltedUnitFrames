@@ -2692,7 +2692,7 @@ local function CreatePhaseIndicatorSettings(containerParent, unit, updateCallbac
     AnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
     AnchorFromDropdown:SetLabel("Anchor From")
     AnchorFromDropdown:SetValue(PhaseDB.Layout[1])
-    AnchorFromDropdown:SetRelativeWidth(0.33)
+    AnchorFromDropdown:SetRelativeWidth(0.5)
     AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) PhaseDB.Layout[1] = value updateCallback() end)
     LayoutContainer:AddChild(AnchorFromDropdown)
 
@@ -2700,7 +2700,7 @@ local function CreatePhaseIndicatorSettings(containerParent, unit, updateCallbac
     AnchorToDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
     AnchorToDropdown:SetLabel("Anchor To")
     AnchorToDropdown:SetValue(PhaseDB.Layout[2])
-    AnchorToDropdown:SetRelativeWidth(0.33)
+    AnchorToDropdown:SetRelativeWidth(0.5)
     AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) PhaseDB.Layout[2] = value updateCallback() end)
     LayoutContainer:AddChild(AnchorToDropdown)
 
@@ -2708,7 +2708,7 @@ local function CreatePhaseIndicatorSettings(containerParent, unit, updateCallbac
     XPosSlider:SetLabel("X Position")
     XPosSlider:SetValue(PhaseDB.Layout[3])
     XPosSlider:SetSliderValues(-1000, 1000, 0.1)
-    XPosSlider:SetRelativeWidth(0.33)
+    XPosSlider:SetRelativeWidth(0.5)
     XPosSlider:SetCallback("OnValueChanged", function(_, _, value) PhaseDB.Layout[3] = value updateCallback() end)
     LayoutContainer:AddChild(XPosSlider)
 
@@ -2716,7 +2716,7 @@ local function CreatePhaseIndicatorSettings(containerParent, unit, updateCallbac
     YPosSlider:SetLabel("Y Position")
     YPosSlider:SetValue(PhaseDB.Layout[4])
     YPosSlider:SetSliderValues(-1000, 1000, 0.1)
-    YPosSlider:SetRelativeWidth(0.33)
+    YPosSlider:SetRelativeWidth(0.5)
     YPosSlider:SetCallback("OnValueChanged", function(_, _, value) PhaseDB.Layout[4] = value updateCallback() end)
     LayoutContainer:AddChild(YPosSlider)
 
