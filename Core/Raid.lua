@@ -195,6 +195,7 @@ function UUF:SpawnRaidFrames()
         UUF.GroupTypeEventFrame = CreateFrame("Frame")
         UUF.GroupTypeEventFrame:RegisterEvent("GROUP_ROSTER_UPDATE")
         UUF.GroupTypeEventFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
+        UUF.GroupTypeEventFrame:RegisterEvent("PLAYER_ROLES_ASSIGNED")
         UUF.GroupTypeEventFrame:SetScript("OnEvent", function(self, event)
             if InCombatLockdown() then return end
             local inRaid  = IsInRaid()
@@ -231,7 +232,11 @@ function UUF:SpawnRaidFrames()
                 end
             end
 
-            -- Re-layout raid frames so any subgroup changes are reflected immediately.
+            -- Re-layout both group types so join/leave and role changes reshuffle immediately.
+            if inParty then
+                UUF:LayoutPartyFrames()
+            end
+
             if inRaid then
                 UUF:LayoutRaidFrames()
             end

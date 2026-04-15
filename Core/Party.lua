@@ -64,7 +64,13 @@ function UUF:LayoutPartyFrames()
     if #UUF.PARTY_FRAMES == 0 then return end
 
     local partyFrames = {}
-    for i = 1, #UUF.PARTY_FRAMES do partyFrames[i] = UUF.PARTY_FRAMES[i] end
+    for i = 1, #UUF.PARTY_FRAMES do
+        local unitFrame = UUF.PARTY_FRAMES[i]
+        if unitFrame and (UUF.PARTY_TEST_MODE or UnitExists(unitFrame.unit)) then
+            partyFrames[#partyFrames + 1] = unitFrame
+        end
+    end
+    if #partyFrames == 0 then return end
 
     if Frame.SortBy == "NAME" then
         table.sort(partyFrames, function(a, b)

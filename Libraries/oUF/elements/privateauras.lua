@@ -40,6 +40,8 @@ unable to provide customizations other than size and positioning.
 local _, ns = ...
 local oUF = ns.oUF
 
+local Path
+
 local function CreateAura(element, index)
 	-- similar to BuffFramePrivateAuraAnchorTemplate
 	local aura = CreateFrame('Frame', nil, element)
@@ -81,17 +83,28 @@ local function SetPosition(element, aura, auraIndex)
 end
 
 local function resetAnchors(element)
+	if(InCombatLockdown()) then
+		return false
+	end
+
 	for _, anchor in next, element.anchors do
 		C_UnitAuras.RemovePrivateAuraAnchor(anchor)
 	end
 
 	table.wipe(element.anchors)
+
+	return true
 end
 
 local function Update(self)
 	local element = self.PrivateAuras
 	if(element.anchors) then
-		resetAnchors(element)
+		if(not resetAnchors(element)) then
+			element.needsUpdate = true
+			self:RegisterEvent('PLAYER_REGEN_ENABLED', Path, true)
+
+			return
+		end
 	else
 		element.anchors = {}
 	end
@@ -152,17 +165,42 @@ local function Update(self)
 	* self - the PrivateAuras element
 	--]]
 	if(element.PostUpdate) then element:PostUpdate() end
+
+	element.needsUpdate = nil
+	if(not element.needsDisable) then
+		self:UnregisterEvent('PLAYER_REGEN_ENABLED', Path)
+	end
 end
 
-local function Path(self, ...)
+Path = function(self, ...)
+	local element = self.PrivateAuras
+	if(not element) then
+		self:UnregisterEvent('PLAYER_REGEN_ENABLED', Path)
+
+		return
+	end
+
+	if(element.needsDisable) then
+		if(not resetAnchors(element)) then
+			self:RegisterEvent('PLAYER_REGEN_ENABLED', Path, true)
+
+			return
+		end
+
+		element.needsDisable = nil
+	end
+
 	--[[ Override: PrivateAuras:Override()
 	Used to completely override the internal function for creating, positioning and registering
 	all private auras.
 
 	* self - the PrivateAuras element
 	--]]
-	do
-		(self.PrivateAuras.Override or Update) (self, ...)
+	local override = self.PrivateAuras.Override
+	if(override) then
+		override(self, ...)
+	else
+		Update(self)
 	end
 end
 
@@ -172,9 +210,24 @@ end
 
 local function Disable(self)
 	local element = self.PrivateAuras
-	if(element and element.anchors) then
-		resetAnchors(element)
+	if(not element) then
+		self:UnregisterEvent('PLAYER_REGEN_ENABLED', Path)
+
+		return
 	end
+
+	if(element.anchors) then
+		if(not resetAnchors(element)) then
+			element.needsDisable = true
+			self:RegisterEvent('PLAYER_REGEN_ENABLED', Path, true)
+
+			return
+		end
+	end
+
+	element.needsDisable = nil
+	element.needsUpdate = nil
+	self:UnregisterEvent('PLAYER_REGEN_ENABLED', Path)
 end
 
 local function Enable(self, unit)
