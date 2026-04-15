@@ -12,7 +12,7 @@ function UUF:CreateRaidSummonIndicator(unitFrame, unit)
     end
     unitFrame.SummonIndicatorObject:SetSize(SummonDB.Size, SummonDB.Size)
     unitFrame.SummonIndicatorObject:SetPoint(SummonDB.Layout[1], unitFrame.HighLevelContainer, SummonDB.Layout[2], SummonDB.Layout[3], SummonDB.Layout[4])
-    unitFrame.SummonIndicatorObject.useAtlasSize = SummonDB.UseAtlasSize
+    unitFrame.SummonIndicatorObject.useAtlasSize = false
     unitFrame.SummonIndicatorObject:Hide()
     if not SummonDB.Enabled then
         unitFrame.SummonIndicatorObject:Hide()
@@ -33,7 +33,7 @@ function UUF:UpdateRaidSummonIndicatorSettings(unitFrame, unit)
         unitFrame.SummonIndicatorObject:SetSize(SummonDB.Size, SummonDB.Size)
         unitFrame.SummonIndicatorObject:ClearAllPoints()
         unitFrame.SummonIndicatorObject:SetPoint(SummonDB.Layout[1], unitFrame.HighLevelContainer, SummonDB.Layout[2], SummonDB.Layout[3], SummonDB.Layout[4])
-        unitFrame.SummonIndicatorObject.useAtlasSize = SummonDB.UseAtlasSize
+        unitFrame.SummonIndicatorObject.useAtlasSize = false
         unitFrame.SummonIndicator = unitFrame.SummonIndicatorObject
         if not unitFrame:IsElementEnabled("SummonIndicator") then unitFrame:EnableElement("SummonIndicator") end
         if unitFrame.SummonIndicatorObject.ForceUpdate then unitFrame.SummonIndicatorObject:ForceUpdate() end
@@ -56,7 +56,7 @@ function UUF:CreateUnitSummonIndicator(unitFrame, unit)
     end
     unitFrame.SummonIndicatorObject:SetSize(SummonDB.Size, SummonDB.Size)
     unitFrame.SummonIndicatorObject:SetPoint(SummonDB.Layout[1], unitFrame.HighLevelContainer, SummonDB.Layout[2], SummonDB.Layout[3], SummonDB.Layout[4])
-    unitFrame.SummonIndicatorObject.useAtlasSize = SummonDB.UseAtlasSize
+    unitFrame.SummonIndicatorObject.useAtlasSize = false
     unitFrame.SummonIndicatorObject:Hide()
     if not SummonDB.Enabled then
         unitFrame.SummonIndicatorObject:Hide()
@@ -77,7 +77,7 @@ function UUF:UpdateUnitSummonIndicator(unitFrame, unit)
         unitFrame.SummonIndicatorObject:SetSize(SummonDB.Size, SummonDB.Size)
         unitFrame.SummonIndicatorObject:ClearAllPoints()
         unitFrame.SummonIndicatorObject:SetPoint(SummonDB.Layout[1], unitFrame.HighLevelContainer, SummonDB.Layout[2], SummonDB.Layout[3], SummonDB.Layout[4])
-        unitFrame.SummonIndicatorObject.useAtlasSize = SummonDB.UseAtlasSize
+        unitFrame.SummonIndicatorObject.useAtlasSize = false
         unitFrame.SummonIndicator = unitFrame.SummonIndicatorObject
         if not unitFrame:IsElementEnabled("SummonIndicator") then unitFrame:EnableElement("SummonIndicator") end
         if unitFrame.SummonIndicatorObject.ForceUpdate then unitFrame.SummonIndicatorObject:ForceUpdate() end

@@ -2487,20 +2487,13 @@ local function CreateSummonIndicatorSettings(containerParent, unit, updateCallba
     SizeSlider:SetCallback("OnValueChanged", function(_, _, value) SummonDB.Size = value updateCallback() end)
     ToggleContainer:AddChild(SizeSlider)
 
-    local UseAtlasSizeToggle = AG:Create("CheckBox")
-    UseAtlasSizeToggle:SetLabel("Use Atlas Size")
-    UseAtlasSizeToggle:SetValue(SummonDB.UseAtlasSize or false)
-    UseAtlasSizeToggle:SetCallback("OnValueChanged", function(_, _, value) SummonDB.UseAtlasSize = value updateCallback() end)
-    UseAtlasSizeToggle:SetFullWidth(true)
-    ToggleContainer:AddChild(UseAtlasSizeToggle)
-
     local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
 
     local AnchorFromDropdown = AG:Create("Dropdown")
     AnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
     AnchorFromDropdown:SetLabel("Anchor From")
     AnchorFromDropdown:SetValue(SummonDB.Layout[1])
-    AnchorFromDropdown:SetRelativeWidth(0.33)
+    AnchorFromDropdown:SetRelativeWidth(0.5)
     AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) SummonDB.Layout[1] = value updateCallback() end)
     LayoutContainer:AddChild(AnchorFromDropdown)
 
@@ -2508,7 +2501,7 @@ local function CreateSummonIndicatorSettings(containerParent, unit, updateCallba
     AnchorToDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
     AnchorToDropdown:SetLabel("Anchor To")
     AnchorToDropdown:SetValue(SummonDB.Layout[2])
-    AnchorToDropdown:SetRelativeWidth(0.33)
+    AnchorToDropdown:SetRelativeWidth(0.5)
     AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) SummonDB.Layout[2] = value updateCallback() end)
     LayoutContainer:AddChild(AnchorToDropdown)
 
@@ -2516,7 +2509,7 @@ local function CreateSummonIndicatorSettings(containerParent, unit, updateCallba
     XPosSlider:SetLabel("X Position")
     XPosSlider:SetValue(SummonDB.Layout[3])
     XPosSlider:SetSliderValues(-1000, 1000, 0.1)
-    XPosSlider:SetRelativeWidth(0.33)
+    XPosSlider:SetRelativeWidth(0.5)
     XPosSlider:SetCallback("OnValueChanged", function(_, _, value) SummonDB.Layout[3] = value updateCallback() end)
     LayoutContainer:AddChild(XPosSlider)
 
@@ -2524,7 +2517,7 @@ local function CreateSummonIndicatorSettings(containerParent, unit, updateCallba
     YPosSlider:SetLabel("Y Position")
     YPosSlider:SetValue(SummonDB.Layout[4])
     YPosSlider:SetSliderValues(-1000, 1000, 0.1)
-    YPosSlider:SetRelativeWidth(0.33)
+    YPosSlider:SetRelativeWidth(0.5)
     YPosSlider:SetCallback("OnValueChanged", function(_, _, value) SummonDB.Layout[4] = value updateCallback() end)
     LayoutContainer:AddChild(YPosSlider)
 
@@ -2559,36 +2552,13 @@ local function CreateReadyCheckIndicatorSettings(containerParent, unit, updateCa
     SizeSlider:SetCallback("OnValueChanged", function(_, _, value) ReadyCheckDB.Size = value updateCallback() end)
     ToggleContainer:AddChild(SizeSlider)
 
-    local UseAtlasSizeToggle = AG:Create("CheckBox")
-    UseAtlasSizeToggle:SetLabel("Use Atlas Size")
-    UseAtlasSizeToggle:SetValue(ReadyCheckDB.UseAtlasSize or false)
-    UseAtlasSizeToggle:SetCallback("OnValueChanged", function(_, _, value) ReadyCheckDB.UseAtlasSize = value updateCallback() end)
-    UseAtlasSizeToggle:SetRelativeWidth(0.5)
-    ToggleContainer:AddChild(UseAtlasSizeToggle)
-
-    local FinishedTimeSlider = AG:Create("Slider")
-    FinishedTimeSlider:SetLabel("Stick Duration")
-    FinishedTimeSlider:SetValue(ReadyCheckDB.FinishedTime or 10)
-    FinishedTimeSlider:SetSliderValues(0, 30, 0.1)
-    FinishedTimeSlider:SetRelativeWidth(0.5)
-    FinishedTimeSlider:SetCallback("OnValueChanged", function(_, _, value) ReadyCheckDB.FinishedTime = value updateCallback() end)
-    ToggleContainer:AddChild(FinishedTimeSlider)
-
-    local FadeTimeSlider = AG:Create("Slider")
-    FadeTimeSlider:SetLabel("Fade Duration")
-    FadeTimeSlider:SetValue(ReadyCheckDB.FadeTime or 1.5)
-    FadeTimeSlider:SetSliderValues(0.1, 10, 0.1)
-    FadeTimeSlider:SetRelativeWidth(0.5)
-    FadeTimeSlider:SetCallback("OnValueChanged", function(_, _, value) ReadyCheckDB.FadeTime = value updateCallback() end)
-    ToggleContainer:AddChild(FadeTimeSlider)
-
     local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
 
     local AnchorFromDropdown = AG:Create("Dropdown")
     AnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
     AnchorFromDropdown:SetLabel("Anchor From")
     AnchorFromDropdown:SetValue(ReadyCheckDB.Layout[1])
-    AnchorFromDropdown:SetRelativeWidth(0.33)
+    AnchorFromDropdown:SetRelativeWidth(0.5)
     AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) ReadyCheckDB.Layout[1] = value updateCallback() end)
     LayoutContainer:AddChild(AnchorFromDropdown)
 
@@ -2596,7 +2566,7 @@ local function CreateReadyCheckIndicatorSettings(containerParent, unit, updateCa
     AnchorToDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
     AnchorToDropdown:SetLabel("Anchor To")
     AnchorToDropdown:SetValue(ReadyCheckDB.Layout[2])
-    AnchorToDropdown:SetRelativeWidth(0.33)
+    AnchorToDropdown:SetRelativeWidth(0.5)
     AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) ReadyCheckDB.Layout[2] = value updateCallback() end)
     LayoutContainer:AddChild(AnchorToDropdown)
 
@@ -2604,7 +2574,7 @@ local function CreateReadyCheckIndicatorSettings(containerParent, unit, updateCa
     XPosSlider:SetLabel("X Position")
     XPosSlider:SetValue(ReadyCheckDB.Layout[3])
     XPosSlider:SetSliderValues(-1000, 1000, 0.1)
-    XPosSlider:SetRelativeWidth(0.33)
+    XPosSlider:SetRelativeWidth(0.5)
     XPosSlider:SetCallback("OnValueChanged", function(_, _, value) ReadyCheckDB.Layout[3] = value updateCallback() end)
     LayoutContainer:AddChild(XPosSlider)
 
@@ -2612,7 +2582,7 @@ local function CreateReadyCheckIndicatorSettings(containerParent, unit, updateCa
     YPosSlider:SetLabel("Y Position")
     YPosSlider:SetValue(ReadyCheckDB.Layout[4])
     YPosSlider:SetSliderValues(-1000, 1000, 0.1)
-    YPosSlider:SetRelativeWidth(0.33)
+    YPosSlider:SetRelativeWidth(0.5)
     YPosSlider:SetCallback("OnValueChanged", function(_, _, value) ReadyCheckDB.Layout[4] = value updateCallback() end)
     LayoutContainer:AddChild(YPosSlider)
 
@@ -2655,7 +2625,7 @@ local function CreateResurrectIndicatorSettings(containerParent, unit, updateCal
     AnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
     AnchorFromDropdown:SetLabel("Anchor From")
     AnchorFromDropdown:SetValue(ResurrectDB.Layout[1])
-    AnchorFromDropdown:SetRelativeWidth(0.33)
+    AnchorFromDropdown:SetRelativeWidth(0.5)
     AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) ResurrectDB.Layout[1] = value updateCallback() end)
     LayoutContainer:AddChild(AnchorFromDropdown)
 
@@ -2663,7 +2633,7 @@ local function CreateResurrectIndicatorSettings(containerParent, unit, updateCal
     AnchorToDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
     AnchorToDropdown:SetLabel("Anchor To")
     AnchorToDropdown:SetValue(ResurrectDB.Layout[2])
-    AnchorToDropdown:SetRelativeWidth(0.33)
+    AnchorToDropdown:SetRelativeWidth(0.5)
     AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) ResurrectDB.Layout[2] = value updateCallback() end)
     LayoutContainer:AddChild(AnchorToDropdown)
 
@@ -2671,7 +2641,7 @@ local function CreateResurrectIndicatorSettings(containerParent, unit, updateCal
     XPosSlider:SetLabel("X Position")
     XPosSlider:SetValue(ResurrectDB.Layout[3])
     XPosSlider:SetSliderValues(-1000, 1000, 0.1)
-    XPosSlider:SetRelativeWidth(0.33)
+    XPosSlider:SetRelativeWidth(0.5)
     XPosSlider:SetCallback("OnValueChanged", function(_, _, value) ResurrectDB.Layout[3] = value updateCallback() end)
     LayoutContainer:AddChild(XPosSlider)
 
@@ -2679,7 +2649,7 @@ local function CreateResurrectIndicatorSettings(containerParent, unit, updateCal
     YPosSlider:SetLabel("Y Position")
     YPosSlider:SetValue(ResurrectDB.Layout[4])
     YPosSlider:SetSliderValues(-1000, 1000, 0.1)
-    YPosSlider:SetRelativeWidth(0.33)
+    YPosSlider:SetRelativeWidth(0.5)
     YPosSlider:SetCallback("OnValueChanged", function(_, _, value) ResurrectDB.Layout[4] = value updateCallback() end)
     LayoutContainer:AddChild(YPosSlider)
 

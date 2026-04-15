@@ -12,9 +12,7 @@ function UUF:CreateRaidReadyCheckIndicator(unitFrame, unit)
     end
     unitFrame.ReadyCheckIndicatorObject:SetSize(ReadyCheckDB.Size, ReadyCheckDB.Size)
     unitFrame.ReadyCheckIndicatorObject:SetPoint(ReadyCheckDB.Layout[1], unitFrame.HighLevelContainer, ReadyCheckDB.Layout[2], ReadyCheckDB.Layout[3], ReadyCheckDB.Layout[4])
-    unitFrame.ReadyCheckIndicatorObject.useAtlasSize = ReadyCheckDB.UseAtlasSize
-    unitFrame.ReadyCheckIndicatorObject.fadeTime = ReadyCheckDB.FadeTime
-    unitFrame.ReadyCheckIndicatorObject.finishedTime = ReadyCheckDB.FinishedTime
+    unitFrame.ReadyCheckIndicatorObject.useAtlasSize = false
     unitFrame.ReadyCheckIndicatorObject:Hide()
     if not ReadyCheckDB.Enabled then
         unitFrame.ReadyCheckIndicatorObject:Hide()
@@ -35,9 +33,7 @@ function UUF:UpdateRaidReadyCheckIndicatorSettings(unitFrame, unit)
         unitFrame.ReadyCheckIndicatorObject:SetSize(ReadyCheckDB.Size, ReadyCheckDB.Size)
         unitFrame.ReadyCheckIndicatorObject:ClearAllPoints()
         unitFrame.ReadyCheckIndicatorObject:SetPoint(ReadyCheckDB.Layout[1], unitFrame.HighLevelContainer, ReadyCheckDB.Layout[2], ReadyCheckDB.Layout[3], ReadyCheckDB.Layout[4])
-        unitFrame.ReadyCheckIndicatorObject.useAtlasSize = ReadyCheckDB.UseAtlasSize
-        unitFrame.ReadyCheckIndicatorObject.fadeTime = ReadyCheckDB.FadeTime
-        unitFrame.ReadyCheckIndicatorObject.finishedTime = ReadyCheckDB.FinishedTime
+        unitFrame.ReadyCheckIndicatorObject.useAtlasSize = false
         unitFrame.ReadyCheckIndicator = unitFrame.ReadyCheckIndicatorObject
         if not unitFrame:IsElementEnabled("ReadyCheckIndicator") then unitFrame:EnableElement("ReadyCheckIndicator") end
         if unitFrame.ReadyCheckIndicatorObject.ForceUpdate then unitFrame.ReadyCheckIndicatorObject:ForceUpdate() end
@@ -60,9 +56,7 @@ function UUF:CreateUnitReadyCheckIndicator(unitFrame, unit)
     end
     unitFrame.ReadyCheckIndicatorObject:SetSize(ReadyCheckDB.Size, ReadyCheckDB.Size)
     unitFrame.ReadyCheckIndicatorObject:SetPoint(ReadyCheckDB.Layout[1], unitFrame.HighLevelContainer, ReadyCheckDB.Layout[2], ReadyCheckDB.Layout[3], ReadyCheckDB.Layout[4])
-    unitFrame.ReadyCheckIndicatorObject.useAtlasSize = ReadyCheckDB.UseAtlasSize
-    unitFrame.ReadyCheckIndicatorObject.fadeTime = ReadyCheckDB.FadeTime
-    unitFrame.ReadyCheckIndicatorObject.finishedTime = ReadyCheckDB.FinishedTime
+    unitFrame.ReadyCheckIndicatorObject.useAtlasSize = false
     unitFrame.ReadyCheckIndicatorObject:Hide()
     if not ReadyCheckDB.Enabled then
         unitFrame.ReadyCheckIndicatorObject:Hide()
@@ -83,9 +77,7 @@ function UUF:UpdateUnitReadyCheckIndicator(unitFrame, unit)
         unitFrame.ReadyCheckIndicatorObject:SetSize(ReadyCheckDB.Size, ReadyCheckDB.Size)
         unitFrame.ReadyCheckIndicatorObject:ClearAllPoints()
         unitFrame.ReadyCheckIndicatorObject:SetPoint(ReadyCheckDB.Layout[1], unitFrame.HighLevelContainer, ReadyCheckDB.Layout[2], ReadyCheckDB.Layout[3], ReadyCheckDB.Layout[4])
-        unitFrame.ReadyCheckIndicatorObject.useAtlasSize = ReadyCheckDB.UseAtlasSize
-        unitFrame.ReadyCheckIndicatorObject.fadeTime = ReadyCheckDB.FadeTime
-        unitFrame.ReadyCheckIndicatorObject.finishedTime = ReadyCheckDB.FinishedTime
+        unitFrame.ReadyCheckIndicatorObject.useAtlasSize = false
         unitFrame.ReadyCheckIndicator = unitFrame.ReadyCheckIndicatorObject
         if not unitFrame:IsElementEnabled("ReadyCheckIndicator") then unitFrame:EnableElement("ReadyCheckIndicator") end
         if unitFrame.ReadyCheckIndicatorObject.ForceUpdate then unitFrame.ReadyCheckIndicatorObject:ForceUpdate() end
