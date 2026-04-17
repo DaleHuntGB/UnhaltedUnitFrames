@@ -50,6 +50,9 @@ local Tags = {
     ["maxpp:abbr:colour"] = "UNIT_POWER_UPDATE UNIT_MAXPOWER",
 
     ["name:colour"] = "UNIT_CLASSIFICATION_CHANGED UNIT_FACTION UNIT_NAME_UPDATE",
+    ["name:target"] = "UNIT_NAME_UPDATE UNIT_TARGET",
+    ["name:target:colour"] = "UNIT_NAME_UPDATE UNIT_TARGET",
+
 }
 
 for i = 1, 25 do
@@ -60,6 +63,14 @@ for i = 1, 25 do
     Tags["name:short:" .. i .. ":colour"] = "UNIT_NAME_UPDATE"
 end
 
+for i = 1, 25 do
+    Tags["name:target:short:" .. i] = "UNIT_NAME_UPDATE UNIT_TARGET"
+end
+
+for i = 1, 25 do
+    Tags["name:target:short:" .. i .. ":colour"] = "UNIT_NAME_UPDATE UNIT_TARGET"
+end
+
 UUF.SEPARATOR_TAGS = {
 {
     ["||"] = "|",
@@ -68,6 +79,7 @@ UUF.SEPARATOR_TAGS = {
     [" "] = "Space",
     ["[]"] = "[]",
     ["()"] = "()",
+    ["•"] = "•",
 },
 {
     "||",
@@ -75,7 +87,8 @@ UUF.SEPARATOR_TAGS = {
     "/",
     "[]",
     "()",
-    " "
+    "•",
+    " ",
 }
 }
 
@@ -84,15 +97,17 @@ UUF.TOT_SEPARATOR_TAGS = {
         ["»"] = "»",
         ["-"] = "-",
         [">"] = ">",
+        [">>"] = ">>",
+        ["•"] = "•",
     },
     {
         "»",
         "-",
         ">",
+        ">>",
+        "•",
     }
 }
-
--- Thank you to m33shoq for this abbreviation function and data!
 
 local abbrevData = {
    breakpointData = {
@@ -385,6 +400,22 @@ oUF.Tags.Methods["name:colour"] = function(unit)
     return string.format("|cff%02x%02x%02x%s|r", classColourR * 255, classColourG * 255, classColourB * 255, unitName)
 end
 
+oUF.Tags.Methods["name:target"] = function(unit)
+    local targetUnit = unit and (unit .. "target")
+    local arrowSeperator = UUF.TOT_SEPARATOR
+    if not targetUnit or not UnitExists(targetUnit) then return "" end
+    return string.format(" %s %s", arrowSeperator, UnitName(targetUnit) or "")
+end
+
+oUF.Tags.Methods["name:target:colour"] = function(unit)
+    local targetUnit = unit and (unit .. "target")
+    local arrowSeperator = UUF.TOT_SEPARATOR
+    if not targetUnit or not UnitExists(targetUnit) then return "" end
+    local classColourR, classColourG, classColourB = UUF:GetUnitColour(targetUnit)
+    local unitName = UnitName(targetUnit) or ""
+    return string.format(" %s |cff%02x%02x%02x%s|r", arrowSeperator, classColourR * 255, classColourG * 255, classColourB * 255, unitName)
+end
+
 oUF.Tags.Methods["resetcolor"] = function(unit)
     return "|r"
 end
@@ -392,6 +423,7 @@ end
 local function ShortenUnitName(unit, maxChars)
     if not unit or not UnitExists(unit) then return "" end
     local unitName = UnitName(unit) or ""
+    if UUF:IsSecretValue(unitName) then return unitName end
     if maxChars and maxChars > 0 then
         unitName = string.format("%." .. maxChars .. "s", unitName)
     end
@@ -401,11 +433,33 @@ end
 for i = 1, 25 do
     oUF.Tags.Methods["name:short:" .. i] = function(unit) return ShortenUnitName(unit, i) end
 end
+
 for i = 1, 25 do
     oUF.Tags.Methods["name:short:" .. i .. ":colour"] = function(unit)
         local classColourR, classColourG, classColourB = UUF:GetUnitColour(unit)
         local shortenedName = ShortenUnitName(unit, i)
         return string.format("|cff%02x%02x%02x%s|r", classColourR * 255, classColourG * 255, classColourB * 255, shortenedName)
+    end
+end
+
+for i = 1, 25 do
+    oUF.Tags.Methods["name:target:short:" .. i] = function(unit)
+        local targetUnit = unit and (unit .. "target")
+        if not targetUnit or not UnitExists(targetUnit) then return "" end
+        local shortenedName = ShortenUnitName(targetUnit, i)
+        local arrowSeperator = UUF.TOT_SEPARATOR
+        return string.format(" %s %s", arrowSeperator, shortenedName)
+    end
+end
+
+for i = 1, 25 do
+    oUF.Tags.Methods["name:target:short:" .. i .. ":colour"] = function(unit)
+        local targetUnit = unit and (unit .. "target")
+        if not targetUnit or not UnitExists(targetUnit) then return "" end
+        local classColourR, classColourG, classColourB = UUF:GetUnitColour(targetUnit)
+        local shortenedName = ShortenUnitName(targetUnit, i)
+        local arrowSeperator = UUF.TOT_SEPARATOR
+        return string.format(" %s |cff%02x%02x%02x%s|r", arrowSeperator, classColourR * 255, classColourG * 255, classColourB * 255, shortenedName)
     end
 end
 
@@ -476,12 +530,20 @@ local NameTags = {
         ["name:colour"] = "Unit Name with Colour",
         ["name:short:10"] = "Unit Name Shortened (1 - 25 Chars)",
         ["name:short:10:colour"] = "Unit Name Shortened (1 - 25 Chars) with Colour",
+        ["name:target"] = "Target Unit Name",
+        ["name:target:colour"] = "Target Unit Name with Colour",
+        ["name:target:short:10"] = "Target Unit Name Shortened (1 - 25 Chars)",
+        ["name:target:short:10:colour"] = "Target Unit Name Shortened (1 - 25 Chars) with Colour",
     },
     {
         "name",
         "name:colour",
         "name:short:10",
         "name:short:10:colour",
+        "name:target",
+        "name:target:colour",
+        "name:target:short:10",
+        "name:target:short:10:colour",
     }
 }
 

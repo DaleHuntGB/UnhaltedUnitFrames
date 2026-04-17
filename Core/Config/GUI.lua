@@ -33,6 +33,7 @@ local UnitDBToUnitPrettyName = {
 
 local AnchorPoints = { { ["TOPLEFT"] = "Top Left", ["TOP"] = "Top", ["TOPRIGHT"] = "Top Right", ["LEFT"] = "Left", ["CENTER"] = "Center", ["RIGHT"] = "Right", ["BOTTOMLEFT"] = "Bottom Left", ["BOTTOM"] = "Bottom", ["BOTTOMRIGHT"] = "Bottom Right" }, { "TOPLEFT", "TOP", "TOPRIGHT", "LEFT", "CENTER", "RIGHT", "BOTTOMLEFT", "BOTTOM", "BOTTOMRIGHT", } }
 local FrameStrataList = {{ ["BACKGROUND"] = "Background", ["LOW"] = "Low", ["MEDIUM"] = "Medium", ["HIGH"] = "High", ["DIALOG"] = "Dialog", ["FULLSCREEN"] = "Fullscreen", ["FULLSCREEN_DIALOG"] = "Fullscreen Dialog", ["TOOLTIP"] = "Tooltip" }, { "BACKGROUND", "LOW", "MEDIUM", "HIGH", "DIALOG", "FULLSCREEN", "FULLSCREEN_DIALOG", "TOOLTIP" }}
+local TopBottomList = {{ ["TOP"] = "Top", ["BOTTOM"] = "Bottom" }, { "TOP", "BOTTOM" }}
 
 local function GetAuraBaseFilter(auraDB)
     return auraDB == "Buffs" and "HELPFUL" or "HARMFUL"
@@ -229,6 +230,22 @@ local function GenerateSupportText(parentFrame)
         "|cFF8080FFSupport|r is truly appreciated |TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Emotes\\peepoLove.png:18:18|t " .. "|cFF8080FFDevelopment|r takes time & effort."
     }
     parentFrame.statustext:SetText(SupportOptions[math.random(1, #SupportOptions)])
+end
+
+local function BuildMainNavigationTree()
+    return {
+        { text = "General", value = "General" },
+        { text = "Global", value = "Global" },
+        { text = "Player", value = "Player" },
+        { text = "Target", value = "Target" },
+        { text = "Target of Target", value = "TargetTarget" },
+        { text = "Pet", value = "Pet" },
+        { text = "Focus", value = "Focus" },
+        { text = "Focus Target", value = "FocusTarget" },
+        { text = "Boss", value = "Boss" },
+        { text = "Tags", value = "Tags" },
+        { text = "Profiles", value = "Profiles" },
+    }
 end
 
 local function CreateUIScaleSettings(containerParent)
@@ -1305,28 +1322,43 @@ local function CreatePowerBarSettings(containerParent, unit, updateCallback)
     local FrameDB = UUF.db.profile.Units[unit].Frame
     local PowerBarDB = UUF.db.profile.Units[unit].PowerBar
 
+    local function UpdatePowerBarSettings()
+        updateCallback()
+        if unit == "player" and UUF.PLAYER then
+            UUF:UpdateUnitSecondaryPowerBar(UUF.PLAYER, unit)
+        end
+    end
+
     local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Power Bar Settings")
 
     local Toggle = AG:Create("CheckBox")
     Toggle:SetLabel("Enable |cFF8080FFPower Bar|r")
     Toggle:SetValue(PowerBarDB.Enabled)
-    Toggle:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.Enabled = value updateCallback() RefreshPowerBarGUI() end)
-    Toggle:SetRelativeWidth(0.33)
+    Toggle:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.Enabled = value UpdatePowerBarSettings() RefreshPowerBarGUI() end)
+    Toggle:SetRelativeWidth(0.25)
     LayoutContainer:AddChild(Toggle)
 
     local InverseGrowthDirectionToggle = AG:Create("CheckBox")
     InverseGrowthDirectionToggle:SetLabel("Inverse Growth Direction")
     InverseGrowthDirectionToggle:SetValue(PowerBarDB.Inverse)
-    InverseGrowthDirectionToggle:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.Inverse = value updateCallback() end)
-    InverseGrowthDirectionToggle:SetRelativeWidth(0.33)
+    InverseGrowthDirectionToggle:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.Inverse = value UpdatePowerBarSettings() end)
+    InverseGrowthDirectionToggle:SetRelativeWidth(0.25)
     LayoutContainer:AddChild(InverseGrowthDirectionToggle)
+
+    local PositionDropdown = AG:Create("Dropdown")
+    PositionDropdown:SetList(TopBottomList[1], TopBottomList[2])
+    PositionDropdown:SetLabel("Position")
+    PositionDropdown:SetValue(UUF:GetConfiguredPowerBarPosition(unit))
+    PositionDropdown:SetRelativeWidth(0.25)
+    PositionDropdown:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.Position = value UpdatePowerBarSettings() end)
+    LayoutContainer:AddChild(PositionDropdown)
 
     local HeightSlider = AG:Create("Slider")
     HeightSlider:SetLabel("Height")
     HeightSlider:SetValue(PowerBarDB.Height)
     HeightSlider:SetSliderValues(1, FrameDB.Height - 2, 0.1)
-    HeightSlider:SetRelativeWidth(0.33)
-    HeightSlider:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.Height = value updateCallback() end)
+    HeightSlider:SetRelativeWidth(0.25)
+    HeightSlider:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.Height = value UpdatePowerBarSettings() end)
     LayoutContainer:AddChild(HeightSlider)
 
     local ColourContainer = GUIWidgets.CreateInlineGroup(containerParent, "Colours & Toggles")
@@ -1334,28 +1366,28 @@ local function CreatePowerBarSettings(containerParent, unit, updateCallback)
     local SmoothUpdatesToggle = AG:Create("CheckBox")
     SmoothUpdatesToggle:SetLabel("Smooth Updates")
     SmoothUpdatesToggle:SetValue(PowerBarDB.Smooth)
-    SmoothUpdatesToggle:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.Smooth = value updateCallback() end)
+    SmoothUpdatesToggle:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.Smooth = value UpdatePowerBarSettings() end)
     SmoothUpdatesToggle:SetRelativeWidth(0.25)
     ColourContainer:AddChild(SmoothUpdatesToggle)
 
     local ColourByTypeToggle = AG:Create("CheckBox")
     ColourByTypeToggle:SetLabel("Colour By Type")
     ColourByTypeToggle:SetValue(PowerBarDB.ColourByType)
-    ColourByTypeToggle:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.ColourByType = value updateCallback() RefreshPowerBarGUI() end)
+    ColourByTypeToggle:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.ColourByType = value UpdatePowerBarSettings() RefreshPowerBarGUI() end)
     ColourByTypeToggle:SetRelativeWidth(0.25)
     ColourContainer:AddChild(ColourByTypeToggle)
 
     local ColourByClassToggle = AG:Create("CheckBox")
     ColourByClassToggle:SetLabel("Colour By Class")
     ColourByClassToggle:SetValue(PowerBarDB.ColourByClass)
-    ColourByClassToggle:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.ColourByClass = value updateCallback() RefreshPowerBarGUI() end)
+    ColourByClassToggle:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.ColourByClass = value UpdatePowerBarSettings() RefreshPowerBarGUI() end)
     ColourByClassToggle:SetRelativeWidth(0.25)
     ColourContainer:AddChild(ColourByClassToggle)
 
     local ColourBackgroundByTypeToggle = AG:Create("CheckBox")
     ColourBackgroundByTypeToggle:SetLabel("Colour Background By Power Type")
     ColourBackgroundByTypeToggle:SetValue(PowerBarDB.ColourBackgroundByType)
-    ColourBackgroundByTypeToggle:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.ColourBackgroundByType = value updateCallback() RefreshPowerBarGUI() end)
+    ColourBackgroundByTypeToggle:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.ColourBackgroundByType = value UpdatePowerBarSettings() RefreshPowerBarGUI() end)
     ColourBackgroundByTypeToggle:SetRelativeWidth(0.25)
     ColourBackgroundByTypeToggle:SetDisabled(true)
     ColourContainer:AddChild(ColourBackgroundByTypeToggle)
@@ -1364,7 +1396,7 @@ local function CreatePowerBarSettings(containerParent, unit, updateCallback)
     ForegroundColourPicker:SetLabel("Foreground Colour")
     local R, G, B, A = unpack(PowerBarDB.Foreground)
     ForegroundColourPicker:SetColor(R, G, B, A)
-    ForegroundColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) PowerBarDB.Foreground = {r, g, b, a} updateCallback() end)
+    ForegroundColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) PowerBarDB.Foreground = {r, g, b, a} UpdatePowerBarSettings() end)
     ForegroundColourPicker:SetHasAlpha(true)
     ForegroundColourPicker:SetRelativeWidth(0.33)
     ForegroundColourPicker:SetDisabled(PowerBarDB.ColourByClass or PowerBarDB.ColourByType)
@@ -1374,7 +1406,7 @@ local function CreatePowerBarSettings(containerParent, unit, updateCallback)
     BackgroundColourPicker:SetLabel("Background Colour")
     local R2, G2, B2, A2 = unpack(PowerBarDB.Background)
     BackgroundColourPicker:SetColor(R2, G2, B2, A2)
-    BackgroundColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) PowerBarDB.Background = {r, g, b, a} updateCallback() end)
+    BackgroundColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) PowerBarDB.Background = {r, g, b, a} UpdatePowerBarSettings() end)
     BackgroundColourPicker:SetHasAlpha(true)
     BackgroundColourPicker:SetRelativeWidth(0.33)
     BackgroundColourPicker:SetDisabled(PowerBarDB.ColourBackgroundByType)
@@ -1385,7 +1417,7 @@ local function CreatePowerBarSettings(containerParent, unit, updateCallback)
     BackgroundMultiplierSlider:SetValue(PowerBarDB.BackgroundMultiplier)
     BackgroundMultiplierSlider:SetSliderValues(0, 1, 0.01)
     BackgroundMultiplierSlider:SetRelativeWidth(0.33)
-    BackgroundMultiplierSlider:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.BackgroundMultiplier = value updateCallback() end)
+    BackgroundMultiplierSlider:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.BackgroundMultiplier = value UpdatePowerBarSettings() end)
     BackgroundMultiplierSlider:SetIsPercent(true)
     BackgroundMultiplierSlider:SetDisabled(not PowerBarDB.ColourBackgroundByType)
     ColourContainer:AddChild(BackgroundMultiplierSlider)
@@ -1420,14 +1452,22 @@ local function CreateSecondaryPowerBarSettings(containerParent, unit, updateCall
     Toggle:SetLabel("Enable |cFF8080FFSecondary Power Bar|r")
     Toggle:SetValue(SecondaryPowerBarDB.Enabled)
     Toggle:SetCallback("OnValueChanged", function(_, _, value) SecondaryPowerBarDB.Enabled = value updateCallback() RefreshSecondaryPowerBarGUI() end)
-    Toggle:SetRelativeWidth(0.5)
+    Toggle:SetRelativeWidth(0.33)
     LayoutContainer:AddChild(Toggle)
+
+    local PositionDropdown = AG:Create("Dropdown")
+    PositionDropdown:SetList(TopBottomList[1], TopBottomList[2])
+    PositionDropdown:SetLabel("Position")
+    PositionDropdown:SetValue(UUF:GetConfiguredSecondaryPowerBarPosition(unit))
+    PositionDropdown:SetRelativeWidth(0.33)
+    PositionDropdown:SetCallback("OnValueChanged", function(_, _, value) SecondaryPowerBarDB.Position = value updateCallback() end)
+    LayoutContainer:AddChild(PositionDropdown)
 
     local HeightSlider = AG:Create("Slider")
     HeightSlider:SetLabel("Height")
     HeightSlider:SetValue(SecondaryPowerBarDB.Height)
     HeightSlider:SetSliderValues(1, FrameDB.Height - 2, 0.1)
-    HeightSlider:SetRelativeWidth(0.5)
+    HeightSlider:SetRelativeWidth(0.33)
     HeightSlider:SetCallback("OnValueChanged", function(_, _, value) SecondaryPowerBarDB.Height = value updateCallback() end)
     LayoutContainer:AddChild(HeightSlider)
 
@@ -2796,14 +2836,14 @@ local function CreateGlobalSettings(containerParent)
     UseCustomAbbreviationsCheckbox:SetLabel("Custom Abbreviations")
     UseCustomAbbreviationsCheckbox:SetValue(UUF.db.profile.General.UseCustomAbbreviations)
     UseCustomAbbreviationsCheckbox:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.General.UseCustomAbbreviations = value UUF:UpdateUnitTags() end)
-    UseCustomAbbreviationsCheckbox:SetRelativeWidth(0.33)
+    UseCustomAbbreviationsCheckbox:SetRelativeWidth(0.25)
     TagContainer:AddChild(UseCustomAbbreviationsCheckbox)
 
     local TagIntervalSlider = AG:Create("Slider")
     TagIntervalSlider:SetLabel("Tag Updates Per Second")
     TagIntervalSlider:SetValue(1 / UUF.db.profile.General.TagUpdateInterval)
     TagIntervalSlider:SetSliderValues(1, 10, 0.5)
-    TagIntervalSlider:SetRelativeWidth(0.33)
+    TagIntervalSlider:SetRelativeWidth(0.25)
     TagIntervalSlider:SetCallback("OnValueChanged", function(_, _, value) UUF.TAG_UPDATE_INTERVAL = 1 / value UUF.db.profile.General.TagUpdateInterval = 1 / value UUF:SetTagUpdateInterval() UUF:UpdateUnitTags() end)
     TagContainer:AddChild(TagIntervalSlider)
 
@@ -2811,17 +2851,35 @@ local function CreateGlobalSettings(containerParent)
     SeparatorDropdown:SetList(UUF.SEPARATOR_TAGS[1], UUF.SEPARATOR_TAGS[2])
     SeparatorDropdown:SetLabel("Tag Separator")
     SeparatorDropdown:SetValue(UUF.db.profile.General.Separator)
-    SeparatorDropdown:SetRelativeWidth(0.33)
+    SeparatorDropdown:SetRelativeWidth(0.25)
     SeparatorDropdown:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.General.Separator = value UUF:UpdateUnitTags() end)
     SeparatorDropdown:SetCallback("OnEnter", function() GameTooltip:SetOwner(SeparatorDropdown.frame, "ANCHOR_BOTTOM") GameTooltip:AddLine("The separator chosen here is only applied to custom tags which are combined. Such as |cFF8080FF[curhpperhp]|r or |cFF8080FF[curhpperhp:abbr]|r", 1, 1, 1) GameTooltip:Show() end)
     SeparatorDropdown:SetCallback("OnLeave", function() GameTooltip:Hide() end)
     TagContainer:AddChild(SeparatorDropdown)
 
+    local ToTSeparatorDropdown = AG:Create("Dropdown")
+    ToTSeparatorDropdown:SetList(UUF.TOT_SEPARATOR_TAGS[1], UUF.TOT_SEPARATOR_TAGS[2])
+    ToTSeparatorDropdown:SetLabel("ToT Separator")
+    ToTSeparatorDropdown:SetValue(UUF.db.profile.General.ToTSeparator)
+    ToTSeparatorDropdown:SetRelativeWidth(0.25)
+    ToTSeparatorDropdown:SetCallback("OnValueChanged", function(_, _, value)
+        UUF.db.profile.General.ToTSeparator = value
+        UUF.TOT_SEPARATOR = value
+        UUF:UpdateUnitTags()
+    end)
+    ToTSeparatorDropdown:SetCallback("OnEnter", function()
+        GameTooltip:SetOwner(ToTSeparatorDropdown.frame, "ANCHOR_BOTTOM")
+        GameTooltip:AddLine("Used as the prefix separator for Target of Target tags like |cFF8080FF[name:target]|r on your target frame.", 1, 1, 1)
+        GameTooltip:Show()
+    end)
+    ToTSeparatorDropdown:SetCallback("OnLeave", function() GameTooltip:Hide() end)
+    TagContainer:AddChild(ToTSeparatorDropdown)
+
     containerParent:DoLayout()
 end
 
 local function CreateUnitSettings(containerParent, unit)
-    EnableUnitFrameToggle = AG:Create("CheckBox")
+    local EnableUnitFrameToggle = AG:Create("CheckBox")
     EnableUnitFrameToggle:SetLabel("Enable |cFFFFCC00"..(UnitDBToUnitPrettyName[unit] or unit) .."|r")
     EnableUnitFrameToggle:SetValue(UUF.db.profile.Units[unit].Enabled)
     EnableUnitFrameToggle:SetCallback("OnValueChanged", function(_, _, value)
@@ -2841,26 +2899,31 @@ local function CreateUnitSettings(containerParent, unit)
     EnableUnitFrameToggle:SetRelativeWidth(0.5)
     containerParent:AddChild(EnableUnitFrameToggle)
 
-    EnableUnitFrameToggle = AG:Create("CheckBox")
-    EnableUnitFrameToggle:SetLabel("Hide Blizzard |cFFFFCC00"..(UnitDBToUnitPrettyName[unit] or unit) .."|r")
-    EnableUnitFrameToggle:SetValue(UUF.db.profile.Units[unit].ForceHideBlizzard)
-    EnableUnitFrameToggle:SetCallback("OnValueChanged", function(_, _, value)
+    local HideBlizzardToggle = AG:Create("CheckBox")
+    HideBlizzardToggle:SetLabel("Hide Blizzard |cFFFFCC00"..(UnitDBToUnitPrettyName[unit] or unit) .."|r")
+    HideBlizzardToggle:SetValue(UUF.db.profile.Units[unit].ForceHideBlizzard)
+    HideBlizzardToggle:SetCallback("OnValueChanged", function(_, _, value)
             StaticPopupDialogs["UUF_RELOAD_UI"] = {
             text = "You must reload to apply this change, do you want to reload now?",
             button1 = "Reload Now",
             button2 = "Later",
             showAlert = true,
             OnAccept = function() UUF.db.profile.Units[unit].ForceHideBlizzard = value C_UI.Reload() end,
-            OnCancel = function() EnableUnitFrameToggle:SetValue(UUF.db.profile.Units[unit].ForceHideBlizzard) containerParent:DoLayout() end,
+            OnCancel = function() HideBlizzardToggle:SetValue(UUF.db.profile.Units[unit].ForceHideBlizzard) containerParent:DoLayout() end,
             timeout = 0,
             whileDead = true,
             hideOnEscape = true,
         }
         StaticPopup_Show("UUF_RELOAD_UI")
     end)
-    EnableUnitFrameToggle:SetRelativeWidth(0.5)
-    EnableUnitFrameToggle:SetDisabled(UUF.db.profile.Units[unit].Enabled)
-    containerParent:AddChild(EnableUnitFrameToggle)
+    HideBlizzardToggle:SetRelativeWidth(0.5)
+    HideBlizzardToggle:SetDisabled(UUF.db.profile.Units[unit].Enabled)
+    containerParent:AddChild(HideBlizzardToggle)
+
+    local SettingsContainer = AG:Create("SimpleGroup")
+    SettingsContainer:SetFullWidth(true)
+    SettingsContainer:SetLayout("Flow")
+    containerParent:AddChild(SettingsContainer)
 
     local function SelectUnitTab(SubContainer, _, UnitTab)
         if not lastSelectedUnitTabs[unit] then lastSelectedUnitTabs[unit] = {} end
@@ -2943,7 +3006,9 @@ local function CreateUnitSettings(containerParent, unit)
     end
     SubContainerTabGroup:SetCallback("OnGroupSelected", SelectUnitTab)
     SubContainerTabGroup:SelectTab(GetSavedMainTab(unit, "Frame"))
-    containerParent:AddChild(SubContainerTabGroup)
+    SettingsContainer:AddChild(SubContainerTabGroup)
+
+    GUIWidgets.DeepDisable(SettingsContainer, not UUF.db.profile.Units[unit].Enabled)
 
     containerParent:DoLayout()
 end
@@ -3202,7 +3267,7 @@ function UUF:CreateGUI()
     Container = AG:Create("Frame")
     Container:SetTitle(UUF.PRETTY_ADDON_NAME)
     Container:SetLayout("Fill")
-    Container:SetWidth(900)
+    Container:SetWidth(1100)
     Container:SetHeight(600)
     Container:EnableResize(false)
     Container:SetCallback("OnClose", function(widget) AG:Release(widget) isGUIOpen = false DisableAllTestModes() end)
@@ -3352,25 +3417,29 @@ function UUF:CreateGUI()
         GenerateSupportText(Container)
     end
 
-    local ContainerTabGroup = AG:Create("TabGroup")
-    ContainerTabGroup:SetLayout("Flow")
-    ContainerTabGroup:SetFullWidth(true)
-    ContainerTabGroup:SetTabs({
-        { text = "General", value = "General"},
-        { text = "Global", value = "Global"},
-        { text = "Player", value = "Player"},
-        { text = "Target", value = "Target"},
-        { text = "Target of Target", value = "TargetTarget"},
-        { text = "Pet", value = "Pet"},
-        { text = "Focus", value = "Focus"},
-        { text = "Focus Target", value = "FocusTarget"},
-        { text = "Boss", value = "Boss"},
-        { text = "Tags", value = "Tags"},
-        { text = "Profiles", value = "Profiles"},
-    })
-    ContainerTabGroup:SetCallback("OnGroupSelected", SelectTab)
-    ContainerTabGroup:SelectTab("General")
-    Container:AddChild(ContainerTabGroup)
+    local mainNavigationTree = BuildMainNavigationTree()
+    local mainNavigationValues = {}
+    for _, entry in ipairs(mainNavigationTree) do
+        mainNavigationValues[entry.value] = true
+    end
+
+    UUFGUI.MainNavigationStatus = UUFGUI.MainNavigationStatus or {}
+
+    local ContainerTreeGroup = AG:Create("TreeGroup")
+    ContainerTreeGroup:SetLayout("Fill")
+    ContainerTreeGroup:SetFullWidth(true)
+    ContainerTreeGroup:SetFullHeight(true)
+    ContainerTreeGroup:SetStatusTable(UUFGUI.MainNavigationStatus)
+    ContainerTreeGroup:SetTreeWidth(220, false)
+    ContainerTreeGroup:SetTree(mainNavigationTree)
+    ContainerTreeGroup:SetCallback("OnGroupSelected", SelectTab)
+    Container:AddChild(ContainerTreeGroup)
+
+    local initialSection = UUFGUI.MainNavigationStatus.selected
+    if not initialSection or not mainNavigationValues[initialSection] then
+        initialSection = "General"
+    end
+    ContainerTreeGroup:SelectByValue(initialSection)
 end
 
 function UUFG:OpenUUFGUI()

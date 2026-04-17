@@ -1,7 +1,14 @@
 local _, UUF = ...
 
 function UUF:CreatePositionController()
-    local ECDM = _G["EssentialCooldownViewer"]
+    local ECDM = ""
+
+    if C_AddOns.IsAddOnLoaded("SkironCooldownManager") then
+        ECDM = _G["SCM_GroupAnchor_1"]
+    else
+        ECDM = _G["EssentialCooldownViewer"]
+    end
+
     if ECDM and ECDM:IsShown() then
         local CDMAnchor = CreateFrame("Frame", "UUF_CDMAnchor", UIParent)
         CDMAnchor:SetAllPoints(ECDM)
@@ -12,7 +19,13 @@ function UUF:CreatePositionController()
 end
 
 function UUF:IsCDMAnchorActive()
-    local ECDM = _G["EssentialCooldownViewer"]
+    local ECDM = ""
+
+    if C_AddOns.IsAddOnLoaded("SkironCooldownManager") then
+        ECDM = _G["SCM_GroupAnchor_1"]
+    else
+        ECDM = _G["EssentialCooldownViewer"]
+    end
     local CDMAnchor = _G["UUF_CDMAnchor"]
     return  ECDM and ECDM:IsShown() and CDMAnchor and CDMAnchor:IsShown()
 end

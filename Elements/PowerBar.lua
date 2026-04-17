@@ -23,6 +23,39 @@ local function CreatePowerBarPostUpdateColor(unitFrame, unit)
     end
 end
 
+local function LayoutUnitPowerBar(unitFrame, unit, width)
+    local PowerBarDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].PowerBar
+    local powerBar = unitFrame.Power
+    if not powerBar then return end
+
+    width = width and width > 0 and width or UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Frame.Width
+    local position = UUF:GetConfiguredPowerBarPosition(unit)
+    local isTopAnchored = position == "TOP"
+    local anchorPoint = isTopAnchored and "TOPLEFT" or "BOTTOMLEFT"
+    local anchorY = isTopAnchored and -1 or 1
+
+    powerBar:ClearAllPoints()
+    powerBar:SetPoint(anchorPoint, unitFrame.Container, anchorPoint, 1, anchorY)
+    powerBar:SetSize(width - 2, PowerBarDB.Height)
+
+    if powerBar.Background then
+        powerBar.Background:ClearAllPoints()
+        powerBar.Background:SetPoint(anchorPoint, unitFrame.Container, anchorPoint, 1, anchorY)
+        powerBar.Background:SetSize(width - 2, PowerBarDB.Height)
+    end
+
+    if powerBar.PowerBarBorder then
+        powerBar.PowerBarBorder:ClearAllPoints()
+        if isTopAnchored then
+            powerBar.PowerBarBorder:SetPoint("BOTTOMLEFT", powerBar, "BOTTOMLEFT", 0, -1)
+            powerBar.PowerBarBorder:SetPoint("BOTTOMRIGHT", powerBar, "BOTTOMRIGHT", 0, -1)
+        else
+            powerBar.PowerBarBorder:SetPoint("TOPLEFT", powerBar, "TOPLEFT", 0, 1)
+            powerBar.PowerBarBorder:SetPoint("TOPRIGHT", powerBar, "TOPRIGHT", 0, 1)
+        end
+    end
+end
+
 function UUF:CreateUnitPowerBar(unitFrame, unit)
     local FrameDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Frame
     local PowerBarDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].PowerBar
@@ -70,6 +103,9 @@ function UUF:CreateUnitPowerBar(unitFrame, unit)
         if unitFrame.PowerBackground then unitFrame.PowerBackground:Hide() end
     end
 
+    if unitFrame.Power then
+        LayoutUnitPowerBar(unitFrame, unit, FrameDB.Width)
+    end
     UUF:UpdateHealthBarLayout(unitFrame, unit)
 
     return PowerBar
@@ -85,9 +121,7 @@ function UUF:UpdateUnitPowerBar(unitFrame, unit)
         if not unitFrame:IsElementEnabled("Power") then unitFrame:EnableElement("Power") end
 
         if unitFrame.Power then
-            unitFrame.Power:ClearAllPoints()
-            unitFrame.Power:SetPoint("BOTTOMLEFT", unitFrame.Container, "BOTTOMLEFT", 1, 1)
-            unitFrame.Power:SetSize(unitFrame:GetWidth() - 2, PowerBarDB.Height)
+            LayoutUnitPowerBar(unitFrame, unit, unitFrame:GetWidth())
             unitFrame.Power:SetStatusBarColor(PowerBarDB.Foreground[1], PowerBarDB.Foreground[2], PowerBarDB.Foreground[3], PowerBarDB.Foreground[4] or 1)
             unitFrame.Power:SetStatusBarTexture(UUF.Media.Foreground)
             unitFrame.Power.colorPower = PowerBarDB.ColourByType
@@ -102,17 +136,8 @@ function UUF:UpdateUnitPowerBar(unitFrame, unit)
         end
 
         if unitFrame.Power.Background then
-            unitFrame.Power.Background:ClearAllPoints()
-            unitFrame.Power.Background:SetPoint("BOTTOMLEFT", unitFrame.Container, "BOTTOMLEFT", 1, 1)
-            unitFrame.Power.Background:SetSize(unitFrame:GetWidth() - 2, PowerBarDB.Height)
             unitFrame.Power.Background:SetVertexColor(PowerBarDB.Background[1], PowerBarDB.Background[2], PowerBarDB.Background[3], PowerBarDB.Background[4] or 1)
             unitFrame.Power.Background:SetTexture(UUF.Media.Background)
-        end
-
-        if unitFrame.Power.PowerBarBorder then
-            unitFrame.Power.PowerBarBorder:ClearAllPoints()
-            unitFrame.Power.PowerBarBorder:SetPoint("TOPLEFT", unitFrame.Power, "TOPLEFT", 0, 1)
-            unitFrame.Power.PowerBarBorder:SetPoint("TOPRIGHT", unitFrame.Power, "TOPRIGHT", 0, 1)
         end
 
         unitFrame.Power:Show()
