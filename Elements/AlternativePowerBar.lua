@@ -26,7 +26,11 @@ function UUF:CreateUnitAlternativePowerBar(unitFrame, unit)
     AlternativePowerBar:SetSize(AlternativePowerBarDB.Width, AlternativePowerBarDB.Height)
     AlternativePowerBar:SetBackdrop(UUF.BACKDROP)
     AlternativePowerBar:SetBackdropColor(AlternativePowerBarDB.Background[1], AlternativePowerBarDB.Background[2], AlternativePowerBarDB.Background[3], AlternativePowerBarDB.Background[4])
-    AlternativePowerBar:SetBackdropBorderColor(0, 0, 0, 1)
+    if AlternativePowerBarDB.ShowBorder then
+        AlternativePowerBar:SetBackdropBorderColor(unpack(AlternativePowerBarDB.BorderColour))
+    else
+        AlternativePowerBar:SetBackdropBorderColor(0, 0, 0, 0)
+    end
     AlternativePowerBar:SetFrameLevel(unitContainer:GetFrameLevel() + 5)
 
     AlternativePowerBar.Status = CreateFrame("StatusBar", UUF:FetchFrameName(unit).."_AlternativePowerBar", AlternativePowerBar)
@@ -86,6 +90,12 @@ function UUF:UpdateUnitAlternativePowerBar(unitFrame, unit)
         if powerColour then AlternativePowerBar.Status:SetStatusBarColor(powerColour[1], powerColour[2], powerColour[3], powerColour[4]) end
     else
         AlternativePowerBar.Status:SetStatusBarColor(AlternativePowerBarDB.Foreground[1], AlternativePowerBarDB.Foreground[2], AlternativePowerBarDB.Foreground[3], AlternativePowerBarDB.Foreground[4])
+    end
+
+    if AlternativePowerBarDB.ShowBorder then
+        AlternativePowerBar:SetBackdropBorderColor(unpack(AlternativePowerBarDB.BorderColour))
+    else
+        AlternativePowerBar:SetBackdropBorderColor(0, 0, 0, 0)
     end
 
     if AlternativePowerBarDB.Inverse then
