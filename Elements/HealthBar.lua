@@ -6,6 +6,15 @@ function UUF:CreateUnitHealthBar(unitFrame, unit)
     local unitContainer = unitFrame.Container
 
     if not unitFrame.HealthBar then
+        if not unitFrame.SolidBackground then
+            local bg = unitContainer:CreateTexture(nil, "BACKGROUND")
+            bg:SetPoint("TOPLEFT", unitContainer, "TOPLEFT", 1, -1)
+            bg:SetPoint("BOTTOMRIGHT", unitContainer, "BOTTOMRIGHT", -1, 1)
+            local c = HealthBarDB.SolidBackground or {0, 0, 0}
+            bg:SetColorTexture(c[1], c[2], c[3], HealthBarDB.SolidBackgroundOpacity or 0)
+            unitFrame.SolidBackground = bg
+        end
+
         if not unitFrame.HealthBackground then
             unitFrame.HealthBackground = CreateFrame("StatusBar", UUF:FetchFrameName(unit) .. "_HealthBackground", unitContainer)
             unitFrame.HealthBackground:SetPoint("TOPLEFT", unitContainer, "TOPLEFT", 1, -1)
@@ -98,6 +107,11 @@ function UUF:UpdateUnitHealthBar(unitFrame, unit)
                 unitFrame.Health:SetStatusBarColor(unitColor.r, unitColor.g, unitColor.b, HealthBarDB.ForegroundOpacity)
             end
         end
+    end
+
+    if unitFrame.SolidBackground then
+        local c = HealthBarDB.SolidBackground or {0, 0, 0}
+        unitFrame.SolidBackground:SetColorTexture(c[1], c[2], c[3], HealthBarDB.SolidBackgroundOpacity or 0)
     end
 
     if unitFrame.HealthBackground then

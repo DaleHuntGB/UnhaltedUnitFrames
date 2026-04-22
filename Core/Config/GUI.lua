@@ -437,6 +437,23 @@ local function CreateTextureSettings(containerParent)
     BackgroundOpacitySlider:SetCallback("OnValueChanged", function(_, _, value) for _, unitDB in pairs(UUF.db.profile.Units) do unitDB.HealthBar.BackgroundOpacity = value end UUF:UpdateAllUnitFrames() end)
     Container:AddChild(BackgroundOpacitySlider)
 
+    local SolidBackgroundColourPicker = AG:Create("ColorPicker")
+    SolidBackgroundColourPicker:SetLabel("Solid Colour")
+    SolidBackgroundColourPicker:SetColor(0, 0, 0)
+    SolidBackgroundColourPicker:SetHasAlpha(false)
+    SolidBackgroundColourPicker:SetRelativeWidth(0.5)
+    SolidBackgroundColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) for _, unitDB in pairs(UUF.db.profile.Units) do unitDB.HealthBar.SolidBackground = {r, g, b} end UUF:UpdateAllUnitFrames() end)
+    Container:AddChild(SolidBackgroundColourPicker)
+
+    local SolidBackgroundOpacitySlider = AG:Create("Slider")
+    SolidBackgroundOpacitySlider:SetLabel("Solid Colour Opacity")
+    SolidBackgroundOpacitySlider:SetValue(0)
+    SolidBackgroundOpacitySlider:SetSliderValues(0.0, 1.0, 0.01)
+    SolidBackgroundOpacitySlider:SetRelativeWidth(0.5)
+    SolidBackgroundOpacitySlider:SetIsPercent(true)
+    SolidBackgroundOpacitySlider:SetCallback("OnValueChanged", function(_, _, value) for _, unitDB in pairs(UUF.db.profile.Units) do unitDB.HealthBar.SolidBackgroundOpacity = value end UUF:UpdateAllUnitFrames() end)
+    Container:AddChild(SolidBackgroundOpacitySlider)
+
     local CastBarContainer = GUIWidgets.CreateInlineGroup(Container, "Cast Bar")
 
     local CastBarForegroundColourPicker = AG:Create("ColorPicker")
@@ -807,6 +824,24 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
     BackgroundOpacitySlider:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.BackgroundOpacity = value updateCallback() end)
     BackgroundOpacitySlider:SetIsPercent(true)
     ColourContainer:AddChild(BackgroundOpacitySlider)
+
+    local SolidBackgroundColourPicker = AG:Create("ColorPicker")
+    SolidBackgroundColourPicker:SetLabel("Solid Colour")
+    local sb = HealthBarDB.SolidBackground or {0, 0, 0}
+    SolidBackgroundColourPicker:SetColor(sb[1], sb[2], sb[3])
+    SolidBackgroundColourPicker:SetHasAlpha(false)
+    SolidBackgroundColourPicker:SetRelativeWidth(0.5)
+    SolidBackgroundColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) HealthBarDB.SolidBackground = {r, g, b} updateCallback() end)
+    ColourContainer:AddChild(SolidBackgroundColourPicker)
+
+    local SolidBackgroundOpacitySlider = AG:Create("Slider")
+    SolidBackgroundOpacitySlider:SetLabel("Solid Colour Opacity")
+    SolidBackgroundOpacitySlider:SetValue(HealthBarDB.SolidBackgroundOpacity or 0)
+    SolidBackgroundOpacitySlider:SetSliderValues(0, 1, 0.01)
+    SolidBackgroundOpacitySlider:SetRelativeWidth(0.5)
+    SolidBackgroundOpacitySlider:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.SolidBackgroundOpacity = value updateCallback() end)
+    SolidBackgroundOpacitySlider:SetIsPercent(true)
+    ColourContainer:AddChild(SolidBackgroundOpacitySlider)
 
     if unit == "player" or unit == "target" or unit == "focus" then
         local DispelHighlightContainer = GUIWidgets.CreateInlineGroup(containerParent, "Dispel Highlighting")
