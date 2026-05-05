@@ -100,7 +100,7 @@ local function SetupSlashCommands()
     SLASH_UUF2 = "/unhaltedunitframes"
     SLASH_UUF3 = "/uf"
     SlashCmdList["UUF"] = function() UUF:CreateGUI() end
-    UUF:PrettyPrint("'|cFF8080FF/uuf|r' for in-game configuration.")
+    if UUF.db.profile.General.DisplayLoginMessage then UUF:PrettyPrint("'|cFF8080FF/uuf|r' for in-game configuration.") end
 
     -- RL command
     SLASH_UUFRELOAD1 = "/rl"

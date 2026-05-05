@@ -249,6 +249,15 @@ local function BuildMainNavigationTree()
 end
 
 local function CreateUIScaleSettings(containerParent)
+    local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Login Message")
+
+    local Toggle = AG:Create("CheckBox")
+    Toggle:SetLabel("Display Login Message")
+    Toggle:SetValue(UUF.db.profile.General.DisplayLoginMessage)
+    Toggle:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.General.DisplayLoginMessage = value end)
+    Toggle:SetRelativeWidth(0.33)
+    ToggleContainer:AddChild(Toggle)
+
     local Container = GUIWidgets.CreateInlineGroup(containerParent, "UI Scale")
     GUIWidgets.CreateInformationTag(Container,"These options allow you to adjust the UI Scale beyond the means that |cFF00B0F7Blizzard|r provides. If you encounter issues, please |cFFFF4040disable|r this feature.")
 

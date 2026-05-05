@@ -8,6 +8,7 @@ local Defaults = {
     },
     profile = {
         General = {
+            DisplayLoginMessage = true,
             TagUpdateInterval = 0.25,
             Separator = "||",
             ToTSeparator = "»",
