@@ -29,9 +29,9 @@ function UUFG:AddTag(tagString, tagEvents, tagMethod, tagType, tagDescription)
 end
 
 local Tags = {
-    ["curhp:abbr"] = "UNIT_HEALTH UNIT_MAXHEALTH",
-    ["curhpperhp"] = "UNIT_HEALTH UNIT_MAXHEALTH",
-    ["curhpperhp:abbr"] = "UNIT_HEALTH UNIT_MAXHEALTH",
+    ["curhp:abbr"] = "UNIT_HEALTH UNIT_MAXHEALTH UNIT_FLAGS",
+    ["curhpperhp"] = "UNIT_HEALTH UNIT_MAXHEALTH UNIT_FLAGS",
+    ["curhpperhp:abbr"] = "UNIT_HEALTH UNIT_MAXHEALTH UNIT_FLAGS",
     ["absorbs"] = "UNIT_ABSORB_AMOUNT_CHANGED",
     ["absorbs:abbr"] = "UNIT_ABSORB_AMOUNT_CHANGED",
     ["absorbs:truncate"] = "UNIT_ABSORB_AMOUNT_CHANGED",
@@ -203,11 +203,14 @@ end
 oUF.Tags.Methods["curhp:abbr"] = function(unit)
     if not unit or not UnitExists(unit) then return "" end
     local unitHealth = UnitHealth(unit)
-    local unitStatus = UnitIsDead(unit) and "Dead" or UnitIsGhost(unit) and "Ghost" or not UnitIsConnected(unit) and "Offline"
+    local deadText = DEAD or "Dead"
+    local offlineText = PLAYER_OFFLINE or "Offline"
+    local unitStatus = UnitIsDead(unit) and deadText or UnitIsGhost(unit) and "Ghost" or not UnitIsConnected(unit) and offlineText
     if unitStatus then
         return unitStatus
     else
-        return string.format("%s", AbbreviateValue(unitHealth))
+        local statusSuffix = UnitIsAFK(unit) and (" ("..(AFK or "AFK")..")") or UnitIsDND(unit) and (" ("..(DND or "DND")..")") or ""
+        return string.format("%s%s", AbbreviateValue(unitHealth), statusSuffix)
     end
 end
 
@@ -216,18 +219,21 @@ oUF.Tags.Methods["curhpperhp"] = function(unit)
     local unitHealth = UnitHealth(unit)
     local unitMaxHealth = UnitHealthMax(unit)
     local unitHealthPercent = UnitHealthPercent(unit, false, CurveConstants.ScaleTo100)
-    local unitStatus = UnitIsDead(unit) and "Dead" or UnitIsGhost(unit) and "Ghost" or not UnitIsConnected(unit) and "Offline"
+    local deadText = DEAD or "Dead"
+    local offlineText = PLAYER_OFFLINE or "Offline"
+    local unitStatus = UnitIsDead(unit) and deadText or UnitIsGhost(unit) and "Ghost" or not UnitIsConnected(unit) and offlineText
     if unitStatus then
         return unitStatus
     else
+        local statusSuffix = UnitIsAFK(unit) and (" ("..(AFK or "AFK")..")") or UnitIsDND(unit) and (" ("..(DND or "DND")..")") or ""
         if UUF.SEPARATOR == "[]" then
-            return string.format("%s [%.0f%%]", unitHealth, unitHealthPercent)
+            return string.format("%s [%.0f%%]%s", unitHealth, unitHealthPercent, statusSuffix)
         elseif UUF.SEPARATOR == "()" then
-            return string.format("%s (%.0f%%)", unitHealth, unitHealthPercent)
+            return string.format("%s (%.0f%%)%s", unitHealth, unitHealthPercent, statusSuffix)
         elseif UUF.SEPARATOR == " " then
-            return string.format("%s %.0f%%", unitHealth, unitHealthPercent)
+            return string.format("%s %.0f%%%s", unitHealth, unitHealthPercent, statusSuffix)
         else
-            return string.format("%s %s %.0f%%", unitHealth, UUF.SEPARATOR, unitHealthPercent)
+            return string.format("%s %s %.0f%%%s", unitHealth, UUF.SEPARATOR, unitHealthPercent, statusSuffix)
         end
     end
 end
@@ -237,18 +243,21 @@ oUF.Tags.Methods["curhpperhp:abbr"] = function(unit)
     local unitHealth = UnitHealth(unit)
     local unitMaxHealth = UnitHealthMax(unit)
     local unitHealthPercent = UnitHealthPercent(unit, false, CurveConstants.ScaleTo100)
-    local unitStatus = UnitIsDead(unit) and "Dead" or UnitIsGhost(unit) and "Ghost" or not UnitIsConnected(unit) and "Offline"
+    local deadText = DEAD or "Dead"
+    local offlineText = PLAYER_OFFLINE or "Offline"
+    local unitStatus = UnitIsDead(unit) and deadText or UnitIsGhost(unit) and "Ghost" or not UnitIsConnected(unit) and offlineText
     if unitStatus then
         return unitStatus
     else
+        local statusSuffix = UnitIsAFK(unit) and (" ("..(AFK or "AFK")..")") or UnitIsDND(unit) and (" ("..(DND or "DND")..")") or ""
         if UUF.SEPARATOR == "[]" then
-            return string.format("%s [%.0f%%]", AbbreviateValue(unitHealth), unitHealthPercent)
+            return string.format("%s [%.0f%%]%s", AbbreviateValue(unitHealth), unitHealthPercent, statusSuffix)
         elseif UUF.SEPARATOR == "()" then
-            return string.format("%s (%.0f%%)", AbbreviateValue(unitHealth), unitHealthPercent)
+            return string.format("%s (%.0f%%)%s", AbbreviateValue(unitHealth), unitHealthPercent, statusSuffix)
         elseif UUF.SEPARATOR == " " then
-            return string.format("%s %.0f%%", AbbreviateValue(unitHealth), unitHealthPercent)
+            return string.format("%s %.0f%%%s", AbbreviateValue(unitHealth), unitHealthPercent, statusSuffix)
         else
-            return string.format("%s %s %.0f%%", AbbreviateValue(unitHealth), UUF.SEPARATOR, unitHealthPercent)
+            return string.format("%s %s %.0f%%%s", AbbreviateValue(unitHealth), UUF.SEPARATOR, unitHealthPercent, statusSuffix)
         end
     end
 end
@@ -587,3 +596,15 @@ end
 function UUFG:GetTags()
     return oUF.Tags
 end
+
+-- Refresh tags when AFK/DND status changes
+local afkDndFrame = CreateFrame("Frame")
+afkDndFrame:RegisterEvent("PLAYER_FLAGS_CHANGED")
+afkDndFrame:SetScript("OnEvent", function()
+    for unit in pairs(UUF.db.profile.Units) do
+        local frame = UUF[unit:upper()]
+        if frame and frame.UpdateTags then
+            frame:UpdateTags()
+        end
+    end
+end)
