@@ -38,6 +38,35 @@ local function ApplyScripts(unitFrame, unit)
         unitFrame:HookScript("OnEnter", UnitFrame_OnEnter)
         unitFrame:HookScript("OnLeave", UnitFrame_OnLeave)
     end
+
+    UUF:UpdateUnitBarMouseClickPassthrough(unitFrame, unit)
+end
+
+-- Let portrait-owned clicks pass through bar widgets (they sit above the unit button in hit order).
+function UUF:UpdateUnitBarMouseClickPassthrough(unitFrame, unit)
+    if not unitFrame or not unit then return end
+    local unitDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)]
+    if not unitDB or not unitDB.Portrait then return end
+    local portraitDB = unitDB.Portrait
+    local leftOnPortrait = portraitDB.Enabled and portraitDB.LeftClickTargetOnPortrait
+    local rightOnPortrait = portraitDB.Enabled and portraitDB.RightClickMenuOnPortrait
+
+    local function apply(frame)
+        if not frame or not frame.SetMouseClickEnabled then return end
+        frame:SetMouseClickEnabled("LeftButton", not leftOnPortrait)
+        frame:SetMouseClickEnabled("RightButton", not rightOnPortrait)
+    end
+
+    apply(unitFrame.Power)
+    apply(unitFrame.Health)
+    apply(unitFrame.HealthBackground)
+    if unitFrame.MouseoverHighlight then
+        apply(unitFrame.MouseoverHighlight)
+    end
+    if unitFrame.AlternativePowerBar then
+        apply(unitFrame.AlternativePowerBar)
+        apply(unitFrame.AlternativePowerBar.Status)
+    end
 end
 
 function UUF:CreateUnitFrame(unitFrame, unit)

@@ -86,4 +86,6 @@ function UUF:UpdateUnitMouseoverIndicator(unitFrame, unit)
             unitFrame.MouseoverHighlight = nil
         end
     end
+
+    UUF:UpdateUnitBarMouseClickPassthrough(unitFrame, unit)
 end

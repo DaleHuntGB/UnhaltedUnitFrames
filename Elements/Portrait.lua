@@ -283,7 +283,10 @@ function UUF:UpdateUnitPortrait(unitFrame, unit)
             unitFrame.Portrait:ForceUpdate()
         end
     else
-        if not unitFrame.Portrait then return end
+        if not unitFrame.Portrait then
+            UUF:UpdateUnitBarMouseClickPassthrough(unitFrame, unit)
+            return
+        end
         if unitFrame:IsElementEnabled("Portrait") then
             unitFrame:DisableElement("Portrait")
         end
@@ -303,4 +306,6 @@ function UUF:UpdateUnitPortrait(unitFrame, unit)
             unitFrame.Portrait = nil
         end
     end
+
+    UUF:UpdateUnitBarMouseClickPassthrough(unitFrame, unit)
 end

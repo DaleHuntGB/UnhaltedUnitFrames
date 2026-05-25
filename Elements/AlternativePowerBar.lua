@@ -107,4 +107,6 @@ function UUF:UpdateUnitAlternativePowerBar(unitFrame, unit)
         AlternativePowerBar:UnregisterAllEvents()
         AlternativePowerBar:SetScript("OnEvent", nil)
     end
+
+    UUF:UpdateUnitBarMouseClickPassthrough(unitFrame, unit)
 end

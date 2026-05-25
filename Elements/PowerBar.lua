@@ -143,11 +143,15 @@ function UUF:UpdateUnitPowerBar(unitFrame, unit)
         unitFrame.Power:Show()
         unitFrame.Power:ForceUpdate()
     else
-        if not unitFrame.Power then return end
+        if not unitFrame.Power then
+            UUF:UpdateUnitBarMouseClickPassthrough(unitFrame, unit)
+            return
+        end
         if unitFrame:IsElementEnabled("Power") then unitFrame:DisableElement("Power") end
         unitFrame.Power:Hide()
         unitFrame.Power = nil
     end
 
     UUF:UpdateHealthBarLayout(unitFrame, unit)
+    UUF:UpdateUnitBarMouseClickPassthrough(unitFrame, unit)
 end
