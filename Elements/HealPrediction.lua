@@ -104,8 +104,8 @@ function UUF:CreateUnitHealPrediction(unitFrame, unit)
     local AbsorbDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].HealPrediction.Absorbs
     local HealAbsorbDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].HealPrediction.HealAbsorbs
 
-    CreateUnitAbsorbs(unitFrame, unit)
-    CreateUnitHealAbsorbs(unitFrame, unit)
+    -- CreateUnitAbsorbs(unitFrame, unit)
+    -- CreateUnitHealAbsorbs(unitFrame, unit)
 
     unitFrame.HealthPrediction = {
         damageAbsorb = AbsorbDB.Enabled and CreateUnitAbsorbs(unitFrame, unit),
