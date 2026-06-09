@@ -2612,22 +2612,6 @@ end
 
 local function CreateAuraSettings(containerParent, unit)
     local AurasDB = UUF.db.profile.Units[unit].Auras
-    if unit == "player" then
-        AurasDB.PrivateAuras = AurasDB.PrivateAuras or {
-            Enabled = true,
-            Layout = {"CENTER", "CENTER", 0, 60},
-            FrameStrata = "LOW",
-            Size = 32,
-            Spacing = 2,
-            GrowthX = "RIGHT",
-            GrowthY = "UP",
-            InitialAnchor = "BOTTOMLEFT",
-            Num = 6,
-            BorderScale = 1,
-            DisableCooldown = false,
-            DisableCooldownText = false,
-        }
-    end
     local AuraDurationContainer = GUIWidgets.CreateInlineGroup(containerParent, "Aura Duration Settings")
 
     local ColourPicker = AG:Create("ColorPicker")
