@@ -81,11 +81,13 @@ local function SetPosition(element, aura, auraIndex)
 end
 
 local function resetAnchors(element)
-	for _, anchor in next, element.anchors do
-		C_UnitAuras.RemovePrivateAuraAnchor(anchor)
-	end
+	if(element.anchors) then
+		for _, anchor in next, element.anchors do
+			C_UnitAuras.RemovePrivateAuraAnchor(anchor)
+		end
 
-	table.wipe(element.anchors)
+		table.wipe(element.anchors)
+	end
 end
 
 local function Update(self)
@@ -127,6 +129,7 @@ local function Update(self)
 			unitToken = element.__owner.unit,
 			auraIndex = index,
 			parent = aura,
+			isContainer = false,
 			showCountdownFrame = not element.disableCooldown,
 			showCountdownNumbers = not element.disableCooldownText,
 			iconInfo = {
@@ -178,12 +181,6 @@ local function Disable(self)
 end
 
 local function Enable(self, unit)
-	if(self.unit ~= 'player' and not self.unit:match('raid%d?$') and not self.unit:match('party%d?$')) then
-		Disable(self)
-
-		return false
-	end
-
 	local element = self.PrivateAuras
 	if(element) then
 		element.__owner = self

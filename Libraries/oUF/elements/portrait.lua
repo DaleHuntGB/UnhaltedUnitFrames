@@ -38,9 +38,12 @@ the unit.
 
 local _, ns = ...
 local oUF = ns.oUF
+local Private = oUF.Private
+
+local unitIsUnit = Private.unitIsUnit
 
 local function Update(self, event, unit)
-	if(not unit or not UnitIsUnit(self.unit, unit)) then return end
+	if(not unit or not unitIsUnit(self.unit, unit)) then return end
 
 	local element = self.Portrait
 
@@ -54,7 +57,11 @@ local function Update(self, event, unit)
 
 	local guid = UnitGUID(unit)
 	local isAvailable = UnitIsConnected(unit) and UnitIsVisible(unit)
-	local hasStateChanged = event ~= 'OnUpdate' or element.guid ~= guid or element.state ~= isAvailable
+
+	local hasStateChanged = event ~= 'OnUpdate'
+		or (not issecretvalue(guid) and not issecretvalue(element.guid) and element.guid ~= guid)
+		or element.state ~= isAvailable
+
 	if(hasStateChanged) then
 		if(element:IsObjectType('PlayerModel')) then
 			if(not isAvailable) then
@@ -73,8 +80,6 @@ local function Update(self, event, unit)
 		else
 			local class, _
 			if(element.showClass) then
-				-- BUG: UnitClassBase can't be trusted
-				--      https://github.com/Stanzilla/WoWUIBugs/issues/621
 				_, class = UnitClass(unit)
 			end
 
