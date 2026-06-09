@@ -35,6 +35,7 @@ function UUF:CreateUnitTotems(unitFrame, unit)
         Totem.Cooldown:SetSwipeColor(0, 0, 0, 0.8)
         Totem.Cooldown:SetDrawEdge(false)
         Totem.Cooldown:SetDrawSwipe(true)
+        Totem.Cooldown:SetHideCountdownNumbers(false)
         Totem.Cooldown:SetReverse(true)
         UUF:ApplyAuraDuration(Totem.Cooldown, TotemsDB.TotemDuration)
 
@@ -44,6 +45,10 @@ function UUF:CreateUnitTotems(unitFrame, unit)
     for slot = 1, #totemPriorities do
         Totems[totemPriorities[slot]]:SetAttribute("totem-slot2", slot)
         Totems[totemPriorities[slot]]:SetAttribute("totem-slot", slot)
+    end
+
+    Totems.PostUpdate = function(self, slot)
+        UUF:ApplyAuraDuration(self[totemPriorities[slot]].Cooldown, UUF.db.profile.Units.player.Indicators.Totems.TotemDuration)
     end
 
     unitFrame.Totems = Totems
