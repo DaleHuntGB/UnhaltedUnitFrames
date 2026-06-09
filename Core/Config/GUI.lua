@@ -2353,6 +2353,14 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB, auraSec
         AuraDB.Filters = AuraDB.Filters or {}
         for _, filterGroup in ipairs({"General", "Player", "Other"}) do
             GUIWidgets.CreateHeader(FilterContainer, filterGroup)
+            if filterGroup == "General" then
+                local BlacklistToggle = AG:Create("CheckBox")
+                BlacklistToggle:SetLabel("Blacklist")
+                BlacklistToggle:SetValue(AuraDB.Blacklist or false)
+                BlacklistToggle:SetCallback("OnValueChanged", function(_, _, value) AuraDB.Blacklist = value if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end end)
+                BlacklistToggle:SetRelativeWidth(0.5)
+                FilterContainer:AddChild(BlacklistToggle)
+            end
             for _, filter in ipairs(UUF.AURA_FILTERS[auraDB]) do
                 if filter.Group == filterGroup then
                     local FilterToggle = AG:Create("CheckBox")
@@ -2398,13 +2406,6 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB, auraSec
     ShowTypeCheckbox:SetCallback("OnValueChanged", function(_, _, value) AuraDB.ShowType = value if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end end)
     ShowTypeCheckbox:SetRelativeWidth(0.33)
     AuraContainer:AddChild(ShowTypeCheckbox)
-
-    local BlacklistToggle = AG:Create("CheckBox")
-    BlacklistToggle:SetLabel("Blacklist")
-    BlacklistToggle:SetValue(AuraDB.Blacklist or false)
-    BlacklistToggle:SetCallback("OnValueChanged", function(_, _, value) AuraDB.Blacklist = value if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end end)
-    BlacklistToggle:SetRelativeWidth(0.33)
-    AuraContainer:AddChild(BlacklistToggle)
 
     local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
 
