@@ -40,7 +40,6 @@ local function CreateUnitAbsorbs(unitFrame, unit)
         AbsorbBar:SetPoint("RIGHT", unitFrame.Health, "RIGHT", 0, 0)
         AbsorbBar:SetReverseFill(true)
     else
-        -- Default to TOPLEFT
         AbsorbBar:SetPoint("TOPLEFT", unitFrame.Health, "TOPLEFT", 0, 0)
         AbsorbBar:SetReverseFill(false)
     end
@@ -90,7 +89,6 @@ local function CreateUnitHealAbsorbs(unitFrame, unit)
         HealAbsorbBar:SetPoint("RIGHT", unitFrame.Health, "RIGHT", 0, 0)
         HealAbsorbBar:SetReverseFill(true)
     else
-        -- Default to TOPLEFT
         HealAbsorbBar:SetPoint("TOPLEFT", unitFrame.Health, "TOPLEFT", 0, 0)
         HealAbsorbBar:SetReverseFill(false)
     end
@@ -103,9 +101,6 @@ end
 function UUF:CreateUnitHealPrediction(unitFrame, unit)
     local AbsorbDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].HealPrediction.Absorbs
     local HealAbsorbDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].HealPrediction.HealAbsorbs
-
-    CreateUnitAbsorbs(unitFrame, unit)
-    CreateUnitHealAbsorbs(unitFrame, unit)
 
     unitFrame.HealthPrediction = {
         damageAbsorb = AbsorbDB.Enabled and CreateUnitAbsorbs(unitFrame, unit),
@@ -212,7 +207,6 @@ function UUF:UpdateUnitHealPrediction(unitFrame, unit)
                 unitFrame.HealthPrediction.healAbsorb:SetPoint("RIGHT", unitFrame.Health, "RIGHT", 0, 0)
                 unitFrame.HealthPrediction.healAbsorb:SetReverseFill(true)
             else
-                -- Default to TOPLEFT
                 unitFrame.HealthPrediction.healAbsorb:SetPoint("TOPLEFT", unitFrame.Health, "TOPLEFT", 0, 0)
                 unitFrame.HealthPrediction.healAbsorb:SetReverseFill(false)
             end
