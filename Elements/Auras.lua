@@ -97,7 +97,11 @@ local function CreateUnitBuffs(unitFrame, unit)
         unitFrame.BuffContainer["growthY"] = BuffsDB.WrapDirection
         unitFrame.BuffContainer.filter = "HELPFUL"
         unitFrame.BuffContainer.FilterAura = function(_, filterUnit, aura)
-            if BuffsDB.Blacklist and UUF.AURA_BLACKLIST[aura.spellId] then return false end
+            if BuffsDB.Blacklist then
+                local spellId = not UUF:IsSecretValue(aura.spellId) and aura.spellId
+                local name = not UUF:IsSecretValue(aura.name) and aura.name
+                if (spellId and UUF.AURA_BLACKLIST[spellId]) or (name and UUF.AURA_BLACKLIST[name]) then return false end
+            end
             local filters = BuffsDB.Filters
             if not filters or not next(filters) then return true end
 
@@ -167,7 +171,11 @@ local function CreateUnitDebuffs(unitFrame, unit)
         unitFrame.DebuffContainer["growthY"] = DebuffsDB.WrapDirection
         unitFrame.DebuffContainer.filter = "HARMFUL"
         unitFrame.DebuffContainer.FilterAura = function(_, filterUnit, aura)
-            if DebuffsDB.Blacklist and UUF.AURA_BLACKLIST[aura.spellId] then return false end
+            if DebuffsDB.Blacklist then
+                local spellId = not UUF:IsSecretValue(aura.spellId) and aura.spellId
+                local name = not UUF:IsSecretValue(aura.name) and aura.name
+                if (spellId and UUF.AURA_BLACKLIST[spellId]) or (name and UUF.AURA_BLACKLIST[name]) then return false end
+            end
             local filters = DebuffsDB.Filters
             if not filters or not next(filters) then return true end
 
@@ -225,20 +233,6 @@ function UUF:UpdateUnitAuras(unitFrame, unit)
     local DebuffsDB = AurasDB.Debuffs
 
     if unit == "player" then
-        AurasDB.PrivateAuras = AurasDB.PrivateAuras or {
-            Enabled = true,
-            Layout = {"CENTER", "CENTER", 0, 60},
-            FrameStrata = "LOW",
-            Size = 32,
-            Spacing = 2,
-            GrowthX = "RIGHT",
-            GrowthY = "UP",
-            InitialAnchor = "BOTTOMLEFT",
-            Num = 6,
-            BorderScale = 1,
-            DisableCooldown = false,
-            DisableCooldownText = false,
-        }
         local PrivateAurasDB = AurasDB.PrivateAuras
         local privateAuraContainerWidth = PrivateAurasDB.Size * PrivateAurasDB.Num + PrivateAurasDB.Spacing * (PrivateAurasDB.Num - 1)
 
@@ -362,20 +356,6 @@ function UUF:CreateUnitAuras(unitFrame, unit)
 
     if unit == "player" then
         local AurasDB = UUF.db.profile.Units.player.Auras
-        AurasDB.PrivateAuras = AurasDB.PrivateAuras or {
-            Enabled = true,
-            Layout = {"CENTER", "CENTER", 0, 60},
-            FrameStrata = "LOW",
-            Size = 32,
-            Spacing = 2,
-            GrowthX = "RIGHT",
-            GrowthY = "UP",
-            InitialAnchor = "BOTTOMLEFT",
-            Num = 6,
-            BorderScale = 1,
-            DisableCooldown = false,
-            DisableCooldownText = false,
-        }
         local PrivateAurasDB = AurasDB.PrivateAuras
         local privateAuraContainerWidth = PrivateAurasDB.Size * PrivateAurasDB.Num + PrivateAurasDB.Spacing * (PrivateAurasDB.Num - 1)
 
@@ -416,7 +396,6 @@ function UUF:UpdateUnitAurasStrata(unit)
     if unitFrame.DebuffContainer then unitFrame.DebuffContainer:SetFrameStrata(unitDB.Auras.FrameStrata) end
     if unit == "player" and unitFrame.PrivateAuraContainer and unitDB.Auras.PrivateAuras then unitFrame.PrivateAuraContainer:SetFrameStrata(unitDB.Auras.PrivateAuras.FrameStrata) end
 end
-
 
 function UUF:CreateTestAuras(unitFrame, unit)
     if not unit then return end

@@ -404,7 +404,7 @@ function UUF:CleanTruncateUTF8String(text)
 end
 
 function UUF:IsSecretValue(value)
-    return value ~= nil and type(issecretvalue) == "function" and issecretvalue(value)
+    return issecretvalue and issecretvalue(value)
 end
 
 function UUF:GetSecondaryPowerType()
