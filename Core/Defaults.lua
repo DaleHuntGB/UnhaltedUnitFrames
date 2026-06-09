@@ -105,7 +105,7 @@ local Defaults = {
                 },
                 HealPrediction = {
                     IncomingHeal = {
-                        Enabled = true,
+                        Enabled = false,
                         UseStripedTexture = false,
                         MatchParentHeight = true,
                         Colour = {64/255, 255/255, 64/255, 1.0},
@@ -367,7 +367,7 @@ local Defaults = {
                 },
                 HealPrediction = {
                     IncomingHeal = {
-                        Enabled = true,
+                        Enabled = false,
                         UseStripedTexture = false,
                         MatchParentHeight = true,
                         Colour = {64/255, 255/255, 64/255, 1.0},
@@ -578,7 +578,7 @@ local Defaults = {
                 },
                 HealPrediction = {
                     IncomingHeal = {
-                        Enabled = true,
+                        Enabled = false,
                         UseStripedTexture = false,
                         MatchParentHeight = true,
                         Colour = {64/255, 255/255, 64/255, 1.0},
@@ -776,7 +776,7 @@ local Defaults = {
                 },
                 HealPrediction = {
                     IncomingHeal = {
-                        Enabled = true,
+                        Enabled = false,
                         UseStripedTexture = false,
                         MatchParentHeight = true,
                         Colour = {64/255, 255/255, 64/255, 1.0},
@@ -971,7 +971,7 @@ local Defaults = {
                 },
                 HealPrediction = {
                     IncomingHeal = {
-                        Enabled = true,
+                        Enabled = false,
                         UseStripedTexture = false,
                         MatchParentHeight = true,
                         Colour = {64/255, 255/255, 64/255, 1.0},
@@ -1165,7 +1165,7 @@ local Defaults = {
                 },
                 HealPrediction = {
                     IncomingHeal = {
-                        Enabled = true,
+                        Enabled = false,
                         UseStripedTexture = false,
                         MatchParentHeight = true,
                         Colour = {64/255, 255/255, 64/255, 1.0},
@@ -1360,7 +1360,7 @@ local Defaults = {
                 },
                 HealPrediction = {
                     IncomingHeal = {
-                        Enabled = true,
+                        Enabled = false,
                         UseStripedTexture = false,
                         MatchParentHeight = true,
                         Colour = {64/255, 255/255, 64/255, 1.0},
