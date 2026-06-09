@@ -1,5 +1,8 @@
 local _, UUF = ...
 
+local totemPriorities = STANDARD_TOTEM_PRIORITIES
+if UnitClassBase("player") == "SHAMAN" then totemPriorities = SHAMAN_TOTEM_PRIORITIES end
+
 local function FetchAuraDurationRegion(cooldown)
     if not cooldown then return end
     for _, region in ipairs({ cooldown:GetRegions() }) do
@@ -7,17 +10,15 @@ local function FetchAuraDurationRegion(cooldown)
     end
 end
 
-local function ApplyAuraDuration(icon, unit)
-    local UUFDB = UUF.db.profile
-    local FontsDB = UUFDB.General.Fonts
-    local TotemsDB = UUFDB.Units[UUF:GetNormalizedUnit(unit)].Indicators.Totems
-    local TotemsDurationDB = TotemsDB.TotemDuration
-    if not icon then return end
+local function ApplyAuraDuration(cooldown)
+    local FontsDB = UUF.db.profile.General.Fonts
+    local TotemsDurationDB = UUF.db.profile.Units.player.Indicators.Totems.TotemDuration
+    if not cooldown then return end
     C_Timer.After(0.01, function()
-        local textRegion = FetchAuraDurationRegion(icon)
+        local textRegion = FetchAuraDurationRegion(cooldown)
         if textRegion then
             if TotemsDurationDB.ScaleByIconSize then
-                local iconWidth = icon:GetWidth()
+                local iconWidth = cooldown:GetWidth()
                 local scaleFactor = iconWidth > 0 and iconWidth / 36 or 1
                 local fontSize = TotemsDurationDB.FontSize * scaleFactor
                 if fontSize < 1 then fontSize = 12 end
@@ -27,8 +28,8 @@ local function ApplyAuraDuration(icon, unit)
             end
             textRegion:SetTextColor(TotemsDurationDB.Colour[1], TotemsDurationDB.Colour[2], TotemsDurationDB.Colour[3], 1)
             textRegion:ClearAllPoints()
-            textRegion:SetPoint(TotemsDurationDB.Layout[1], icon, TotemsDurationDB.Layout[2], TotemsDurationDB.Layout[3], TotemsDurationDB.Layout[4])
-            if UUF.db.profile.General.Fonts.Shadow.Enabled then
+            textRegion:SetPoint(TotemsDurationDB.Layout[1], cooldown, TotemsDurationDB.Layout[2], TotemsDurationDB.Layout[3], TotemsDurationDB.Layout[4])
+            if FontsDB.Shadow.Enabled then
                 textRegion:SetShadowColor(FontsDB.Shadow.Colour[1], FontsDB.Shadow.Colour[2], FontsDB.Shadow.Colour[3], FontsDB.Shadow.Colour[4])
                 textRegion:SetShadowOffset(FontsDB.Shadow.XPos, FontsDB.Shadow.YPos)
             else
@@ -40,82 +41,78 @@ local function ApplyAuraDuration(icon, unit)
 end
 
 function UUF:CreateUnitTotems(unitFrame, unit)
-    local TotemsDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Indicators.Totems
-
+    if unit ~= "player" then return end
+    local TotemsDB = UUF.db.profile.Units.player.Indicators.Totems
     if not TotemsDB.Enabled then return end
 
     local Totems = {}
-    local anchorFrom = TotemsDB.Layout[1]
-    local anchorTo = TotemsDB.Layout[2]
-    local xOffset = TotemsDB.Layout[3]
-    local yOffset = TotemsDB.Layout[4]
-
-    -- Create 4 totems but stack them all in the same position
-    for index = 1, 4 do
-        local Totem = CreateFrame('Button', nil, unitFrame, 'SecureActionButtonTemplate')
+    for index = 1, #totemPriorities do
+        local Totem = CreateFrame("Button", UUF:FetchFrameName(unit) .. "_Totem" .. index, unitFrame, "SecureActionButtonTemplate")
+        local xOffset = (index - 1) * (TotemsDB.Size + TotemsDB.Layout[5])
+        if TotemsDB.GrowthDirection == "LEFT" then xOffset = -xOffset end
         Totem:SetSize(TotemsDB.Size, TotemsDB.Size)
-        Totem:SetPoint(anchorFrom, unitFrame, anchorTo, xOffset, yOffset)
+        Totem:SetPoint(TotemsDB.Layout[1], unitFrame.HighLevelContainer, TotemsDB.Layout[2], TotemsDB.Layout[3] + xOffset, TotemsDB.Layout[4])
         Totem:RegisterForClicks("RightButtonUp", "RightButtonDown")
         Totem:SetAttribute("type2", "destroytotem")
-        Totem:SetAttribute("totem-slot2", index)
+        Totem:SetAttribute("typerelease2", "destroytotem")
+        Totem:SetAlpha(0)
 
-        local Border = Totem:CreateTexture(nil, 'BACKGROUND')
-        Border:SetAllPoints()
-        Border:SetColorTexture(0, 0, 0, 1)
+        Totem.Border = Totem:CreateTexture(nil, "BACKGROUND")
+        Totem.Border:SetAllPoints()
+        Totem.Border:SetColorTexture(0, 0, 0, 1)
 
-        local Icon = Totem:CreateTexture(nil, 'OVERLAY')
-        Icon:SetPoint("TOPLEFT", Totem, "TOPLEFT", 1, -1)
-        Icon:SetPoint("BOTTOMRIGHT", Totem, "BOTTOMRIGHT", -1, 1)
-        Icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
+        Totem.Icon = Totem:CreateTexture(nil, "OVERLAY")
+        Totem.Icon:SetPoint("TOPLEFT", Totem, "TOPLEFT", 1, -1)
+        Totem.Icon:SetPoint("BOTTOMRIGHT", Totem, "BOTTOMRIGHT", -1, 1)
+        Totem.Icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
 
-        local Cooldown = CreateFrame('Cooldown', nil, Totem, 'CooldownFrameTemplate')
-        Cooldown:SetPoint("TOPLEFT", Totem, "TOPLEFT", 1, -1)
-        Cooldown:SetPoint("BOTTOMRIGHT", Totem, "BOTTOMRIGHT", -1, 1)
-        Cooldown:SetSwipeColor(0, 0, 0, 0.8)
-        Cooldown:SetDrawEdge(false)
-        Cooldown:SetDrawSwipe(true)
-        Cooldown:SetReverse(true)
-
-        ApplyAuraDuration(Cooldown, unit)
-
-        Totem.Border = Border
-        Totem.Icon = Icon
-        Totem.Cooldown = Cooldown
+        Totem.Cooldown = CreateFrame("Cooldown", nil, Totem, "CooldownFrameTemplate")
+        Totem.Cooldown:SetPoint("TOPLEFT", Totem, "TOPLEFT", 1, -1)
+        Totem.Cooldown:SetPoint("BOTTOMRIGHT", Totem, "BOTTOMRIGHT", -1, 1)
+        Totem.Cooldown:SetSwipeColor(0, 0, 0, 0.8)
+        Totem.Cooldown:SetDrawEdge(false)
+        Totem.Cooldown:SetDrawSwipe(true)
+        Totem.Cooldown:SetReverse(true)
+        ApplyAuraDuration(Totem.Cooldown)
 
         Totems[index] = Totem
     end
 
+    for slot = 1, #totemPriorities do
+        Totems[totemPriorities[slot]]:SetAttribute("totem-slot2", slot)
+        Totems[totemPriorities[slot]]:SetAttribute("totem-slot", slot)
+    end
+
     unitFrame.Totems = Totems
+    return Totems
 end
 
 function UUF:UpdateUnitTotems(unitFrame, unit)
-    local TotemsDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Indicators.Totems
+    if unit ~= "player" then return end
+    local TotemsDB = UUF.db.profile.Units.player.Indicators.Totems
 
     if TotemsDB.Enabled then
-        if not unitFrame.Totems then
-            UUF:CreateUnitTotems(unitFrame, unit)
-        else
-            local anchorFrom = TotemsDB.Layout[1]
-            local anchorTo = TotemsDB.Layout[2]
-            local xOffset = TotemsDB.Layout[3]
-            local yOffset = TotemsDB.Layout[4]
+        unitFrame.Totems = unitFrame.Totems or UUF:CreateUnitTotems(unitFrame, unit)
+        if not unitFrame.Totems then return end
 
-            for index = 1, 4 do
-                local Totem = unitFrame.Totems[index]
-                Totem:SetSize(TotemsDB.Size, TotemsDB.Size)
-                Totem:ClearAllPoints()
-                Totem:SetPoint(anchorFrom, unitFrame, anchorTo, xOffset, yOffset)
-                ApplyAuraDuration(Totem.Cooldown, unit)
-            end
+        for index = 1, #unitFrame.Totems do
+            local Totem = unitFrame.Totems[index]
+            local xOffset = (index - 1) * (TotemsDB.Size + TotemsDB.Layout[5])
+            if TotemsDB.GrowthDirection == "LEFT" then xOffset = -xOffset end
+            Totem:ClearAllPoints()
+            Totem:SetSize(TotemsDB.Size, TotemsDB.Size)
+            Totem:SetPoint(TotemsDB.Layout[1], unitFrame.HighLevelContainer, TotemsDB.Layout[2], TotemsDB.Layout[3] + xOffset, TotemsDB.Layout[4])
+            ApplyAuraDuration(Totem.Cooldown)
+            Totem:Show()
         end
 
-        if unitFrame.Totems then
-            unitFrame:EnableElement("Totems")
-            unitFrame.Totems:ForceUpdate()
-        end
+        if not unitFrame:IsElementEnabled("Totems") then unitFrame:EnableElement("Totems") end
+        if unitFrame.Totems.ForceUpdate then unitFrame.Totems:ForceUpdate() end
     else
-        if unitFrame.Totems then
-            unitFrame:DisableElement("Totems")
+        if not unitFrame.Totems then return end
+        if unitFrame:IsElementEnabled("Totems") then unitFrame:DisableElement("Totems") end
+        for index = 1, #unitFrame.Totems do
+            unitFrame.Totems[index]:Hide()
         end
     end
 end
