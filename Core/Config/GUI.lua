@@ -35,88 +35,6 @@ local AnchorPoints = { { ["TOPLEFT"] = "Top Left", ["TOP"] = "Top", ["TOPRIGHT"]
 local FrameStrataList = {{ ["BACKGROUND"] = "Background", ["LOW"] = "Low", ["MEDIUM"] = "Medium", ["HIGH"] = "High", ["DIALOG"] = "Dialog", ["FULLSCREEN"] = "Fullscreen", ["FULLSCREEN_DIALOG"] = "Fullscreen Dialog", ["TOOLTIP"] = "Tooltip" }, { "BACKGROUND", "LOW", "MEDIUM", "HIGH", "DIALOG", "FULLSCREEN", "FULLSCREEN_DIALOG", "TOOLTIP" }}
 local TopBottomList = {{ ["TOP"] = "Top", ["BOTTOM"] = "Bottom" }, { "TOP", "BOTTOM" }}
 
-local function GetAuraBaseFilter(auraDB)
-    return auraDB == "Buffs" and "HELPFUL" or "HARMFUL"
-end
-
-local function GetAuraFilterConfig(auraDB)
-    if not UUF.AURA_FILTERS or type(UUF.AURA_FILTERS[auraDB]) ~= "table" then
-        return { Modifiers = {}, Exclusive = {} }
-    end
-    return UUF.AURA_FILTERS[auraDB]
-end
-
-local function GetAuraModifierOrder(auraDB)
-    local config = GetAuraFilterConfig(auraDB)
-    local modifiers = {}
-    if config.Modifiers then
-        for modifier in pairs(config.Modifiers) do
-            modifiers[#modifiers + 1] = modifier
-        end
-        table.sort(modifiers, function(a, b)
-            local titleA = config.Modifiers[a] and config.Modifiers[a].Title or a
-            local titleB = config.Modifiers[b] and config.Modifiers[b].Title or b
-            return titleA < titleB
-        end)
-    end
-    return modifiers
-end
-
-local function GetAuraExclusiveOrder(auraDB)
-    local config = GetAuraFilterConfig(auraDB)
-    local exclusive = {}
-    if config.Exclusive then
-        for filter in pairs(config.Exclusive) do
-            exclusive[#exclusive + 1] = filter
-        end
-        table.sort(exclusive, function(a, b)
-            local titleA = config.Exclusive[a] and config.Exclusive[a].Title or a
-            local titleB = config.Exclusive[b] and config.Exclusive[b].Title or b
-            return titleA < titleB
-        end)
-    end
-    return exclusive
-end
-
-local function ParseAuraFilterState(auraDB, filterString)
-    local baseFilter = GetAuraBaseFilter(auraDB)
-    local config = GetAuraFilterConfig(auraDB)
-    local state = { modifiers = {}, exclusive = nil, }
-    if type(filterString) ~= "string" then return state end
-    local decoded = filterString:gsub("||", "|")
-    for part in decoded:gmatch("[^|]+") do
-        if part ~= baseFilter then
-            if config.Modifiers and config.Modifiers[part] then
-                state.modifiers[part] = true
-            elseif config.Exclusive and config.Exclusive[part] then
-                state.exclusive = part
-            end
-        end
-    end
-    return state
-end
-
-local function BuildAuraFilterFromState(auraDB, state)
-    local baseFilter = GetAuraBaseFilter(auraDB)
-    local parts = { baseFilter }
-    local added = { [baseFilter] = true }
-    local modifierOrder = GetAuraModifierOrder(auraDB)
-    for _, modifier in ipairs(modifierOrder) do
-        if state.modifiers[modifier] and not added[modifier] then
-            parts[#parts + 1] = modifier
-            added[modifier] = true
-        end
-    end
-    if state.exclusive and not added[state.exclusive] then parts[#parts + 1] = state.exclusive end
-    return table.concat(parts, "|")
-end
-
-local function EncodeAuraFilterStringForStorage(filterString)
-    if type(filterString) ~= "string" then return "" end
-    local decodedFilterString = filterString:gsub("||", "|")
-    return decodedFilterString:gsub("|", "||")
-end
-
 local Power = {
     [0] = "Mana",
     [1] = "Rage",
@@ -312,7 +230,7 @@ local function CreateFontSettings(containerParent)
     Container:AddChild(FontDropdown)
 
     local FontFlagDropdown = AG:Create("Dropdown")
-    FontFlagDropdown:SetList({[""] = "None", ["OUTLINE"] = "Outline", ["THICKOUTLINE"] = "Thick Outline", ["MONOCHROME"] = "Monochrome", ["MONOCHROMEOUTLINE"] = "Monochrome Outline", ["MONOCHROMETHICKOUTLINE"] = "Monochrome Thick Outline"})
+    FontFlagDropdown:SetList({[""] = "None", ["OUTLINE"] = "Outline", ["THICKOUTLINE"] = "Thick Outline", ["MONOCHROME"] = "Monochrome", ["MONOCHROMEOUTLINE"] = "Monochrome Outline", ["MONOCHROMETHICKOUTLINE"] = "Monochrome Thick Outline", ["OUTLINE, SLUG"] = "Outline Slug"})
     FontFlagDropdown:SetLabel("Font Flag")
     FontFlagDropdown:SetValue(UUF.db.profile.General.Fonts.FontFlag)
     FontFlagDropdown:SetRelativeWidth(0.5)
@@ -2378,81 +2296,29 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
     ShowTypeCheckbox:SetRelativeWidth(0.33)
     AuraContainer:AddChild(ShowTypeCheckbox)
 
-    local auraBaseFilter = GetAuraBaseFilter(auraDB)
-    local auraFilterConfig = GetAuraFilterConfig(auraDB)
-    local filterState = ParseAuraFilterState(auraDB, AuraDB.Filter or auraBaseFilter)
-    local modifierToggles = {}
-    local exclusiveToggles = {}
-    local isUpdatingToggles = false
-
-    local function UpdateAuraFilter()
-        local builtFilter = BuildAuraFilterFromState(auraDB, filterState)
-        AuraDB.Filter = EncodeAuraFilterStringForStorage(builtFilter)
-        if unit == "boss" then
-            UUF:UpdateBossFrames()
-        else
-            UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB)
+    AuraDB.Filters = AuraDB.Filters or {}
+    GUIWidgets.CreateHeader(AuraContainer, "Filters")
+    for _, filterGroup in ipairs({"General", "Player", "Other"}) do
+        GUIWidgets.CreateHeader(AuraContainer, filterGroup)
+        for _, filter in ipairs(UUF.AURA_FILTERS[auraDB]) do
+            if filter.Group == filterGroup then
+                local FilterToggle = AG:Create("CheckBox")
+                FilterToggle:SetLabel(filter.Title)
+                FilterToggle:SetDescription(filter.Desc)
+                FilterToggle:SetValue(AuraDB.Filters[filter.Key] or false)
+                FilterToggle:SetRelativeWidth(0.5)
+                FilterToggle:SetCallback("OnValueChanged", function(_, _, value)
+                    AuraDB.Filters[filter.Key] = value or nil
+                    if unit == "boss" then
+                        UUF:UpdateBossFrames()
+                    else
+                        UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB)
+                    end
+                end)
+                AuraContainer:AddChild(FilterToggle)
+            end
         end
     end
-
-    local function RefreshFilterToggles()
-        isUpdatingToggles = true
-        for modifier, toggle in pairs(modifierToggles) do
-            toggle:SetValue(filterState.modifiers[modifier] or false)
-        end
-        for exclusive, toggle in pairs(exclusiveToggles) do
-            toggle:SetValue(filterState.exclusive == exclusive)
-        end
-        isUpdatingToggles = false
-    end
-    local modifierOrder = GetAuraModifierOrder(auraDB)
-    if #modifierOrder > 0 then
-        GUIWidgets.CreateHeader(AuraContainer, "Unexclusive Filters")
-        for _, modifier in ipairs(modifierOrder) do
-            local modData = auraFilterConfig.Modifiers[modifier]
-            local ModToggle = AG:Create("CheckBox")
-            ModToggle:SetLabel(modData.Title or modifier)
-            ModToggle:SetDescription(modData.Desc or "")
-            ModToggle:SetValue(filterState.modifiers[modifier] or false)
-            ModToggle:SetRelativeWidth(#modifierOrder > 3 and 0.5 or 0.33)
-            ModToggle:SetCallback("OnValueChanged", function(_, _, value)
-                if isUpdatingToggles then return end
-                filterState.modifiers[modifier] = value or nil
-                RefreshFilterToggles()
-                UpdateAuraFilter()
-            end)
-            modifierToggles[modifier] = ModToggle
-            AuraContainer:AddChild(ModToggle)
-        end
-    end
-
-    local exclusiveOrder = GetAuraExclusiveOrder(auraDB)
-    if #exclusiveOrder > 0 then
-        GUIWidgets.CreateHeader(AuraContainer, "Exclusive Filters")
-
-        for _, exclusive in ipairs(exclusiveOrder) do
-            local exclData = auraFilterConfig.Exclusive[exclusive]
-            local ExclToggle = AG:Create("CheckBox")
-            ExclToggle:SetLabel(exclData.Title or exclusive)
-            ExclToggle:SetDescription(exclData.Desc or "")
-            ExclToggle:SetValue(filterState.exclusive == exclusive)
-            ExclToggle:SetRelativeWidth(0.33)
-            ExclToggle:SetCallback("OnValueChanged", function(_, _, value)
-                if isUpdatingToggles then return end
-                if value then
-                    filterState.exclusive = exclusive
-                else
-                    filterState.exclusive = nil
-                end
-                RefreshFilterToggles()
-                UpdateAuraFilter()
-            end)
-            exclusiveToggles[exclusive] = ExclToggle
-            AuraContainer:AddChild(ExclToggle)
-        end
-    end
-
-    RefreshFilterToggles()
 
     local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
 
@@ -2593,7 +2459,6 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
             GUIWidgets.DeepDisable(AuraContainer, false, Toggle)
             GUIWidgets.DeepDisable(LayoutContainer, false, Toggle)
             GUIWidgets.DeepDisable(CountContainer, false, Toggle)
-            RefreshFilterToggles()
         else
             GUIWidgets.DeepDisable(AuraContainer, true, Toggle)
             GUIWidgets.DeepDisable(LayoutContainer, true, Toggle)
@@ -2899,6 +2764,9 @@ local function CreateUnitSettings(containerParent, unit)
     SettingsContainer:SetLayout("Flow")
     containerParent:AddChild(SettingsContainer)
 
+    local playerClass = UnitClassBase("player")
+    local playerHasSecondaryPower = playerClass == "DEATHKNIGHT" or UUF:GetSecondaryPowerType() ~= nil
+
     local function SelectUnitTab(SubContainer, _, UnitTab)
         if not lastSelectedUnitTabs[unit] then lastSelectedUnitTabs[unit] = {} end
         lastSelectedUnitTabs[unit].mainTab = UnitTab
@@ -2911,7 +2779,7 @@ local function CreateUnitSettings(containerParent, unit)
             CreateAuraSettings(SubContainer, unit)
         elseif UnitTab == "PowerBar" then
             CreatePowerBarSettings(SubContainer, unit, function() if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitPowerBar(UUF[unit:upper()], unit) end end)
-        elseif UnitTab == "SecondaryPowerBar" then
+        elseif UnitTab == "SecondaryPowerBar" and unit == "player" and playerHasSecondaryPower then
             CreateSecondaryPowerBarSettings(SubContainer, unit, function() UUF:UpdateUnitSecondaryPowerBar(UUF[unit:upper()], unit) end)
         elseif UnitTab == "AlternativePowerBar" then
             CreateAlternativePowerBarSettings(SubContainer, unit, function() if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAlternativePowerBar(UUF[unit:upper()], unit) end end)
@@ -2932,31 +2800,29 @@ local function CreateUnitSettings(containerParent, unit)
     local SubContainerTabGroup = AG:Create("TabGroup")
     SubContainerTabGroup:SetLayout("Flow")
     SubContainerTabGroup:SetFullWidth(true)
-    if unit == "player" and UUF:RequiresAlternativePowerBar() then
-        SubContainerTabGroup:SetTabs({
+
+    if unit == "player" then
+        local playerTabs = {
             { text = "Frame", value = "Frame"},
             { text = "Heal Prediction", value = "HealPrediction"},
             { text = "Auras", value = "Auras"},
             { text = "Power Bar", value = "PowerBar"},
-            { text = "Secondary Power Bar", value = "SecondaryPowerBar"},
-            { text = "Alternative Power Bar", value = "AlternativePowerBar"},
             { text = "Cast Bar", value = "CastBar"},
             { text = "Portrait", value = "Portrait"},
             { text = "Indicators", value = "Indicators"},
             { text = "Tags", value = "Tags"},
-        })
-    elseif unit == "player" then
-        SubContainerTabGroup:SetTabs({
-            { text = "Frame", value = "Frame"},
-            { text = "Heal Prediction", value = "HealPrediction"},
-            { text = "Auras", value = "Auras"},
-            { text = "Power Bar", value = "PowerBar"},
-            { text = "Secondary Power Bar", value = "SecondaryPowerBar"},
-            { text = "Cast Bar", value = "CastBar"},
-            { text = "Portrait", value = "Portrait"},
-            { text = "Indicators", value = "Indicators"},
-            { text = "Tags", value = "Tags"},
-        })
+        }
+
+        local nextPowerTabIndex = 5
+        if playerHasSecondaryPower then
+            table.insert(playerTabs, nextPowerTabIndex, { text = "Secondary Power Bar", value = "SecondaryPowerBar"})
+            nextPowerTabIndex = nextPowerTabIndex + 1
+        end
+        if UUF:RequiresAlternativePowerBar() then
+            table.insert(playerTabs, nextPowerTabIndex, { text = "Alternative Power Bar", value = "AlternativePowerBar"})
+        end
+
+        SubContainerTabGroup:SetTabs(playerTabs)
     elseif unit ~= "targettarget" and unit ~= "focustarget" then
         SubContainerTabGroup:SetTabs({
             { text = "Frame", value = "Frame"},
@@ -2979,7 +2845,9 @@ local function CreateUnitSettings(containerParent, unit)
         })
     end
     SubContainerTabGroup:SetCallback("OnGroupSelected", SelectUnitTab)
-    SubContainerTabGroup:SelectTab(GetSavedMainTab(unit, "Frame"))
+    local selectedTab = GetSavedMainTab(unit, "Frame")
+    if selectedTab == "SecondaryPowerBar" and not playerHasSecondaryPower then selectedTab = "Frame" end
+    SubContainerTabGroup:SelectTab(selectedTab)
     SettingsContainer:AddChild(SubContainerTabGroup)
 
     GUIWidgets.DeepDisable(SettingsContainer, not UUF.db.profile.Units[unit].Enabled)
