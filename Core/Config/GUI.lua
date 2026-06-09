@@ -2399,6 +2399,13 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB, auraSec
     ShowTypeCheckbox:SetRelativeWidth(0.33)
     AuraContainer:AddChild(ShowTypeCheckbox)
 
+    local BlacklistToggle = AG:Create("CheckBox")
+    BlacklistToggle:SetLabel("Blacklist")
+    BlacklistToggle:SetValue(AuraDB.Blacklist or false)
+    BlacklistToggle:SetCallback("OnValueChanged", function(_, _, value) AuraDB.Blacklist = value if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end end)
+    BlacklistToggle:SetRelativeWidth(0.33)
+    AuraContainer:AddChild(BlacklistToggle)
+
     local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
 
     local AnchorFromDropdown = AG:Create("Dropdown")

@@ -97,6 +97,7 @@ local function CreateUnitBuffs(unitFrame, unit)
         unitFrame.BuffContainer["growthY"] = BuffsDB.WrapDirection
         unitFrame.BuffContainer.filter = "HELPFUL"
         unitFrame.BuffContainer.FilterAura = function(_, filterUnit, aura)
+            if BuffsDB.Blacklist and UUF.AURA_BLACKLIST[aura.spellId] then return false end
             local filters = BuffsDB.Filters
             if not filters or not next(filters) then return true end
 
@@ -166,6 +167,7 @@ local function CreateUnitDebuffs(unitFrame, unit)
         unitFrame.DebuffContainer["growthY"] = DebuffsDB.WrapDirection
         unitFrame.DebuffContainer.filter = "HARMFUL"
         unitFrame.DebuffContainer.FilterAura = function(_, filterUnit, aura)
+            if DebuffsDB.Blacklist and UUF.AURA_BLACKLIST[aura.spellId] then return false end
             local filters = DebuffsDB.Filters
             if not filters or not next(filters) then return true end
 

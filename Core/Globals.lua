@@ -564,3 +564,44 @@ UUF.AURA_FILTERS = {
         {Key = "Raid", Group = "Other", Title = "Raid", Desc = "Show other-cast debuffs marked for raid frames."},
     }
 }
+
+UUF.AURA_BLACKLIST = {
+    -- Rogue Poisons
+    [2823] = true,      -- Deadly Poison
+    [315584] = true,    -- Instant Poison
+    [3408] = true,      -- Crippling Poison
+    [381637] = true,    -- Atrophic Poison
+    [381664] = true,    -- Amplifying Poison
+    [8679] = true,      -- Wound Poison
+
+    -- Shaman Imbuements
+    [319773] = true,    -- Windfury Weapon
+    [319778] = true,    -- Flametongue Weapon
+    [382021] = true,    -- Earthliving Weapon
+    [382022] = true,    -- Earthliving Weapon
+    [457496] = true,    -- Tidecaller's Guard
+    [457481] = true,    -- Tidecaller's Guard
+    [462757] = true,    -- Thunderstrike Ward
+    [462742] = true,    -- Thunderstrike Ward
+
+    -- Skyriding
+    [404464] = true,    -- Flight Style: Skyriding
+    [404468] = true,    -- Flight Style: Steady
+    [427490] = true,    -- Ride Along
+    [447959] = true,    -- Ride Along - Enabled
+    [447960] = true,    -- Ride Along - Inactive
+
+    -- Other
+    [160455] = true,    -- Hunter Pet Fatigued
+    [26013] = true,     -- Deserter
+    [264689] = true,    -- Hunter Pet Fatigued
+    [377234] = true,    -- Thrill of the Skies
+    [390435] = true,    -- Exhaustion
+    [433568] = true,    -- Rite of Sanctification
+    [433583] = true,    -- Rite of Adjuration
+    [57723] = true,     -- Exhaustion
+    [57724] = true,     -- Sated
+    [71041] = true,     -- Dungeon Deserter
+    [80354] = true,     -- Temporal Displacement
+    [95809] = true,     -- Hunter Pet Insanity
+}
