@@ -167,15 +167,6 @@ local function BuildMainNavigationTree()
 end
 
 local function CreateUIScaleSettings(containerParent)
-    local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Login Message")
-
-    local Toggle = AG:Create("CheckBox")
-    Toggle:SetLabel("Display Login Message")
-    Toggle:SetValue(UUF.db.global.DisplayLoginMessage)
-    Toggle:SetCallback("OnValueChanged", function(_, _, value) UUF.db.global.DisplayLoginMessage = value end)
-    Toggle:SetRelativeWidth(0.33)
-    ToggleContainer:AddChild(Toggle)
-
     local Container = GUIWidgets.CreateInlineGroup(containerParent, "UI Scale")
     GUIWidgets.CreateInformationTag(Container,"These options allow you to adjust the UI Scale beyond the means that |cFF00B0F7Blizzard|r provides. If you encounter issues, please |cFFFF4040disable|r this feature.")
 
@@ -2891,13 +2882,11 @@ local function CreateGlobalSettings(containerParent)
 
     local GlobalContainer = GUIWidgets.CreateInlineGroup(containerParent, "Global Settings")
 
-    GUIWidgets.CreateInformationTag(GlobalContainer, "The settings below will apply to all unit frames within" .. UUF.PRETTY_ADDON_NAME .. ".\nOptions are not dynamic. They are static but will apply to all unit frames when changed.")
-
     local ToggleContainer = GUIWidgets.CreateInlineGroup(GlobalContainer, "Toggles")
 
     local ApplyColours = AG:Create("Button")
     ApplyColours:SetText("Colour Mode")
-    ApplyColours:SetRelativeWidth(0.5)
+    ApplyColours:SetRelativeWidth(0.33)
     ApplyColours:SetCallback("OnClick", function()
         for _, unitDB in pairs(UUF.db.profile.Units) do
             unitDB.HealthBar.ColourByClass = true
@@ -2910,7 +2899,7 @@ local function CreateGlobalSettings(containerParent)
 
     local RemoveColours = AG:Create("Button")
     RemoveColours:SetText("Dark Mode")
-    RemoveColours:SetRelativeWidth(0.5)
+    RemoveColours:SetRelativeWidth(0.33)
     RemoveColours:SetCallback("OnClick", function()
         for _, unitDB in pairs(UUF.db.profile.Units) do
             unitDB.HealthBar.ColourByClass = false
@@ -2920,6 +2909,13 @@ local function CreateGlobalSettings(containerParent)
         UUF:UpdateAllUnitFrames()
     end)
     ToggleContainer:AddChild(RemoveColours)
+
+    local DisplayLoginMessageToggle = AG:Create("CheckBox")
+    DisplayLoginMessageToggle:SetLabel("Display Login Message")
+    DisplayLoginMessageToggle:SetValue(UUF.db.global.DisplayLoginMessage)
+    DisplayLoginMessageToggle:SetCallback("OnValueChanged", function(_, _, value) UUF.db.global.DisplayLoginMessage = value end)
+    DisplayLoginMessageToggle:SetRelativeWidth(0.33)
+    ToggleContainer:AddChild(DisplayLoginMessageToggle)
 
     CreateFontSettings(GlobalContainer)
     CreateTextureSettings(GlobalContainer)
