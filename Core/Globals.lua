@@ -85,6 +85,42 @@ function UUF:ResolveLSM()
     UUF.Media.Background = LSM:Fetch("statusbar", General.Textures.Background) or "Interface\\Buttons\\WHITE8X8"
 end
 
+function UUF:ApplyAuraDuration(icon, AuraDurationDB, textRegion)
+    if not icon or not AuraDurationDB then return end
+    if not textRegion then
+        C_Timer.After(0.01, function()
+            for _, region in ipairs({icon:GetRegions()}) do
+                if region:GetObjectType() == "FontString" then
+                    UUF:ApplyAuraDuration(icon, AuraDurationDB, region)
+                    return
+                end
+            end
+        end)
+        return
+    end
+
+    local FontsDB = UUF.db.profile.General.Fonts
+    if AuraDurationDB.ScaleByIconSize then
+        local iconWidth = icon:GetWidth()
+        local scaleFactor = iconWidth > 0 and iconWidth / 36 or 1
+        local fontSize = AuraDurationDB.FontSize * scaleFactor
+        if fontSize < 1 then fontSize = 12 end
+        textRegion:SetFont(UUF.Media.Font, fontSize, FontsDB.FontFlag)
+    else
+        textRegion:SetFont(UUF.Media.Font, AuraDurationDB.FontSize, FontsDB.FontFlag)
+    end
+    textRegion:SetTextColor(AuraDurationDB.Colour[1], AuraDurationDB.Colour[2], AuraDurationDB.Colour[3], 1)
+    textRegion:ClearAllPoints()
+    textRegion:SetPoint(AuraDurationDB.Layout[1], icon, AuraDurationDB.Layout[2], AuraDurationDB.Layout[3], AuraDurationDB.Layout[4])
+    if FontsDB.Shadow.Enabled then
+        textRegion:SetShadowColor(FontsDB.Shadow.Colour[1], FontsDB.Shadow.Colour[2], FontsDB.Shadow.Colour[3], FontsDB.Shadow.Colour[4])
+        textRegion:SetShadowOffset(FontsDB.Shadow.XPos, FontsDB.Shadow.YPos)
+    else
+        textRegion:SetShadowColor(0, 0, 0, 0)
+        textRegion:SetShadowOffset(0, 0)
+    end
+end
+
 function UUF:Capitalize(STR)
     return "|cFFFFCC00" .. (STR:gsub("^%l", string.upper)) .. "|r"
 end

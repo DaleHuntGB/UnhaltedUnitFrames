@@ -3,43 +3,6 @@ local _, UUF = ...
 local totemPriorities = STANDARD_TOTEM_PRIORITIES
 if UnitClassBase("player") == "SHAMAN" then totemPriorities = SHAMAN_TOTEM_PRIORITIES end
 
-local function FetchAuraDurationRegion(cooldown)
-    if not cooldown then return end
-    for _, region in ipairs({ cooldown:GetRegions() }) do
-        if region:GetObjectType() == "FontString" then return region end
-    end
-end
-
-local function ApplyAuraDuration(cooldown)
-    local FontsDB = UUF.db.profile.General.Fonts
-    local TotemsDurationDB = UUF.db.profile.Units.player.Indicators.Totems.TotemDuration
-    if not cooldown then return end
-    C_Timer.After(0.01, function()
-        local textRegion = FetchAuraDurationRegion(cooldown)
-        if textRegion then
-            if TotemsDurationDB.ScaleByIconSize then
-                local iconWidth = cooldown:GetWidth()
-                local scaleFactor = iconWidth > 0 and iconWidth / 36 or 1
-                local fontSize = TotemsDurationDB.FontSize * scaleFactor
-                if fontSize < 1 then fontSize = 12 end
-                textRegion:SetFont(UUF.Media.Font, fontSize, FontsDB.FontFlag)
-            else
-                textRegion:SetFont(UUF.Media.Font, TotemsDurationDB.FontSize, FontsDB.FontFlag)
-            end
-            textRegion:SetTextColor(TotemsDurationDB.Colour[1], TotemsDurationDB.Colour[2], TotemsDurationDB.Colour[3], 1)
-            textRegion:ClearAllPoints()
-            textRegion:SetPoint(TotemsDurationDB.Layout[1], cooldown, TotemsDurationDB.Layout[2], TotemsDurationDB.Layout[3], TotemsDurationDB.Layout[4])
-            if FontsDB.Shadow.Enabled then
-                textRegion:SetShadowColor(FontsDB.Shadow.Colour[1], FontsDB.Shadow.Colour[2], FontsDB.Shadow.Colour[3], FontsDB.Shadow.Colour[4])
-                textRegion:SetShadowOffset(FontsDB.Shadow.XPos, FontsDB.Shadow.YPos)
-            else
-                textRegion:SetShadowColor(0, 0, 0, 0)
-                textRegion:SetShadowOffset(0, 0)
-            end
-        end
-    end)
-end
-
 function UUF:CreateUnitTotems(unitFrame, unit)
     if unit ~= "player" then return end
     local TotemsDB = UUF.db.profile.Units.player.Indicators.Totems
@@ -73,7 +36,7 @@ function UUF:CreateUnitTotems(unitFrame, unit)
         Totem.Cooldown:SetDrawEdge(false)
         Totem.Cooldown:SetDrawSwipe(true)
         Totem.Cooldown:SetReverse(true)
-        ApplyAuraDuration(Totem.Cooldown)
+        UUF:ApplyAuraDuration(Totem.Cooldown, TotemsDB.TotemDuration)
 
         Totems[index] = Totem
     end
@@ -102,7 +65,7 @@ function UUF:UpdateUnitTotems(unitFrame, unit)
             Totem:ClearAllPoints()
             Totem:SetSize(TotemsDB.Size, TotemsDB.Size)
             Totem:SetPoint(TotemsDB.Layout[1], unitFrame.HighLevelContainer, TotemsDB.Layout[2], TotemsDB.Layout[3] + xOffset, TotemsDB.Layout[4])
-            ApplyAuraDuration(Totem.Cooldown)
+            UUF:ApplyAuraDuration(Totem.Cooldown, TotemsDB.TotemDuration)
             Totem:Show()
         end
 
