@@ -2471,8 +2471,163 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
     containerParent:DoLayout()
 end
 
+local function CreatePrivateAuraSettings(containerParent)
+    local PrivateAurasDB = UUF.db.profile.Units.player.Auras.PrivateAuras
+
+    local GeneralContainer = GUIWidgets.CreateInlineGroup(containerParent, "Private Aura Settings")
+    GUIWidgets.CreateInformationTag(GeneralContainer, "Private Auras are controlled by |cFF00B0F7Blizzard|r. Their icon artwork cannot be styled, but their size, layout, border scale, and cooldown display can be configured.")
+
+    local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
+    local SizeContainer = GUIWidgets.CreateInlineGroup(containerParent, "Size & Spacing")
+
+    local Toggle = AG:Create("CheckBox")
+    Toggle:SetLabel("Enable |cFF8080FFPrivate Auras|r")
+    Toggle:SetValue(PrivateAurasDB.Enabled)
+    Toggle:SetRelativeWidth(0.33)
+    Toggle:SetCallback("OnValueChanged", function(_, _, value)
+        PrivateAurasDB.Enabled = value
+        UUF:UpdateUnitAuras(UUF.PLAYER, "player")
+        GUIWidgets.DeepDisable(GeneralContainer, not value, Toggle)
+        GUIWidgets.DeepDisable(LayoutContainer, not value)
+        GUIWidgets.DeepDisable(SizeContainer, not value)
+    end)
+    GeneralContainer:AddChild(Toggle)
+
+    local DisableCooldownToggle = AG:Create("CheckBox")
+    DisableCooldownToggle:SetLabel("Disable Cooldown Spiral")
+    DisableCooldownToggle:SetValue(PrivateAurasDB.DisableCooldown)
+    DisableCooldownToggle:SetRelativeWidth(0.33)
+    DisableCooldownToggle:SetCallback("OnValueChanged", function(_, _, value) PrivateAurasDB.DisableCooldown = value UUF:UpdateUnitAuras(UUF.PLAYER, "player") end)
+    GeneralContainer:AddChild(DisableCooldownToggle)
+
+    local DisableCooldownTextToggle = AG:Create("CheckBox")
+    DisableCooldownTextToggle:SetLabel("Disable Cooldown Text")
+    DisableCooldownTextToggle:SetValue(PrivateAurasDB.DisableCooldownText)
+    DisableCooldownTextToggle:SetRelativeWidth(0.33)
+    DisableCooldownTextToggle:SetCallback("OnValueChanged", function(_, _, value) PrivateAurasDB.DisableCooldownText = value UUF:UpdateUnitAuras(UUF.PLAYER, "player") end)
+    GeneralContainer:AddChild(DisableCooldownTextToggle)
+
+    local BorderScaleSlider = AG:Create("Slider")
+    BorderScaleSlider:SetLabel("Border Scale")
+    BorderScaleSlider:SetValue(PrivateAurasDB.BorderScale == -100 and -1 or PrivateAurasDB.BorderScale)
+    BorderScaleSlider:SetSliderValues(-1, 3, 0.1)
+    BorderScaleSlider:SetRelativeWidth(0.5)
+    BorderScaleSlider:SetCallback("OnValueChanged", function(widget, _, value) if value < 0 then value = -1 widget:SetValue(value) end PrivateAurasDB.BorderScale = value UUF:UpdateUnitAuras(UUF.PLAYER, "player") end)
+    GeneralContainer:AddChild(BorderScaleSlider)
+
+    local FrameStrataDropdown = AG:Create("Dropdown")
+    FrameStrataDropdown:SetList(FrameStrataList[1], FrameStrataList[2])
+    FrameStrataDropdown:SetLabel("Frame Strata")
+    FrameStrataDropdown:SetValue(PrivateAurasDB.FrameStrata)
+    FrameStrataDropdown:SetRelativeWidth(0.5)
+    FrameStrataDropdown:SetCallback("OnValueChanged", function(_, _, value) PrivateAurasDB.FrameStrata = value UUF:UpdateUnitAuras(UUF.PLAYER, "player") end)
+    GeneralContainer:AddChild(FrameStrataDropdown)
+
+    local AnchorFromDropdown = AG:Create("Dropdown")
+    AnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
+    AnchorFromDropdown:SetLabel("Anchor From")
+    AnchorFromDropdown:SetValue(PrivateAurasDB.Layout[1])
+    AnchorFromDropdown:SetRelativeWidth(0.5)
+    AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) PrivateAurasDB.Layout[1] = value UUF:UpdateUnitAuras(UUF.PLAYER, "player") end)
+    LayoutContainer:AddChild(AnchorFromDropdown)
+
+    local AnchorToDropdown = AG:Create("Dropdown")
+    AnchorToDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
+    AnchorToDropdown:SetLabel("Anchor To")
+    AnchorToDropdown:SetValue(PrivateAurasDB.Layout[2])
+    AnchorToDropdown:SetRelativeWidth(0.5)
+    AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) PrivateAurasDB.Layout[2] = value UUF:UpdateUnitAuras(UUF.PLAYER, "player") end)
+    LayoutContainer:AddChild(AnchorToDropdown)
+
+    local XPosSlider = AG:Create("Slider")
+    XPosSlider:SetLabel("X Position")
+    XPosSlider:SetValue(PrivateAurasDB.Layout[3])
+    XPosSlider:SetSliderValues(-1000, 1000, 0.1)
+    XPosSlider:SetRelativeWidth(0.5)
+    XPosSlider:SetCallback("OnValueChanged", function(_, _, value) PrivateAurasDB.Layout[3] = value UUF:UpdateUnitAuras(UUF.PLAYER, "player") end)
+    LayoutContainer:AddChild(XPosSlider)
+
+    local YPosSlider = AG:Create("Slider")
+    YPosSlider:SetLabel("Y Position")
+    YPosSlider:SetValue(PrivateAurasDB.Layout[4])
+    YPosSlider:SetSliderValues(-1000, 1000, 0.1)
+    YPosSlider:SetRelativeWidth(0.5)
+    YPosSlider:SetCallback("OnValueChanged", function(_, _, value) PrivateAurasDB.Layout[4] = value UUF:UpdateUnitAuras(UUF.PLAYER, "player") end)
+    LayoutContainer:AddChild(YPosSlider)
+
+    local InitialAnchorDropdown = AG:Create("Dropdown")
+    InitialAnchorDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
+    InitialAnchorDropdown:SetLabel("Initial Aura Anchor")
+    InitialAnchorDropdown:SetValue(PrivateAurasDB.InitialAnchor)
+    InitialAnchorDropdown:SetRelativeWidth(0.33)
+    InitialAnchorDropdown:SetCallback("OnValueChanged", function(_, _, value) PrivateAurasDB.InitialAnchor = value UUF:UpdateUnitAuras(UUF.PLAYER, "player") end)
+    LayoutContainer:AddChild(InitialAnchorDropdown)
+
+    local GrowthXDropdown = AG:Create("Dropdown")
+    GrowthXDropdown:SetList({["LEFT"] = "Left", ["RIGHT"] = "Right"}, {"LEFT", "RIGHT"})
+    GrowthXDropdown:SetLabel("Horizontal Growth")
+    GrowthXDropdown:SetValue(PrivateAurasDB.GrowthX)
+    GrowthXDropdown:SetRelativeWidth(0.33)
+    GrowthXDropdown:SetCallback("OnValueChanged", function(_, _, value) PrivateAurasDB.GrowthX = value UUF:UpdateUnitAuras(UUF.PLAYER, "player") end)
+    LayoutContainer:AddChild(GrowthXDropdown)
+
+    local GrowthYDropdown = AG:Create("Dropdown")
+    GrowthYDropdown:SetList({["UP"] = "Up", ["DOWN"] = "Down"}, {"UP", "DOWN"})
+    GrowthYDropdown:SetLabel("Vertical Growth")
+    GrowthYDropdown:SetValue(PrivateAurasDB.GrowthY)
+    GrowthYDropdown:SetRelativeWidth(0.33)
+    GrowthYDropdown:SetCallback("OnValueChanged", function(_, _, value) PrivateAurasDB.GrowthY = value UUF:UpdateUnitAuras(UUF.PLAYER, "player") end)
+    LayoutContainer:AddChild(GrowthYDropdown)
+
+    local SizeSlider = AG:Create("Slider")
+    SizeSlider:SetLabel("Size")
+    SizeSlider:SetValue(PrivateAurasDB.Size)
+    SizeSlider:SetSliderValues(8, 128, 1)
+    SizeSlider:SetRelativeWidth(0.33)
+    SizeSlider:SetCallback("OnValueChanged", function(_, _, value) PrivateAurasDB.Size = value UUF:UpdateUnitAuras(UUF.PLAYER, "player") end)
+    SizeContainer:AddChild(SizeSlider)
+
+    local SpacingSlider = AG:Create("Slider")
+    SpacingSlider:SetLabel("Spacing")
+    SpacingSlider:SetValue(PrivateAurasDB.Spacing)
+    SpacingSlider:SetSliderValues(-20, 100, 1)
+    SpacingSlider:SetRelativeWidth(0.33)
+    SpacingSlider:SetCallback("OnValueChanged", function(_, _, value) PrivateAurasDB.Spacing = value UUF:UpdateUnitAuras(UUF.PLAYER, "player") end)
+    SizeContainer:AddChild(SpacingSlider)
+
+    local NumSlider = AG:Create("Slider")
+    NumSlider:SetLabel("Private Auras To Display")
+    NumSlider:SetValue(PrivateAurasDB.Num)
+    NumSlider:SetSliderValues(1, 12, 1)
+    NumSlider:SetRelativeWidth(0.33)
+    NumSlider:SetCallback("OnValueChanged", function(_, _, value) PrivateAurasDB.Num = value UUF:UpdateUnitAuras(UUF.PLAYER, "player") end)
+    SizeContainer:AddChild(NumSlider)
+
+    GUIWidgets.DeepDisable(GeneralContainer, not PrivateAurasDB.Enabled, Toggle)
+    GUIWidgets.DeepDisable(LayoutContainer, not PrivateAurasDB.Enabled)
+    GUIWidgets.DeepDisable(SizeContainer, not PrivateAurasDB.Enabled)
+
+    containerParent:DoLayout()
+end
+
 local function CreateAuraSettings(containerParent, unit)
     local AurasDB = UUF.db.profile.Units[unit].Auras
+    if unit == "player" then
+        AurasDB.PrivateAuras = AurasDB.PrivateAuras or {
+            Enabled = true,
+            Layout = {"CENTER", "CENTER", 0, 60},
+            FrameStrata = "LOW",
+            Size = 32,
+            Spacing = 2,
+            GrowthX = "RIGHT",
+            GrowthY = "UP",
+            InitialAnchor = "BOTTOMLEFT",
+            Num = 6,
+            BorderScale = 1,
+            DisableCooldown = false,
+            DisableCooldownText = false,
+        }
+    end
     local AuraDurationContainer = GUIWidgets.CreateInlineGroup(containerParent, "Aura Duration Settings")
 
     local ColourPicker = AG:Create("ColorPicker")
@@ -2554,6 +2709,8 @@ local function CreateAuraSettings(containerParent, unit)
             CreateSpecificAuraSettings(AuraContainer, unit, "Buffs")
         elseif AuraTab == "Debuffs" then
             CreateSpecificAuraSettings(AuraContainer, unit, "Debuffs")
+        elseif AuraTab == "PrivateAuras" and unit == "player" then
+            CreatePrivateAuraSettings(AuraContainer)
         end
         C_Timer.After(0.001, RefreshFontSizeSlider)
         containerParent:DoLayout()
@@ -2562,7 +2719,11 @@ local function CreateAuraSettings(containerParent, unit)
     local AuraContainerTabGroup = AG:Create("TabGroup")
     AuraContainerTabGroup:SetLayout("Flow")
     AuraContainerTabGroup:SetFullWidth(true)
-    AuraContainerTabGroup:SetTabs({ { text = "Buffs", value = "Buffs"}, { text = "Debuffs", value = "Debuffs"}, })
+    if unit == "player" then
+        AuraContainerTabGroup:SetTabs({ { text = "Buffs", value = "Buffs"}, { text = "Debuffs", value = "Debuffs"}, { text = "Private Auras", value = "PrivateAuras"}, })
+    else
+        AuraContainerTabGroup:SetTabs({ { text = "Buffs", value = "Buffs"}, { text = "Debuffs", value = "Debuffs"}, })
+    end
     AuraContainerTabGroup:SetCallback("OnGroupSelected", SelectAuraTab)
     AuraContainerTabGroup:SelectTab(GetSavedSubTab(unit, "Auras", "Buffs"))
     containerParent:AddChild(AuraContainerTabGroup)

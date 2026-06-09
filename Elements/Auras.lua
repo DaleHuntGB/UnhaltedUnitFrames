@@ -244,6 +244,55 @@ function UUF:UpdateUnitAuras(unitFrame, unit)
     local BuffsDB = AurasDB.Buffs
     local DebuffsDB = AurasDB.Debuffs
 
+    if unit == "player" then
+        AurasDB.PrivateAuras = AurasDB.PrivateAuras or {
+            Enabled = true,
+            Layout = {"CENTER", "CENTER", 0, 60},
+            FrameStrata = "LOW",
+            Size = 32,
+            Spacing = 2,
+            GrowthX = "RIGHT",
+            GrowthY = "UP",
+            InitialAnchor = "BOTTOMLEFT",
+            Num = 6,
+            BorderScale = 1,
+            DisableCooldown = false,
+            DisableCooldownText = false,
+        }
+        local PrivateAurasDB = AurasDB.PrivateAuras
+        local privateAuraContainerWidth = PrivateAurasDB.Size * PrivateAurasDB.Num + PrivateAurasDB.Spacing * (PrivateAurasDB.Num - 1)
+
+        unitFrame.PrivateAuraContainer:ClearAllPoints()
+        unitFrame.PrivateAuraContainer:SetPoint(PrivateAurasDB.Layout[1], unitFrame, PrivateAurasDB.Layout[2], PrivateAurasDB.Layout[3], PrivateAurasDB.Layout[4])
+        unitFrame.PrivateAuraContainer:SetSize(math.max(privateAuraContainerWidth, 1), PrivateAurasDB.Size)
+        unitFrame.PrivateAuraContainer:SetFrameStrata(PrivateAurasDB.FrameStrata)
+        unitFrame.PrivateAuraContainer.size = PrivateAurasDB.Size
+        unitFrame.PrivateAuraContainer.width = nil
+        unitFrame.PrivateAuraContainer.height = nil
+        unitFrame.PrivateAuraContainer.spacing = PrivateAurasDB.Spacing
+        unitFrame.PrivateAuraContainer.spacingX = nil
+        unitFrame.PrivateAuraContainer.spacingY = nil
+        unitFrame.PrivateAuraContainer.growthX = PrivateAurasDB.GrowthX
+        unitFrame.PrivateAuraContainer.growthY = PrivateAurasDB.GrowthY
+        unitFrame.PrivateAuraContainer.initialAnchor = PrivateAurasDB.InitialAnchor
+        unitFrame.PrivateAuraContainer.num = PrivateAurasDB.Num
+        unitFrame.PrivateAuraContainer.maxCols = PrivateAurasDB.Num
+        unitFrame.PrivateAuraContainer.borderScale = PrivateAurasDB.BorderScale == -1 and -100 or PrivateAurasDB.BorderScale
+        unitFrame.PrivateAuraContainer.disableCooldown = PrivateAurasDB.DisableCooldown
+        unitFrame.PrivateAuraContainer.disableCooldownText = PrivateAurasDB.DisableCooldownText
+
+        if PrivateAurasDB.Enabled then
+            unitFrame.PrivateAuras = unitFrame.PrivateAuraContainer
+            unitFrame.PrivateAuraContainer:Show()
+            if not unitFrame:IsElementEnabled("PrivateAuras") then unitFrame:EnableElement("PrivateAuras") end
+            if unitFrame.PrivateAuraContainer.ForceUpdate then unitFrame.PrivateAuraContainer:ForceUpdate() end
+        else
+            if unitFrame:IsElementEnabled("PrivateAuras") then unitFrame:DisableElement("PrivateAuras") end
+            unitFrame.PrivateAuras = nil
+            unitFrame.PrivateAuraContainer:Hide()
+        end
+    end
+
     local shouldEnableAuras = BuffsDB.Enabled or DebuffsDB.Enabled
 
     if BuffsDB.Enabled then
@@ -334,6 +383,51 @@ end
 function UUF:CreateUnitAuras(unitFrame, unit)
     CreateUnitBuffs(unitFrame, unit)
     CreateUnitDebuffs(unitFrame, unit)
+
+    if unit == "player" then
+        local AurasDB = UUF.db.profile.Units.player.Auras
+        AurasDB.PrivateAuras = AurasDB.PrivateAuras or {
+            Enabled = true,
+            Layout = {"CENTER", "CENTER", 0, 60},
+            FrameStrata = "LOW",
+            Size = 32,
+            Spacing = 2,
+            GrowthX = "RIGHT",
+            GrowthY = "UP",
+            InitialAnchor = "BOTTOMLEFT",
+            Num = 6,
+            BorderScale = 1,
+            DisableCooldown = false,
+            DisableCooldownText = false,
+        }
+        local PrivateAurasDB = AurasDB.PrivateAuras
+        local privateAuraContainerWidth = PrivateAurasDB.Size * PrivateAurasDB.Num + PrivateAurasDB.Spacing * (PrivateAurasDB.Num - 1)
+
+        unitFrame.PrivateAuraContainer = CreateFrame("Frame", UUF:FetchFrameName(unit) .. "_PrivateAurasContainer", unitFrame)
+        unitFrame.PrivateAuraContainer:SetPoint(PrivateAurasDB.Layout[1], unitFrame, PrivateAurasDB.Layout[2], PrivateAurasDB.Layout[3], PrivateAurasDB.Layout[4])
+        unitFrame.PrivateAuraContainer:SetSize(math.max(privateAuraContainerWidth, 1), PrivateAurasDB.Size)
+        unitFrame.PrivateAuraContainer:SetFrameStrata(PrivateAurasDB.FrameStrata)
+        unitFrame.PrivateAuraContainer.size = PrivateAurasDB.Size
+        unitFrame.PrivateAuraContainer.width = nil
+        unitFrame.PrivateAuraContainer.height = nil
+        unitFrame.PrivateAuraContainer.spacing = PrivateAurasDB.Spacing
+        unitFrame.PrivateAuraContainer.spacingX = nil
+        unitFrame.PrivateAuraContainer.spacingY = nil
+        unitFrame.PrivateAuraContainer.growthX = PrivateAurasDB.GrowthX
+        unitFrame.PrivateAuraContainer.growthY = PrivateAurasDB.GrowthY
+        unitFrame.PrivateAuraContainer.initialAnchor = PrivateAurasDB.InitialAnchor
+        unitFrame.PrivateAuraContainer.num = PrivateAurasDB.Num
+        unitFrame.PrivateAuraContainer.maxCols = PrivateAurasDB.Num
+        unitFrame.PrivateAuraContainer.borderScale = PrivateAurasDB.BorderScale == -1 and -100 or PrivateAurasDB.BorderScale
+        unitFrame.PrivateAuraContainer.disableCooldown = PrivateAurasDB.DisableCooldown
+        unitFrame.PrivateAuraContainer.disableCooldownText = PrivateAurasDB.DisableCooldownText
+
+        if PrivateAurasDB.Enabled then
+            unitFrame.PrivateAuras = unitFrame.PrivateAuraContainer
+        else
+            unitFrame.PrivateAuraContainer:Hide()
+        end
+    end
 end
 
 function UUF:UpdateUnitAurasStrata(unit)
@@ -344,6 +438,7 @@ function UUF:UpdateUnitAurasStrata(unit)
     if not unitFrame or not unitDB or not unitDB.Auras then return end
     if unitFrame.BuffContainer then unitFrame.BuffContainer:SetFrameStrata(unitDB.Auras.FrameStrata) end
     if unitFrame.DebuffContainer then unitFrame.DebuffContainer:SetFrameStrata(unitDB.Auras.FrameStrata) end
+    if unit == "player" and unitFrame.PrivateAuraContainer and unitDB.Auras.PrivateAuras then unitFrame.PrivateAuraContainer:SetFrameStrata(unitDB.Auras.PrivateAuras.FrameStrata) end
 end
 
 
