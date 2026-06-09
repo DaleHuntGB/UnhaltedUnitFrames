@@ -2627,7 +2627,7 @@ local function CreatePrivateAuraSettings(containerParent)
     local PrivateAurasDB = UUF.db.profile.Units.player.Auras.PrivateAuras
 
     local GeneralContainer = GUIWidgets.CreateInlineGroup(containerParent, "Private Aura Settings")
-    GUIWidgets.CreateInformationTag(GeneralContainer, "Private Auras are controlled by |cFF00B0F7Blizzard|r. Their icon artwork cannot be styled, but their size, layout, border scale, and cooldown display can be configured.")
+    GUIWidgets.CreateInformationTag(GeneralContainer, "Private Auras are controlled by |cFF00B0F7Blizzard|r. The options below are as far as customization will allow.")
 
     local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
     local SizeContainer = GUIWidgets.CreateInlineGroup(containerParent, "Size & Spacing")
