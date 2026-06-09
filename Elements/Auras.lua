@@ -102,31 +102,31 @@ local function CreateUnitBuffs(unitFrame, unit)
                 local name = not UUF:IsSecretValue(aura.name) and aura.name
                 if (spellId and UUF.AURA_BLACKLIST[spellId]) or (name and UUF.AURA_BLACKLIST[name]) then return false end
             end
-            local filters = BuffsDB.Filters
-            if not filters or not next(filters) then return true end
+            local setFilters = BuffsDB.Filters
+            if not setFilters or not next(setFilters) then return true end
 
-            local player = aura.isPlayerAura
-            local other = not player
-            local cancelable = not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HELPFUL|CANCELABLE")
+            local isPlayer = aura.isPlayerAura
+            local isNotPlayer = not isPlayer
+            local isCancellable = not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HELPFUL|CANCELABLE")
 
-            return filters.Player and player
-                or filters.RaidPlayerDispellable and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HELPFUL|RAID_PLAYER_DISPELLABLE")
-                or filters.Important and other and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HELPFUL|IMPORTANT")
-                or filters.ImportantPlayer and player and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HELPFUL|IMPORTANT")
-                or filters.CrowdControl and other and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HELPFUL|CROWD_CONTROL")
-                or filters.CrowdControlPlayer and player and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HELPFUL|CROWD_CONTROL")
-                or filters.BigDefensive and other and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HELPFUL|BIG_DEFENSIVE")
-                or filters.BigDefensivePlayer and player and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HELPFUL|BIG_DEFENSIVE")
-                or filters.ExternalDefensive and other and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HELPFUL|EXTERNAL_DEFENSIVE")
-                or filters.ExternalDefensivePlayer and player and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HELPFUL|EXTERNAL_DEFENSIVE")
-                or filters.RaidInCombat and other and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HELPFUL|RAID_IN_COMBAT")
-                or filters.RaidInCombatPlayer and player and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HELPFUL|RAID_IN_COMBAT")
-                or filters.Cancelable and other and cancelable
-                or filters.CancelablePlayer and player and cancelable
-                or filters.NotCancelable and other and not cancelable
-                or filters.NotCancelablePlayer and player and not cancelable
-                or filters.Raid and other and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HELPFUL|RAID")
-                or filters.RaidPlayer and player and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HELPFUL|RAID")
+            return setFilters.Player and isPlayer
+                or setFilters.RaidPlayerDispellable and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HELPFUL|RAID_PLAYER_DISPELLABLE")
+                or setFilters.Important and isNotPlayer and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HELPFUL|IMPORTANT")
+                or setFilters.ImportantPlayer and isPlayer and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HELPFUL|IMPORTANT")
+                or setFilters.CrowdControl and isNotPlayer and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HELPFUL|CROWD_CONTROL")
+                or setFilters.CrowdControlPlayer and isPlayer and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HELPFUL|CROWD_CONTROL")
+                or setFilters.BigDefensive and isNotPlayer and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HELPFUL|BIG_DEFENSIVE")
+                or setFilters.BigDefensivePlayer and isPlayer and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HELPFUL|BIG_DEFENSIVE")
+                or setFilters.ExternalDefensive and isNotPlayer and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HELPFUL|EXTERNAL_DEFENSIVE")
+                or setFilters.ExternalDefensivePlayer and isPlayer and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HELPFUL|EXTERNAL_DEFENSIVE")
+                or setFilters.RaidInCombat and isNotPlayer and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HELPFUL|RAID_IN_COMBAT")
+                or setFilters.RaidInCombatPlayer and isPlayer and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HELPFUL|RAID_IN_COMBAT")
+                or setFilters.Cancelable and isNotPlayer and isCancellable
+                or setFilters.CancelablePlayer and isPlayer and isCancellable
+                or setFilters.NotCancelable and isNotPlayer and not isCancellable
+                or setFilters.NotCancelablePlayer and isPlayer and not isCancellable
+                or setFilters.Raid and isNotPlayer and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HELPFUL|RAID")
+                or setFilters.RaidPlayer and isPlayer and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HELPFUL|RAID")
         end
         unitFrame.BuffContainer.PostCreateButton = function(_, button) StyleAuras(_, button, unit, "HELPFUL") end
         unitFrame.BuffContainer.anchoredButtons = 0
@@ -176,31 +176,31 @@ local function CreateUnitDebuffs(unitFrame, unit)
                 local name = not UUF:IsSecretValue(aura.name) and aura.name
                 if (spellId and UUF.AURA_BLACKLIST[spellId]) or (name and UUF.AURA_BLACKLIST[name]) then return false end
             end
-            local filters = DebuffsDB.Filters
-            if not filters or not next(filters) then return true end
+            local setFilters = DebuffsDB.Filters
+            if not setFilters or not next(setFilters) then return true end
 
-            local player = aura.isPlayerAura
-            local other = not player
-            local cancelable = not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HARMFUL|CANCELABLE")
+            local isPlayer = aura.isPlayerAura
+            local isNotPlayer = not isPlayer
+            local isCancellable = not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HARMFUL|CANCELABLE")
 
-            return filters.Player and player
-                or filters.RaidPlayerDispellable and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HARMFUL|RAID_PLAYER_DISPELLABLE")
-                or filters.Important and other and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HARMFUL|IMPORTANT")
-                or filters.ImportantPlayer and player and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HARMFUL|IMPORTANT")
-                or filters.CrowdControl and other and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HARMFUL|CROWD_CONTROL")
-                or filters.CrowdControlPlayer and player and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HARMFUL|CROWD_CONTROL")
-                or filters.BigDefensive and other and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HARMFUL|BIG_DEFENSIVE")
-                or filters.BigDefensivePlayer and player and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HARMFUL|BIG_DEFENSIVE")
-                or filters.ExternalDefensive and other and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HARMFUL|EXTERNAL_DEFENSIVE")
-                or filters.ExternalDefensivePlayer and player and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HARMFUL|EXTERNAL_DEFENSIVE")
-                or filters.RaidInCombat and other and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HARMFUL|RAID_IN_COMBAT")
-                or filters.RaidInCombatPlayer and player and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HARMFUL|RAID_IN_COMBAT")
-                or filters.Cancelable and other and cancelable
-                or filters.CancelablePlayer and player and cancelable
-                or filters.NotCancelable and other and not cancelable
-                or filters.NotCancelablePlayer and player and not cancelable
-                or filters.Raid and other and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HARMFUL|RAID")
-                or filters.RaidPlayer and player and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HARMFUL|RAID")
+            return setFilters.Player and isPlayer
+                or setFilters.RaidPlayerDispellable and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HARMFUL|RAID_PLAYER_DISPELLABLE")
+                or setFilters.Important and isNotPlayer and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HARMFUL|IMPORTANT")
+                or setFilters.ImportantPlayer and isPlayer and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HARMFUL|IMPORTANT")
+                or setFilters.CrowdControl and isNotPlayer and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HARMFUL|CROWD_CONTROL")
+                or setFilters.CrowdControlPlayer and isPlayer and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HARMFUL|CROWD_CONTROL")
+                or setFilters.BigDefensive and isNotPlayer and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HARMFUL|BIG_DEFENSIVE")
+                or setFilters.BigDefensivePlayer and isPlayer and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HARMFUL|BIG_DEFENSIVE")
+                or setFilters.ExternalDefensive and isNotPlayer and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HARMFUL|EXTERNAL_DEFENSIVE")
+                or setFilters.ExternalDefensivePlayer and isPlayer and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HARMFUL|EXTERNAL_DEFENSIVE")
+                or setFilters.RaidInCombat and isNotPlayer and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HARMFUL|RAID_IN_COMBAT")
+                or setFilters.RaidInCombatPlayer and isPlayer and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HARMFUL|RAID_IN_COMBAT")
+                or setFilters.Cancelable and isNotPlayer and isCancellable
+                or setFilters.CancelablePlayer and isPlayer and isCancellable
+                or setFilters.NotCancelable and isNotPlayer and not isCancellable
+                or setFilters.NotCancelablePlayer and isPlayer and not isCancellable
+                or setFilters.Raid and isNotPlayer and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HARMFUL|RAID")
+                or setFilters.RaidPlayer and isPlayer and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HARMFUL|RAID")
         end
         unitFrame.DebuffContainer.anchoredButtons = 0
         unitFrame.DebuffContainer.createdButtons = 0
