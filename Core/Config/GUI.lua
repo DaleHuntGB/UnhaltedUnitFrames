@@ -2345,8 +2345,36 @@ local function CreateTagsSettings(containerParent, unit)
     containerParent:DoLayout()
 end
 
-local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
+local function CreateSpecificAuraSettings(containerParent, unit, auraDB, auraSection)
     local AuraDB = UUF.db.profile.Units[unit].Auras[auraDB]
+
+    if auraSection == "Filters" then
+        local FilterContainer = GUIWidgets.CreateInlineGroup(containerParent, auraDB .. " Filters")
+        AuraDB.Filters = AuraDB.Filters or {}
+        for _, filterGroup in ipairs({"General", "Player", "Other"}) do
+            GUIWidgets.CreateHeader(FilterContainer, filterGroup)
+            for _, filter in ipairs(UUF.AURA_FILTERS[auraDB]) do
+                if filter.Group == filterGroup then
+                    local FilterToggle = AG:Create("CheckBox")
+                    FilterToggle:SetLabel(filter.Title)
+                    FilterToggle:SetValue(AuraDB.Filters[filter.Key] or false)
+                    FilterToggle:SetRelativeWidth(0.5)
+                    FilterToggle:SetCallback("OnValueChanged", function(_, _, value)
+                        AuraDB.Filters[filter.Key] = value or nil
+                        if unit == "boss" then
+                            UUF:UpdateBossFrames()
+                        else
+                            UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB)
+                        end
+                    end)
+                    FilterContainer:AddChild(FilterToggle)
+                end
+            end
+        end
+        GUIWidgets.DeepDisable(FilterContainer, not AuraDB.Enabled)
+        containerParent:DoLayout()
+        return
+    end
 
     local AuraContainer = GUIWidgets.CreateInlineGroup(containerParent, auraDB .. " Settings")
 
@@ -2370,30 +2398,6 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
     ShowTypeCheckbox:SetCallback("OnValueChanged", function(_, _, value) AuraDB.ShowType = value if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end end)
     ShowTypeCheckbox:SetRelativeWidth(0.33)
     AuraContainer:AddChild(ShowTypeCheckbox)
-
-    AuraDB.Filters = AuraDB.Filters or {}
-    GUIWidgets.CreateHeader(AuraContainer, "Filters")
-    for _, filterGroup in ipairs({"General", "Player", "Other"}) do
-        GUIWidgets.CreateHeader(AuraContainer, filterGroup)
-        for _, filter in ipairs(UUF.AURA_FILTERS[auraDB]) do
-            if filter.Group == filterGroup then
-                local FilterToggle = AG:Create("CheckBox")
-                FilterToggle:SetLabel(filter.Title)
-                FilterToggle:SetDescription(filter.Desc)
-                FilterToggle:SetValue(AuraDB.Filters[filter.Key] or false)
-                FilterToggle:SetRelativeWidth(0.5)
-                FilterToggle:SetCallback("OnValueChanged", function(_, _, value)
-                    AuraDB.Filters[filter.Key] = value or nil
-                    if unit == "boss" then
-                        UUF:UpdateBossFrames()
-                    else
-                        UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB)
-                    end
-                end)
-                AuraContainer:AddChild(FilterToggle)
-            end
-        end
-    end
 
     local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
 
@@ -2765,9 +2769,25 @@ local function CreateAuraSettings(containerParent, unit)
         SaveSubTab(unit, "Auras", AuraTab)
         AuraContainer:ReleaseChildren()
         if AuraTab == "Buffs" then
-            CreateSpecificAuraSettings(AuraContainer, unit, "Buffs")
+            local BuffTreeGroup = AG:Create("TreeGroup")
+            BuffTreeGroup:SetLayout("Flow")
+            BuffTreeGroup:SetFullWidth(true)
+            BuffTreeGroup:SetHeight(620)
+            BuffTreeGroup:SetTreeWidth(120, false)
+            BuffTreeGroup:SetTree({{text = "General", value = "General"}, {text = "Filters", value = "Filters"}})
+            BuffTreeGroup:SetCallback("OnGroupSelected", function(BuffContainer, _, BuffSection) SaveSubTab(unit, "Buffs", BuffSection) BuffContainer:ReleaseChildren() CreateSpecificAuraSettings(BuffContainer, unit, "Buffs", BuffSection) containerParent:DoLayout() end)
+            AuraContainer:AddChild(BuffTreeGroup)
+            BuffTreeGroup:SelectByValue(GetSavedSubTab(unit, "Buffs", "General"))
         elseif AuraTab == "Debuffs" then
-            CreateSpecificAuraSettings(AuraContainer, unit, "Debuffs")
+            local DebuffTreeGroup = AG:Create("TreeGroup")
+            DebuffTreeGroup:SetLayout("Flow")
+            DebuffTreeGroup:SetFullWidth(true)
+            DebuffTreeGroup:SetHeight(620)
+            DebuffTreeGroup:SetTreeWidth(120, false)
+            DebuffTreeGroup:SetTree({{text = "General", value = "General"}, {text = "Filters", value = "Filters"}})
+            DebuffTreeGroup:SetCallback("OnGroupSelected", function(DebuffContainer, _, DebuffSection) SaveSubTab(unit, "Debuffs", DebuffSection) DebuffContainer:ReleaseChildren() CreateSpecificAuraSettings(DebuffContainer, unit, "Debuffs", DebuffSection) containerParent:DoLayout() end)
+            AuraContainer:AddChild(DebuffTreeGroup)
+            DebuffTreeGroup:SelectByValue(GetSavedSubTab(unit, "Debuffs", "General"))
         elseif AuraTab == "PrivateAuras" and unit == "player" then
             CreatePrivateAuraSettings(AuraContainer)
         end

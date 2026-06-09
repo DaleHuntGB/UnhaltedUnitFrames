@@ -1,78 +1,6 @@
 local _, UUF = ...
 local oUF = UUF.oUF
 
-local function FetchAuraDurationRegion(cooldown)
-    if not cooldown then return end
-    for _, region in ipairs({ cooldown:GetRegions() }) do
-        if region:GetObjectType() == "FontString" then return region end
-    end
-end
-
-local function ApplyAuraDuration(icon, unit)
-    local UUFDB = UUF.db.profile
-    local FontsDB = UUFDB.General.Fonts
-    local AurasDB = UUFDB.Units[UUF:GetNormalizedUnit(unit)].Auras
-    local AuraDurationDB = AurasDB.AuraDuration
-    if not icon then return end
-    C_Timer.After(0.01, function()
-        local textRegion = FetchAuraDurationRegion(icon)
-        if textRegion then
-            if AuraDurationDB.ScaleByIconSize then
-                local iconWidth = icon:GetWidth()
-                local scaleFactor = iconWidth > 0 and iconWidth / 36 or 1
-                local fontSize = AuraDurationDB.FontSize * scaleFactor
-                if fontSize < 1 then fontSize = 12 end
-                textRegion:SetFont(UUF.Media.Font, fontSize, FontsDB.FontFlag)
-            else
-                textRegion:SetFont(UUF.Media.Font, AuraDurationDB.FontSize, FontsDB.FontFlag)
-            end
-            textRegion:SetTextColor(AuraDurationDB.Colour[1], AuraDurationDB.Colour[2], AuraDurationDB.Colour[3], 1)
-            textRegion:ClearAllPoints()
-            textRegion:SetPoint(AuraDurationDB.Layout[1], icon, AuraDurationDB.Layout[2], AuraDurationDB.Layout[3], AuraDurationDB.Layout[4])
-            if UUF.db.profile.General.Fonts.Shadow.Enabled then
-                textRegion:SetShadowColor(FontsDB.Shadow.Colour[1], FontsDB.Shadow.Colour[2], FontsDB.Shadow.Colour[3], FontsDB.Shadow.Colour[4])
-                textRegion:SetShadowOffset(FontsDB.Shadow.XPos, FontsDB.Shadow.YPos)
-            else
-                textRegion:SetShadowColor(0, 0, 0, 0)
-                textRegion:SetShadowOffset(0, 0)
-            end
-        end
-    end)
-end
-
-local function DecodeAuraFilterString(filterString)
-    if type(filterString) ~= "string" then return nil end
-    return filterString:gsub("||", "|")
-end
-
-local function EncodeAuraFilterStringForStorage(filterString)
-    if type(filterString) ~= "string" then return "" end
-    local decodedFilterString = DecodeAuraFilterString(filterString) or ""
-    return decodedFilterString:gsub("|", "||")
-end
-
-local function NormalizeAuraFilter(filterString, baseFilter, auraFilterConfig)
-    local decodedFilterString = DecodeAuraFilterString(filterString)
-    if type(decodedFilterString) ~= "string" then return baseFilter end
-    if not auraFilterConfig then return decodedFilterString end
-    local parts = { baseFilter }
-    local added = { [baseFilter] = true }
-    local selectedExclusive = nil
-    for part in decodedFilterString:gmatch("[^|]+") do
-        if part ~= baseFilter then
-            if auraFilterConfig.Modifiers and auraFilterConfig.Modifiers[part] and not added[part] then
-                parts[#parts + 1] = part
-                added[part] = true
-            elseif auraFilterConfig.Exclusive and auraFilterConfig.Exclusive[part] then
-                selectedExclusive = part
-            end
-        end
-    end
-    if selectedExclusive and not added[selectedExclusive] then parts[#parts + 1] = selectedExclusive end
-
-    return table.concat(parts, "|")
-end
-
 local function GetAuraConfig(aurasDB, auraType)
     if not aurasDB then return nil end
     if auraType == "HELPFUL" then
@@ -167,9 +95,34 @@ local function CreateUnitBuffs(unitFrame, unit)
         unitFrame.BuffContainer.onlyShowPlayer = false
         unitFrame.BuffContainer["growthX"] = BuffsDB.GrowthDirection
         unitFrame.BuffContainer["growthY"] = BuffsDB.WrapDirection
-        local buffFilter = NormalizeAuraFilter(BuffsDB.Filter, "HELPFUL", UUF.AURA_FILTERS and UUF.AURA_FILTERS.Buffs)
-        BuffsDB.Filter = EncodeAuraFilterStringForStorage(buffFilter)
-        unitFrame.BuffContainer.filter = buffFilter
+        unitFrame.BuffContainer.filter = "HELPFUL"
+        unitFrame.BuffContainer.FilterAura = function(_, filterUnit, aura)
+            local filters = BuffsDB.Filters
+            if not filters or not next(filters) then return true end
+
+            local player = aura.isPlayerAura
+            local other = not player
+            local cancelable = not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HELPFUL|CANCELABLE")
+
+            return filters.Player and player
+                or filters.RaidPlayerDispellable and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HELPFUL|RAID_PLAYER_DISPELLABLE")
+                or filters.Important and other and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HELPFUL|IMPORTANT")
+                or filters.ImportantPlayer and player and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HELPFUL|IMPORTANT")
+                or filters.CrowdControl and other and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HELPFUL|CROWD_CONTROL")
+                or filters.CrowdControlPlayer and player and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HELPFUL|CROWD_CONTROL")
+                or filters.BigDefensive and other and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HELPFUL|BIG_DEFENSIVE")
+                or filters.BigDefensivePlayer and player and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HELPFUL|BIG_DEFENSIVE")
+                or filters.ExternalDefensive and other and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HELPFUL|EXTERNAL_DEFENSIVE")
+                or filters.ExternalDefensivePlayer and player and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HELPFUL|EXTERNAL_DEFENSIVE")
+                or filters.RaidInCombat and other and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HELPFUL|RAID_IN_COMBAT")
+                or filters.RaidInCombatPlayer and player and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HELPFUL|RAID_IN_COMBAT")
+                or filters.Cancelable and other and cancelable
+                or filters.CancelablePlayer and player and cancelable
+                or filters.NotCancelable and other and not cancelable
+                or filters.NotCancelablePlayer and player and not cancelable
+                or filters.Raid and other and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HELPFUL|RAID")
+                or filters.RaidPlayer and player and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HELPFUL|RAID")
+        end
         unitFrame.BuffContainer.PostCreateButton = function(_, button) StyleAuras(_, button, unit, "HELPFUL") end
         unitFrame.BuffContainer.anchoredButtons = 0
         unitFrame.BuffContainer.createdButtons = 0
@@ -211,9 +164,34 @@ local function CreateUnitDebuffs(unitFrame, unit)
         unitFrame.DebuffContainer.onlyShowPlayer = false
         unitFrame.DebuffContainer["growthX"] = DebuffsDB.GrowthDirection
         unitFrame.DebuffContainer["growthY"] = DebuffsDB.WrapDirection
-        local debuffFilter = NormalizeAuraFilter(DebuffsDB.Filter, "HARMFUL", UUF.AURA_FILTERS and UUF.AURA_FILTERS.Debuffs)
-        DebuffsDB.Filter = EncodeAuraFilterStringForStorage(debuffFilter)
-        unitFrame.DebuffContainer.filter = debuffFilter
+        unitFrame.DebuffContainer.filter = "HARMFUL"
+        unitFrame.DebuffContainer.FilterAura = function(_, filterUnit, aura)
+            local filters = DebuffsDB.Filters
+            if not filters or not next(filters) then return true end
+
+            local player = aura.isPlayerAura
+            local other = not player
+            local cancelable = not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HARMFUL|CANCELABLE")
+
+            return filters.Player and player
+                or filters.RaidPlayerDispellable and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HARMFUL|RAID_PLAYER_DISPELLABLE")
+                or filters.Important and other and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HARMFUL|IMPORTANT")
+                or filters.ImportantPlayer and player and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HARMFUL|IMPORTANT")
+                or filters.CrowdControl and other and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HARMFUL|CROWD_CONTROL")
+                or filters.CrowdControlPlayer and player and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HARMFUL|CROWD_CONTROL")
+                or filters.BigDefensive and other and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HARMFUL|BIG_DEFENSIVE")
+                or filters.BigDefensivePlayer and player and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HARMFUL|BIG_DEFENSIVE")
+                or filters.ExternalDefensive and other and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HARMFUL|EXTERNAL_DEFENSIVE")
+                or filters.ExternalDefensivePlayer and player and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HARMFUL|EXTERNAL_DEFENSIVE")
+                or filters.RaidInCombat and other and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HARMFUL|RAID_IN_COMBAT")
+                or filters.RaidInCombatPlayer and player and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HARMFUL|RAID_IN_COMBAT")
+                or filters.Cancelable and other and cancelable
+                or filters.CancelablePlayer and player and cancelable
+                or filters.NotCancelable and other and not cancelable
+                or filters.NotCancelablePlayer and player and not cancelable
+                or filters.Raid and other and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HARMFUL|RAID")
+                or filters.RaidPlayer and player and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HARMFUL|RAID")
+        end
         unitFrame.DebuffContainer.anchoredButtons = 0
         unitFrame.DebuffContainer.createdButtons = 0
         unitFrame.DebuffContainer.PostCreateButton = function(_, button) StyleAuras(_, button, unit, "HARMFUL") end
@@ -312,9 +290,7 @@ function UUF:UpdateUnitAuras(unitFrame, unit)
         unitFrame.BuffContainer.onlyShowPlayer = false
         unitFrame.BuffContainer["growthX"] = BuffsDB.GrowthDirection
         unitFrame.BuffContainer["growthY"] = BuffsDB.WrapDirection
-        local buffFilter = NormalizeAuraFilter(BuffsDB.Filter, "HELPFUL", UUF.AURA_FILTERS and UUF.AURA_FILTERS.Buffs)
-        BuffsDB.Filter = EncodeAuraFilterStringForStorage(buffFilter)
-        unitFrame.BuffContainer.filter = buffFilter
+        unitFrame.BuffContainer.filter = "HELPFUL"
         unitFrame.BuffContainer.createdButtons = unitFrame.Buffs.createdButtons or 0
         unitFrame.BuffContainer.anchoredButtons = unitFrame.Buffs.anchoredButtons or 0
         unitFrame.BuffContainer.PostCreateButton = function(_, button) StyleAuras(_, button, unit, "HELPFUL") end
@@ -343,9 +319,7 @@ function UUF:UpdateUnitAuras(unitFrame, unit)
         unitFrame.DebuffContainer.onlyShowPlayer = false
         unitFrame.DebuffContainer["growthX"] = DebuffsDB.GrowthDirection
         unitFrame.DebuffContainer["growthY"] = DebuffsDB.WrapDirection
-        local debuffFilter = NormalizeAuraFilter(DebuffsDB.Filter, "HARMFUL", UUF.AURA_FILTERS and UUF.AURA_FILTERS.Debuffs)
-        DebuffsDB.Filter = EncodeAuraFilterStringForStorage(debuffFilter)
-        unitFrame.DebuffContainer.filter = debuffFilter
+        unitFrame.DebuffContainer.filter = "HARMFUL"
         unitFrame.DebuffContainer.createdButtons = unitFrame.Debuffs.createdButtons or 0
         unitFrame.DebuffContainer.anchoredButtons = unitFrame.Debuffs.anchoredButtons or 0
         unitFrame.DebuffContainer.PostCreateButton = function(_, button) StyleAuras(_, button, unit, "HARMFUL") end
