@@ -104,6 +104,14 @@ local Defaults = {
                     },
                 },
                 HealPrediction = {
+                    IncomingHeal = {
+                        Enabled = true,
+                        UseStripedTexture = false,
+                        MatchParentHeight = true,
+                        Colour = {64/255, 255/255, 64/255, 1.0},
+                        Position = "RIGHT",
+                        Height = 40,
+                    },
                     Absorbs = {
                         Enabled = true,
                         UseStripedTexture = true,
@@ -358,6 +366,14 @@ local Defaults = {
                     },
                 },
                 HealPrediction = {
+                    IncomingHeal = {
+                        Enabled = true,
+                        UseStripedTexture = false,
+                        MatchParentHeight = true,
+                        Colour = {64/255, 255/255, 64/255, 1.0},
+                        Position = "RIGHT",
+                        Height = 40,
+                    },
                     Absorbs = {
                         Enabled = true,
                         UseStripedTexture = true,
@@ -561,6 +577,14 @@ local Defaults = {
                     BackgroundOpacity = 1.0,
                 },
                 HealPrediction = {
+                    IncomingHeal = {
+                        Enabled = true,
+                        UseStripedTexture = false,
+                        MatchParentHeight = true,
+                        Colour = {64/255, 255/255, 64/255, 1.0},
+                        Position = "RIGHT",
+                        Height = 40,
+                    },
                     Absorbs = {
                         Enabled = true,
                         UseStripedTexture = true,
@@ -751,6 +775,14 @@ local Defaults = {
                     },
                 },
                 HealPrediction = {
+                    IncomingHeal = {
+                        Enabled = true,
+                        UseStripedTexture = false,
+                        MatchParentHeight = true,
+                        Colour = {64/255, 255/255, 64/255, 1.0},
+                        Position = "RIGHT",
+                        Height = 40,
+                    },
                     Absorbs = {
                         Enabled = true,
                         UseStripedTexture = true,
@@ -938,6 +970,14 @@ local Defaults = {
                     BackgroundOpacity = 1.0,
                 },
                 HealPrediction = {
+                    IncomingHeal = {
+                        Enabled = true,
+                        UseStripedTexture = false,
+                        MatchParentHeight = true,
+                        Colour = {64/255, 255/255, 64/255, 1.0},
+                        Position = "RIGHT",
+                        Height = 40,
+                    },
                     Absorbs = {
                         Enabled = true,
                         UseStripedTexture = true,
@@ -1124,6 +1164,14 @@ local Defaults = {
                     BackgroundOpacity = 1.0,
                 },
                 HealPrediction = {
+                    IncomingHeal = {
+                        Enabled = true,
+                        UseStripedTexture = false,
+                        MatchParentHeight = true,
+                        Colour = {64/255, 255/255, 64/255, 1.0},
+                        Position = "RIGHT",
+                        Height = 40,
+                    },
                     Absorbs = {
                         Enabled = true,
                         UseStripedTexture = true,
@@ -1311,6 +1359,14 @@ local Defaults = {
                     BackgroundOpacity = 1.0,
                 },
                 HealPrediction = {
+                    IncomingHeal = {
+                        Enabled = true,
+                        UseStripedTexture = false,
+                        MatchParentHeight = true,
+                        Colour = {64/255, 255/255, 64/255, 1.0},
+                        Position = "RIGHT",
+                        Height = 40,
+                    },
                     Absorbs = {
                         Enabled = true,
                         UseStripedTexture = true,

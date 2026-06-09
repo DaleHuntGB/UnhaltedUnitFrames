@@ -1,5 +1,54 @@
 local _, UUF = ...
 
+local function CreateIncomingHeal(unitFrame, unit)
+    local IncomingHealDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].HealPrediction.IncomingHeal
+    if not unitFrame.Health then return end
+
+    local IncomingHealBar = CreateFrame("StatusBar", UUF:FetchFrameName(unit) .. "_IncomingHealBar", unitFrame.Health)
+    if IncomingHealDB.UseStripedTexture then IncomingHealBar:SetStatusBarTexture("Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\ThinStripes.png") else IncomingHealBar:SetStatusBarTexture(UUF.Media.Foreground) end
+    IncomingHealBar:SetStatusBarColor(IncomingHealDB.Colour[1], IncomingHealDB.Colour[2], IncomingHealDB.Colour[3], IncomingHealDB.Colour[4])
+    IncomingHealBar:ClearAllPoints()
+    local position = IncomingHealDB.Position
+    local height = IncomingHealDB.MatchParentHeight and unitFrame.Health:GetHeight() or IncomingHealDB.Height
+    IncomingHealBar:SetHeight(height)
+
+    if position == "ATTACH" then
+        unitFrame.Health:SetClipsChildren(true)
+        if unitFrame.Health:GetReverseFill() then
+            IncomingHealBar:SetPoint("TOPRIGHT", unitFrame.Health:GetStatusBarTexture(), "TOPLEFT", 0, 0)
+            IncomingHealBar:SetReverseFill(true)
+        else
+            IncomingHealBar:SetPoint("TOPLEFT", unitFrame.Health:GetStatusBarTexture(), "TOPRIGHT", 0, 0)
+            IncomingHealBar:SetReverseFill(false)
+        end
+    elseif position == "TOPLEFT" then
+        IncomingHealBar:SetPoint("TOPLEFT", unitFrame.Health, "TOPLEFT", 0, 0)
+        IncomingHealBar:SetReverseFill(false)
+    elseif position == "TOPRIGHT" then
+        IncomingHealBar:SetPoint("TOPRIGHT", unitFrame.Health, "TOPRIGHT", 0, 0)
+        IncomingHealBar:SetReverseFill(true)
+    elseif position == "BOTTOMLEFT" then
+        IncomingHealBar:SetPoint("BOTTOMLEFT", unitFrame.Health, "BOTTOMLEFT", 0, 0)
+        IncomingHealBar:SetReverseFill(false)
+    elseif position == "BOTTOMRIGHT" then
+        IncomingHealBar:SetPoint("BOTTOMRIGHT", unitFrame.Health, "BOTTOMRIGHT", 0, 0)
+        IncomingHealBar:SetReverseFill(true)
+    elseif position == "LEFT" then
+        IncomingHealBar:SetPoint("LEFT", unitFrame.Health, "LEFT", 0, 0)
+        IncomingHealBar:SetReverseFill(false)
+    elseif position == "RIGHT" then
+        IncomingHealBar:SetPoint("RIGHT", unitFrame.Health, "RIGHT", 0, 0)
+        IncomingHealBar:SetReverseFill(true)
+    else
+        IncomingHealBar:SetPoint("TOPLEFT", unitFrame.Health, "TOPLEFT", 0, 0)
+        IncomingHealBar:SetReverseFill(false)
+    end
+    IncomingHealBar:SetFrameLevel(unitFrame.Health:GetFrameLevel() + 1)
+    IncomingHealBar:Show()
+
+    return IncomingHealBar
+end
+
 local function CreateUnitAbsorbs(unitFrame, unit)
     local AbsorbDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].HealPrediction.Absorbs
     if not unitFrame.Health then return end
@@ -99,10 +148,12 @@ local function CreateUnitHealAbsorbs(unitFrame, unit)
 end
 
 function UUF:CreateUnitHealPrediction(unitFrame, unit)
+    local IncomingHealDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].HealPrediction.IncomingHeal
     local AbsorbDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].HealPrediction.Absorbs
     local HealAbsorbDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].HealPrediction.HealAbsorbs
 
     unitFrame.HealthPrediction = {
+        healingPlayer = IncomingHealDB.Enabled and CreateIncomingHeal(unitFrame, unit),
         damageAbsorb = AbsorbDB.Enabled and CreateUnitAbsorbs(unitFrame, unit),
         damageAbsorbClampMode = 2,
         healAbsorb = HealAbsorbDB.Enabled and CreateUnitHealAbsorbs(unitFrame, unit),
@@ -112,10 +163,61 @@ function UUF:CreateUnitHealPrediction(unitFrame, unit)
 end
 
 function UUF:UpdateUnitHealPrediction(unitFrame, unit)
+    local IncomingHealDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].HealPrediction.IncomingHeal
     local AbsorbDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].HealPrediction.Absorbs
     local HealAbsorbDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].HealPrediction.HealAbsorbs
 
     if unitFrame.HealthPrediction then
+        if IncomingHealDB.Enabled then
+            unitFrame.HealthPrediction.healingPlayer = unitFrame.HealthPrediction.healingPlayer or CreateIncomingHeal(unitFrame, unit)
+            unitFrame.HealthPrediction.healingPlayerClampMode = 2
+            unitFrame.HealthPrediction.healingPlayer:Show()
+            if IncomingHealDB.UseStripedTexture then unitFrame.HealthPrediction.healingPlayer:SetStatusBarTexture("Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\ThinStripes.png") else unitFrame.HealthPrediction.healingPlayer:SetStatusBarTexture(UUF.Media.Foreground) end
+            unitFrame.HealthPrediction.healingPlayer:SetStatusBarColor(IncomingHealDB.Colour[1], IncomingHealDB.Colour[2], IncomingHealDB.Colour[3], IncomingHealDB.Colour[4])
+            unitFrame.HealthPrediction.healingPlayer:ClearAllPoints()
+            local position = IncomingHealDB.Position
+            local height = IncomingHealDB.MatchParentHeight and unitFrame.Health:GetHeight() or IncomingHealDB.Height
+            unitFrame.HealthPrediction.healingPlayer:SetHeight(height)
+
+            if position == "ATTACH" then
+                unitFrame.Health:SetClipsChildren(true)
+                unitFrame.HealthPrediction.healingPlayer:SetPoint("TOP", unitFrame.Health, "TOP", 0, 0)
+                unitFrame.HealthPrediction.healingPlayer:SetPoint("BOTTOM", unitFrame.Health, "BOTTOM", 0, 0)
+                if unitFrame.Health:GetReverseFill() then
+                    unitFrame.HealthPrediction.healingPlayer:SetPoint("RIGHT", unitFrame.Health:GetStatusBarTexture(), "LEFT", 0, 0)
+                    unitFrame.HealthPrediction.healingPlayer:SetReverseFill(true)
+                else
+                    unitFrame.HealthPrediction.healingPlayer:SetPoint("LEFT", unitFrame.Health:GetStatusBarTexture(), "RIGHT", 0, 0)
+                    unitFrame.HealthPrediction.healingPlayer:SetReverseFill(false)
+                end
+            elseif position == "TOPLEFT" then
+                unitFrame.HealthPrediction.healingPlayer:SetPoint("TOPLEFT", unitFrame.Health, "TOPLEFT", 0, 0)
+                unitFrame.HealthPrediction.healingPlayer:SetReverseFill(false)
+            elseif position == "TOPRIGHT" then
+                unitFrame.HealthPrediction.healingPlayer:SetPoint("TOPRIGHT", unitFrame.Health, "TOPRIGHT", 0, 0)
+                unitFrame.HealthPrediction.healingPlayer:SetReverseFill(true)
+            elseif position == "BOTTOMLEFT" then
+                unitFrame.HealthPrediction.healingPlayer:SetPoint("BOTTOMLEFT", unitFrame.Health, "BOTTOMLEFT", 0, 0)
+                unitFrame.HealthPrediction.healingPlayer:SetReverseFill(false)
+            elseif position == "BOTTOMRIGHT" then
+                unitFrame.HealthPrediction.healingPlayer:SetPoint("BOTTOMRIGHT", unitFrame.Health, "BOTTOMRIGHT", 0, 0)
+                unitFrame.HealthPrediction.healingPlayer:SetReverseFill(true)
+            elseif position == "LEFT" then
+                unitFrame.HealthPrediction.healingPlayer:SetPoint("LEFT", unitFrame.Health, "LEFT", 0, 0)
+                unitFrame.HealthPrediction.healingPlayer:SetReverseFill(false)
+            elseif position == "RIGHT" then
+                unitFrame.HealthPrediction.healingPlayer:SetPoint("RIGHT", unitFrame.Health, "RIGHT", 0, 0)
+                unitFrame.HealthPrediction.healingPlayer:SetReverseFill(true)
+            else
+                unitFrame.HealthPrediction.healingPlayer:SetPoint("TOPLEFT", unitFrame.Health, "TOPLEFT", 0, 0)
+                unitFrame.HealthPrediction.healingPlayer:SetReverseFill(false)
+            end
+            unitFrame.HealthPrediction:ForceUpdate()
+        else
+            if unitFrame.HealthPrediction.healingPlayer then
+                unitFrame.HealthPrediction.healingPlayer:Hide()
+            end
+        end
         if AbsorbDB.Enabled then
             unitFrame.HealthPrediction.damageAbsorb = unitFrame.HealthPrediction.damageAbsorb or CreateUnitAbsorbs(unitFrame, unit)
             unitFrame.HealthPrediction.damageAbsorbClampMode = 2
