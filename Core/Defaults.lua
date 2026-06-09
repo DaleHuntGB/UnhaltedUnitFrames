@@ -215,6 +215,11 @@ local Defaults = {
                         Layout = {"CENTER", "TOP", 0, 0},
                         Texture = "COMBAT0"
                     },
+                    PvP = {
+                        Enabled = true,
+                        Size = 24,
+                        Layout = {"RIGHT", "TOPRIGHT", -3, 0},
+                    },
                     Mouseover = {
                         Enabled = true,
                         Colour = {1, 1, 1},

@@ -1791,6 +1791,73 @@ local function CreateLeaderAssistaintSettings(containerParent, unit, updateCallb
     RefreshStatusGUI()
 end
 
+local function CreatePvPIndicatorSettings(containerParent, updateCallback)
+    local PvPIndicatorDB = UUF.db.profile.Units.player.Indicators.PvP
+
+    local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "PvP Indicator Settings")
+
+    local Toggle = AG:Create("CheckBox")
+    Toggle:SetLabel("Enable |cFF8080FFPvP|r Indicator")
+    Toggle:SetValue(PvPIndicatorDB.Enabled)
+    Toggle:SetCallback("OnValueChanged", function(_, _, value) PvPIndicatorDB.Enabled = value updateCallback() RefreshPvPIndicatorGUI() end)
+    Toggle:SetRelativeWidth(1)
+    ToggleContainer:AddChild(Toggle)
+
+    local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
+
+    local AnchorFromDropdown = AG:Create("Dropdown")
+    AnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
+    AnchorFromDropdown:SetLabel("Anchor From")
+    AnchorFromDropdown:SetValue(PvPIndicatorDB.Layout[1])
+    AnchorFromDropdown:SetRelativeWidth(0.5)
+    AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) PvPIndicatorDB.Layout[1] = value updateCallback() end)
+    LayoutContainer:AddChild(AnchorFromDropdown)
+
+    local AnchorToDropdown = AG:Create("Dropdown")
+    AnchorToDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
+    AnchorToDropdown:SetLabel("Anchor To")
+    AnchorToDropdown:SetValue(PvPIndicatorDB.Layout[2])
+    AnchorToDropdown:SetRelativeWidth(0.5)
+    AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) PvPIndicatorDB.Layout[2] = value updateCallback() end)
+    LayoutContainer:AddChild(AnchorToDropdown)
+
+    local XPosSlider = AG:Create("Slider")
+    XPosSlider:SetLabel("X Position")
+    XPosSlider:SetValue(PvPIndicatorDB.Layout[3])
+    XPosSlider:SetSliderValues(-1000, 1000, 0.1)
+    XPosSlider:SetRelativeWidth(0.33)
+    XPosSlider:SetCallback("OnValueChanged", function(_, _, value) PvPIndicatorDB.Layout[3] = value updateCallback() end)
+    LayoutContainer:AddChild(XPosSlider)
+
+    local YPosSlider = AG:Create("Slider")
+    YPosSlider:SetLabel("Y Position")
+    YPosSlider:SetValue(PvPIndicatorDB.Layout[4])
+    YPosSlider:SetSliderValues(-1000, 1000, 0.1)
+    YPosSlider:SetRelativeWidth(0.33)
+    YPosSlider:SetCallback("OnValueChanged", function(_, _, value) PvPIndicatorDB.Layout[4] = value updateCallback() end)
+    LayoutContainer:AddChild(YPosSlider)
+
+    local SizeSlider = AG:Create("Slider")
+    SizeSlider:SetLabel("Size")
+    SizeSlider:SetValue(PvPIndicatorDB.Size)
+    SizeSlider:SetSliderValues(8, 64, 1)
+    SizeSlider:SetRelativeWidth(0.33)
+    SizeSlider:SetCallback("OnValueChanged", function(_, _, value) PvPIndicatorDB.Size = value updateCallback() end)
+    LayoutContainer:AddChild(SizeSlider)
+
+    function RefreshPvPIndicatorGUI()
+        if PvPIndicatorDB.Enabled then
+            GUIWidgets.DeepDisable(ToggleContainer, false, Toggle)
+            GUIWidgets.DeepDisable(LayoutContainer, false, Toggle)
+        else
+            GUIWidgets.DeepDisable(ToggleContainer, true, Toggle)
+            GUIWidgets.DeepDisable(LayoutContainer, true, Toggle)
+        end
+    end
+
+    RefreshPvPIndicatorGUI()
+end
+
 local function CreateStatusSettings(containerParent, unit, statusDB, updateCallback)
     local StatusDB = UUF.db.profile.Units[unit].Indicators[statusDB]
 
@@ -2100,6 +2167,8 @@ local function CreateIndicatorSettings(containerParent, unit)
             CreateStatusSettings(IndicatorContainer, unit, "Resting", function() UUF:UpdateUnitRestingIndicator(UUF[unit:upper()], unit) end)
         elseif IndicatorTab == "Combat" then
             CreateStatusSettings(IndicatorContainer, unit, "Combat", function() UUF:UpdateUnitCombatIndicator(UUF[unit:upper()], unit) end)
+        elseif IndicatorTab == "PvP" and unit == "player" then
+            CreatePvPIndicatorSettings(IndicatorContainer, function() UUF:UpdateUnitPvPIndicator(UUF.PLAYER, "player") end)
         elseif IndicatorTab == "Mouseover" then
             CreateMouseoverSettings(IndicatorContainer, unit, function() if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitMouseoverIndicator(UUF[unit:upper()], unit) end end)
         elseif IndicatorTab == "TargetIndicator" then
@@ -2118,6 +2187,7 @@ local function CreateIndicatorSettings(containerParent, unit)
             { text = "Leader & Assistant", value = "LeaderAssistant" },
             { text = "Resting", value = "Resting" },
             { text = "Combat", value = "Combat" },
+            { text = "PvP", value = "PvP" },
             { text = "Mouseover", value = "Mouseover" },
             -- { text = "Totems", value = "Totems" },
         })
