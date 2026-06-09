@@ -5,6 +5,7 @@ local Defaults = {
         UseGlobalProfile = false,
         GlobalProfile = "Default",
         GlobalProfileName = "Default",
+        DisplayLoginMessage = true,
     },
     profile = {
         General = {
