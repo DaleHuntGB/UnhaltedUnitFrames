@@ -257,7 +257,7 @@ local Defaults = {
                         Colour = {1, 1, 1},
                     },
                     PrivateAuras = {
-                        Enabled = true,
+                        Enabled = false,
                         Layout = {"CENTER", "CENTER", 0, 60},
                         FrameStrata = "LOW",
                         Size = 32,
