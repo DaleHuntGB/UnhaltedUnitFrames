@@ -405,6 +405,64 @@ function UUF:CreateTestAuras(unitFrame, unit)
     local BuffsDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Auras.Buffs
     local DebuffsDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Auras.Debuffs
     if UUF.AURA_TEST_MODE then
+		if unit == "player" and unitFrame.PrivateAuraContainer then
+			local PrivateAurasDB = UUF.db.profile.Units.player.Auras.PrivateAuras
+			if PrivateAurasDB.Enabled then
+				unitFrame.PrivateAuraContainer:Show()
+
+				for j = 1, PrivateAurasDB.Num do
+					local button = unitFrame.PrivateAuraContainer["fake" .. j]
+					if not button then
+						button = CreateFrame("Frame", nil, unitFrame.PrivateAuraContainer, "BackdropTemplate")
+						button:SetBackdrop(UUF.BACKDROP)
+						button:SetBackdropColor(0, 0, 0, 0)
+						button:SetBackdropBorderColor(0, 0, 0, 1)
+
+						button.Icon = button:CreateTexture(nil, "BORDER")
+						button.Icon:SetPoint("TOPLEFT", button, "TOPLEFT", 1, -1)
+						button.Icon:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", -1, 1)
+						button.Icon:SetTexture(135768)
+						button.Icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
+
+						button.Cooldown = CreateFrame("Cooldown", nil, button, "CooldownFrameTemplate")
+						button.Cooldown:SetAllPoints()
+						button.Cooldown:SetDrawEdge(false)
+						button.Cooldown:SetReverse(true)
+						button.Cooldown:SetCooldown(GetTime(), 600)
+						unitFrame.PrivateAuraContainer["fake" .. j] = button
+					end
+
+					local column = (j - 1) % PrivateAurasDB.Num
+					local row = math.floor((j - 1) / PrivateAurasDB.Num)
+					local x = column * (PrivateAurasDB.Size + PrivateAurasDB.Spacing)
+					local y = row * (PrivateAurasDB.Size + PrivateAurasDB.Spacing)
+					if PrivateAurasDB.GrowthX == "LEFT" then x = -x end
+					if PrivateAurasDB.GrowthY == "DOWN" then y = -y end
+
+					button:SetSize(PrivateAurasDB.Size, PrivateAurasDB.Size)
+					button:SetFrameStrata(PrivateAurasDB.FrameStrata)
+					button:ClearAllPoints()
+					button:SetPoint(PrivateAurasDB.InitialAnchor, unitFrame.PrivateAuraContainer, PrivateAurasDB.InitialAnchor, x, y)
+					button.Cooldown:SetDrawSwipe(not PrivateAurasDB.DisableCooldown)
+					button.Cooldown:SetHideCountdownNumbers(PrivateAurasDB.DisableCooldownText)
+					button.Cooldown:SetShown(not PrivateAurasDB.DisableCooldown or not PrivateAurasDB.DisableCooldownText)
+					button:Show()
+				end
+
+				local maxFake = PrivateAurasDB.Num
+				for j = maxFake + 1, (unitFrame.PrivateAuraContainer.maxFake or maxFake) do
+					local button = unitFrame.PrivateAuraContainer["fake" .. j]
+					if button then button:Hide() end
+				end
+				unitFrame.PrivateAuraContainer.maxFake = PrivateAurasDB.Num
+			else
+				for j = 1, (unitFrame.PrivateAuraContainer.maxFake or 0) do
+					local button = unitFrame.PrivateAuraContainer["fake" .. j]
+					if button then button:Hide() end
+				end
+			end
+		end
+
         if unitFrame.BuffContainer then
             if BuffsDB.Enabled then
                 unitFrame.BuffContainer:ClearAllPoints()
@@ -551,5 +609,11 @@ function UUF:CreateTestAuras(unitFrame, unit)
                 if button then button:Hide() end
             end
         end
+		if unit == "player" and unitFrame.PrivateAuraContainer then
+			for j = 1, (unitFrame.PrivateAuraContainer.maxFake or 0) do
+				local button = unitFrame.PrivateAuraContainer["fake" .. j]
+				if button then button:Hide() end
+			end
+		end
     end
 end
