@@ -156,6 +156,7 @@ end
 
 
 function UUF:UpdateAllUnitFrames()
+	for _, unitDB in pairs(UUF.db.profile.Units) do if unitDB.Portrait then unitDB.Portrait.Style = "2D" end end
     for unit, _ in pairs(UUF.db.profile.Units) do
         if UUF[unit:upper()] then
             UUF:UpdateUnitFrame(UUF[unit:upper()], unit)
