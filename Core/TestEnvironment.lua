@@ -128,7 +128,8 @@ function UUF:CreateTestBossFrames()
                     BossFrame.Castbar.Text:SetText(CastBarDB.ShowTarget and "Ethereal Portal » Target" or "Ethereal Portal")
                     BossFrame.Castbar.Time:SetText("0.0")
                     BossFrame.Castbar:SetMinMaxValues(0, 1000)
-                    BossFrame.Castbar:SetScript("OnUpdate", function() local currentValue = BossFrame.Castbar:GetValue() currentValue = currentValue + 1 if currentValue >= 1000 then currentValue = 0 end BossFrame.Castbar:SetValue(currentValue) BossFrame.Castbar.Time:SetText(string.format("%.1f", (currentValue / 1000) * 5)) end)
+                    BossFrame.Castbar.testValue = 0
+                    BossFrame.Castbar:SetScript("OnUpdate", function(self) self.testValue = (self.testValue or 0) + 1 if self.testValue >= 1000 then self.testValue = 0 end self:SetValue(self.testValue) self.Time:SetText(string.format("%.1f", (self.testValue / 1000) * 5)) end)
                     local castBarColour = (false and CastBarDB.NotInterruptibleColour) or (CastBarDB.ColourByClass and UUF:GetClassColour(BossFrame)) or CastBarDB.Foreground
                     BossFrame.Castbar:SetStatusBarColor(castBarColour[1], castBarColour[2], castBarColour[3], castBarColour[4])
                     if CastBarDB.Icon.Enabled and BossFrame.Castbar.Icon then BossFrame.Castbar.Icon:SetTexture("Interface\\Icons\\ability_mage_netherwindpresence") BossFrame.Castbar.Icon:Show() end

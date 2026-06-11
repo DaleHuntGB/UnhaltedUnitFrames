@@ -13,7 +13,7 @@ end
 
 local function SetCastName(fontString, spellName, maxChars, targetName)
     spellName = ShortenCastName(spellName, maxChars)
-    if targetName ~= nil then fontString:SetFormattedText("%s » %s", spellName, targetName) else fontString:SetText(spellName) end
+    if UUF:IsSecretValue(targetName) or targetName then fontString:SetFormattedText("%s » %s", spellName, targetName) else fontString:SetText(spellName) end
 end
 
 local function GetCastTargetName(castBar, unit)
