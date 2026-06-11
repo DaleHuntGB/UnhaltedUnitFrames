@@ -11,6 +11,16 @@ local function ShortenCastName(text, maxChars)
     return UUF:CleanTruncateUTF8String(text)
 end
 
+local function SetCastName(fontString, spellName, maxChars, targetName)
+    spellName = ShortenCastName(spellName, maxChars)
+    if targetName ~= nil then fontString:SetFormattedText("%s » %s", spellName, targetName) else fontString:SetText(spellName) end
+end
+
+local function GetCastTargetName(castBar, unit)
+    if not UnitSpellTargetName then return UnitName(unit .. "target") end
+    if castBar.casting or (castBar.channeling or castBar.empowering) and UnitShouldDisplaySpellTargetName(unit) then return UnitSpellTargetName(unit) end
+end
+
 local function ApplyShadow(fontString, shadowDB)
     if shadowDB.Enabled then
         fontString:SetShadowColor(shadowDB.Colour[1], shadowDB.Colour[2], shadowDB.Colour[3], shadowDB.Colour[4])
@@ -53,6 +63,7 @@ function UUF:CreateUnitCastBar(unitFrame, unit)
     CastBar:SetPoint("TOPLEFT", CastBarContainer, "TOPLEFT", 1, -1)
     CastBar:SetPoint("BOTTOMRIGHT", CastBarContainer, "BOTTOMRIGHT", -1, 1)
     CastBar:SetFrameLevel(CastBarContainer:GetFrameLevel() + 1)
+    CastBar.timeToHold = CastBarDB.HoldTime
     if CastBarDB.ColourByClass then
         local unitForClass = unit == "pet" and "player" or unit
         local unitClass = select(2, UnitClass(unitForClass))
@@ -128,7 +139,7 @@ function UUF:CreateUnitCastBar(unitFrame, unit)
             local spellInfo = C_Spell.GetSpellInfo(frameCastBar.spellID)
             local spellName = spellInfo and spellInfo.name
             if spellName then
-                frameCastBar.Text:SetText(ShortenCastName(spellName, SpellNameDB.MaxChars))
+                SetCastName(frameCastBar.Text, spellName, SpellNameDB.MaxChars, CastBarDB.ShowTarget and GetCastTargetName(frameCastBar, unit))
             else
                 frameCastBar.Text:SetText("")
             end
@@ -183,6 +194,7 @@ function UUF:UpdateUnitCastBar(unitFrame, unit)
             end
             if CastBarContainer then CastBarContainer:SetHeight(CastBarDB.Height) end
             unitFrame.Castbar:SetStatusBarTexture(UUF.Media.Foreground)
+            unitFrame.Castbar.timeToHold = CastBarDB.HoldTime
             unitFrame.Castbar.Background:SetTexture(UUF.Media.Background)
             if CastBarDB.ColourByClass then
                 local unitForClass = unit == "pet" and "player" or unit
@@ -274,7 +286,7 @@ function UUF:CreateTestCastBar(unitFrame, unit)
             CastBarContainer:SetFrameStrata(CastBarDB.FrameStrata)
             unitFrame.Castbar:Show()
             unitFrame.Castbar.Background:Show()
-            unitFrame.Castbar.Text:SetText(ShortenCastName("Ethereal Portal", UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].CastBar.Text.SpellName.MaxChars))
+            SetCastName(unitFrame.Castbar.Text, "Ethereal Portal", UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].CastBar.Text.SpellName.MaxChars, CastBarDB.ShowTarget and "Target")
             unitFrame.Castbar.Time:SetText("0.0")
             unitFrame.Castbar:SetMinMaxValues(0, 1000)
             unitFrame.Castbar.testValue = 0 -- Track value ourselves since GetValue() returns a secret

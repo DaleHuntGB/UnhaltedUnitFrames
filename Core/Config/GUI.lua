@@ -951,6 +951,14 @@ local function CreateCastBarBarSettings(containerParent, unit, updateCallback)
     HeightSlider:SetCallback("OnValueChanged", function(_, _, value) CastBarDB.Height = value updateCallback() end)
     LayoutContainer:AddChild(HeightSlider)
 
+    local HoldTimeSlider = AG:Create("Slider")
+    HoldTimeSlider:SetLabel("Interrupted/Failed Hold Time")
+    HoldTimeSlider:SetValue(CastBarDB.HoldTime)
+    HoldTimeSlider:SetSliderValues(0, 5, 0.1)
+    HoldTimeSlider:SetRelativeWidth(1)
+    HoldTimeSlider:SetCallback("OnValueChanged", function(_, _, value) CastBarDB.HoldTime = value updateCallback() end)
+    LayoutContainer:AddChild(HoldTimeSlider)
+
     local AnchorFromDropdown = AG:Create("Dropdown")
     AnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
     AnchorFromDropdown:SetLabel("Anchor From")
@@ -1037,6 +1045,7 @@ local function CreateCastBarBarSettings(containerParent, unit, updateCallback)
             MatchParentWidthToggle:SetDisabled(false)
             WidthSlider:SetDisabled(CastBarDB.MatchParentWidth)
             HeightSlider:SetDisabled(false)
+            HoldTimeSlider:SetDisabled(false)
             AnchorFromDropdown:SetDisabled(false)
             AnchorToDropdown:SetDisabled(false)
             XPosSlider:SetDisabled(false)
@@ -1049,6 +1058,7 @@ local function CreateCastBarBarSettings(containerParent, unit, updateCallback)
             MatchParentWidthToggle:SetDisabled(true)
             WidthSlider:SetDisabled(true)
             HeightSlider:SetDisabled(true)
+            HoldTimeSlider:SetDisabled(true)
             AnchorFromDropdown:SetDisabled(true)
             AnchorToDropdown:SetDisabled(true)
             XPosSlider:SetDisabled(true)
@@ -1094,7 +1104,8 @@ local function CreateCastBarIconSettings(containerParent, unit, updateCallback)
 end
 
 local function CreateCastBarSpellNameTextSettings(containerParent, unit, updateCallback)
-    local CastBarTextDB = UUF.db.profile.Units[unit].CastBar.Text
+    local CastBarDB = UUF.db.profile.Units[unit].CastBar
+    local CastBarTextDB = CastBarDB.Text
     local SpellNameTextDB = CastBarTextDB.SpellName
 
     local SpellNameContainer = GUIWidgets.CreateInlineGroup(containerParent, "Spell Name Settings")
@@ -1103,8 +1114,15 @@ local function CreateCastBarSpellNameTextSettings(containerParent, unit, updateC
     SpellNameToggle:SetLabel("Enable |cFF8080FFSpell Name Text|r")
     SpellNameToggle:SetValue(SpellNameTextDB.Enabled)
     SpellNameToggle:SetCallback("OnValueChanged", function(_, _, value) SpellNameTextDB.Enabled = value updateCallback() RefreshCastBarSpellNameSettings() end)
-    SpellNameToggle:SetRelativeWidth(0.5)
+    SpellNameToggle:SetRelativeWidth(0.33)
     SpellNameContainer:AddChild(SpellNameToggle)
+
+    local ShowTargetToggle = AG:Create("CheckBox")
+    ShowTargetToggle:SetLabel("Show Target")
+    ShowTargetToggle:SetValue(CastBarDB.ShowTarget)
+    ShowTargetToggle:SetCallback("OnValueChanged", function(_, _, value) CastBarDB.ShowTarget = value updateCallback() end)
+    ShowTargetToggle:SetRelativeWidth(0.33)
+    SpellNameContainer:AddChild(ShowTargetToggle)
 
     local SpellNameColourPicker = AG:Create("ColorPicker")
     SpellNameColourPicker:SetLabel("Colour")
@@ -1112,7 +1130,7 @@ local function CreateCastBarSpellNameTextSettings(containerParent, unit, updateC
     SpellNameColourPicker:SetColor(R, G, B)
     SpellNameColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) SpellNameTextDB.Colour = {r, g, b} updateCallback() end)
     SpellNameColourPicker:SetHasAlpha(false)
-    SpellNameColourPicker:SetRelativeWidth(0.5)
+    SpellNameColourPicker:SetRelativeWidth(0.33)
     SpellNameContainer:AddChild(SpellNameColourPicker)
 
     local SpellNameLayoutContainer = GUIWidgets.CreateInlineGroup(SpellNameContainer, "Layout")
@@ -1172,6 +1190,7 @@ local function CreateCastBarSpellNameTextSettings(containerParent, unit, updateC
             SpellNameYPosSlider:SetDisabled(false)
             SpellNameFontSizeSlider:SetDisabled(false)
             SpellNameColourPicker:SetDisabled(false)
+            ShowTargetToggle:SetDisabled(false)
             MaxCharsSlider:SetDisabled(false)
         else
             SpellNameAnchorFromDropdown:SetDisabled(true)
@@ -1180,6 +1199,7 @@ local function CreateCastBarSpellNameTextSettings(containerParent, unit, updateC
             SpellNameYPosSlider:SetDisabled(true)
             SpellNameFontSizeSlider:SetDisabled(true)
             SpellNameColourPicker:SetDisabled(true)
+            ShowTargetToggle:SetDisabled(true)
             MaxCharsSlider:SetDisabled(true)
         end
     end
