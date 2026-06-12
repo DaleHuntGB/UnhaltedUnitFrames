@@ -92,7 +92,7 @@ local function CreateUnitBuffs(unitFrame, unit)
         unitFrame.BuffContainer.spacing = BuffsDB.Layout[5]
         unitFrame.BuffContainer.num = BuffsDB.Num
         unitFrame.BuffContainer.initialAnchor = BuffsDB.Layout[1]
-        unitFrame.BuffContainer.onlyShowPlayer = false
+        unitFrame.BuffContainer.onlyShowPlayer = BuffsDB.OnlyShowPlayer
         unitFrame.BuffContainer["growthX"] = BuffsDB.GrowthDirection
         unitFrame.BuffContainer["growthY"] = BuffsDB.WrapDirection
         unitFrame.BuffContainer.filter = "HELPFUL"
@@ -102,6 +102,7 @@ local function CreateUnitBuffs(unitFrame, unit)
                 local name = not UUF:IsSecretValue(aura.name) and aura.name
                 if (spellId and UUF.AURA_BLACKLIST[spellId]) or (name and UUF.AURA_BLACKLIST[name]) then return false end
             end
+            if BuffsDB.OnlyShowPlayer then return aura.isPlayerAura end
             local setFilters = BuffsDB.Filters
             if not setFilters or not next(setFilters) then return true end
 
@@ -166,7 +167,7 @@ local function CreateUnitDebuffs(unitFrame, unit)
         unitFrame.DebuffContainer.spacing = DebuffsDB.Layout[5]
         unitFrame.DebuffContainer.num = DebuffsDB.Num
         unitFrame.DebuffContainer.initialAnchor = DebuffsDB.Layout[1]
-        unitFrame.DebuffContainer.onlyShowPlayer = false
+        unitFrame.DebuffContainer.onlyShowPlayer = DebuffsDB.OnlyShowPlayer
         unitFrame.DebuffContainer["growthX"] = DebuffsDB.GrowthDirection
         unitFrame.DebuffContainer["growthY"] = DebuffsDB.WrapDirection
         unitFrame.DebuffContainer.filter = "HARMFUL"
@@ -176,6 +177,7 @@ local function CreateUnitDebuffs(unitFrame, unit)
                 local name = not UUF:IsSecretValue(aura.name) and aura.name
                 if (spellId and UUF.AURA_BLACKLIST[spellId]) or (name and UUF.AURA_BLACKLIST[name]) then return false end
             end
+            if DebuffsDB.OnlyShowPlayer then return aura.isPlayerAura end
             local setFilters = DebuffsDB.Filters
             if not setFilters or not next(setFilters) then return true end
 
@@ -283,7 +285,7 @@ function UUF:UpdateUnitAuras(unitFrame, unit)
         unitFrame.BuffContainer.spacing = BuffsDB.Layout[5]
         unitFrame.BuffContainer.num = BuffsDB.Num
         unitFrame.BuffContainer.initialAnchor = BuffsDB.Layout[1]
-        unitFrame.BuffContainer.onlyShowPlayer = false
+        unitFrame.BuffContainer.onlyShowPlayer = BuffsDB.OnlyShowPlayer
         unitFrame.BuffContainer["growthX"] = BuffsDB.GrowthDirection
         unitFrame.BuffContainer["growthY"] = BuffsDB.WrapDirection
         unitFrame.BuffContainer.filter = "HELPFUL"
@@ -312,7 +314,7 @@ function UUF:UpdateUnitAuras(unitFrame, unit)
         unitFrame.DebuffContainer.spacing = DebuffsDB.Layout[5]
         unitFrame.DebuffContainer.num = DebuffsDB.Num
         unitFrame.DebuffContainer.initialAnchor = DebuffsDB.Layout[1]
-        unitFrame.DebuffContainer.onlyShowPlayer = false
+        unitFrame.DebuffContainer.onlyShowPlayer = DebuffsDB.OnlyShowPlayer
         unitFrame.DebuffContainer["growthX"] = DebuffsDB.GrowthDirection
         unitFrame.DebuffContainer["growthY"] = DebuffsDB.WrapDirection
         unitFrame.DebuffContainer.filter = "HARMFUL"
