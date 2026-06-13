@@ -333,6 +333,14 @@ function UUF:CreateTestBossFrames()
         for i, BossFrame in ipairs(UUF.BOSS_FRAMES) do
             BossFrame:SetAttribute("unit", "boss" .. i)
             RegisterUnitWatch(BossFrame)
+            if BossFrame.Castbar then
+                BossFrame.Castbar:Hide()
+                BossFrame.Castbar:GetParent():Hide()
+                if UUF.db.profile.Units.boss.CastBar.Enabled then
+                    if BossFrame:IsElementEnabled("Castbar") then BossFrame:DisableElement("Castbar") end
+                    BossFrame:EnableElement("Castbar")
+                end
+            end
             for j = 1, (BossFrame.BuffContainer and BossFrame.BuffContainer.maxFake or 0) do
                 local button = BossFrame.BuffContainer["fake" .. j]
                 if button then button:Hide() end

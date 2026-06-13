@@ -16,6 +16,7 @@ function UUF:CreateUnitCastBar(unitFrame, unit)
     if CastBarDB.MatchParentWidth then CastBarContainer:SetWidth(FrameDB.Width) else CastBarContainer:SetWidth(CastBarDB.Width) end
     CastBarContainer:SetHeight(CastBarDB.Height)
     CastBarContainer:SetFrameStrata(CastBarDB.FrameStrata)
+    CastBarContainer:Hide()
 
     local CastBar = CreateFrame("StatusBar", UUF:FetchFrameName(unit) .. "_CastBar", CastBarContainer)
     CastBar:SetStatusBarTexture(UUF.Media.Foreground)
@@ -103,7 +104,6 @@ function UUF:CreateUnitCastBar(unitFrame, unit)
     end
 
     if CastBarDB.Enabled then
-        if not unitFrame:IsElementEnabled("Castbar") then unitFrame:EnableElement("Castbar") end
         unitFrame.Castbar = CastBar
         unitFrame.Castbar.Text = SpellNameText
         unitFrame.Castbar.Time = DurationText
@@ -323,6 +323,13 @@ function UUF:CreateTestCastBar(unitFrame, unit)
             if unitFrame.Castbar and unitFrame.Castbar.Icon then unitFrame.Castbar.Icon:Hide() end
         end
     else
-        if unitFrame.Castbar and CastBarDB.Enabled then unitFrame:EnableElement("Castbar") end
+        if unitFrame.Castbar then
+            unitFrame.Castbar:Hide()
+            if CastBarContainer then CastBarContainer:Hide() end
+            if CastBarDB.Enabled then
+                if unitFrame:IsElementEnabled("Castbar") then unitFrame:DisableElement("Castbar") end
+                unitFrame:EnableElement("Castbar")
+            end
+        end
     end
 end
