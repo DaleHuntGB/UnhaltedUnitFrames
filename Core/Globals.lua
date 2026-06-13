@@ -122,7 +122,7 @@ function UUF:ApplyAuraDuration(icon, AuraDurationDB, textRegion)
 end
 
 function UUF:Capitalize(STR)
-    return "|cFFFFCC00" .. (STR:gsub("^%l", string.upper)) .. "|r"
+    return "|cFF8080FF" .. (STR:gsub("^%l", string.upper)) .. "|r"
 end
 
 function UUF:GetPixelPerfectScale()

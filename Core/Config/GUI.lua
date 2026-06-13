@@ -221,7 +221,7 @@ end
 local function CreateFontSettings(containerParent)
     local Container = GUIWidgets.CreateInlineGroup(containerParent, "Fonts")
 
-    GUIWidgets.CreateInformationTag(Container,"Fonts are applied to all Unit Frames & Elements where appropriate. More fonts can be added via |cFFFFCC00SharedMedia|r.")
+    GUIWidgets.CreateInformationTag(Container,"Fonts are applied to all Unit Frames & Elements where appropriate. More fonts can be added via |cFF8080FFSharedMedia|r.")
 
     local FontDropdown = AG:Create("LSM30_Font")
     FontDropdown:SetList(LSM:HashTable("font"))
@@ -286,7 +286,7 @@ end
 local function CreateTextureSettings(containerParent)
     local Container = GUIWidgets.CreateInlineGroup(containerParent, "Textures")
 
-    GUIWidgets.CreateInformationTag(Container,"Textures are applied to all Unit Frames & Elements where appropriate. More textures can be added via |cFFFFCC00SharedMedia|r.")
+    GUIWidgets.CreateInformationTag(Container,"Textures are applied to all Unit Frames & Elements where appropriate. More textures can be added via |cFF8080FFSharedMedia|r.")
 
     local ForegroundTextureDropdown = AG:Create("LSM30_Statusbar")
     ForegroundTextureDropdown:SetList(LSM:HashTable("statusbar"))
@@ -3040,7 +3040,7 @@ end
 
 local function CreateUnitSettings(containerParent, unit)
     local EnableUnitFrameToggle = AG:Create("CheckBox")
-    EnableUnitFrameToggle:SetLabel("Enable |cFFFFCC00"..(UnitDBToUnitPrettyName[unit] or unit) .."|r")
+    EnableUnitFrameToggle:SetLabel("Enable |cFF8080FF"..(UnitDBToUnitPrettyName[unit] or unit) .."|r")
     EnableUnitFrameToggle:SetValue(UUF.db.profile.Units[unit].Enabled)
     EnableUnitFrameToggle:SetCallback("OnValueChanged", function(_, _, value)
         StaticPopupDialogs["UUF_RELOAD_UI"] = {
@@ -3060,7 +3060,7 @@ local function CreateUnitSettings(containerParent, unit)
     containerParent:AddChild(EnableUnitFrameToggle)
 
     local HideBlizzardToggle = AG:Create("CheckBox")
-    HideBlizzardToggle:SetLabel("Hide Blizzard |cFFFFCC00"..(UnitDBToUnitPrettyName[unit] or unit) .."|r")
+    HideBlizzardToggle:SetLabel("Hide Blizzard |cFF8080FF"..(UnitDBToUnitPrettyName[unit] or unit) .."|r")
     HideBlizzardToggle:SetValue(UUF.db.profile.Units[unit].ForceHideBlizzard)
     HideBlizzardToggle:SetCallback("OnValueChanged", function(_, _, value)
             StaticPopupDialogs["UUF_RELOAD_UI"] = {
@@ -3275,7 +3275,7 @@ local function CreateProfileSettings(containerParent)
         end
         ResetProfileButton:SetText("Reset |cFF8080FF" .. UUF.db:GetCurrentProfile() .. "|r Profile")
         local isUsingGlobal = UUF.db.global.UseGlobalProfile
-        ActiveProfileHeading:SetText( "Active Profile: |cFFFFFFFF" .. UUF.db:GetCurrentProfile() .. (isUsingGlobal and " (|cFFFFCC00Global|r)" or "") .. "|r" )
+        ActiveProfileHeading:SetText( "Active Profile: |cFFFFFFFF" .. UUF.db:GetCurrentProfile() .. (isUsingGlobal and " (|cFF8080FFGlobal|r)" or "") .. "|r" )
         if UUF.db:IsDualSpecEnabled() then
             SelectProfileDropdown:SetDisabled(true)
             CopyFromProfileDropdown:SetDisabled(true)
