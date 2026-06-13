@@ -53,7 +53,8 @@ function UUF:CreateMover(unit)
 	frameMover.Text = frameMover:CreateFontString(nil, "OVERLAY")
 	frameMover.Text:SetPoint("CENTER")
 	frameMover.Text:SetFont(UUF.Media.Font, 12, "OUTLINE, SLUG")
-	frameMover.Text:SetText(UUF:Capitalize(unit == "targettarget" and "Target of Target" or unit == "focustarget" and "Focus Target" or unit))
+	frameMover.Text:SetText(unit == "targettarget" and "Target of Target" or unit == "focustarget" and "Focus Target" or unit:gsub("^%l", string.upper))
+	frameMover.Text:SetTextColor(255/255, 255/255, 255/255, 1)
 
 	UUF.MOVERS[unit] = frameMover
 	frameMover:Hide()
