@@ -3603,12 +3603,21 @@ function UUF:CreateGUI()
     ContainerTreeGroup:SetTree(mainNavigationTree)
     ContainerTreeGroup:SetCallback("OnGroupSelected", SelectTab)
     Container:AddChild(ContainerTreeGroup)
+    UUFGUI.MainNavigation = ContainerTreeGroup
 
     local initialSection = UUFGUI.MainNavigationStatus.selected
     if not initialSection or not mainNavigationValues[initialSection] then
         initialSection = "General"
     end
     ContainerTreeGroup:SelectByValue(initialSection)
+end
+
+function UUF:OpenGUIToUnit(unit)
+    if InCombatLockdown() then return end
+    if not lastSelectedUnitTabs[unit] then lastSelectedUnitTabs[unit] = {} end
+    lastSelectedUnitTabs[unit].mainTab = "Frame"
+    UUF:CreateGUI()
+    if UUFGUI.MainNavigation then UUFGUI.MainNavigation:SelectByValue(unit == "targettarget" and "TargetTarget" or unit == "focustarget" and "FocusTarget" or unit:gsub("^%l", string.upper)) end
 end
 
 function UUFG:OpenUUFGUI()
