@@ -52,7 +52,7 @@ function UUF:LayoutPartyFrames()
 	UUF.PARTY:SetAttribute("xOffset", 0)
 	UUF.PARTY:SetAttribute("yOffset", FrameDB.GrowthDirection == "UP" and FrameDB.Layout[5] or -FrameDB.Layout[5])
 	UUF.PARTY:SetAttribute("groupBy", FrameDB.Sort == "ROLE" and "ASSIGNEDROLE" or nil)
-	UUF.PARTY:SetAttribute("groupingOrder", FrameDB.Sort == "ROLE" and "TANK,HEALER,DAMAGER,NONE" or nil)
+	UUF.PARTY:SetAttribute("groupingOrder", FrameDB.Sort == "ROLE" and FrameDB.RoleOrder[1] .. "," .. FrameDB.RoleOrder[2] .. "," .. FrameDB.RoleOrder[3] .. ",NONE" or nil)
 	UUF.PARTY:SetAttribute("sortMethod", FrameDB.Sort == "ROLE" and "INDEX" or FrameDB.Sort)
 	UUF.PARTY:SetAttribute("showPlayer", FrameDB.ShowPlayer)
 	for _, partyFrame in ipairs(UUF.PARTY_FRAMES) do
@@ -99,14 +99,14 @@ function UUF:SpawnUnitFrame(unit)
 	end)
     oUF:SetActiveStyle(UUF:FetchFrameName(unit))
 
-    if unit == "party" then
+	    if unit == "party" then
 		UUF.PARTY = oUF:SpawnHeader("UUF_PartyHeader", nil, {
 			showParty = UnitDB.ForceHideBlizzard,
 			showPlayer = FrameDB.ShowPlayer,
 			showRaid = false,
 			showSolo = false,
 			groupBy = FrameDB.Sort == "ROLE" and "ASSIGNEDROLE" or nil,
-			groupingOrder = FrameDB.Sort == "ROLE" and "TANK,HEALER,DAMAGER,NONE" or nil,
+			groupingOrder = FrameDB.Sort == "ROLE" and FrameDB.RoleOrder[1] .. "," .. FrameDB.RoleOrder[2] .. "," .. FrameDB.RoleOrder[3] .. ",NONE" or nil,
 			sortMethod = FrameDB.Sort == "ROLE" and "INDEX" or FrameDB.Sort,
 			point = FrameDB.GrowthDirection == "UP" and "BOTTOM" or "TOP",
 			xOffset = 0,
@@ -114,6 +114,11 @@ function UUF:SpawnUnitFrame(unit)
 			["oUF-initialConfigFunction"] = "self:SetWidth(" .. FrameDB.Width .. "); self:SetHeight(" .. FrameDB.Height .. ")",
 		})
 		if not UnitDB.ForceHideBlizzard then UUF.PARTY:SetAttribute("showParty", true) end
+		UUF.PARTY:SetAttribute("startingIndex", -UUF.MAX_PARTY_FRAMES + 1)
+		UUF.PARTY:SetAttribute("startingIndex", 1)
+		UUF.PARTY:SetAttribute("showSolo", false)
+		UUF.PARTY:SetAttribute("showPlayer", FrameDB.ShowPlayer)
+		UUF.PARTY:Show()
 		UUF.PARTY:SetVisibility("party")
 		UUF:LayoutPartyFrames()
     elseif unit == "boss" then
