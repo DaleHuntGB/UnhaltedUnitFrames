@@ -547,7 +547,7 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
     AnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
     AnchorFromDropdown:SetLabel("Anchor From")
     AnchorFromDropdown:SetValue(FrameDB.Layout[1])
-    AnchorFromDropdown:SetRelativeWidth((unitHasParent or unit == "boss") and 0.33 or (unit == "party") and 0.25 or 0.5)
+    AnchorFromDropdown:SetRelativeWidth((unitHasParent or unit == "boss") and 0.33 or (unit == "party") and 0.33 or 0.5)
     AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) FrameDB.Layout[1] = value updateCallback() end)
     LayoutContainer:AddChild(AnchorFromDropdown)
 
@@ -565,7 +565,7 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
     AnchorToDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
     AnchorToDropdown:SetLabel("Anchor To")
     AnchorToDropdown:SetValue(FrameDB.Layout[2])
-    AnchorToDropdown:SetRelativeWidth((unitHasParent or unit == "boss") and 0.33 or (unit == "party") and 0.25 or 0.5)
+    AnchorToDropdown:SetRelativeWidth((unitHasParent or unit == "boss") and 0.33 or (unit == "party") and 0.33 or 0.5)
     AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) FrameDB.Layout[2] = value updateCallback() end)
     LayoutContainer:AddChild(AnchorToDropdown)
 
@@ -574,7 +574,7 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
         GrowthDirectionDropdown:SetList({["UP"] = "Up", ["DOWN"] = "Down"})
         GrowthDirectionDropdown:SetLabel("Growth Direction")
         GrowthDirectionDropdown:SetValue(FrameDB.GrowthDirection)
-        GrowthDirectionDropdown:SetRelativeWidth(unit == "party" and 0.25 or 0.33)
+        GrowthDirectionDropdown:SetRelativeWidth(unit == "party" and 0.33 or 0.33)
         GrowthDirectionDropdown:SetCallback("OnValueChanged", function(_, _, value) FrameDB.GrowthDirection = value updateCallback() end)
         LayoutContainer:AddChild(GrowthDirectionDropdown)
     end
@@ -587,6 +587,31 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
 		SortDropdown:SetRelativeWidth(0.25)
 		SortDropdown:SetCallback("OnValueChanged", function(_, _, value) FrameDB.Sort = value updateCallback() end)
 		LayoutContainer:AddChild(SortDropdown)
+
+		local RoleOrderDropdowns = {}
+		for i = 1, 3 do
+			local roleOrderIndex = i
+			local RoleOrderDropdown = AG:Create("Dropdown")
+			RoleOrderDropdown:SetList({["TANK"] = "Tank", ["HEALER"] = "Healer", ["DAMAGER"] = "DPS"})
+			RoleOrderDropdown:SetLabel("Role Order " .. i)
+			RoleOrderDropdown:SetValue(FrameDB.RoleOrder[i])
+			RoleOrderDropdown:SetRelativeWidth(0.25)
+			RoleOrderDropdown:SetCallback("OnValueChanged", function(_, _, value)
+				local previousRole = FrameDB.RoleOrder[roleOrderIndex]
+				for orderIndex = 1, 3 do
+					local role = FrameDB.RoleOrder[orderIndex]
+					if orderIndex ~= roleOrderIndex and role == value then
+						FrameDB.RoleOrder[orderIndex] = previousRole
+						RoleOrderDropdowns[orderIndex]:SetValue(previousRole)
+						break
+					end
+				end
+				FrameDB.RoleOrder[roleOrderIndex] = value
+				updateCallback()
+			end)
+			RoleOrderDropdowns[i] = RoleOrderDropdown
+			LayoutContainer:AddChild(RoleOrderDropdown)
+		end
 	end
 
     local XPosSlider = AG:Create("Slider")
@@ -629,7 +654,7 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
     ColourWhenTappedToggle:SetLabel("Colour When Tapped")
     ColourWhenTappedToggle:SetValue(HealthBarDB.ColourWhenTapped)
     ColourWhenTappedToggle:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.ColourWhenTapped = value updateCallback() end)
-    ColourWhenTappedToggle:SetRelativeWidth((unit == "player" or unit == "target") and 0.33 or 0.5)
+    ColourWhenTappedToggle:SetRelativeWidth((unit == "player" or unit == "target" or unit == "party") and 0.33 or 0.5)
     ColourContainer:AddChild(ColourWhenTappedToggle)
 
     local InverseGrowthDirectionToggle = AG:Create("CheckBox")
