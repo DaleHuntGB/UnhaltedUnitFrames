@@ -17,7 +17,6 @@ function UnhaltedUnitFrames:OnInitialize()
         UUF.db:SetProfile(globalProfile)
     end
 	for _, unitDB in pairs(UUF.db.profile.Units) do if unitDB.Portrait then unitDB.Portrait.Style = "2D" end end
-
     UUF.db.RegisterCallback(UUF, "OnProfileChanged", function()
         UUF:ResolveLSM()
         UUF:LoadCustomColours()
