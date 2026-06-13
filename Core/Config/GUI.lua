@@ -3054,7 +3054,7 @@ local function CreateUnitSettings(containerParent, unit)
         }
         StaticPopup_Show("UUF_RELOAD_UI")
     end)
-    EnableUnitFrameToggle:SetRelativeWidth(0.5)
+	EnableUnitFrameToggle:SetRelativeWidth(0.33)
     containerParent:AddChild(EnableUnitFrameToggle)
 
     local HideBlizzardToggle = AG:Create("CheckBox")
@@ -3074,9 +3074,15 @@ local function CreateUnitSettings(containerParent, unit)
         }
         StaticPopup_Show("UUF_RELOAD_UI")
     end)
-    HideBlizzardToggle:SetRelativeWidth(0.5)
+	HideBlizzardToggle:SetRelativeWidth(0.33)
     HideBlizzardToggle:SetDisabled(UUF.db.profile.Units[unit].Enabled)
     containerParent:AddChild(HideBlizzardToggle)
+
+	local ToggleMoversButton = AG:Create("Button")
+	ToggleMoversButton:SetText(UUF.MOVERS_UNLOCKED and "Lock Movers" or "Unlock Movers")
+	ToggleMoversButton:SetRelativeWidth(0.33)
+	ToggleMoversButton:SetCallback("OnClick", function() ToggleMoversButton:SetText(UUF:ToggleMovers() and "Lock Movers" or "Unlock Movers") end)
+	containerParent:AddChild(ToggleMoversButton)
 
     local SettingsContainer = AG:Create("SimpleGroup")
     SettingsContainer:SetFullWidth(true)

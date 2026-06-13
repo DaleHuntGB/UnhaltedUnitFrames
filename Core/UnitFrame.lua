@@ -95,6 +95,7 @@ function UUF:SpawnUnitFrame(unit)
         UUF[unit:upper()]:SetSize(FrameDB.Width, FrameDB.Height)
     end
     if unit ~= "player" then UUF:RegisterRangeFrame(UUF:FetchFrameName(unit), unit) end
+	UUF:CreateMover(unit)
 
     if UnitDB.Enabled then
         RegisterUnitWatch(UUF[unit:upper()])
