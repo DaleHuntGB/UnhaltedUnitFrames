@@ -1,5 +1,6 @@
 local _, UUF = ...
 local oUF = UUF.oUF
+local TypedDebuffTypes = {Magic = true, Curse = true, Poison = true, Bleed = true}
 
 local function CenterPrivateAura(element, aura, auraIndex)
 	local width = element.width or element.size or 16
@@ -97,7 +98,7 @@ end
 local function CreateUnitBuffs(unitFrame, unit)
     local BuffsDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Auras.Buffs
     if not unitFrame.BuffContainer then
-        unitFrame.BuffContainer = CreateFrame("Frame", UUF:FetchFrameName(unit) .. "_BuffsContainer", unitFrame)
+        unitFrame.BuffContainer = CreateFrame("Frame", UUF:FetchFrameName(unit, unitFrame) .. "_BuffsContainer", unitFrame)
         unitFrame.BuffContainer:SetFrameStrata(UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Auras.FrameStrata)
         local buffPerRow = BuffsDB.Wrap or 4
         local buffRows = math.ceil(BuffsDB.Num / buffPerRow)
@@ -172,7 +173,7 @@ end
 local function CreateUnitDebuffs(unitFrame, unit)
     local DebuffsDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Auras.Debuffs
     if not unitFrame.DebuffContainer then
-        unitFrame.DebuffContainer = CreateFrame("Frame", UUF:FetchFrameName(unit) .. "_DebuffsContainer", unitFrame)
+        unitFrame.DebuffContainer = CreateFrame("Frame", UUF:FetchFrameName(unit, unitFrame) .. "_DebuffsContainer", unitFrame)
         unitFrame.DebuffContainer:SetFrameStrata(UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Auras.FrameStrata)
         local debuffPerRow = DebuffsDB.Wrap or 3
         local debuffRows = math.ceil(DebuffsDB.Num / debuffPerRow)
@@ -201,8 +202,10 @@ local function CreateUnitDebuffs(unitFrame, unit)
             local isPlayer = aura.isPlayerAura
             local isNotPlayer = not isPlayer
             local isCancellable = not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HARMFUL|CANCELABLE")
+            local isTyped = not UUF:IsSecretValue(aura.dispelName) and TypedDebuffTypes[aura.dispelName]
 
-            return setFilters.Player and isPlayer
+            return setFilters.Typed and isTyped
+                or setFilters.Player and isPlayer
                 or setFilters.RaidPlayerDispellable and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HARMFUL|RAID_PLAYER_DISPELLABLE")
                 or setFilters.Important and isNotPlayer and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HARMFUL|IMPORTANT")
                 or setFilters.ImportantPlayer and isPlayer and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HARMFUL|IMPORTANT")
@@ -374,12 +377,12 @@ function UUF:CreateUnitAuras(unitFrame, unit)
     CreateUnitBuffs(unitFrame, unit)
     CreateUnitDebuffs(unitFrame, unit)
 
-    if UUF:GetNormalizedUnit(unit) == "player" or UUF:GetNormalizedUnit(unit) == "party" then
+    if UUF:GetNormalizedUnit(unit) == "player" then
         local AurasDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Auras
         local PrivateAurasDB = AurasDB.PrivateAuras
         local privateAuraContainerWidth = PrivateAurasDB.Size * PrivateAurasDB.Num + PrivateAurasDB.Spacing * (PrivateAurasDB.Num - 1)
 
-        unitFrame.PrivateAuraContainer = CreateFrame("Frame", UUF:FetchFrameName(unit) .. "_PrivateAurasContainer", unitFrame)
+        unitFrame.PrivateAuraContainer = CreateFrame("Frame", UUF:FetchFrameName(unit, unitFrame) .. "_PrivateAurasContainer", unitFrame)
         unitFrame.PrivateAuraContainer:SetPoint(PrivateAurasDB.Layout[1], unitFrame, PrivateAurasDB.Layout[2], PrivateAurasDB.Layout[3], PrivateAurasDB.Layout[4])
         unitFrame.PrivateAuraContainer:SetSize(math.max(privateAuraContainerWidth, 1), PrivateAurasDB.Size)
         unitFrame.PrivateAuraContainer:SetFrameStrata(PrivateAurasDB.FrameStrata)
@@ -397,7 +400,6 @@ function UUF:CreateUnitAuras(unitFrame, unit)
         unitFrame.PrivateAuraContainer.borderScale = PrivateAurasDB.BorderScale == -1 and -100 or PrivateAurasDB.BorderScale
         unitFrame.PrivateAuraContainer.disableCooldown = PrivateAurasDB.DisableCooldown
         unitFrame.PrivateAuraContainer.disableCooldownText = PrivateAurasDB.DisableCooldownText
-        unitFrame.PrivateAuraContainer.SetPosition = UUF:GetNormalizedUnit(unit) == "party" and CenterPrivateAura or nil
 
         if PrivateAurasDB.Enabled then
             unitFrame.PrivateAuras = unitFrame.PrivateAuraContainer

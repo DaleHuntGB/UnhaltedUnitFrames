@@ -4,14 +4,14 @@ function UUF:CreateUnitPortrait(unitFrame, unit)
 	local PortraitDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Portrait
 	PortraitDB.Style = "2D"
 
-	local unitPortrait = unitFrame.HighLevelContainer:CreateTexture(UUF:FetchFrameName(unit) .. "_Portrait2D", "BACKGROUND")
+	local unitPortrait = unitFrame.HighLevelContainer:CreateTexture(UUF:FetchFrameName(unit, unitFrame) .. "_Portrait2D", "BACKGROUND")
 	unitPortrait:SetSize(PortraitDB.Width, PortraitDB.Height)
 	unitPortrait:SetPoint(PortraitDB.Layout[1], unitFrame.HighLevelContainer, PortraitDB.Layout[2], PortraitDB.Layout[3], PortraitDB.Layout[4])
 	unitPortrait:SetTexCoord((PortraitDB.Zoom or 0) * 0.5, 1 - (PortraitDB.Zoom or 0) * 0.5, (PortraitDB.Zoom or 0) * 0.5, 1 - (PortraitDB.Zoom or 0) * 0.5)
 	unitPortrait.showClass = PortraitDB.UseClassPortrait
 
     local borderParent = unitFrame.HighLevelContainer
-    unitPortrait.Border = CreateFrame("Frame", UUF:FetchFrameName(unit) .. "_PortraitBorder", borderParent, "BackdropTemplate")
+    unitPortrait.Border = CreateFrame("Frame", UUF:FetchFrameName(unit, unitFrame) .. "_PortraitBorder", borderParent, "BackdropTemplate")
     unitPortrait.Border:SetAllPoints(unitPortrait)
     unitPortrait.Border:SetBackdrop(UUF.BACKDROP)
     unitPortrait.Border:SetBackdropColor(0, 0, 0, 0)

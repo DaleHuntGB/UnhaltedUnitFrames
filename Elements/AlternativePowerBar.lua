@@ -21,7 +21,7 @@ function UUF:CreateUnitAlternativePowerBar(unitFrame, unit)
     local AlternativePowerBarDB = UUFDB.Units["player"].AlternativePowerBar
     local unitContainer = unitFrame.Container
 
-    local AlternativePowerBar = CreateFrame("Frame", UUF:FetchFrameName(unit).."_AlternativePowerBar", unitContainer, "BackdropTemplate")
+    local AlternativePowerBar = CreateFrame("Frame", UUF:FetchFrameName(unit, unitFrame).."_AlternativePowerBar", unitContainer, "BackdropTemplate")
     AlternativePowerBar:SetPoint(AlternativePowerBarDB.Layout[1], unitContainer, AlternativePowerBarDB.Layout[2], AlternativePowerBarDB.Layout[3], AlternativePowerBarDB.Layout[4])
     AlternativePowerBar:SetSize(AlternativePowerBarDB.Width, AlternativePowerBarDB.Height)
     AlternativePowerBar:SetBackdrop(UUF.BACKDROP)
@@ -29,7 +29,7 @@ function UUF:CreateUnitAlternativePowerBar(unitFrame, unit)
     AlternativePowerBar:SetBackdropBorderColor(0, 0, 0, 1)
     AlternativePowerBar:SetFrameLevel(unitContainer:GetFrameLevel() + 5)
 
-    AlternativePowerBar.Status = CreateFrame("StatusBar", UUF:FetchFrameName(unit).."_AlternativePowerBar", AlternativePowerBar)
+    AlternativePowerBar.Status = CreateFrame("StatusBar", UUF:FetchFrameName(unit, unitFrame).."_AlternativePowerBar", AlternativePowerBar)
     AlternativePowerBar.Status:SetPoint("TOPLEFT", AlternativePowerBar, "TOPLEFT", 1, -1)
     AlternativePowerBar.Status:SetPoint("BOTTOMRIGHT", AlternativePowerBar, "BOTTOMRIGHT", -1, 1)
     AlternativePowerBar.Status:SetSize(AlternativePowerBarDB.Width, AlternativePowerBarDB.Height)

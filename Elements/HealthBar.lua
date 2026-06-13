@@ -7,7 +7,7 @@ function UUF:CreateUnitHealthBar(unitFrame, unit)
 
     if not unitFrame.HealthBar then
         if not unitFrame.HealthBackground then
-            unitFrame.HealthBackground = CreateFrame("StatusBar", UUF:FetchFrameName(unit) .. "_HealthBackground", unitContainer)
+            unitFrame.HealthBackground = CreateFrame("StatusBar", UUF:FetchFrameName(unit, unitFrame) .. "_HealthBackground", unitContainer)
             unitFrame.HealthBackground:SetPoint("TOPLEFT", unitContainer, "TOPLEFT", 1, -1)
             unitFrame.HealthBackground:SetSize(FrameDB.Width - 2, FrameDB.Height - 2)
             unitFrame.HealthBackground:SetStatusBarTexture(UUF.Media.Background)
@@ -15,7 +15,7 @@ function UUF:CreateUnitHealthBar(unitFrame, unit)
             unitFrame.HealthBackground:SetStatusBarColor(HealthBarDB.Background[1], HealthBarDB.Background[2], HealthBarDB.Background[3], HealthBarDB.BackgroundOpacity)
         end
 
-        local HealthBar = CreateFrame("StatusBar", UUF:FetchFrameName(unit) .. "_HealthBar", unitContainer)
+        local HealthBar = CreateFrame("StatusBar", UUF:FetchFrameName(unit, unitFrame) .. "_HealthBar", unitContainer)
         HealthBar:SetPoint("TOPLEFT", unitContainer, "TOPLEFT", 1, -1)
         HealthBar:SetSize(FrameDB.Width - 2, FrameDB.Height - 2)
         HealthBar:SetStatusBarTexture(UUF.Media.Foreground)

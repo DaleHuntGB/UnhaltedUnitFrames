@@ -87,14 +87,12 @@ function UUF:SpawnUnitFrame(unit)
     local FrameDB = UnitDB.Frame
 
     oUF:RegisterStyle(UUF:FetchFrameName(unit), function(unitFrame)
-		if unit == "party" then UUF.PARTY_FRAME_NAME = unitFrame:GetName() end
 		UUF:CreateUnitFrame(unitFrame, unit)
 		if unit == "party" then
 			table.insert(UUF.PARTY_FRAMES, unitFrame)
 			local frameUnit = unitFrame:GetAttribute("unit") or unitFrame.unit or unit
 			UUF:RegisterTargetGlowIndicatorFrame(unitFrame, frameUnit, unit)
 			UUF:RegisterRangeFrame(unitFrame, frameUnit)
-			UUF.PARTY_FRAME_NAME = nil
 		end
 	end)
     oUF:SetActiveStyle(UUF:FetchFrameName(unit))
@@ -207,10 +205,8 @@ end
 
 function UUF:UpdatePartyFrames()
 	for _, partyFrame in ipairs(UUF.PARTY_FRAMES) do
-		UUF.PARTY_FRAME_NAME = partyFrame:GetName()
 		UUF:UpdateUnitFrame(partyFrame, "party")
 	end
-	UUF.PARTY_FRAME_NAME = nil
 	UUF:LayoutPartyFrames()
 end
 

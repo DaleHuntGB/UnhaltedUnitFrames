@@ -10,7 +10,7 @@ function UUF:CreateUnitTotems(unitFrame, unit)
 
     local Totems = {}
     for index = 1, #totemPriorities do
-        local Totem = CreateFrame("Button", UUF:FetchFrameName(unit) .. "_Totem" .. index, unitFrame, "SecureActionButtonTemplate")
+        local Totem = CreateFrame("Button", UUF:FetchFrameName(unit, unitFrame) .. "_Totem" .. index, unitFrame, "SecureActionButtonTemplate")
         local xOffset = (index - 1) * (TotemsDB.Size + TotemsDB.Layout[5])
         if TotemsDB.GrowthDirection == "LEFT" then xOffset = -xOffset end
         Totem:SetSize(TotemsDB.Size, TotemsDB.Size)

@@ -24,7 +24,7 @@ end
 function UUF:CreateUnitDispelHighlight(unitFrame, unit)
     local DispelHighlightDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].HealthBar.DispelHighlight
     if not unitFrame.DispelHighlight then
-        local DispelHighlight = unitFrame.Health:CreateTexture(UUF:FetchFrameName(unit) .. "_DispelHighlight", "OVERLAY")
+        local DispelHighlight = unitFrame.Health:CreateTexture(UUF:FetchFrameName(unit, unitFrame) .. "_DispelHighlight", "OVERLAY")
         DispelHighlight:ClearAllPoints()
         if DispelHighlightDB.Style == "GRADIENT" then
             DispelHighlight:SetPoint("TOPLEFT", unitFrame, "TOPLEFT", 1, -1)

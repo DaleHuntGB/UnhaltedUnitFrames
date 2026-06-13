@@ -8,7 +8,7 @@ end
 function UUF:CreateUnitRestingIndicator(unitFrame, unit)
     local RestingDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Indicators.Resting
 
-    local Resting = unitFrame.HighLevelContainer:CreateTexture(UUF:FetchFrameName(unit).."_RestingIndicator", "OVERLAY")
+    local Resting = unitFrame.HighLevelContainer:CreateTexture(UUF:FetchFrameName(unit, unitFrame).."_RestingIndicator", "OVERLAY")
     Resting:SetSize(RestingDB.Size, RestingDB.Size)
     Resting:SetPoint(RestingDB.Layout[1], unitFrame.HighLevelContainer, RestingDB.Layout[2], RestingDB.Layout[3], RestingDB.Layout[4])
 

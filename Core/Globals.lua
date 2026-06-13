@@ -63,7 +63,7 @@ UUF.StatusTextures = {
 
 function UUF:PrettyPrint(MSG) print(UUF.ADDON_NAME .. ":|r " .. MSG) end
 
-function UUF:FetchFrameName(unit)
+function UUF:FetchFrameName(unit, unitFrame)
     local UnitToFrame = {
         ["player"] = "UUF_Player",
         ["target"] = "UUF_Target",
@@ -75,7 +75,7 @@ function UUF:FetchFrameName(unit)
         ["party"] = "UUF_Party",
     }
     if not unit then return end
-    if unit == "party" and UUF.PARTY_FRAME_NAME then return UUF.PARTY_FRAME_NAME end
+    if unit == "party" and unitFrame then return unitFrame:GetName() end
     if unit:match("^boss(%d+)$") then local unitID = unit:match("^boss(%d+)$") return "UUF_Boss" .. unitID end
     return UnitToFrame[unit]
 end
@@ -549,6 +549,7 @@ UUF.AURA_FILTERS = {
         {Key = "Raid", Group = "Other", Title = "Raid", Desc = "Show other-cast buffs marked for raid frames."},
     },
     Debuffs = {
+        {Key = "Typed", Group = "General", Title = "Typed", Desc = "Show Magic, Curse, Poison, and Bleed debuffs."},
         {Key = "RaidPlayerDispellable", Group = "General", Title = "Player Dispellable", Desc = "Show debuffs marked as dispellable by the player."},
         {Key = "Player", Group = "Player", Title = "All", Desc = "Show every debuff applied by the player or their vehicle."},
         {Key = "ImportantPlayer", Group = "Player", Title = "Important", Desc = "Show important debuffs applied by the player."},

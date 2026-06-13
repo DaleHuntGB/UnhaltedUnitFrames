@@ -16,7 +16,7 @@ end)
 function UUF:CreateUnitTargetGlowIndicator(unitFrame, unit)
     local TargetIndicatorDB = UUF.db.profile.Units[unit].Indicators.Target
     if TargetIndicatorDB then
-        unitFrame.TargetIndicator = CreateFrame("Frame", UUF:FetchFrameName(unit).."_TargetIndicator", unitFrame.Container, "BackdropTemplate")
+        unitFrame.TargetIndicator = CreateFrame("Frame", UUF:FetchFrameName(unit, unitFrame).."_TargetIndicator", unitFrame.Container, "BackdropTemplate")
         unitFrame.TargetIndicator:SetFrameLevel(unitFrame.Container:GetFrameLevel() + 3)
         unitFrame.TargetIndicator:SetBackdrop({ edgeFile = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Glow.tga", edgeSize = 3, insets = {left = -3, right = -3, top = -3, bottom = -3} })
         unitFrame.TargetIndicator:SetBackdropColor(0, 0, 0, 0)

@@ -4,7 +4,7 @@ local function CreateIncomingHeal(unitFrame, unit)
     local IncomingHealDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].HealPrediction.IncomingHeal
     if not unitFrame.Health then return end
 
-    local IncomingHealBar = CreateFrame("StatusBar", UUF:FetchFrameName(unit) .. "_IncomingHealBar", unitFrame.Health)
+    local IncomingHealBar = CreateFrame("StatusBar", UUF:FetchFrameName(unit, unitFrame) .. "_IncomingHealBar", unitFrame.Health)
     if IncomingHealDB.UseStripedTexture then IncomingHealBar:SetStatusBarTexture("Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\ThinStripes.png") else IncomingHealBar:SetStatusBarTexture(UUF.Media.Foreground) end
     IncomingHealBar:SetStatusBarColor(IncomingHealDB.Colour[1], IncomingHealDB.Colour[2], IncomingHealDB.Colour[3], IncomingHealDB.Colour[4])
     IncomingHealBar:ClearAllPoints()
@@ -53,7 +53,7 @@ local function CreateUnitAbsorbs(unitFrame, unit)
     local AbsorbDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].HealPrediction.Absorbs
     if not unitFrame.Health then return end
 
-    local AbsorbBar = CreateFrame("StatusBar", UUF:FetchFrameName(unit) .. "_AbsorbBar", unitFrame.Health)
+    local AbsorbBar = CreateFrame("StatusBar", UUF:FetchFrameName(unit, unitFrame) .. "_AbsorbBar", unitFrame.Health)
     if AbsorbDB.UseStripedTexture then AbsorbBar:SetStatusBarTexture("Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\ThinStripes.png") else AbsorbBar:SetStatusBarTexture(UUF.Media.Foreground) end
     AbsorbBar:SetStatusBarColor(AbsorbDB.Colour[1], AbsorbDB.Colour[2], AbsorbDB.Colour[3], AbsorbDB.Colour[4])
     AbsorbBar:ClearAllPoints()
@@ -102,7 +102,7 @@ local function CreateUnitHealAbsorbs(unitFrame, unit)
     local HealAbsorbDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].HealPrediction.HealAbsorbs
     if not unitFrame.Health then return end
 
-    local HealAbsorbBar = CreateFrame("StatusBar", UUF:FetchFrameName(unit) .. "_HealAbsorbBar", unitFrame.Health)
+    local HealAbsorbBar = CreateFrame("StatusBar", UUF:FetchFrameName(unit, unitFrame) .. "_HealAbsorbBar", unitFrame.Health)
     if HealAbsorbDB.UseStripedTexture then HealAbsorbBar:SetStatusBarTexture("Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\ThinStripes.png") else HealAbsorbBar:SetStatusBarTexture(UUF.Media.Foreground) end
     HealAbsorbBar:SetStatusBarColor(HealAbsorbDB.Colour[1], HealAbsorbDB.Colour[2], HealAbsorbDB.Colour[3], HealAbsorbDB.Colour[4])
     HealAbsorbBar:ClearAllPoints()
