@@ -1,6 +1,23 @@
 local _, UUF = ...
 local oUF = UUF.oUF
 
+local function CenterPrivateAura(element, aura, auraIndex)
+	local width = element.width or element.size or 16
+	local height = element.height or element.size or 16
+	local spacingX = element.spacingX or element.spacing or 0
+	local spacingY = element.spacingY or element.spacing or 0
+	local anchor = element.initialAnchor or "BOTTOMLEFT"
+	local columns = element.maxCols or element.num
+	local column = (auraIndex - 1) % columns
+	local row = math.floor((auraIndex - 1) / columns)
+	local offsetX = anchor == "CENTER" and (auraIndex - (element.num + 1) / 2) * (width + spacingX) or column * (width + spacingX)
+	local offsetY = row * (height + spacingY)
+	if element.growthX == "LEFT" then offsetX = -offsetX end
+	if element.growthY == "DOWN" then offsetY = -offsetY end
+	aura:ClearAllPoints()
+	aura:SetPoint(anchor, element, anchor, offsetX, offsetY)
+end
+
 local function GetAuraConfig(aurasDB, auraType)
     if not aurasDB then return nil end
     if auraType == "HELPFUL" then
@@ -234,7 +251,7 @@ function UUF:UpdateUnitAuras(unitFrame, unit)
     local BuffsDB = AurasDB.Buffs
     local DebuffsDB = AurasDB.Debuffs
 
-    if unit == "player" then
+    if UUF:GetNormalizedUnit(unit) == "player" or UUF:GetNormalizedUnit(unit) == "party" then
         local PrivateAurasDB = AurasDB.PrivateAuras
         local privateAuraContainerWidth = PrivateAurasDB.Size * PrivateAurasDB.Num + PrivateAurasDB.Spacing * (PrivateAurasDB.Num - 1)
 
@@ -256,6 +273,7 @@ function UUF:UpdateUnitAuras(unitFrame, unit)
         unitFrame.PrivateAuraContainer.borderScale = PrivateAurasDB.BorderScale == -1 and -100 or PrivateAurasDB.BorderScale
         unitFrame.PrivateAuraContainer.disableCooldown = PrivateAurasDB.DisableCooldown
         unitFrame.PrivateAuraContainer.disableCooldownText = PrivateAurasDB.DisableCooldownText
+        unitFrame.PrivateAuraContainer.SetPosition = UUF:GetNormalizedUnit(unit) == "party" and CenterPrivateAura or nil
 
         if PrivateAurasDB.Enabled then
             unitFrame.PrivateAuras = unitFrame.PrivateAuraContainer
@@ -356,8 +374,8 @@ function UUF:CreateUnitAuras(unitFrame, unit)
     CreateUnitBuffs(unitFrame, unit)
     CreateUnitDebuffs(unitFrame, unit)
 
-    if unit == "player" then
-        local AurasDB = UUF.db.profile.Units.player.Auras
+    if UUF:GetNormalizedUnit(unit) == "player" or UUF:GetNormalizedUnit(unit) == "party" then
+        local AurasDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Auras
         local PrivateAurasDB = AurasDB.PrivateAuras
         local privateAuraContainerWidth = PrivateAurasDB.Size * PrivateAurasDB.Num + PrivateAurasDB.Spacing * (PrivateAurasDB.Num - 1)
 
@@ -379,6 +397,7 @@ function UUF:CreateUnitAuras(unitFrame, unit)
         unitFrame.PrivateAuraContainer.borderScale = PrivateAurasDB.BorderScale == -1 and -100 or PrivateAurasDB.BorderScale
         unitFrame.PrivateAuraContainer.disableCooldown = PrivateAurasDB.DisableCooldown
         unitFrame.PrivateAuraContainer.disableCooldownText = PrivateAurasDB.DisableCooldownText
+        unitFrame.PrivateAuraContainer.SetPosition = UUF:GetNormalizedUnit(unit) == "party" and CenterPrivateAura or nil
 
         if PrivateAurasDB.Enabled then
             unitFrame.PrivateAuras = unitFrame.PrivateAuraContainer
@@ -396,7 +415,7 @@ function UUF:UpdateUnitAurasStrata(unit)
     if not unitFrame or not unitDB or not unitDB.Auras then return end
     if unitFrame.BuffContainer then unitFrame.BuffContainer:SetFrameStrata(unitDB.Auras.FrameStrata) end
     if unitFrame.DebuffContainer then unitFrame.DebuffContainer:SetFrameStrata(unitDB.Auras.FrameStrata) end
-    if unit == "player" and unitFrame.PrivateAuraContainer and unitDB.Auras.PrivateAuras then unitFrame.PrivateAuraContainer:SetFrameStrata(unitDB.Auras.PrivateAuras.FrameStrata) end
+    if unitFrame.PrivateAuraContainer and unitDB.Auras.PrivateAuras then unitFrame.PrivateAuraContainer:SetFrameStrata(unitDB.Auras.PrivateAuras.FrameStrata) end
 end
 
 function UUF:CreateTestAuras(unitFrame, unit)

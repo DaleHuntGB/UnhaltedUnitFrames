@@ -6,9 +6,9 @@ unitIsTargetEvtFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
 unitIsTargetEvtFrame:RegisterEvent("UNIT_TARGET")
 unitIsTargetEvtFrame:SetScript("OnEvent", function()
     for _, frameData in ipairs(UUF.TargetHighlightEvtFrames) do
-        local frame, unit = frameData.frame, frameData.unit
-        if UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Indicators.Target.Enabled then
-            UUF:UpdateTargetGlowIndicator(frame, unit)
+        local frame, unit = frameData.frame, frameData.frame.unit or frameData.unit
+        if UUF.db.profile.Units[UUF:GetNormalizedUnit(frameData.configUnit or unit)].Indicators.Target.Enabled then
+            UUF:UpdateTargetGlowIndicator(frame, unit, frameData.configUnit)
         end
     end
 end)
@@ -35,9 +35,9 @@ function UUF:UpdateUnitTargetGlowIndicator(unitFrame, unit)
     end
 end
 
-function UUF:UpdateTargetGlowIndicator(unitFrame, unit)
+function UUF:UpdateTargetGlowIndicator(unitFrame, unit, configUnit)
     if unitFrame and unitFrame.TargetIndicator then
-        if UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Indicators.Target.Enabled then
+        if UUF.db.profile.Units[UUF:GetNormalizedUnit(configUnit or unit)].Indicators.Target.Enabled then
             unitFrame.TargetIndicator:SetAlphaFromBoolean(UnitIsUnit("target", unit), 1, 0)
         else
             unitFrame.TargetIndicator:SetAlpha(0)
@@ -45,14 +45,14 @@ function UUF:UpdateTargetGlowIndicator(unitFrame, unit)
     end
 end
 
-function UUF:RegisterTargetGlowIndicatorFrame(frameName, unit)
+function UUF:RegisterTargetGlowIndicatorFrame(frameName, unit, configUnit)
     if not unit or not frameName then return end
-        if UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Indicators.Target then
+        if UUF.db.profile.Units[UUF:GetNormalizedUnit(configUnit or unit)].Indicators.Target then
             local unitFrame = type(frameName) == "table" and frameName or _G[frameName]
-            local DB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)]
-            table.insert(UUF.TargetHighlightEvtFrames, { frame = unitFrame, unit = unit })
+            local DB = UUF.db.profile.Units[UUF:GetNormalizedUnit(configUnit or unit)]
+            table.insert(UUF.TargetHighlightEvtFrames, { frame = unitFrame, unit = unit, configUnit = configUnit })
             if DB and DB.Indicators.Target and DB.Indicators.Target.Enabled then
-                UUF:UpdateTargetGlowIndicator(unitFrame, unit)
+                UUF:UpdateTargetGlowIndicator(unitFrame, unit, configUnit)
             else
                 unitFrame.TargetIndicator:SetAlpha(0)
             end

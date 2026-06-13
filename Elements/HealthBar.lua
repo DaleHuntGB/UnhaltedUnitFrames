@@ -68,7 +68,7 @@ function UUF:UpdateUnitHealthBar(unitFrame, unit)
     local DispelHighlightDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].HealthBar.DispelHighlight
 
     if unitFrame then
-        unitFrame:ClearAllPoints()
+        if UUF:GetNormalizedUnit(unit) ~= "party" then unitFrame:ClearAllPoints() end
         unitFrame:SetSize(FrameDB.Width, FrameDB.Height)
         if unit == "player" or unit == "target" then
             local parentFrame = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].HealthBar.AnchorToCooldownViewer and _G["UUF_CDMAnchor"] or UIParent

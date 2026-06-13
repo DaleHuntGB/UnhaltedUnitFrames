@@ -259,7 +259,7 @@ RangeEventFrame:RegisterEvent("UNIT_TARGET")
 RangeEventFrame:RegisterEvent("SPELL_UPDATE_COOLDOWN")
 RangeEventFrame:SetScript("OnEvent", function()
     for _, frameData in ipairs(UUF.RangeEvtFrames) do
-        UUF:UpdateRangeAlpha(frameData.frame, frameData.unit)
+        UUF:UpdateRangeAlpha(frameData.frame, frameData.frame.unit or frameData.unit)
     end
 end)
 

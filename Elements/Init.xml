@@ -17,6 +17,7 @@
 	<Script file="Indicators/Mouseover.lua"/>
 	<Script file="Indicators/PvP.lua"/>
 	<Script file="Indicators/RaidTargetMarker.lua"/>
+	<Script file="Indicators/RoleIndicator.lua"/>
 	<Script file="Indicators/Resting.lua"/>
 	<Script file="Indicators/Combat.lua"/>
 	<Script file="Indicators/TargetGlow.lua"/>
