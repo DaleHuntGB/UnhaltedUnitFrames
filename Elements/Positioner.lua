@@ -40,7 +40,7 @@ function UUF:CreateMover(unit)
 	local frameMover = CreateFrame("Button", "UUF_" .. unit .. "Mover", UIParent, "BackdropTemplate")
 	frameMover.unit = unit
 	frameMover:SetBackdrop(UUF.BACKDROP)
-	frameMover:SetBackdropColor(128/255, 128/255, 255/255, 0.75)
+	frameMover:SetBackdropColor(102/255, 102/255, 204/255, 0.75)
 	frameMover:SetBackdropBorderColor(0, 0, 0, 1)
 	frameMover:SetFrameStrata("TOOLTIP")
 	frameMover:SetClampedToScreen(true)

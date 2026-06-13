@@ -128,6 +128,7 @@ local function DisableAllTestModes()
     UUF.AURA_TEST_MODE = false
     UUF.CASTBAR_TEST_MODE = false
     UUF.BOSS_TEST_MODE = false
+    UUF.MOVERS_UNLOCKED = false
     for unit, _ in pairs(UUF.db.profile.Units) do
         if UUF[unit:upper()] then
             UUF:CreateTestAuras(UUF[unit:upper()], unit)
@@ -135,6 +136,7 @@ local function DisableAllTestModes()
         end
     end
     UUF:CreateTestBossFrames()
+    for _, frameMover in pairs(UUF.MOVERS or {}) do frameMover:Hide() end
 end
 
 local function GenerateSupportText(parentFrame)
@@ -3616,5 +3618,6 @@ end
 function UUFG:CloseUUFGUI()
     if isGUIOpen and Container then
         Container:Hide()
+        DisableAllTestModes()
     end
 end
