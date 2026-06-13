@@ -1,20 +1,20 @@
 local _, UUF = ...
 
-local function RefreshMover(mover)
-	local unitFrame = mover.unit == "boss" and UUF.BOSS1 or UUF[mover.unit:upper()]
+local function RefreshMover(frameMover)
+	local unitFrame = frameMover.unit == "boss" and UUF.BOSS1 or UUF[frameMover.unit:upper()]
 	if not unitFrame then return end
-	mover:ClearAllPoints()
-	if mover.unit == "boss" then
+	frameMover:ClearAllPoints()
+	if frameMover.unit == "boss" then
 		local topFrame, bottomFrame = unitFrame, unitFrame
 		for _, bossFrame in pairs(UUF.BOSS_FRAMES) do
 			if bossFrame:GetTop() > topFrame:GetTop() then topFrame = bossFrame end
 			if bossFrame:GetBottom() < bottomFrame:GetBottom() then bottomFrame = bossFrame end
 		end
-		mover:SetPoint("TOPLEFT", topFrame, "TOPLEFT")
-		mover:SetPoint("BOTTOMRIGHT", bottomFrame, "BOTTOMRIGHT")
+		frameMover:SetPoint("TOPLEFT", topFrame, "TOPLEFT")
+		frameMover:SetPoint("BOTTOMRIGHT", bottomFrame, "BOTTOMRIGHT")
 	else
-		mover:SetPoint("TOPLEFT", unitFrame, "TOPLEFT")
-		mover:SetPoint("BOTTOMRIGHT", unitFrame, "BOTTOMRIGHT")
+		frameMover:SetPoint("TOPLEFT", unitFrame, "TOPLEFT")
+		frameMover:SetPoint("BOTTOMRIGHT", unitFrame, "BOTTOMRIGHT")
 	end
 end
 
@@ -46,8 +46,8 @@ function UUF:CreateMover(unit)
 	frameMover:SetClampedToScreen(true)
 	frameMover:SetMovable(true)
 	frameMover:RegisterForDrag("LeftButton")
-	frameMover:SetScript("OnDragStart", function(frameMover) if not InCombatLockdown() then frameMover.startX, frameMover.startY = frameMover:GetCenter() frameMover:StartMoving() end end)
-	frameMover:SetScript("OnDragStop", function(frameMover) if InCombatLockdown() then frameMover:StopMovingOrSizing() RefreshMover(frameMover) else StopMoving(frameMover) end end)
+	frameMover:SetScript("OnDragStart", function() if not InCombatLockdown() then frameMover.startX, frameMover.startY = frameMover:GetCenter() frameMover:StartMoving() end end)
+	frameMover:SetScript("OnDragStop", function() if InCombatLockdown() then frameMover:StopMovingOrSizing() RefreshMover(frameMover) else StopMoving(frameMover) end end)
 	frameMover:SetScript("OnShow", RefreshMover)
 
 	frameMover.Text = frameMover:CreateFontString(nil, "OVERLAY")
