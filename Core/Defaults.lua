@@ -1548,10 +1548,10 @@ local Defaults = {
                 Frame = {
                     Width = 244,
                     Height = 42,
-                    -- ANCHORFROM, ANCHORTO, XOFFSET, YOFFSET, SPACING
                     Layout = {"CENTER", "CENTER", -550.1, -0.1, 1},
                     GrowthDirection = "DOWN",
                     Sort = "ROLE",
+                    RoleOrder = {"TANK", "HEALER", "DAMAGER"},
                     ShowPlayer = false,
                     FrameStrata = "LOW",
                 },
@@ -1607,8 +1607,8 @@ local Defaults = {
                 Indicators = {
                     RaidTargetMarker = {
                         Enabled = true,
-                        Size = 24,
-                        Layout = {"CENTER", "TOP", 0, 0},
+                        Size = 18,
+                        Layout = {"CENTER", "CENTER", 0, 0},
                     },
                     Mouseover = {
                         Enabled = true,
