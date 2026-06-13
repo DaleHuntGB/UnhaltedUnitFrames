@@ -377,7 +377,7 @@ function UUF:CreateUnitAuras(unitFrame, unit)
     CreateUnitBuffs(unitFrame, unit)
     CreateUnitDebuffs(unitFrame, unit)
 
-    if UUF:GetNormalizedUnit(unit) == "player" then
+    if UUF:GetNormalizedUnit(unit) == "player" or UUF:GetNormalizedUnit(unit) == "party" then
         local AurasDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Auras
         local PrivateAurasDB = AurasDB.PrivateAuras
         local privateAuraContainerWidth = PrivateAurasDB.Size * PrivateAurasDB.Num + PrivateAurasDB.Spacing * (PrivateAurasDB.Num - 1)
@@ -400,6 +400,7 @@ function UUF:CreateUnitAuras(unitFrame, unit)
         unitFrame.PrivateAuraContainer.borderScale = PrivateAurasDB.BorderScale == -1 and -100 or PrivateAurasDB.BorderScale
         unitFrame.PrivateAuraContainer.disableCooldown = PrivateAurasDB.DisableCooldown
         unitFrame.PrivateAuraContainer.disableCooldownText = PrivateAurasDB.DisableCooldownText
+        unitFrame.PrivateAuraContainer.SetPosition = UUF:GetNormalizedUnit(unit) == "party" and CenterPrivateAura or nil
 
         if PrivateAurasDB.Enabled then
             unitFrame.PrivateAuras = unitFrame.PrivateAuraContainer
