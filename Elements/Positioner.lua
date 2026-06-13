@@ -18,45 +18,45 @@ local function RefreshMover(mover)
 	end
 end
 
-local function StopMoving(mover)
-	mover:StopMovingOrSizing()
+local function StopMoving(frameMover)
+	frameMover:StopMovingOrSizing()
 
-	local unitFrame = mover.unit == "boss" and UUF.BOSS1 or UUF[mover.unit:upper()]
+	local unitFrame = frameMover.unit == "boss" and UUF.BOSS1 or UUF[frameMover.unit:upper()]
 	if not unitFrame then return end
 
-	local moverX, moverY = mover:GetCenter()
-	local FrameDB = UUF.db.profile.Units[mover.unit].Frame
-	FrameDB.Layout[3] = FrameDB.Layout[3] + moverX - mover.startX
-	FrameDB.Layout[4] = FrameDB.Layout[4] + moverY - mover.startY
+	local moverX, moverY = frameMover:GetCenter()
+	local FrameDB = UUF.db.profile.Units[frameMover.unit].Frame
+	FrameDB.Layout[3] = FrameDB.Layout[3] + moverX - frameMover.startX
+	FrameDB.Layout[4] = FrameDB.Layout[4] + moverY - frameMover.startY
 
-	if mover.unit == "boss" then UUF:LayoutBossFrames() else UUF:UpdateUnitFrame(unitFrame, mover.unit) end
-	RefreshMover(mover)
+	if frameMover.unit == "boss" then UUF:LayoutBossFrames() else UUF:UpdateUnitFrame(unitFrame, frameMover.unit) end
+	RefreshMover(frameMover)
 end
 
 function UUF:CreateMover(unit)
 	UUF.MOVERS = UUF.MOVERS or {}
 	if UUF.MOVERS[unit] then return end
 
-	local mover = CreateFrame("Button", "UUF_" .. unit .. "Mover", UIParent, "BackdropTemplate")
-	mover.unit = unit
-	mover:SetBackdrop(UUF.BACKDROP)
-	mover:SetBackdropColor(128/255, 128/255, 255/255, 0.75)
-	mover:SetBackdropBorderColor(0, 0, 0, 1)
-	mover:SetFrameStrata("TOOLTIP")
-	mover:SetClampedToScreen(true)
-	mover:SetMovable(true)
-	mover:RegisterForDrag("LeftButton")
-	mover:SetScript("OnDragStart", function(self) if not InCombatLockdown() then self.startX, self.startY = self:GetCenter() self:StartMoving() end end)
-	mover:SetScript("OnDragStop", function(self) if InCombatLockdown() then self:StopMovingOrSizing() RefreshMover(self) else StopMoving(self) end end)
-	mover:SetScript("OnShow", RefreshMover)
+	local frameMover = CreateFrame("Button", "UUF_" .. unit .. "Mover", UIParent, "BackdropTemplate")
+	frameMover.unit = unit
+	frameMover:SetBackdrop(UUF.BACKDROP)
+	frameMover:SetBackdropColor(128/255, 128/255, 255/255, 0.75)
+	frameMover:SetBackdropBorderColor(0, 0, 0, 1)
+	frameMover:SetFrameStrata("TOOLTIP")
+	frameMover:SetClampedToScreen(true)
+	frameMover:SetMovable(true)
+	frameMover:RegisterForDrag("LeftButton")
+	frameMover:SetScript("OnDragStart", function(frameMover) if not InCombatLockdown() then frameMover.startX, frameMover.startY = frameMover:GetCenter() frameMover:StartMoving() end end)
+	frameMover:SetScript("OnDragStop", function(frameMover) if InCombatLockdown() then frameMover:StopMovingOrSizing() RefreshMover(frameMover) else StopMoving(frameMover) end end)
+	frameMover:SetScript("OnShow", RefreshMover)
 
-	local text = mover:CreateFontString(nil, "OVERLAY")
-	text:SetPoint("CENTER")
-	text:SetFont(UUF.Media.Font, 12, "OUTLINE")
-	text:SetText(UUF:Capitalize(unit == "targettarget" and "Target of Target" or unit == "focustarget" and "Focus Target" or unit))
+	frameMover.Text = frameMover:CreateFontString(nil, "OVERLAY")
+	frameMover.Text:SetPoint("CENTER")
+	frameMover.Text:SetFont(UUF.Media.Font, 12, "OUTLINE, SLUG")
+	frameMover.Text:SetText(UUF:Capitalize(unit == "targettarget" and "Target of Target" or unit == "focustarget" and "Focus Target" or unit))
 
-	UUF.MOVERS[unit] = mover
-	mover:Hide()
+	UUF.MOVERS[unit] = frameMover
+	frameMover:Hide()
 end
 
 function UUF:ToggleMovers()
