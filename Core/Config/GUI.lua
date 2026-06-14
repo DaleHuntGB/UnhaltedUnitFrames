@@ -2009,8 +2009,19 @@ local function CreateClassificationIndicatorSettings(containerParent, updateCall
     Toggle:SetLabel("Enable |cFF8080FFClassification|r Indicator")
     Toggle:SetValue(ClassificationIndicatorDB.Enabled)
     Toggle:SetCallback("OnValueChanged", function(_, _, value) ClassificationIndicatorDB.Enabled = value updateCallback() RefreshClassificationIndicatorGUI() end)
-    Toggle:SetFullWidth(true)
+    Toggle:SetRelativeWidth(0.5)
     ToggleContainer:AddChild(Toggle)
+
+    local TextureDropdown = AG:Create("Dropdown")
+    TextureDropdown:SetList({
+        DEFAULT = "|A:nameplates-icon-elite-gold:20:20|a |A:nameplates-icon-elite-silver:20:20|a |A:nameplates-icon-elite-silver:20:20|a |A:nameplates-icon-elite-gold:20:20|a",
+        CLASSIFICATION0 = "|A:VignetteEvent-SuperTracked:20:20|a |A:VignetteEvent:20:20|a |A:VignetteKillElite-SuperTracked:20:20|a |A:vignettekillboss:20:20|a",
+    }, {"DEFAULT", "CLASSIFICATION0"})
+    TextureDropdown:SetLabel("Classification Texture")
+    TextureDropdown:SetValue(ClassificationIndicatorDB.Texture or "DEFAULT")
+    TextureDropdown:SetRelativeWidth(0.5)
+    TextureDropdown:SetCallback("OnValueChanged", function(_, _, value) ClassificationIndicatorDB.Texture = value updateCallback() end)
+    ToggleContainer:AddChild(TextureDropdown)
 
     local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
 

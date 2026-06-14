@@ -59,6 +59,21 @@ UUF.StatusTextures = {
     },
 }
 
+UUF.ClassificationTextures = {
+    ["DEFAULT"] = {
+        ["elite"] = "nameplates-icon-elite-gold",
+        ["rare"] = "nameplates-icon-elite-silver",
+        ["rareelite"] = "nameplates-icon-elite-silver",
+        ["worldboss"] = "nameplates-icon-elite-gold",
+    },
+    ["CLASSIFICATION0"] = {
+        ["elite"] = "VignetteEvent-SuperTracked",
+        ["rare"] = "VignetteEvent",
+        ["rareelite"] = "VignetteKillElite-SuperTracked",
+        ["worldboss"] = "vignettekillboss",
+    },
+}
+
 function UUF:PrettyPrint(MSG) print(UUF.ADDON_NAME .. ":|r " .. MSG) end
 
 function UUF:FetchFrameName(unit)

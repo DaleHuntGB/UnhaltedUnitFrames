@@ -479,6 +479,7 @@ local Defaults = {
                         Enabled = true,
                         Size = 16,
                         Layout = {"CENTER", "CENTER", 0, 0},
+                        Texture = "DEFAULT",
                     },
                     Quest = {
                         Enabled = true,
