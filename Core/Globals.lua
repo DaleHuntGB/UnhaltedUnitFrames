@@ -60,17 +60,23 @@ UUF.StatusTextures = {
 }
 
 UUF.ClassificationTextures = {
-    ["DEFAULT"] = {
+    ["CLASSIFICATION0"] = {
         ["elite"] = "nameplates-icon-elite-gold",
         ["rare"] = "nameplates-icon-elite-silver",
         ["rareelite"] = "nameplates-icon-elite-silver",
         ["worldboss"] = "nameplates-icon-elite-gold",
     },
-    ["CLASSIFICATION0"] = {
+    ["CLASSIFICATION1"] = {
         ["elite"] = "VignetteEvent-SuperTracked",
         ["rare"] = "VignetteEvent",
         ["rareelite"] = "VignetteKillElite-SuperTracked",
         ["worldboss"] = "vignettekillboss",
+    },
+    ["CLASSIFICATION2"] = {
+        ["elite"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Classification\\Classic\\Elite.png",
+        ["rare"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Classification\\Classic\\Rare.png",
+        ["rareelite"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Classification\\Classic\\RareElite.png",
+        ["worldboss"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Classification\\Classic\\WorldBoss.png",
     },
 }
 

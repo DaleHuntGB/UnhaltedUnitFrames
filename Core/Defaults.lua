@@ -478,8 +478,8 @@ local Defaults = {
                     Classification = {
                         Enabled = true,
                         Size = 16,
-                        Layout = {"CENTER", "CENTER", 0, 0},
-                        Texture = "DEFAULT",
+                        Layout = {"RIGHT", "TOPRIGHT", -3, 0},
+                        Texture = "CLASSIFICATION2",
                     },
                     Quest = {
                         Enabled = true,

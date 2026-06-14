@@ -2014,9 +2014,10 @@ local function CreateClassificationIndicatorSettings(containerParent, updateCall
 
     local TextureDropdown = AG:Create("Dropdown")
     TextureDropdown:SetList({
-        DEFAULT = "|A:nameplates-icon-elite-gold:20:20|a |A:nameplates-icon-elite-silver:20:20|a |A:nameplates-icon-elite-silver:20:20|a |A:nameplates-icon-elite-gold:20:20|a",
-        CLASSIFICATION0 = "|A:VignetteEvent-SuperTracked:20:20|a |A:VignetteEvent:20:20|a |A:VignetteKillElite-SuperTracked:20:20|a |A:vignettekillboss:20:20|a",
-    }, {"DEFAULT", "CLASSIFICATION0"})
+        CLASSIFICATION0 = "|A:nameplates-icon-elite-gold:20:20|a |A:nameplates-icon-elite-silver:20:20|a |A:nameplates-icon-elite-silver:20:20|a |A:nameplates-icon-elite-gold:20:20|a",
+        CLASSIFICATION1 = "|A:VignetteEvent-SuperTracked:20:20|a |A:VignetteEvent:20:20|a |A:VignetteKillElite-SuperTracked:20:20|a |A:vignettekillboss:20:20|a",
+        CLASSIFICATION2 = "|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Classification\\Classic\\Elite.png:20:20|t |TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Classification\\Classic\\Rare.png:20:20|t |TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Classification\\Classic\\RareElite.png:20:20|t |TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Classification\\Classic\\WorldBoss.png:20:20|t",
+    }, {"CLASSIFICATION0", "CLASSIFICATION1", "CLASSIFICATION2"})
     TextureDropdown:SetLabel("Classification Texture")
     TextureDropdown:SetValue(ClassificationIndicatorDB.Texture or "DEFAULT")
     TextureDropdown:SetRelativeWidth(0.5)
