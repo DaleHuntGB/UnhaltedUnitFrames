@@ -17,3 +17,4 @@
 - Tidied up code.
 - Fixed Test Environment errors.
 - Improved upon the `SecondaryPowerBar` logic & code.
+- Added Quest Indicator.

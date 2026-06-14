@@ -474,7 +474,12 @@ local Defaults = {
                     Target = {
                         Enabled = false,
                         Colour = {1, 1, 1},
-                    }
+                    },
+                    Quest = {
+                        Enabled = true,
+                        Size = 16,
+                        Layout = {"TOPLEFT", "TOPLEFT", 3, -3},
+                    },
                 },
                 Range = {
                     Enabled = true,
