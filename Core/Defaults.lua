@@ -477,9 +477,9 @@ local Defaults = {
                     },
                     Classification = {
                         Enabled = true,
-                        Size = 16,
-                        Layout = {"RIGHT", "TOPRIGHT", -3, 0},
-                        Texture = "CLASSIFICATION2",
+                        Size = 24,
+                        Layout = {"CENTER", "CENTER", 0, 0},
+                        Texture = "CLASSIFICATION3",
                     },
                     Quest = {
                         Enabled = true,
