@@ -13,7 +13,6 @@
 - Added `Movers` for all frames.
 - Added `Show Target` and `Hold Time` for CastBars.
 - Added PVP Badge / Indicator.
-- Removed the pushing of BCDM Anchors as this is now deprecated.
 - Tidied up code.
 - Fixed Test Environment errors.
 - Improved upon the `SecondaryPowerBar` logic & code.
