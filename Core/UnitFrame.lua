@@ -32,6 +32,7 @@ function UUF:CreateUnitFrame(unitFrame, unit)
     if isPlayer then UUF:CreateUnitRestingIndicator(unitFrame, unit) end
     if isPlayer then UUF:CreateUnitPvPIndicator(unitFrame, unit) end
     if isPlayer then UUF:CreateUnitTotems(unitFrame, unit) end
+    if isTarget then UUF:CreateUnitClassificationIndicator(unitFrame, unit) end
     if isTarget then UUF:CreateUnitQuestIndicator(unitFrame, unit) end
     UUF:CreateUnitMouseoverIndicator(unitFrame, unit)
     UUF:CreateUnitTargetGlowIndicator(unitFrame, unit)
@@ -141,6 +142,7 @@ function UUF:UpdateUnitFrame(unitFrame, unit)
     if isPlayer then UUF:UpdateUnitRestingIndicator(unitFrame, unit) end
     if isPlayer then UUF:UpdateUnitPvPIndicator(unitFrame, unit) end
     if isPlayer then UUF:UpdateUnitTotems(unitFrame, unit) end
+    if isTarget then UUF:UpdateUnitClassificationIndicator(unitFrame, unit) end
     if isTarget then UUF:UpdateUnitQuestIndicator(unitFrame, unit) end
     UUF:UpdateUnitMouseoverIndicator(unitFrame, unit)
     UUF:UpdateUnitTargetGlowIndicator(unitFrame, unit)

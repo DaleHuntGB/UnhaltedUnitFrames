@@ -475,6 +475,11 @@ local Defaults = {
                         Enabled = false,
                         Colour = {1, 1, 1},
                     },
+                    Classification = {
+                        Enabled = true,
+                        Size = 16,
+                        Layout = {"CENTER", "CENTER", 0, 0},
+                    },
                     Quest = {
                         Enabled = true,
                         Size = 16,

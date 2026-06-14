@@ -18,3 +18,4 @@
 - Fixed Test Environment errors.
 - Improved upon the `SecondaryPowerBar` logic & code.
 - Added Quest Indicator.
+- Added Classification Indicator (Rare/Rare Elite/Elite).
