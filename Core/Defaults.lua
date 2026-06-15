@@ -26,6 +26,19 @@ local Defaults = {
                 InRange = 1.0,
                 OutOfRange = 0.5,
             },
+            CooldownText = {
+                Advanced = false,
+                Layout = {"CENTER", "CENTER", 0, 0},
+                FontSize = 12,
+                ScaleByIconSize = false,
+                CooldownBreakpoints = {
+                    {threshold = 0, displayStyle = "decimalSeconds", step = 0.1, rounding = Enum.NumericRuleFormatRounding.Up, format = "|cffffffff%.1f|r", color = {1, 1, 1, 1}},
+                    {threshold = 3, displayStyle = "secondsOnly", step = 1, rounding = Enum.NumericRuleFormatRounding.Up, format = "|cffffffff%d|r", color = {1, 1, 1, 1}},
+                    {threshold = 60, displayStyle = "clock", step = 1, rounding = Enum.NumericRuleFormatRounding.Up, format = "|cffffffff%d:%02d|r", color = {1, 1, 1, 1}, components = {{div = 60}, {mod = 60}}},
+                    {threshold = 120, displayStyle = "minutes", step = 1, rounding = Enum.NumericRuleFormatRounding.Up, format = "|cffffffff%dm|r", color = {1, 1, 1, 1}, components = {{div = 60}}},
+                    {threshold = 3600, displayStyle = "hours", step = 1, rounding = Enum.NumericRuleFormatRounding.Up, format = "|cffffffff%dh|r", color = {1, 1, 1, 1}, components = {{div = 3600}}},
+                },
+            },
             Fonts = {
                 Font = "Friz Quadrata TT",
                 FontFlag = "OUTLINE",
@@ -242,12 +255,6 @@ local Defaults = {
                         Size = 42,
                         Layout = {"RIGHT", "LEFT", -1, 0, 1},
                         GrowthDirection = "LEFT",
-                        TotemDuration = {
-                            Layout = {"CENTER", "CENTER", 0, 0},
-                            FontSize = 12,
-                            ScaleByIconSize = false,
-                            Colour = {1, 1, 1},
-                        },
                     },
                 },
                 Auras = {
@@ -256,7 +263,6 @@ local Defaults = {
                         Layout = {"CENTER", "CENTER", 0, 0},
                         FontSize = 12,
                         ScaleByIconSize = false,
-                        Colour = {1, 1, 1},
                     },
                     PrivateAuras = {
                         Enabled = false,
@@ -498,7 +504,6 @@ local Defaults = {
                         Layout = {"CENTER", "CENTER", 0, 0},
                         FontSize = 12,
                         ScaleByIconSize = false,
-                        Colour = {1, 1, 1},
                     },
                     Buffs = {
                         Enabled = true,
@@ -692,7 +697,6 @@ local Defaults = {
                         Layout = {"CENTER", "CENTER", 0, 0},
                         FontSize = 12,
                         ScaleByIconSize = false,
-                        Colour = {1, 1, 1},
                     },
                     Buffs = {
                         Enabled = false,
@@ -893,7 +897,6 @@ local Defaults = {
                         Layout = {"CENTER", "CENTER", 0, 0},
                         FontSize = 12,
                         ScaleByIconSize = false,
-                        Colour = {1, 1, 1},
                     },
                     Buffs = {
                         Enabled = true,
@@ -1087,7 +1090,6 @@ local Defaults = {
                         Layout = {"CENTER", "CENTER", 0, 0},
                         FontSize = 12,
                         ScaleByIconSize = false,
-                        Colour = {1, 1, 1},
                     },
                     Buffs = {
                         Enabled = false,
@@ -1284,7 +1286,6 @@ local Defaults = {
                         Layout = {"CENTER", "CENTER", 0, 0},
                         FontSize = 12,
                         ScaleByIconSize = false,
-                        Colour = {1, 1, 1},
                     },
                     Buffs = {
                         Enabled = false,
@@ -1481,7 +1482,6 @@ local Defaults = {
                         Layout = {"CENTER", "CENTER", 0, 0},
                         FontSize = 12,
                         ScaleByIconSize = false,
-                        Colour = {1, 1, 1},
                     },
                     Buffs = {
                         Enabled = true,
