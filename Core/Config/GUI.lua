@@ -31,6 +31,30 @@ local UnitDBToUnitPrettyName = {
     boss = "Boss",
 }
 
+
+local CooldownBreakpointStyles = {
+    {
+        decimalSeconds = "Decimal Seconds (1.1)",
+        seconds = "Seconds (10s)",
+        secondsOnly = "Seconds (10)",
+        clock = "Clock (1:10)",
+        minutes = "Minutes (2m)",
+        hours = "Hours (1h)",
+        days = "Days (1d)",
+    },
+    {"decimalSeconds", "seconds", "secondsOnly", "clock", "minutes", "hours", "days"},
+}
+
+local CooldownBreakpointSettings = {
+    decimalSeconds = {step = 0.1, rounding = Enum.NumericRuleFormatRounding.Up, format = "%.1f"},
+    seconds = {step = 1, rounding = Enum.NumericRuleFormatRounding.Up, format = "%ds"},
+    secondsOnly = {step = 1, rounding = Enum.NumericRuleFormatRounding.Up, format = "%d"},
+    clock = {step = 1, rounding = Enum.NumericRuleFormatRounding.Up, format = "%d:%02d"},
+    minutes = {step = 1, rounding = Enum.NumericRuleFormatRounding.Up, format = "%dm"},
+    hours = {step = 1, rounding = Enum.NumericRuleFormatRounding.Up, format = "%dh"},
+    days = {step = 1, rounding = Enum.NumericRuleFormatRounding.Up, format = "%dd"},
+}
+
 local AnchorPoints = { { ["TOPLEFT"] = "Top Left", ["TOP"] = "Top", ["TOPRIGHT"] = "Top Right", ["LEFT"] = "Left", ["CENTER"] = "Center", ["RIGHT"] = "Right", ["BOTTOMLEFT"] = "Bottom Left", ["BOTTOM"] = "Bottom", ["BOTTOMRIGHT"] = "Bottom Right" }, { "TOPLEFT", "TOP", "TOPRIGHT", "LEFT", "CENTER", "RIGHT", "BOTTOMLEFT", "BOTTOM", "BOTTOMRIGHT", } }
 local FrameStrataList = {{ ["BACKGROUND"] = "Background", ["LOW"] = "Low", ["MEDIUM"] = "Medium", ["HIGH"] = "High", ["DIALOG"] = "Dialog", ["FULLSCREEN"] = "Fullscreen", ["FULLSCREEN_DIALOG"] = "Fullscreen Dialog", ["TOOLTIP"] = "Tooltip" }, { "BACKGROUND", "LOW", "MEDIUM", "HIGH", "DIALOG", "FULLSCREEN", "FULLSCREEN_DIALOG", "TOOLTIP" }}
 local TopBottomList = {{ ["TOP"] = "Top", ["BOTTOM"] = "Bottom" }, { "TOP", "BOTTOM" }}
@@ -3025,14 +3049,13 @@ local function CreateCooldownTextSettings(containerParent)
     while #Breakpoints > 5 do tremove(Breakpoints) end
 
     local BreakpointContainer = GUIWidgets.CreateInlineGroup(containerParent, "Cooldown Text Breakpoints")
-    GUIWidgets.CreateInformationTag(BreakpointContainer, "Configure up to five breakpoints. The breakpoint with the highest minimum value below the remaining duration controls its format and colour.")
 
     local function SelectBreakpoint(BreakpointTabContainer, _, BreakpointIndex)
         BreakpointTabContainer:ReleaseChildren()
         local BreakpointDB = Breakpoints[BreakpointIndex]
 
         local MinimumValue = AG:Create("EditBox")
-        MinimumValue:SetLabel("Minimum Value (seconds)")
+        MinimumValue:SetLabel("Minimum Value in Seconds")
         MinimumValue:SetText(tostring(BreakpointDB.threshold or 0))
         MinimumValue:SetRelativeWidth(0.33)
         MinimumValue:SetCallback("OnEnterPressed", function(widget, _, value) value = tonumber(value) if not value then widget:SetText(tostring(BreakpointDB.threshold or 0)) return end BreakpointDB.threshold = value BreakpointDB.components = UUF:GetCooldownDurationComponents(BreakpointDB.displayStyle, value) UUF:UpdateAllUnitFrames() end)
@@ -3040,11 +3063,11 @@ local function CreateCooldownTextSettings(containerParent)
 
         local DisplayStyle = AG:Create("Dropdown")
         DisplayStyle:SetLabel("Display Style")
-        DisplayStyle:SetList(UUF.CooldownDurationDisplayStyles[1], UUF.CooldownDurationDisplayStyles[2])
+        DisplayStyle:SetList(CooldownBreakpointStyles[1], CooldownBreakpointStyles[2])
         DisplayStyle:SetValue(BreakpointDB.displayStyle)
         DisplayStyle:SetRelativeWidth(0.33)
         DisplayStyle:SetCallback("OnValueChanged", function(_, _, value)
-            local DisplayStyleDB = UUF.CooldownDurationDisplayStyleSettings[value]
+            local DisplayStyleDB = CooldownBreakpointSettings[value]
             BreakpointDB.displayStyle = value
             BreakpointDB.step = DisplayStyleDB.step
             BreakpointDB.rounding = DisplayStyleDB.rounding
@@ -3059,7 +3082,7 @@ local function CreateCooldownTextSettings(containerParent)
         ColourPicker:SetColor(BreakpointDB.color[1], BreakpointDB.color[2], BreakpointDB.color[3], BreakpointDB.color[4] or 1)
         ColourPicker:SetHasAlpha(false)
         ColourPicker:SetRelativeWidth(0.33)
-        ColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) BreakpointDB.color = {r, g, b, 1} BreakpointDB.format = CreateColor(r, g, b, 1):WrapTextInColorCode(UUF.CooldownDurationDisplayStyleSettings[BreakpointDB.displayStyle].format) UUF:UpdateAllUnitFrames() end)
+        ColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) BreakpointDB.color = {r, g, b, 1} BreakpointDB.format = CreateColor(r, g, b, 1):WrapTextInColorCode(CooldownBreakpointSettings[BreakpointDB.displayStyle].format) UUF:UpdateAllUnitFrames() end)
         BreakpointTabContainer:AddChild(ColourPicker)
     end
 
