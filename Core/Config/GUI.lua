@@ -156,6 +156,7 @@ local function BuildMainNavigationTree()
     return {
         { text = "General", value = "General" },
         { text = "Global", value = "Global" },
+        { text = "Cooldown Text", value = "CooldownText" },
         { text = "Player", value = "Player" },
         { text = "Target", value = "Target" },
         { text = "Target of Target", value = "TargetTarget" },
@@ -2237,64 +2238,6 @@ end
 local function CreateTotemsIndicatorSettings(containerParent, unit, updateCallback)
     local TotemsIndicatorDB = UUF.db.profile.Units[unit].Indicators.Totems
 
-    local TotemDurationContainer = GUIWidgets.CreateInlineGroup(containerParent, "Aura Duration Settings")
-
-    local TotemDurationColourPicker = AG:Create("ColorPicker")
-    TotemDurationColourPicker:SetLabel("Cooldown Text Colour")
-    TotemDurationColourPicker:SetColor(UUF.db.profile.Units[unit].Indicators.Totems.TotemDuration.Colour[1], UUF.db.profile.Units[unit].Indicators.Totems.TotemDuration.Colour[2], UUF.db.profile.Units[unit].Indicators.Totems.TotemDuration.Colour[3], 1)
-    TotemDurationColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) UUF.db.profile.Units[unit].Indicators.Totems.TotemDuration.Colour = {r, g, b} UUF:UpdateUnitTotems(UUF[unit:upper()], unit) end)
-    TotemDurationColourPicker:SetHasAlpha(false)
-    TotemDurationColourPicker:SetRelativeWidth(0.5)
-    TotemDurationContainer:AddChild(TotemDurationColourPicker)
-
-    local TotemDurationScaleByIconSizeCheckbox = AG:Create("CheckBox")
-    TotemDurationScaleByIconSizeCheckbox:SetLabel("Scale Cooldown Text By Icon Size")
-    TotemDurationScaleByIconSizeCheckbox:SetValue(UUF.db.profile.Units[unit].Indicators.Totems.TotemDuration.ScaleByIconSize)
-    TotemDurationScaleByIconSizeCheckbox:SetRelativeWidth(0.5)
-    TotemDurationContainer:AddChild(TotemDurationScaleByIconSizeCheckbox)
-
-    local TotemDurationAnchorFromDropdown = AG:Create("Dropdown")
-    TotemDurationAnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
-    TotemDurationAnchorFromDropdown:SetLabel("Anchor From")
-    TotemDurationAnchorFromDropdown:SetValue(UUF.db.profile.Units[unit].Indicators.Totems.TotemDuration.Layout[1])
-    TotemDurationAnchorFromDropdown:SetRelativeWidth(0.5)
-    TotemDurationAnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.Units[unit].Indicators.Totems.TotemDuration.Layout[1] = value UUF:UpdateUnitTotems(UUF[unit:upper()], unit) end)
-    TotemDurationContainer:AddChild(TotemDurationAnchorFromDropdown)
-
-    local TotemDurationAnchorToDropdown = AG:Create("Dropdown")
-    TotemDurationAnchorToDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
-    TotemDurationAnchorToDropdown:SetLabel("Anchor To")
-    TotemDurationAnchorToDropdown:SetValue(UUF.db.profile.Units[unit].Indicators.Totems.TotemDuration.Layout[2])
-    TotemDurationAnchorToDropdown:SetRelativeWidth(0.5)
-    TotemDurationAnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.Units[unit].Indicators.Totems.TotemDuration.Layout[2] = value UUF:UpdateUnitTotems(UUF[unit:upper()], unit) end)
-    TotemDurationContainer:AddChild(TotemDurationAnchorToDropdown)
-
-    local TotemDurationXPosSlider = AG:Create("Slider")
-    TotemDurationXPosSlider:SetLabel("X Position")
-    TotemDurationXPosSlider:SetValue(UUF.db.profile.Units[unit].Indicators.Totems.TotemDuration.Layout[3])
-    TotemDurationXPosSlider:SetSliderValues(-3000, 3000, 0.1)
-    TotemDurationXPosSlider:SetRelativeWidth(0.33)
-    TotemDurationXPosSlider:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.Units[unit].Indicators.Totems.TotemDuration.Layout[3] = value UUF:UpdateUnitTotems(UUF[unit:upper()], unit) end)
-    TotemDurationContainer:AddChild(TotemDurationXPosSlider)
-
-    local TotemDurationYPosSlider = AG:Create("Slider")
-    TotemDurationYPosSlider:SetLabel("Y Position")
-    TotemDurationYPosSlider:SetValue(UUF.db.profile.Units[unit].Indicators.Totems.TotemDuration.Layout[4])
-    TotemDurationYPosSlider:SetSliderValues(-3000, 3000, 0.1)
-    TotemDurationYPosSlider:SetRelativeWidth(0.33)
-    TotemDurationYPosSlider:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.Units[unit].Indicators.Totems.TotemDuration.Layout[4] = value UUF:UpdateUnitTotems(UUF[unit:upper()], unit) end)
-    TotemDurationContainer:AddChild(TotemDurationYPosSlider)
-
-    local TotemDurationFontSizeSlider = AG:Create("Slider")
-    TotemDurationFontSizeSlider:SetLabel("Font Size")
-    TotemDurationFontSizeSlider:SetValue(UUF.db.profile.Units[unit].Indicators.Totems.TotemDuration.FontSize)
-    TotemDurationFontSizeSlider:SetSliderValues(8, 64, 1)
-    TotemDurationFontSizeSlider:SetRelativeWidth(0.33)
-    TotemDurationFontSizeSlider:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.Units[unit].Indicators.Totems.TotemDuration.FontSize = value UUF:UpdateUnitTotems(UUF[unit:upper()], unit) end)
-    TotemDurationFontSizeSlider:SetDisabled(UUF.db.profile.Units[unit].Indicators.Totems.TotemDuration.ScaleByIconSize)
-    TotemDurationContainer:AddChild(TotemDurationFontSizeSlider)
-    TotemDurationScaleByIconSizeCheckbox:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.Units[unit].Indicators.Totems.TotemDuration.ScaleByIconSize = value UUF:UpdateUnitTotems(UUF[unit:upper()], unit) TotemDurationFontSizeSlider:SetDisabled(value or not TotemsIndicatorDB.Enabled) end)
-
     local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Totems Settings")
 
     local Toggle = AG:Create("CheckBox")
@@ -2364,14 +2307,11 @@ local function CreateTotemsIndicatorSettings(containerParent, unit, updateCallba
     function RefreshTotemsIndicatorGUI()
         if TotemsIndicatorDB.Enabled then
             GUIWidgets.DeepDisable(ToggleContainer, false, Toggle)
-            GUIWidgets.DeepDisable(TotemDurationContainer, false)
             GUIWidgets.DeepDisable(LayoutContainer, false)
         else
             GUIWidgets.DeepDisable(ToggleContainer, true, Toggle)
-            GUIWidgets.DeepDisable(TotemDurationContainer, true)
             GUIWidgets.DeepDisable(LayoutContainer, true)
         end
-        TotemDurationFontSizeSlider:SetDisabled(TotemsIndicatorDB.TotemDuration.ScaleByIconSize or not TotemsIndicatorDB.Enabled)
     end
 
     RefreshTotemsIndicatorGUI()
@@ -2931,64 +2871,6 @@ end
 
 local function CreateAuraSettings(containerParent, unit)
     local AurasDB = UUF.db.profile.Units[unit].Auras
-    local AuraDurationContainer = GUIWidgets.CreateInlineGroup(containerParent, "Aura Duration Settings")
-
-    local ColourPicker = AG:Create("ColorPicker")
-    ColourPicker:SetLabel("Cooldown Text Colour")
-    ColourPicker:SetColor(UUF.db.profile.Units[unit].Auras.AuraDuration.Colour[1], UUF.db.profile.Units[unit].Auras.AuraDuration.Colour[2], UUF.db.profile.Units[unit].Auras.AuraDuration.Colour[3], 1)
-    ColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) UUF.db.profile.Units[unit].Auras.AuraDuration.Colour = {r, g, b} if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, "AuraDuration") end end)
-    ColourPicker:SetHasAlpha(false)
-    ColourPicker:SetRelativeWidth(0.5)
-    AuraDurationContainer:AddChild(ColourPicker)
-
-    local ScaleByIconSizeCheckbox = AG:Create("CheckBox")
-    ScaleByIconSizeCheckbox:SetLabel("Scale Cooldown Text By Icon Size")
-    ScaleByIconSizeCheckbox:SetValue(UUF.db.profile.Units[unit].Auras.AuraDuration.ScaleByIconSize)
-    ScaleByIconSizeCheckbox:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.Units[unit].Auras.AuraDuration.ScaleByIconSize = value if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, "AuraDuration") end RefreshFontSizeSlider() end)
-    ScaleByIconSizeCheckbox:SetRelativeWidth(0.5)
-    AuraDurationContainer:AddChild(ScaleByIconSizeCheckbox)
-
-    local AnchorFromDropdown = AG:Create("Dropdown")
-    AnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
-    AnchorFromDropdown:SetLabel("Anchor From")
-    AnchorFromDropdown:SetValue(UUF.db.profile.Units[unit].Auras.AuraDuration.Layout[1])
-    AnchorFromDropdown:SetRelativeWidth(0.5)
-    AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.Units[unit].Auras.AuraDuration.Layout[1] = value if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, "AuraDuration") end end)
-    AuraDurationContainer:AddChild(AnchorFromDropdown)
-
-    local AnchorToDropdown = AG:Create("Dropdown")
-    AnchorToDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
-    AnchorToDropdown:SetLabel("Anchor To")
-    AnchorToDropdown:SetValue(UUF.db.profile.Units[unit].Auras.AuraDuration.Layout[2])
-    AnchorToDropdown:SetRelativeWidth(0.5)
-    AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.Units[unit].Auras.AuraDuration.Layout[2] = value if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, "AuraDuration") end end)
-    AuraDurationContainer:AddChild(AnchorToDropdown)
-
-    local XPosSlider = AG:Create("Slider")
-    XPosSlider:SetLabel("X Position")
-    XPosSlider:SetValue(UUF.db.profile.Units[unit].Auras.AuraDuration.Layout[3])
-    XPosSlider:SetSliderValues(-3000, 3000, 0.1)
-    XPosSlider:SetRelativeWidth(0.33)
-    XPosSlider:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.Units[unit].Auras.AuraDuration.Layout[3] = value if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, "AuraDuration") end end)
-    AuraDurationContainer:AddChild(XPosSlider)
-
-    local YPosSlider = AG:Create("Slider")
-    YPosSlider:SetLabel("Y Position")
-    YPosSlider:SetValue(UUF.db.profile.Units[unit].Auras.AuraDuration.Layout[4])
-    YPosSlider:SetSliderValues(-3000, 3000, 0.1)
-    YPosSlider:SetRelativeWidth(0.33)
-    YPosSlider:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.Units[unit].Auras.AuraDuration.Layout[4] = value if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, "AuraDuration") end end)
-    AuraDurationContainer:AddChild(YPosSlider)
-
-    local FontSizeSlider = AG:Create("Slider")
-    FontSizeSlider:SetLabel("Font Size")
-    FontSizeSlider:SetValue(UUF.db.profile.Units[unit].Auras.AuraDuration.FontSize)
-    FontSizeSlider:SetSliderValues(8, 64, 1)
-    FontSizeSlider:SetRelativeWidth(0.33)
-    FontSizeSlider:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.Units[unit].Auras.AuraDuration.FontSize = value if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, "AuraDuration") end end)
-    FontSizeSlider:SetDisabled(UUF.db.profile.Units[unit].Auras.AuraDuration.ScaleByIconSize)
-    AuraDurationContainer:AddChild(FontSizeSlider)
-
     local FrameStrataDropdown = AG:Create("Dropdown")
     FrameStrataDropdown:SetList(FrameStrataList[1], FrameStrataList[2])
     FrameStrataDropdown:SetLabel("Frame Strata")
@@ -2996,14 +2878,6 @@ local function CreateAuraSettings(containerParent, unit)
     FrameStrataDropdown:SetRelativeWidth(1)
     FrameStrataDropdown:SetCallback("OnValueChanged", function(_, _, value) AurasDB.FrameStrata = value UUF:UpdateUnitAurasStrata(unit) end)
     containerParent:AddChild(FrameStrataDropdown)
-
-    function RefreshFontSizeSlider()
-        if UUF.db.profile.Units[unit].Auras.AuraDuration.ScaleByIconSize then
-            FontSizeSlider:SetDisabled(true)
-        else
-            FontSizeSlider:SetDisabled(false)
-        end
-    end
 
     local function SelectAuraTab(AuraContainer, _, AuraTab)
         SaveSubTab(unit, "Auras", AuraTab)
@@ -3015,7 +2889,6 @@ local function CreateAuraSettings(containerParent, unit)
         elseif AuraTab == "PrivateAuras" and unit == "player" then
             CreatePrivateAuraSettings(AuraContainer)
         end
-        C_Timer.After(0.001, RefreshFontSizeSlider)
         containerParent:DoLayout()
     end
 
@@ -3034,64 +2907,173 @@ local function CreateAuraSettings(containerParent, unit)
     containerParent:DoLayout()
 end
 
-local function CreateAuraDurationSettings(containerParent)
-    local AuraDurationContainer = GUIWidgets.CreateInlineGroup(containerParent, "Aura Duration Settings")
+local function CreateCooldownTextSettings(containerParent)
+    local CooldownTextDB = UUF.db.profile.General.CooldownText
 
-    local ColourPicker = AG:Create("ColorPicker")
-    ColourPicker:SetLabel("Cooldown Text Colour")
-    ColourPicker:SetColor(1, 1, 1, 1)
-    ColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) for _, unitDB in pairs(UUF.db.profile.Units) do unitDB.Auras.AuraDuration.Colour = {r, g, b} end UUF.db.profile.Units.player.Indicators.Totems.TotemDuration.Colour = {r, g, b} UUF:UpdateAllUnitFrames() end)
-    ColourPicker:SetHasAlpha(false)
-    ColourPicker:SetRelativeWidth(0.5)
-    AuraDurationContainer:AddChild(ColourPicker)
+    local AdvancedToggle = AG:Create("CheckBox")
+    AdvancedToggle:SetLabel("Advanced")
+    AdvancedToggle:SetValue(CooldownTextDB.Advanced)
+    AdvancedToggle:SetRelativeWidth(1)
+    AdvancedToggle:SetCallback("OnValueChanged", function(_, _, value) CooldownTextDB.Advanced = value UUF:UpdateAllUnitFrames() containerParent:ReleaseChildren() CreateCooldownTextSettings(containerParent) containerParent:DoLayout() end)
+    containerParent:AddChild(AdvancedToggle)
 
-    local ScaleByIconSizeCheckbox = AG:Create("CheckBox")
-    ScaleByIconSizeCheckbox:SetLabel("Scale Cooldown Text By Icon Size")
-    ScaleByIconSizeCheckbox:SetValue(false)
-    ScaleByIconSizeCheckbox:SetCallback("OnValueChanged", function(_, _, value) for _, unitDB in pairs(UUF.db.profile.Units) do unitDB.Auras.AuraDuration.ScaleByIconSize = value end UUF.db.profile.Units.player.Indicators.Totems.TotemDuration.ScaleByIconSize = value UUF:UpdateAllUnitFrames() end)
-    ScaleByIconSizeCheckbox:SetRelativeWidth(0.5)
-    AuraDurationContainer:AddChild(ScaleByIconSizeCheckbox)
+    local function CreateCooldownTextStyleSettings(StyleContainerParent, CooldownTextStyleDB, containerName)
+        local CooldownTextContainer = GUIWidgets.CreateInlineGroup(StyleContainerParent, containerName)
 
-    local AnchorFromDropdown = AG:Create("Dropdown")
-    AnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
-    AnchorFromDropdown:SetLabel("Anchor From")
-    AnchorFromDropdown:SetValue("CENTER")
-    AnchorFromDropdown:SetRelativeWidth(0.5)
-    AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) for _, unitDB in pairs(UUF.db.profile.Units) do unitDB.Auras.AuraDuration.Layout[1] = value end UUF.db.profile.Units.player.Indicators.Totems.TotemDuration.Layout[1] = value UUF:UpdateAllUnitFrames() end)
-    AuraDurationContainer:AddChild(AnchorFromDropdown)
+        local ScaleByIconSizeCheckbox = AG:Create("CheckBox")
+        ScaleByIconSizeCheckbox:SetLabel("Scale Cooldown Text By Icon Size")
+        ScaleByIconSizeCheckbox:SetValue(CooldownTextStyleDB.ScaleByIconSize)
+        ScaleByIconSizeCheckbox:SetRelativeWidth(1)
+        CooldownTextContainer:AddChild(ScaleByIconSizeCheckbox)
 
-    local AnchorToDropdown = AG:Create("Dropdown")
-    AnchorToDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
-    AnchorToDropdown:SetLabel("Anchor To")
-    AnchorToDropdown:SetValue("CENTER")
-    AnchorToDropdown:SetRelativeWidth(0.5)
-    AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) for _, unitDB in pairs(UUF.db.profile.Units) do unitDB.Auras.AuraDuration.Layout[2] = value end UUF.db.profile.Units.player.Indicators.Totems.TotemDuration.Layout[2] = value UUF:UpdateAllUnitFrames() end)
-    AuraDurationContainer:AddChild(AnchorToDropdown)
+        local AnchorFromDropdown = AG:Create("Dropdown")
+        AnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
+        AnchorFromDropdown:SetLabel("Anchor From")
+        AnchorFromDropdown:SetValue(CooldownTextStyleDB.Layout[1])
+        AnchorFromDropdown:SetRelativeWidth(0.5)
+        AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) CooldownTextStyleDB.Layout[1] = value UUF:UpdateAllUnitFrames() end)
+        CooldownTextContainer:AddChild(AnchorFromDropdown)
 
-    local XPosSlider = AG:Create("Slider")
-    XPosSlider:SetLabel("X Position")
-    XPosSlider:SetValue(0)
-    XPosSlider:SetSliderValues(-3000, 3000, 0.1)
-    XPosSlider:SetRelativeWidth(0.33)
-    XPosSlider:SetCallback("OnValueChanged", function(_, _, value) for _, unitDB in pairs(UUF.db.profile.Units) do unitDB.Auras.AuraDuration.Layout[3] = value end UUF.db.profile.Units.player.Indicators.Totems.TotemDuration.Layout[3] = value UUF:UpdateAllUnitFrames() end)
-    AuraDurationContainer:AddChild(XPosSlider)
+        local AnchorToDropdown = AG:Create("Dropdown")
+        AnchorToDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
+        AnchorToDropdown:SetLabel("Anchor To")
+        AnchorToDropdown:SetValue(CooldownTextStyleDB.Layout[2])
+        AnchorToDropdown:SetRelativeWidth(0.5)
+        AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) CooldownTextStyleDB.Layout[2] = value UUF:UpdateAllUnitFrames() end)
+        CooldownTextContainer:AddChild(AnchorToDropdown)
 
-    local YPosSlider = AG:Create("Slider")
-    YPosSlider:SetLabel("Y Position")
-    YPosSlider:SetValue(0)
-    YPosSlider:SetSliderValues(-3000, 3000, 0.1)
-    YPosSlider:SetRelativeWidth(0.33)
-    YPosSlider:SetCallback("OnValueChanged", function(_, _, value) for _, unitDB in pairs(UUF.db.profile.Units) do unitDB.Auras.AuraDuration.Layout[4] = value end UUF.db.profile.Units.player.Indicators.Totems.TotemDuration.Layout[4] = value UUF:UpdateAllUnitFrames() end)
-    AuraDurationContainer:AddChild(YPosSlider)
+        local XPosSlider = AG:Create("Slider")
+        XPosSlider:SetLabel("X Position")
+        XPosSlider:SetValue(CooldownTextStyleDB.Layout[3])
+        XPosSlider:SetSliderValues(-3000, 3000, 0.1)
+        XPosSlider:SetRelativeWidth(0.33)
+        XPosSlider:SetCallback("OnValueChanged", function(_, _, value) CooldownTextStyleDB.Layout[3] = value UUF:UpdateAllUnitFrames() end)
+        CooldownTextContainer:AddChild(XPosSlider)
 
-    local FontSizeSlider = AG:Create("Slider")
-    FontSizeSlider:SetLabel("Font Size")
-    FontSizeSlider:SetValue(12)
-    FontSizeSlider:SetSliderValues(8, 64, 1)
-    FontSizeSlider:SetRelativeWidth(0.33)
-    FontSizeSlider:SetCallback("OnValueChanged", function(_, _, value) for _, unitDB in pairs(UUF.db.profile.Units) do unitDB.Auras.AuraDuration.FontSize = value end UUF.db.profile.Units.player.Indicators.Totems.TotemDuration.FontSize = value UUF:UpdateAllUnitFrames() end)
-    FontSizeSlider:SetDisabled(false)
-    AuraDurationContainer:AddChild(FontSizeSlider)
+        local YPosSlider = AG:Create("Slider")
+        YPosSlider:SetLabel("Y Position")
+        YPosSlider:SetValue(CooldownTextStyleDB.Layout[4])
+        YPosSlider:SetSliderValues(-3000, 3000, 0.1)
+        YPosSlider:SetRelativeWidth(0.33)
+        YPosSlider:SetCallback("OnValueChanged", function(_, _, value) CooldownTextStyleDB.Layout[4] = value UUF:UpdateAllUnitFrames() end)
+        CooldownTextContainer:AddChild(YPosSlider)
+
+        local FontSizeSlider = AG:Create("Slider")
+        FontSizeSlider:SetLabel("Font Size")
+        FontSizeSlider:SetValue(CooldownTextStyleDB.FontSize)
+        FontSizeSlider:SetSliderValues(8, 64, 1)
+        FontSizeSlider:SetRelativeWidth(0.33)
+        FontSizeSlider:SetCallback("OnValueChanged", function(_, _, value) CooldownTextStyleDB.FontSize = value UUF:UpdateAllUnitFrames() end)
+        FontSizeSlider:SetDisabled(CooldownTextStyleDB.ScaleByIconSize)
+        CooldownTextContainer:AddChild(FontSizeSlider)
+        ScaleByIconSizeCheckbox:SetCallback("OnValueChanged", function(_, _, value) CooldownTextStyleDB.ScaleByIconSize = value FontSizeSlider:SetDisabled(value) UUF:UpdateAllUnitFrames() end)
+    end
+
+    if CooldownTextDB.Advanced then
+        local function SelectCooldownTextTab(CooldownTextTabContainer, _, CooldownTextTab)
+            CooldownTextTabContainer:ReleaseChildren()
+            if CooldownTextTab == "Global" then
+                CreateCooldownTextStyleSettings(CooldownTextTabContainer, CooldownTextDB, "Global Cooldown Text Settings")
+            elseif CooldownTextTab == "Auras" then
+                local function SelectAuraUnit(AuraUnitContainer, _, unit)
+                    AuraUnitContainer:ReleaseChildren()
+                    CreateCooldownTextStyleSettings(AuraUnitContainer, UUF.db.profile.Units[unit].Auras.AuraDuration, UnitDBToUnitPrettyName[unit] .. " Aura Cooldown Text Settings")
+                    containerParent:DoLayout()
+                end
+
+                local AuraUnitTabs = AG:Create("TabGroup")
+                AuraUnitTabs:SetLayout("Flow")
+                AuraUnitTabs:SetFullWidth(true)
+                AuraUnitTabs:SetTabs({
+                    { text = "Player", value = "player" },
+                    { text = "Target", value = "target" },
+                    { text = "Target of Target", value = "targettarget" },
+                    { text = "Focus", value = "focus" },
+                    { text = "Focus Target", value = "focustarget" },
+                    { text = "Pet", value = "pet" },
+                    { text = "Boss", value = "boss" },
+                })
+                AuraUnitTabs:SetCallback("OnGroupSelected", SelectAuraUnit)
+                AuraUnitTabs:SelectTab("player")
+                CooldownTextTabContainer:AddChild(AuraUnitTabs)
+            end
+            containerParent:DoLayout()
+        end
+
+        local CooldownTextTabs = AG:Create("TabGroup")
+        CooldownTextTabs:SetLayout("Flow")
+        CooldownTextTabs:SetFullWidth(true)
+        CooldownTextTabs:SetTabs({
+            { text = "Global", value = "Global" },
+            { text = "Auras", value = "Auras" },
+        })
+        CooldownTextTabs:SetCallback("OnGroupSelected", SelectCooldownTextTab)
+        CooldownTextTabs:SelectTab("Global")
+        containerParent:AddChild(CooldownTextTabs)
+    else
+        CreateCooldownTextStyleSettings(containerParent, CooldownTextDB, "Cooldown Text Settings")
+    end
+
+    local Breakpoints = CooldownTextDB.CooldownBreakpoints
+    local DefaultBreakpoints = UUF:GetDefaultDB().profile.General.CooldownText.CooldownBreakpoints
+    for BreakpointIndex = 1, 5 do
+        Breakpoints[BreakpointIndex] = Breakpoints[BreakpointIndex] or CopyTable(DefaultBreakpoints[BreakpointIndex])
+        Breakpoints[BreakpointIndex].color = Breakpoints[BreakpointIndex].color or CopyTable(DefaultBreakpoints[BreakpointIndex].color)
+    end
+    while #Breakpoints > 5 do tremove(Breakpoints) end
+
+    local BreakpointContainer = GUIWidgets.CreateInlineGroup(containerParent, "Cooldown Text Breakpoints")
+    GUIWidgets.CreateInformationTag(BreakpointContainer, "Configure up to five breakpoints. The breakpoint with the highest minimum value below the remaining duration controls its format and colour.")
+
+    local function SelectBreakpoint(BreakpointTabContainer, _, BreakpointIndex)
+        BreakpointTabContainer:ReleaseChildren()
+        local BreakpointDB = Breakpoints[BreakpointIndex]
+
+        local MinimumValue = AG:Create("EditBox")
+        MinimumValue:SetLabel("Minimum Value (seconds)")
+        MinimumValue:SetText(tostring(BreakpointDB.threshold or 0))
+        MinimumValue:SetRelativeWidth(0.33)
+        MinimumValue:SetCallback("OnEnterPressed", function(widget, _, value) value = tonumber(value) if not value then widget:SetText(tostring(BreakpointDB.threshold or 0)) return end BreakpointDB.threshold = value BreakpointDB.components = UUF:GetCooldownDurationComponents(BreakpointDB.displayStyle, value) UUF:UpdateAllUnitFrames() end)
+        BreakpointTabContainer:AddChild(MinimumValue)
+
+        local DisplayStyle = AG:Create("Dropdown")
+        DisplayStyle:SetLabel("Display Style")
+        DisplayStyle:SetList(UUF.CooldownDurationDisplayStyles[1], UUF.CooldownDurationDisplayStyles[2])
+        DisplayStyle:SetValue(BreakpointDB.displayStyle)
+        DisplayStyle:SetRelativeWidth(0.33)
+        DisplayStyle:SetCallback("OnValueChanged", function(_, _, value)
+            local DisplayStyleDB = UUF.CooldownDurationDisplayStyleSettings[value]
+            BreakpointDB.displayStyle = value
+            BreakpointDB.step = DisplayStyleDB.step
+            BreakpointDB.rounding = DisplayStyleDB.rounding
+            BreakpointDB.format = CreateColor(unpack(BreakpointDB.color)):WrapTextInColorCode(DisplayStyleDB.format)
+            BreakpointDB.components = UUF:GetCooldownDurationComponents(value, BreakpointDB.threshold or 0)
+            UUF:UpdateAllUnitFrames()
+        end)
+        BreakpointTabContainer:AddChild(DisplayStyle)
+
+        local ColourPicker = AG:Create("ColorPicker")
+        ColourPicker:SetLabel("Colour")
+        ColourPicker:SetColor(BreakpointDB.color[1], BreakpointDB.color[2], BreakpointDB.color[3], BreakpointDB.color[4] or 1)
+        ColourPicker:SetHasAlpha(false)
+        ColourPicker:SetRelativeWidth(0.33)
+        ColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) BreakpointDB.color = {r, g, b, 1} BreakpointDB.format = CreateColor(r, g, b, 1):WrapTextInColorCode(UUF.CooldownDurationDisplayStyleSettings[BreakpointDB.displayStyle].format) UUF:UpdateAllUnitFrames() end)
+        BreakpointTabContainer:AddChild(ColourPicker)
+    end
+
+    local BreakpointTabs = AG:Create("TabGroup")
+    BreakpointTabs:SetLayout("Flow")
+    BreakpointTabs:SetFullWidth(true)
+    BreakpointTabs:SetTabs({
+        { text = "Breakpoint 1", value = 1 },
+        { text = "Breakpoint 2", value = 2 },
+        { text = "Breakpoint 3", value = 3 },
+        { text = "Breakpoint 4", value = 4 },
+        { text = "Breakpoint 5", value = 5 },
+    })
+    BreakpointTabs:SetCallback("OnGroupSelected", SelectBreakpoint)
+    BreakpointTabs:SelectTab(1)
+    BreakpointContainer:AddChild(BreakpointTabs)
 end
 
 local function CreateGlobalSettings(containerParent)
@@ -3136,7 +3118,6 @@ local function CreateGlobalSettings(containerParent)
     CreateFontSettings(GlobalContainer)
     CreateTextureSettings(GlobalContainer)
     CreateRangeSettings(GlobalContainer)
-    CreateAuraDurationSettings(GlobalContainer)
 
     local TagContainer = GUIWidgets.CreateInlineGroup(GlobalContainer, "Tag Settings")
 
@@ -3675,6 +3656,12 @@ function UUF:CreateGUI()
             local ScrollFrame = GUIWidgets.CreateScrollFrame(Wrapper)
 
             CreateGlobalSettings(ScrollFrame)
+
+            ScrollFrame:DoLayout()
+        elseif MainTab == "CooldownText" then
+            local ScrollFrame = GUIWidgets.CreateScrollFrame(Wrapper)
+
+            CreateCooldownTextSettings(ScrollFrame)
 
             ScrollFrame:DoLayout()
         elseif MainTab == "Player" then
