@@ -167,6 +167,7 @@ function UUF:UpdateAllUnitFrames()
             UUF:UpdateUnitFrame(UUF[unit:upper()], unit)
         end
     end
+    if #UUF.BOSS_FRAMES > 0 then UUF:UpdateBossFrames() end
 end
 
 function UUF:ToggleUnitFrameVisibility(unit)
