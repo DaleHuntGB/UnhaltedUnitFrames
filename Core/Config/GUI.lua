@@ -1974,7 +1974,8 @@ local function CreateQuestIndicatorSettings(containerParent, updateCallback)
     TextureDropdown:SetList({
         DEFAULT = "|TInterface\\TargetingFrame\\PortraitQuestBadge:20:20|t",
         QUEST0 = "|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Quest\\Quest01.png:20:6|t",
-    }, {"DEFAULT", "QUEST0"})
+        QUEST1 = "|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Quest\\Quest02.png:20:20|t",
+    }, {"DEFAULT", "QUEST0", "QUEST1"})
     TextureDropdown:SetLabel("Quest Texture")
     TextureDropdown:SetValue(QuestIndicatorDB.Texture or "DEFAULT")
     TextureDropdown:SetRelativeWidth(0.5)
