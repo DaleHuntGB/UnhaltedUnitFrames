@@ -6,30 +6,7 @@ UUF.CASTBAR_TEST_MODE = false
 UUF.BOSS_TEST_MODE = false
 UUF.BOSS_FRAMES = {}
 UUF.MAX_BOSS_FRAMES = 5
-UUF.CooldownDurationFormatters = setmetatable({}, {__mode = "k"})
-
-UUF.CooldownDurationDisplayStyles = {
-    {
-        decimalSeconds = "Decimal Seconds (1.1)",
-        seconds = "Seconds (10s)",
-        secondsOnly = "Seconds (10)",
-        clock = "Clock (1:10)",
-        minutes = "Minutes (2m)",
-        hours = "Hours (1h)",
-        days = "Days (1d)",
-    },
-    {"decimalSeconds", "seconds", "secondsOnly", "clock", "minutes", "hours", "days"},
-}
-
-UUF.CooldownDurationDisplayStyleSettings = {
-    decimalSeconds = {step = 0.1, rounding = Enum.NumericRuleFormatRounding.Up, format = "%.1f"},
-    seconds = {step = 1, rounding = Enum.NumericRuleFormatRounding.Up, format = "%ds"},
-    secondsOnly = {step = 1, rounding = Enum.NumericRuleFormatRounding.Up, format = "%d"},
-    clock = {step = 1, rounding = Enum.NumericRuleFormatRounding.Up, format = "%d:%02d"},
-    minutes = {step = 1, rounding = Enum.NumericRuleFormatRounding.Up, format = "%dm"},
-    hours = {step = 1, rounding = Enum.NumericRuleFormatRounding.Up, format = "%dh"},
-    days = {step = 1, rounding = Enum.NumericRuleFormatRounding.Up, format = "%dd"},
-}
+local CooldownDurationFormatter = C_StringUtil.CreateNumericRuleFormatter()
 
 UUF.LSM = LibStub("LibSharedMedia-3.0")
 UUF.LDS = LibStub("LibDualSpec-1.0")
@@ -153,21 +130,13 @@ function UUF:GetCooldownDurationComponents(displayStyle, minValue)
     end
 end
 
-function UUF:ApplyCooldownDurationFormatter(icon, CooldownTextDB)
-    if not icon.SetCountdownFormatter then return end
-    local formatter = UUF.CooldownDurationFormatters[CooldownTextDB]
-    if not formatter then
-        formatter = C_StringUtil.CreateNumericRuleFormatter()
-        UUF.CooldownDurationFormatters[CooldownTextDB] = formatter
-    end
-    formatter:SetBreakpoints(CooldownTextDB.CooldownBreakpoints)
-    icon:SetCountdownFormatter(formatter)
-end
-
 function UUF:ApplyCooldownText(icon, textRegion, unit)
     if not icon then return end
     local CooldownTextDB = UUF.db.profile.General.CooldownText
-    UUF:ApplyCooldownDurationFormatter(icon, CooldownTextDB)
+    if icon.SetCountdownFormatter then
+        CooldownDurationFormatter:SetBreakpoints(CooldownTextDB.CooldownBreakpoints)
+        icon:SetCountdownFormatter(CooldownDurationFormatter)
+    end
     if CooldownTextDB.Advanced and unit then CooldownTextDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Auras.AuraDuration end
     if not textRegion then
         C_Timer.After(0.01, function()
