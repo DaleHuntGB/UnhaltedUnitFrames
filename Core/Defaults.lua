@@ -491,6 +491,7 @@ local Defaults = {
                         Enabled = true,
                         Size = 16,
                         Layout = {"TOPLEFT", "TOPLEFT", 3, -3},
+                        Texture = "DEFAULT",
                     },
                 },
                 Range = {
