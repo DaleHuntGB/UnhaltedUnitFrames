@@ -54,7 +54,7 @@ local function ApplyAuraVisuals(button, unit, auraType, applyOverlay)
     if auraCooldown then
         auraCooldown:SetDrawEdge(false)
         auraCooldown:SetReverse(true)
-        UUF:ApplyAuraDuration(auraCooldown, aurasDB.AuraDuration)
+        UUF:ApplyCooldownText(auraCooldown, nil, unit)
     end
 
     ApplyAuraCountStyle(button.Count, auraConfig, button, fontsDB)
@@ -403,7 +403,6 @@ function UUF:CreateTestAuras(unitFrame, unit)
     if not unit then return end
     if not unitFrame then return end
     local General = UUF.db.profile.General
-    local AuraDurationDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Auras.AuraDuration
     local BuffsDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Auras.Buffs
     local DebuffsDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Auras.Debuffs
     if UUF.AURA_TEST_MODE then
@@ -517,7 +516,7 @@ function UUF:CreateTestAuras(unitFrame, unit)
                     button.Icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
                     button.Count:SetText(j)
                     button.Duration = button.Duration or button:CreateFontString(nil, "OVERLAY")
-                    UUF:ApplyAuraDuration(button, AuraDurationDB, button.Duration)
+                    UUF:ApplyCooldownText(button, button.Duration, unit)
                     button.Duration:SetText("10m")
                     button:Show()
                 end
@@ -583,7 +582,7 @@ function UUF:CreateTestAuras(unitFrame, unit)
                     button.Icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
                     button.Count:SetText(j)
                     button.Duration = button.Duration or button:CreateFontString(nil, "OVERLAY")
-                    UUF:ApplyAuraDuration(button, AuraDurationDB, button.Duration)
+                    UUF:ApplyCooldownText(button, button.Duration, unit)
                     button.Duration:SetText("10m")
                     button:Show()
                 end
