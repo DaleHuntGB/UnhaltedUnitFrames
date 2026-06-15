@@ -37,7 +37,7 @@ function UUF:CreateUnitTotems(unitFrame, unit)
         Totem.Cooldown:SetDrawSwipe(true)
         Totem.Cooldown:SetHideCountdownNumbers(false)
         Totem.Cooldown:SetReverse(true)
-        UUF:ApplyAuraDuration(Totem.Cooldown, TotemsDB.TotemDuration)
+        UUF:ApplyCooldownText(Totem.Cooldown)
 
         Totems[index] = Totem
     end
@@ -48,7 +48,7 @@ function UUF:CreateUnitTotems(unitFrame, unit)
     end
 
     Totems.PostUpdate = function(self, slot)
-        UUF:ApplyAuraDuration(self[totemPriorities[slot]].Cooldown, UUF.db.profile.Units.player.Indicators.Totems.TotemDuration)
+        UUF:ApplyCooldownText(self[totemPriorities[slot]].Cooldown)
     end
 
     unitFrame.Totems = Totems
@@ -70,7 +70,7 @@ function UUF:UpdateUnitTotems(unitFrame, unit)
             Totem:ClearAllPoints()
             Totem:SetSize(TotemsDB.Size, TotemsDB.Size)
             Totem:SetPoint(TotemsDB.Layout[1], unitFrame.HighLevelContainer, TotemsDB.Layout[2], TotemsDB.Layout[3] + xOffset, TotemsDB.Layout[4])
-            UUF:ApplyAuraDuration(Totem.Cooldown, TotemsDB.TotemDuration)
+            UUF:ApplyCooldownText(Totem.Cooldown)
             Totem:Show()
         end
 
