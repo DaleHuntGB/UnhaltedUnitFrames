@@ -8,10 +8,10 @@ function UUF:CreateUnitQuestIndicator(unitFrame, unit)
     QuestIndicator:SetPoint(QuestIndicatorDB.Layout[1], unitFrame.HighLevelContainer, QuestIndicatorDB.Layout[2], QuestIndicatorDB.Layout[3], QuestIndicatorDB.Layout[4])
 
     if QuestIndicatorDB.Enabled then
-        unitFrame.QuestIndicator = QuestIndicator
-        unitFrame.QuestIndicator:Show()
+        unitFrame.QuestUnitIndicator = QuestIndicator
+        unitFrame.QuestUnitIndicator:Show()
     else
-        if unitFrame:IsElementEnabled("QuestIndicator") then unitFrame:DisableElement("QuestIndicator") end
+        if unitFrame:IsElementEnabled("QuestUnitIndicator") then unitFrame:DisableElement("QuestUnitIndicator") end
         QuestIndicator:Hide()
     end
 
@@ -22,23 +22,22 @@ function UUF:UpdateUnitQuestIndicator(unitFrame, unit)
     local QuestIndicatorDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Indicators.Quest
 
     if QuestIndicatorDB.Enabled then
-        unitFrame.QuestIndicator = unitFrame.QuestIndicator or UUF:CreateUnitQuestIndicator(unitFrame, unit)
+        unitFrame.QuestUnitIndicator = unitFrame.QuestUnitIndicator or UUF:CreateUnitQuestIndicator(unitFrame, unit)
 
-        if not unitFrame:IsElementEnabled("QuestIndicator") then unitFrame:EnableElement("QuestIndicator") end
+        if not unitFrame:IsElementEnabled("QuestUnitIndicator") then unitFrame:EnableElement("QuestUnitIndicator") end
 
-        if unitFrame.QuestIndicator then
-            unitFrame.QuestIndicator:ClearAllPoints()
-            unitFrame.QuestIndicator:SetSize(QuestIndicatorDB.Size, QuestIndicatorDB.Size)
-            unitFrame.QuestIndicator:SetPoint(QuestIndicatorDB.Layout[1], unitFrame.HighLevelContainer, QuestIndicatorDB.Layout[2], QuestIndicatorDB.Layout[3], QuestIndicatorDB.Layout[4])
-            unitFrame.QuestIndicator:Show()
-            unitFrame.QuestIndicator:ForceUpdate()
+        if unitFrame.QuestUnitIndicator then
+            unitFrame.QuestUnitIndicator:ClearAllPoints()
+            unitFrame.QuestUnitIndicator:SetSize(QuestIndicatorDB.Size, QuestIndicatorDB.Size)
+            unitFrame.QuestUnitIndicator:SetPoint(QuestIndicatorDB.Layout[1], unitFrame.HighLevelContainer, QuestIndicatorDB.Layout[2], QuestIndicatorDB.Layout[3], QuestIndicatorDB.Layout[4])
+            unitFrame.QuestUnitIndicator:ForceUpdate()
         end
     else
-        if not unitFrame.QuestIndicator then return end
-        if unitFrame:IsElementEnabled("QuestIndicator") then unitFrame:DisableElement("QuestIndicator") end
-        if unitFrame.QuestIndicator then
-            unitFrame.QuestIndicator:Hide()
-            unitFrame.QuestIndicator = nil
+        if not unitFrame.QuestUnitIndicator then return end
+        if unitFrame:IsElementEnabled("QuestUnitIndicator") then unitFrame:DisableElement("QuestUnitIndicator") end
+        if unitFrame.QuestUnitIndicator then
+            unitFrame.QuestUnitIndicator:Hide()
+            unitFrame.QuestUnitIndicator = nil
         end
     end
 end
