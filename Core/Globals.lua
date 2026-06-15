@@ -6,6 +6,30 @@ UUF.CASTBAR_TEST_MODE = false
 UUF.BOSS_TEST_MODE = false
 UUF.BOSS_FRAMES = {}
 UUF.MAX_BOSS_FRAMES = 5
+UUF.CooldownDurationFormatters = setmetatable({}, {__mode = "k"})
+
+UUF.CooldownDurationDisplayStyles = {
+    {
+        decimalSeconds = "Decimal Seconds (1.1)",
+        seconds = "Seconds (10s)",
+        secondsOnly = "Seconds (10)",
+        clock = "Clock (1:10)",
+        minutes = "Minutes (2m)",
+        hours = "Hours (1h)",
+        days = "Days (1d)",
+    },
+    {"decimalSeconds", "seconds", "secondsOnly", "clock", "minutes", "hours", "days"},
+}
+
+UUF.CooldownDurationDisplayStyleSettings = {
+    decimalSeconds = {step = 0.1, rounding = Enum.NumericRuleFormatRounding.Up, format = "%.1f"},
+    seconds = {step = 1, rounding = Enum.NumericRuleFormatRounding.Up, format = "%ds"},
+    secondsOnly = {step = 1, rounding = Enum.NumericRuleFormatRounding.Up, format = "%d"},
+    clock = {step = 1, rounding = Enum.NumericRuleFormatRounding.Up, format = "%d:%02d"},
+    minutes = {step = 1, rounding = Enum.NumericRuleFormatRounding.Up, format = "%dm"},
+    hours = {step = 1, rounding = Enum.NumericRuleFormatRounding.Up, format = "%dh"},
+    days = {step = 1, rounding = Enum.NumericRuleFormatRounding.Up, format = "%dd"},
+}
 
 UUF.LSM = LibStub("LibSharedMedia-3.0")
 UUF.LDS = LibStub("LibDualSpec-1.0")
@@ -112,13 +136,44 @@ function UUF:ResolveLSM()
     UUF.Media.Background = LSM:Fetch("statusbar", General.Textures.Background) or "Interface\\Buttons\\WHITE8X8"
 end
 
-function UUF:ApplyAuraDuration(icon, AuraDurationDB, textRegion)
-    if not icon or not AuraDurationDB then return end
+function UUF:GetCooldownDurationComponents(displayStyle, minValue)
+    if displayStyle == "clock" then
+        if minValue >= 86400 then
+            return {{div = 86400}, {div = 3600, mod = 24}}
+        elseif minValue >= 3600 then
+            return {{div = 3600}, {div = 60, mod = 60}}
+        end
+        return {{div = 60}, {mod = 60}}
+    elseif displayStyle == "minutes" then
+        return {{div = 60}}
+    elseif displayStyle == "hours" then
+        return {{div = 3600}}
+    elseif displayStyle == "days" then
+        return {{div = 86400}}
+    end
+end
+
+function UUF:ApplyCooldownDurationFormatter(icon, CooldownTextDB)
+    if not icon.SetCountdownFormatter then return end
+    local formatter = UUF.CooldownDurationFormatters[CooldownTextDB]
+    if not formatter then
+        formatter = C_StringUtil.CreateNumericRuleFormatter()
+        UUF.CooldownDurationFormatters[CooldownTextDB] = formatter
+    end
+    formatter:SetBreakpoints(CooldownTextDB.CooldownBreakpoints)
+    icon:SetCountdownFormatter(formatter)
+end
+
+function UUF:ApplyCooldownText(icon, textRegion, unit)
+    if not icon then return end
+    local CooldownTextDB = UUF.db.profile.General.CooldownText
+    UUF:ApplyCooldownDurationFormatter(icon, CooldownTextDB)
+    if CooldownTextDB.Advanced and unit then CooldownTextDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Auras.AuraDuration end
     if not textRegion then
         C_Timer.After(0.01, function()
             for _, region in ipairs({icon:GetRegions()}) do
                 if region:GetObjectType() == "FontString" then
-                    UUF:ApplyAuraDuration(icon, AuraDurationDB, region)
+                    UUF:ApplyCooldownText(icon, region, unit)
                     return
                 end
             end
@@ -127,18 +182,17 @@ function UUF:ApplyAuraDuration(icon, AuraDurationDB, textRegion)
     end
 
     local FontsDB = UUF.db.profile.General.Fonts
-    if AuraDurationDB.ScaleByIconSize then
+    if CooldownTextDB.ScaleByIconSize then
         local iconWidth = icon:GetWidth()
         local scaleFactor = iconWidth > 0 and iconWidth / 36 or 1
-        local fontSize = AuraDurationDB.FontSize * scaleFactor
+        local fontSize = CooldownTextDB.FontSize * scaleFactor
         if fontSize < 1 then fontSize = 12 end
         textRegion:SetFont(UUF.Media.Font, fontSize, FontsDB.FontFlag)
     else
-        textRegion:SetFont(UUF.Media.Font, AuraDurationDB.FontSize, FontsDB.FontFlag)
+        textRegion:SetFont(UUF.Media.Font, CooldownTextDB.FontSize, FontsDB.FontFlag)
     end
-    textRegion:SetTextColor(AuraDurationDB.Colour[1], AuraDurationDB.Colour[2], AuraDurationDB.Colour[3], 1)
     textRegion:ClearAllPoints()
-    textRegion:SetPoint(AuraDurationDB.Layout[1], icon, AuraDurationDB.Layout[2], AuraDurationDB.Layout[3], AuraDurationDB.Layout[4])
+    textRegion:SetPoint(CooldownTextDB.Layout[1], icon, CooldownTextDB.Layout[2], CooldownTextDB.Layout[3], CooldownTextDB.Layout[4])
     if FontsDB.Shadow.Enabled then
         textRegion:SetShadowColor(FontsDB.Shadow.Colour[1], FontsDB.Shadow.Colour[2], FontsDB.Shadow.Colour[3], FontsDB.Shadow.Colour[4])
         textRegion:SetShadowOffset(FontsDB.Shadow.XPos, FontsDB.Shadow.YPos)
