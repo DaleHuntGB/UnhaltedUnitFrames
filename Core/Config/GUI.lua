@@ -2915,6 +2915,8 @@ local function CreateCooldownTextSettings(containerParent)
     AdvancedToggle:SetValue(CooldownTextDB.Advanced)
     AdvancedToggle:SetRelativeWidth(1)
     AdvancedToggle:SetCallback("OnValueChanged", function(_, _, value) CooldownTextDB.Advanced = value UUF:UpdateAllUnitFrames() containerParent:ReleaseChildren() CreateCooldownTextSettings(containerParent) containerParent:DoLayout() end)
+    AdvancedToggle:SetCallback("OnEnter", function() GameTooltip:SetOwner(AdvancedToggle.frame, "ANCHOR_CURSOR") GameTooltip:AddLine("Advanced Settings will allow you to customize cooldown text for each unit individually.", 1, 1, 1, true) GameTooltip:Show() end)
+    AdvancedToggle:SetCallback("OnLeave", function() GameTooltip:Hide() end)
     containerParent:AddChild(AdvancedToggle)
 
     local function CreateCooldownTextStyleSettings(StyleContainerParent, CooldownTextStyleDB, containerName)
