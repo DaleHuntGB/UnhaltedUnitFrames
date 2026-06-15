@@ -1967,8 +1967,19 @@ local function CreateQuestIndicatorSettings(containerParent, updateCallback)
     Toggle:SetLabel("Enable |cFF8080FFQuest|r Indicator")
     Toggle:SetValue(QuestIndicatorDB.Enabled)
     Toggle:SetCallback("OnValueChanged", function(_, _, value) QuestIndicatorDB.Enabled = value updateCallback() RefreshQuestIndicatorGUI() end)
-    Toggle:SetRelativeWidth(1)
+    Toggle:SetRelativeWidth(0.5)
     ToggleContainer:AddChild(Toggle)
+
+    local TextureDropdown = AG:Create("Dropdown")
+    TextureDropdown:SetList({
+        DEFAULT = "|TInterface\\TargetingFrame\\PortraitQuestBadge:20:20|t",
+        QUEST0 = "|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Quest\\Quest01.png:20:6|t",
+    }, {"DEFAULT", "QUEST0"})
+    TextureDropdown:SetLabel("Quest Texture")
+    TextureDropdown:SetValue(QuestIndicatorDB.Texture or "DEFAULT")
+    TextureDropdown:SetRelativeWidth(0.5)
+    TextureDropdown:SetCallback("OnValueChanged", function(_, _, value) QuestIndicatorDB.Texture = value updateCallback() end)
+    ToggleContainer:AddChild(TextureDropdown)
 
     local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
 
