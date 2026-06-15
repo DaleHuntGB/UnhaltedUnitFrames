@@ -2933,24 +2933,23 @@ end
 
 local function CreateCooldownTextSettings(containerParent)
     local CooldownTextDB = UUF.db.profile.General.CooldownText
+    local CooldownTextContainer = GUIWidgets.CreateInlineGroup(containerParent, "Cooldown Text Settings")
 
     local AdvancedToggle = AG:Create("CheckBox")
     AdvancedToggle:SetLabel("Advanced")
     AdvancedToggle:SetValue(CooldownTextDB.Advanced)
-    AdvancedToggle:SetRelativeWidth(1)
+    AdvancedToggle:SetRelativeWidth(CooldownTextDB.Advanced and 1 or 0.5)
     AdvancedToggle:SetCallback("OnValueChanged", function(_, _, value) CooldownTextDB.Advanced = value UUF:UpdateAllUnitFrames() containerParent:ReleaseChildren() CreateCooldownTextSettings(containerParent) containerParent:DoLayout() end)
     AdvancedToggle:SetCallback("OnEnter", function() GameTooltip:SetOwner(AdvancedToggle.frame, "ANCHOR_CURSOR") GameTooltip:AddLine("Advanced Settings will allow you to customize cooldown text for each unit individually.", 1, 1, 1, true) GameTooltip:Show() end)
     AdvancedToggle:SetCallback("OnLeave", function() GameTooltip:Hide() end)
-    containerParent:AddChild(AdvancedToggle)
+    CooldownTextContainer:AddChild(AdvancedToggle)
 
-    local function CreateCooldownTextStyleSettings(StyleContainerParent, CooldownTextStyleDB, containerName)
-        local CooldownTextContainer = GUIWidgets.CreateInlineGroup(StyleContainerParent, containerName)
-
+    local function CreateCooldownTextStyleSettings(StyleContainerParent, CooldownTextStyleDB)
         local ScaleByIconSizeCheckbox = AG:Create("CheckBox")
         ScaleByIconSizeCheckbox:SetLabel("Scale Cooldown Text By Icon Size")
         ScaleByIconSizeCheckbox:SetValue(CooldownTextStyleDB.ScaleByIconSize)
-        ScaleByIconSizeCheckbox:SetRelativeWidth(1)
-        CooldownTextContainer:AddChild(ScaleByIconSizeCheckbox)
+        ScaleByIconSizeCheckbox:SetRelativeWidth(CooldownTextDB.Advanced and 1 or 0.5)
+        StyleContainerParent:AddChild(ScaleByIconSizeCheckbox)
 
         local AnchorFromDropdown = AG:Create("Dropdown")
         AnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
@@ -2958,7 +2957,7 @@ local function CreateCooldownTextSettings(containerParent)
         AnchorFromDropdown:SetValue(CooldownTextStyleDB.Layout[1])
         AnchorFromDropdown:SetRelativeWidth(0.5)
         AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) CooldownTextStyleDB.Layout[1] = value UUF:UpdateAllUnitFrames() end)
-        CooldownTextContainer:AddChild(AnchorFromDropdown)
+        StyleContainerParent:AddChild(AnchorFromDropdown)
 
         local AnchorToDropdown = AG:Create("Dropdown")
         AnchorToDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
@@ -2966,7 +2965,7 @@ local function CreateCooldownTextSettings(containerParent)
         AnchorToDropdown:SetValue(CooldownTextStyleDB.Layout[2])
         AnchorToDropdown:SetRelativeWidth(0.5)
         AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) CooldownTextStyleDB.Layout[2] = value UUF:UpdateAllUnitFrames() end)
-        CooldownTextContainer:AddChild(AnchorToDropdown)
+        StyleContainerParent:AddChild(AnchorToDropdown)
 
         local XPosSlider = AG:Create("Slider")
         XPosSlider:SetLabel("X Position")
@@ -2974,7 +2973,7 @@ local function CreateCooldownTextSettings(containerParent)
         XPosSlider:SetSliderValues(-3000, 3000, 0.1)
         XPosSlider:SetRelativeWidth(0.33)
         XPosSlider:SetCallback("OnValueChanged", function(_, _, value) CooldownTextStyleDB.Layout[3] = value UUF:UpdateAllUnitFrames() end)
-        CooldownTextContainer:AddChild(XPosSlider)
+        StyleContainerParent:AddChild(XPosSlider)
 
         local YPosSlider = AG:Create("Slider")
         YPosSlider:SetLabel("Y Position")
@@ -2982,7 +2981,7 @@ local function CreateCooldownTextSettings(containerParent)
         YPosSlider:SetSliderValues(-3000, 3000, 0.1)
         YPosSlider:SetRelativeWidth(0.33)
         YPosSlider:SetCallback("OnValueChanged", function(_, _, value) CooldownTextStyleDB.Layout[4] = value UUF:UpdateAllUnitFrames() end)
-        CooldownTextContainer:AddChild(YPosSlider)
+        StyleContainerParent:AddChild(YPosSlider)
 
         local FontSizeSlider = AG:Create("Slider")
         FontSizeSlider:SetLabel("Font Size")
@@ -2991,7 +2990,7 @@ local function CreateCooldownTextSettings(containerParent)
         FontSizeSlider:SetRelativeWidth(0.33)
         FontSizeSlider:SetCallback("OnValueChanged", function(_, _, value) CooldownTextStyleDB.FontSize = value UUF:UpdateAllUnitFrames() end)
         FontSizeSlider:SetDisabled(CooldownTextStyleDB.ScaleByIconSize)
-        CooldownTextContainer:AddChild(FontSizeSlider)
+        StyleContainerParent:AddChild(FontSizeSlider)
         ScaleByIconSizeCheckbox:SetCallback("OnValueChanged", function(_, _, value) CooldownTextStyleDB.ScaleByIconSize = value FontSizeSlider:SetDisabled(value) UUF:UpdateAllUnitFrames() end)
     end
 
@@ -2999,11 +2998,11 @@ local function CreateCooldownTextSettings(containerParent)
         local function SelectCooldownTextTab(CooldownTextTabContainer, _, CooldownTextTab)
             CooldownTextTabContainer:ReleaseChildren()
             if CooldownTextTab == "Global" then
-                CreateCooldownTextStyleSettings(CooldownTextTabContainer, CooldownTextDB, "Global Cooldown Text Settings")
+                CreateCooldownTextStyleSettings(CooldownTextTabContainer, CooldownTextDB)
             elseif CooldownTextTab == "Auras" then
                 local function SelectAuraUnit(AuraUnitContainer, _, unit)
                     AuraUnitContainer:ReleaseChildren()
-                    CreateCooldownTextStyleSettings(AuraUnitContainer, UUF.db.profile.Units[unit].Auras.AuraDuration, UnitDBToUnitPrettyName[unit] .. " Aura Cooldown Text Settings")
+                    CreateCooldownTextStyleSettings(AuraUnitContainer, UUF.db.profile.Units[unit].Auras.AuraDuration)
                     containerParent:DoLayout()
                 end
 
@@ -3035,9 +3034,9 @@ local function CreateCooldownTextSettings(containerParent)
         })
         CooldownTextTabs:SetCallback("OnGroupSelected", SelectCooldownTextTab)
         CooldownTextTabs:SelectTab("Global")
-        containerParent:AddChild(CooldownTextTabs)
+        CooldownTextContainer:AddChild(CooldownTextTabs)
     else
-        CreateCooldownTextStyleSettings(containerParent, CooldownTextDB, "Cooldown Text Settings")
+        CreateCooldownTextStyleSettings(CooldownTextContainer, CooldownTextDB)
     end
 
     local Breakpoints = CooldownTextDB.CooldownBreakpoints
