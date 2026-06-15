@@ -65,7 +65,6 @@ end
 
 function UUF:CreateTestBossFrames()
     local General = UUF.db.profile.General
-    local AuraDurationDB = UUF.db.profile.Units.boss.Auras.AuraDuration
     local BuffsDB = UUF.db.profile.Units.boss.Auras.Buffs
     local DebuffsDB = UUF.db.profile.Units.boss.Auras.Debuffs
     local TagsDB = UUF.db.profile.Units.boss.Tags
@@ -190,7 +189,7 @@ function UUF:CreateTestBossFrames()
                         button.Icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
                         button.Count:SetText(j)
                         button.Duration = button.Duration or button:CreateFontString(nil, "OVERLAY")
-                        UUF:ApplyAuraDuration(button, AuraDurationDB, button.Duration)
+                        UUF:ApplyCooldownText(button, button.Duration, "boss")
                         button.Duration:SetText("10m")
                         button:Show()
                     end
@@ -256,7 +255,7 @@ function UUF:CreateTestBossFrames()
                         button.Icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
                         button.Count:SetText(j)
                         button.Duration = button.Duration or button:CreateFontString(nil, "OVERLAY")
-                        UUF:ApplyAuraDuration(button, AuraDurationDB, button.Duration)
+                        UUF:ApplyCooldownText(button, button.Duration, "boss")
                         button.Duration:SetText("10m")
                         button:Show()
                     end
