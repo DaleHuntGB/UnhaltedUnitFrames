@@ -18,3 +18,6 @@
 - Improved upon the `SecondaryPowerBar` logic & code.
 - Added Quest Indicator.
 - Added Classification Indicator (Rare/Rare Elite/Elite).
+- Added Custom Quest Texture.
+- Added Cooldown Break Points. This might reset some of your options with regards to the Cooldown Text.
+- GUI Rework with the new options.
