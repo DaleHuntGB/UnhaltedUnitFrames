@@ -87,6 +87,11 @@ UUF.ClassificationTextures = {
     },
 }
 
+UUF.QuestTextures = {
+    DEFAULT = "Interface\\TargetingFrame\\PortraitQuestBadge",
+    QUEST0 = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Quest\\Quest01.png",
+}
+
 function UUF:PrettyPrint(MSG) print(UUF.ADDON_NAME .. ":|r " .. MSG) end
 
 function UUF:FetchFrameName(unit)
