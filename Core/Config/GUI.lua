@@ -2594,7 +2594,7 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
         end
     end
 
-    for _, filterGroup in ipairs({"Player", "Other"}) do
+    for _, filterGroup in ipairs({"Player (You)", "Others (Not You)"}) do
         local filterList = {}
         local filterOrder = {}
         local FilterDropdown = AG:Create("Dropdown")
