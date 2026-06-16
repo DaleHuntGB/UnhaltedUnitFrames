@@ -1,230 +1,47 @@
 local _, UUF = ...
 local oUF = UUF.oUF
 
-local function GetAuraConfig(aurasDB, auraType)
-    if not aurasDB then return nil end
-    if auraType == "HELPFUL" then
-        return aurasDB.Buffs
-    elseif auraType == "HARMFUL" then
-        return aurasDB.Debuffs
-    end
-end
+local function StyleAuras(_, button, unit, auraType, restyle)
+	if not button or not unit or not auraType then return end
+	local AurasDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Auras
+	if not AurasDB then return end
+	local AuraDB = auraType == "HELPFUL" and AurasDB.Buffs or AurasDB.Debuffs
+	if not AuraDB then return end
 
-local function ApplyAuraCountStyle(auraStacks, auraConfig, button, fontsDB)
-    if not auraStacks or not auraConfig then return end
+	if not restyle then
+		local buttonBorder = CreateFrame("Frame", nil, button, "BackdropTemplate")
+		buttonBorder:SetAllPoints()
+		buttonBorder:SetBackdrop({ edgeFile = "Interface\\Buttons\\WHITE8X8", edgeSize = 1, insets = {left = 0, right = 0, top = 0, bottom = 0} })
+		buttonBorder:SetBackdropBorderColor(0, 0, 0, 1)
+	end
 
-    auraStacks:ClearAllPoints()
-    auraStacks:SetFont(UUF.Media.Font, auraConfig.Count.FontSize, fontsDB.FontFlag)
-    auraStacks:SetPoint(auraConfig.Count.Layout[1], button, auraConfig.Count.Layout[2], auraConfig.Count.Layout[3], auraConfig.Count.Layout[4])
-    if fontsDB.Shadow.Enabled then
-        auraStacks:SetShadowColor(fontsDB.Shadow.Colour[1], fontsDB.Shadow.Colour[2], fontsDB.Shadow.Colour[3], fontsDB.Shadow.Colour[4])
-        auraStacks:SetShadowOffset(fontsDB.Shadow.XPos, fontsDB.Shadow.YPos)
-    else
-        auraStacks:SetShadowColor(0, 0, 0, 0)
-        auraStacks:SetShadowOffset(0, 0)
-    end
-    auraStacks:SetTextColor(unpack(auraConfig.Count.Colour))
-end
-
-local function ApplyAuraOverlay(button)
-    local auraOverlay = button.Overlay
-    if not auraOverlay then return end
-    auraOverlay:SetTexture("Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\AuraOverlay.png")
-    auraOverlay:ClearAllPoints()
-    auraOverlay:SetPoint("TOPLEFT", button, "TOPLEFT", 1, -1)
-    auraOverlay:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", -1, 1)
-    auraOverlay:SetTexCoord(0, 1, 0, 1)
-end
-
-local function ApplyAuraVisuals(button, unit, auraType, applyOverlay)
-    if not button or not unit or not auraType then return end
-    local fontsDB = UUF.db.profile.General.Fonts
-    local aurasDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Auras
-    if not aurasDB then return end
-
-    local auraConfig = GetAuraConfig(aurasDB, auraType)
-    if not auraConfig then return end
-
-    local auraIcon = button.Icon
-    if auraIcon then
-        auraIcon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
-    end
-
-    local auraCooldown = button.Cooldown
-    if auraCooldown then
-        auraCooldown:SetDrawEdge(false)
-        auraCooldown:SetReverse(true)
-        UUF:ApplyCooldownText(auraCooldown, nil, unit)
-    end
-
-    ApplyAuraCountStyle(button.Count, auraConfig, button, fontsDB)
-
-    if applyOverlay then
-        ApplyAuraOverlay(button)
-    end
-end
-
-local function StyleAuras(_, button, unit, auraType)
-    if not button or not unit or not auraType then return end
-    local buttonBorder = CreateFrame("Frame", nil, button, "BackdropTemplate")
-    buttonBorder:SetAllPoints()
-    buttonBorder:SetBackdrop({ edgeFile = "Interface\\Buttons\\WHITE8X8", edgeSize = 1, insets = {left = 0, right = 0, top = 0, bottom = 0} })
-    buttonBorder:SetBackdropBorderColor(0, 0, 0, 1)
-    ApplyAuraVisuals(button, unit, auraType, true)
-end
-
-local function RestyleAuras(_, button, unit, auraType)
-    ApplyAuraVisuals(button, unit, auraType, false)
-end
-
-local function CreateUnitBuffs(unitFrame, unit)
-    local BuffsDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Auras.Buffs
-    if not unitFrame.BuffContainer then
-        unitFrame.BuffContainer = CreateFrame("Frame", UUF:FetchFrameName(unit) .. "_BuffsContainer", unitFrame)
-        unitFrame.BuffContainer:SetFrameStrata(UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Auras.FrameStrata)
-        local buffPerRow = BuffsDB.Wrap or 4
-        local buffRows = math.ceil(BuffsDB.Num / buffPerRow)
-        local buffContainerWidth = (BuffsDB.Size + BuffsDB.Layout[5]) * buffPerRow - BuffsDB.Layout[5]
-        local buffContainerHeight = (BuffsDB.Size + BuffsDB.Layout[5]) * buffRows - BuffsDB.Layout[5]
-        unitFrame.BuffContainer:SetSize(buffContainerWidth, buffContainerHeight)
-        unitFrame.BuffContainer:SetPoint(BuffsDB.Layout[1], unitFrame, BuffsDB.Layout[2], BuffsDB.Layout[3], BuffsDB.Layout[4])
-        unitFrame.BuffContainer.size = BuffsDB.Size
-        unitFrame.BuffContainer.spacing = BuffsDB.Layout[5]
-        unitFrame.BuffContainer.num = BuffsDB.Num
-        unitFrame.BuffContainer.initialAnchor = BuffsDB.Layout[1]
-        unitFrame.BuffContainer.onlyShowPlayer = BuffsDB.OnlyShowPlayer
-        unitFrame.BuffContainer["growthX"] = BuffsDB.GrowthDirection
-        unitFrame.BuffContainer["growthY"] = BuffsDB.WrapDirection
-        unitFrame.BuffContainer.filter = "HELPFUL"
-        unitFrame.BuffContainer.FilterAura = function(_, filterUnit, aura)
-            if BuffsDB.Blacklist then
-                local spellId = not UUF:IsSecretValue(aura.spellId) and aura.spellId
-                local name = not UUF:IsSecretValue(aura.name) and aura.name
-                if (spellId and UUF.AURA_BLACKLIST[spellId]) or (name and UUF.AURA_BLACKLIST[name]) then return false end
-            end
-            if BuffsDB.OnlyShowPlayer then return aura.isPlayerAura end
-            local setFilters = BuffsDB.Filters
-            if not setFilters or not next(setFilters) then return true end
-
-            local isPlayer = aura.isPlayerAura
-            local isNotPlayer = not isPlayer
-            local isCancellable = not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HELPFUL|CANCELABLE")
-
-            return setFilters.Player and isPlayer
-                or setFilters.RaidPlayerDispellable and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HELPFUL|RAID_PLAYER_DISPELLABLE")
-                or setFilters.Important and isNotPlayer and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HELPFUL|IMPORTANT")
-                or setFilters.ImportantPlayer and isPlayer and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HELPFUL|IMPORTANT")
-                or setFilters.CrowdControl and isNotPlayer and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HELPFUL|CROWD_CONTROL")
-                or setFilters.CrowdControlPlayer and isPlayer and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HELPFUL|CROWD_CONTROL")
-                or setFilters.BigDefensive and isNotPlayer and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HELPFUL|BIG_DEFENSIVE")
-                or setFilters.BigDefensivePlayer and isPlayer and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HELPFUL|BIG_DEFENSIVE")
-                or setFilters.ExternalDefensive and isNotPlayer and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HELPFUL|EXTERNAL_DEFENSIVE")
-                or setFilters.ExternalDefensivePlayer and isPlayer and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HELPFUL|EXTERNAL_DEFENSIVE")
-                or setFilters.RaidInCombat and isNotPlayer and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HELPFUL|RAID_IN_COMBAT")
-                or setFilters.RaidInCombatPlayer and isPlayer and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HELPFUL|RAID_IN_COMBAT")
-                or setFilters.Cancelable and isNotPlayer and isCancellable
-                or setFilters.CancelablePlayer and isPlayer and isCancellable
-                or setFilters.NotCancelable and isNotPlayer and not isCancellable
-                or setFilters.NotCancelablePlayer and isPlayer and not isCancellable
-                or setFilters.Raid and isNotPlayer and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HELPFUL|RAID")
-                or setFilters.RaidPlayer and isPlayer and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HELPFUL|RAID")
-        end
-        unitFrame.BuffContainer.PostCreateButton = function(_, button) StyleAuras(_, button, unit, "HELPFUL") end
-        unitFrame.BuffContainer.anchoredButtons = 0
-        unitFrame.BuffContainer.createdButtons = 0
-        unitFrame.BuffContainer.tooltipAnchor = "ANCHOR_CURSOR"
-        unitFrame.BuffContainer.showType = BuffsDB.ShowType
-        unitFrame.BuffContainer.showBuffType = BuffsDB.ShowType
-        unitFrame.BuffContainer.dispelColorCurve = C_CurveUtil.CreateColorCurve()
-        unitFrame.BuffContainer.dispelColorCurve:SetType(Enum.LuaCurveType.Step)
-        for _, dispelIndex in next, oUF.Enum.DispelType do
-            if(oUF.colors.dispel[dispelIndex]) then
-                unitFrame.BuffContainer.dispelColorCurve:AddPoint(dispelIndex, oUF.colors.dispel[dispelIndex])
-            end
-        end
-        if not oUF.colors.dispel[0] then unitFrame.BuffContainer.dispelColorCurve:AddPoint(0, CreateColor(0.8, 0, 0, 1)) end
-
-        if BuffsDB.Enabled then
-            unitFrame.Buffs = unitFrame.BuffContainer
-        else
-            unitFrame.Buffs = nil
-        end
-    end
-end
-
-local function CreateUnitDebuffs(unitFrame, unit)
-    local DebuffsDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Auras.Debuffs
-    if not unitFrame.DebuffContainer then
-        unitFrame.DebuffContainer = CreateFrame("Frame", UUF:FetchFrameName(unit) .. "_DebuffsContainer", unitFrame)
-        unitFrame.DebuffContainer:SetFrameStrata(UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Auras.FrameStrata)
-        local debuffPerRow = DebuffsDB.Wrap or 3
-        local debuffRows = math.ceil(DebuffsDB.Num / debuffPerRow)
-        local debuffContainerWidth = (DebuffsDB.Size + DebuffsDB.Layout[5]) * debuffPerRow - DebuffsDB.Layout[5]
-        local debuffContainerHeight = (DebuffsDB.Size + DebuffsDB.Layout[5]) * debuffRows - DebuffsDB.Layout[5]
-        unitFrame.DebuffContainer:SetSize(debuffContainerWidth, debuffContainerHeight)
-        unitFrame.DebuffContainer:SetPoint(DebuffsDB.Layout[1], unitFrame, DebuffsDB.Layout[2], DebuffsDB.Layout[3], DebuffsDB.Layout[4])
-        unitFrame.DebuffContainer.size = DebuffsDB.Size
-        unitFrame.DebuffContainer.spacing = DebuffsDB.Layout[5]
-        unitFrame.DebuffContainer.num = DebuffsDB.Num
-        unitFrame.DebuffContainer.initialAnchor = DebuffsDB.Layout[1]
-        unitFrame.DebuffContainer.onlyShowPlayer = DebuffsDB.OnlyShowPlayer
-        unitFrame.DebuffContainer["growthX"] = DebuffsDB.GrowthDirection
-        unitFrame.DebuffContainer["growthY"] = DebuffsDB.WrapDirection
-        unitFrame.DebuffContainer.filter = "HARMFUL"
-        unitFrame.DebuffContainer.FilterAura = function(_, filterUnit, aura)
-            if DebuffsDB.Blacklist then
-                local spellId = not UUF:IsSecretValue(aura.spellId) and aura.spellId
-                local name = not UUF:IsSecretValue(aura.name) and aura.name
-                if (spellId and UUF.AURA_BLACKLIST[spellId]) or (name and UUF.AURA_BLACKLIST[name]) then return false end
-            end
-            if DebuffsDB.OnlyShowPlayer then return aura.isPlayerAura end
-            local setFilters = DebuffsDB.Filters
-            if not setFilters or not next(setFilters) then return true end
-
-            local isPlayer = aura.isPlayerAura
-            local isNotPlayer = not isPlayer
-            local isCancellable = not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HARMFUL|CANCELABLE")
-
-            return setFilters.Player and isPlayer
-                or setFilters.RaidPlayerDispellable and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HARMFUL|RAID_PLAYER_DISPELLABLE")
-                or setFilters.Important and isNotPlayer and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HARMFUL|IMPORTANT")
-                or setFilters.ImportantPlayer and isPlayer and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HARMFUL|IMPORTANT")
-                or setFilters.CrowdControl and isNotPlayer and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HARMFUL|CROWD_CONTROL")
-                or setFilters.CrowdControlPlayer and isPlayer and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HARMFUL|CROWD_CONTROL")
-                or setFilters.BigDefensive and isNotPlayer and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HARMFUL|BIG_DEFENSIVE")
-                or setFilters.BigDefensivePlayer and isPlayer and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HARMFUL|BIG_DEFENSIVE")
-                or setFilters.ExternalDefensive and isNotPlayer and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HARMFUL|EXTERNAL_DEFENSIVE")
-                or setFilters.ExternalDefensivePlayer and isPlayer and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HARMFUL|EXTERNAL_DEFENSIVE")
-                or setFilters.RaidInCombat and isNotPlayer and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HARMFUL|RAID_IN_COMBAT")
-                or setFilters.RaidInCombatPlayer and isPlayer and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HARMFUL|RAID_IN_COMBAT")
-                or setFilters.Cancelable and isNotPlayer and isCancellable
-                or setFilters.CancelablePlayer and isPlayer and isCancellable
-                or setFilters.NotCancelable and isNotPlayer and not isCancellable
-                or setFilters.NotCancelablePlayer and isPlayer and not isCancellable
-                or setFilters.Raid and isNotPlayer and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HARMFUL|RAID")
-                or setFilters.RaidPlayer and isPlayer and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, aura.auraInstanceID, "HARMFUL|RAID")
-        end
-        unitFrame.DebuffContainer.anchoredButtons = 0
-        unitFrame.DebuffContainer.createdButtons = 0
-        unitFrame.DebuffContainer.PostCreateButton = function(_, button) StyleAuras(_, button, unit, "HARMFUL") end
-        unitFrame.DebuffContainer.tooltipAnchor = "ANCHOR_CURSOR"
-        unitFrame.DebuffContainer.showType = DebuffsDB.ShowType
-        unitFrame.DebuffContainer.showDebuffType = DebuffsDB.ShowType
-        unitFrame.DebuffContainer.dispelColorCurve = C_CurveUtil.CreateColorCurve()
-        unitFrame.DebuffContainer.dispelColorCurve:SetType(Enum.LuaCurveType.Step)
-        for _, dispelIndex in next, oUF.Enum.DispelType do
-            if(oUF.colors.dispel[dispelIndex]) then
-                unitFrame.DebuffContainer.dispelColorCurve:AddPoint(dispelIndex, oUF.colors.dispel[dispelIndex])
-            end
-        end
-        if not oUF.colors.dispel[0] then unitFrame.DebuffContainer.dispelColorCurve:AddPoint(0, CreateColor(0.8, 0, 0, 1)) end
-
-        if DebuffsDB.Enabled then
-            unitFrame.Debuffs = unitFrame.DebuffContainer
-        else
-            unitFrame.Debuffs = nil
-        end
-    end
+	if button.Icon then button.Icon:SetTexCoord(0.07, 0.93, 0.07, 0.93) end
+	if button.Cooldown then
+		button.Cooldown:SetDrawEdge(false)
+		button.Cooldown:SetReverse(true)
+		UUF:ApplyCooldownText(button.Cooldown, nil, unit)
+	end
+	if button.Count then
+		local FontsDB = UUF.db.profile.General.Fonts
+		button.Count:ClearAllPoints()
+		button.Count:SetFont(UUF.Media.Font, AuraDB.Count.FontSize, FontsDB.FontFlag)
+		button.Count:SetPoint(AuraDB.Count.Layout[1], button, AuraDB.Count.Layout[2], AuraDB.Count.Layout[3], AuraDB.Count.Layout[4])
+		if FontsDB.Shadow.Enabled then
+			button.Count:SetShadowColor(FontsDB.Shadow.Colour[1], FontsDB.Shadow.Colour[2], FontsDB.Shadow.Colour[3], FontsDB.Shadow.Colour[4])
+			button.Count:SetShadowOffset(FontsDB.Shadow.XPos, FontsDB.Shadow.YPos)
+		else
+			button.Count:SetShadowColor(0, 0, 0, 0)
+			button.Count:SetShadowOffset(0, 0)
+		end
+		button.Count:SetTextColor(unpack(AuraDB.Count.Colour))
+	end
+	if not restyle and button.Overlay then
+		button.Overlay:SetTexture("Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\AuraOverlay.png")
+		button.Overlay:ClearAllPoints()
+		button.Overlay:SetPoint("TOPLEFT", button, "TOPLEFT", 1, -1)
+		button.Overlay:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", -1, 1)
+		button.Overlay:SetTexCoord(0, 1, 0, 1)
+	end
 end
 
 function UUF:UpdateUnitAuras(unitFrame, unit)
@@ -341,23 +158,181 @@ function UUF:UpdateUnitAuras(unitFrame, unit)
 
     for _, button in ipairs(unitFrame.BuffContainer) do
         if button and button:IsShown() then
-            RestyleAuras(nil, button, unit, "HELPFUL")
+            StyleAuras(nil, button, unit, "HELPFUL", true)
         end
     end
     for _, button in ipairs(unitFrame.DebuffContainer) do
         if button and button:IsShown() then
-            RestyleAuras(nil, button, unit, "HARMFUL")
+            StyleAuras(nil, button, unit, "HARMFUL", true)
         end
     end
     if UUF.AURA_TEST_MODE == true then UUF:CreateTestAuras(unitFrame, unit) end
 end
 
 function UUF:CreateUnitAuras(unitFrame, unit)
-    CreateUnitBuffs(unitFrame, unit)
-    CreateUnitDebuffs(unitFrame, unit)
+	local AurasDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Auras
+	local BuffsDB = AurasDB.Buffs
+	local DebuffsDB = AurasDB.Debuffs
+
+	if not unitFrame.BuffContainer then
+		unitFrame.BuffContainer = CreateFrame("Frame", UUF:FetchFrameName(unit) .. "_BuffsContainer", unitFrame)
+		unitFrame.BuffContainer:SetFrameStrata(AurasDB.FrameStrata)
+		local buffPerRow = BuffsDB.Wrap or 4
+		local buffRows = math.ceil(BuffsDB.Num / buffPerRow)
+		local buffContainerWidth = (BuffsDB.Size + BuffsDB.Layout[5]) * buffPerRow - BuffsDB.Layout[5]
+		local buffContainerHeight = (BuffsDB.Size + BuffsDB.Layout[5]) * buffRows - BuffsDB.Layout[5]
+		unitFrame.BuffContainer:SetSize(buffContainerWidth, buffContainerHeight)
+		unitFrame.BuffContainer:SetPoint(BuffsDB.Layout[1], unitFrame, BuffsDB.Layout[2], BuffsDB.Layout[3], BuffsDB.Layout[4])
+		unitFrame.BuffContainer.size = BuffsDB.Size
+		unitFrame.BuffContainer.spacing = BuffsDB.Layout[5]
+		unitFrame.BuffContainer.num = BuffsDB.Num
+		unitFrame.BuffContainer.initialAnchor = BuffsDB.Layout[1]
+		unitFrame.BuffContainer.onlyShowPlayer = BuffsDB.OnlyShowPlayer
+		unitFrame.BuffContainer["growthX"] = BuffsDB.GrowthDirection
+		unitFrame.BuffContainer["growthY"] = BuffsDB.WrapDirection
+		unitFrame.BuffContainer.filter = "HELPFUL"
+		unitFrame.BuffContainer.FilterAura = function(_, filterUnit, aura)
+			if BuffsDB.Blacklist then
+				local spellId = not UUF:IsSecretValue(aura.spellId) and aura.spellId
+				local name = not UUF:IsSecretValue(aura.name) and aura.name
+				if (spellId and UUF.AURA_BLACKLIST[spellId]) or (name and UUF.AURA_BLACKLIST[name]) then return false end
+			end
+			if BuffsDB.OnlyShowPlayer then return aura.isPlayerAura end
+			local setFilters = BuffsDB.Filters
+			if not setFilters or not next(setFilters) then return true end
+
+			local auraInstanceID = aura.auraInstanceID
+			local isPlayer = aura.isPlayerAura
+			local cancelFilter = isPlayer and "CancelablePlayer" or "Cancelable"
+			local noCancelFilter = isPlayer and "NotCancelablePlayer" or "NotCancelable"
+			if setFilters.Player and isPlayer then return true end
+			if setFilters.RaidPlayerDispellable and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, auraInstanceID, "HELPFUL|RAID_PLAYER_DISPELLABLE") then return true end
+			if (setFilters[cancelFilter] or setFilters[noCancelFilter]) then
+				local isCancellable = not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, auraInstanceID, "HELPFUL|CANCELABLE")
+				if setFilters[cancelFilter] and isCancellable then return true end
+				if setFilters[noCancelFilter] and not isCancellable then return true end
+			end
+			if isPlayer then
+				if setFilters.ImportantPlayer and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, auraInstanceID, "HELPFUL|IMPORTANT") then return true end
+				if setFilters.CrowdControlPlayer and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, auraInstanceID, "HELPFUL|CROWD_CONTROL") then return true end
+				if setFilters.BigDefensivePlayer and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, auraInstanceID, "HELPFUL|BIG_DEFENSIVE") then return true end
+				if setFilters.ExternalDefensivePlayer and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, auraInstanceID, "HELPFUL|EXTERNAL_DEFENSIVE") then return true end
+				if setFilters.RaidInCombatPlayer and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, auraInstanceID, "HELPFUL|RAID_IN_COMBAT") then return true end
+				if setFilters.RaidPlayer and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, auraInstanceID, "HELPFUL|RAID") then return true end
+			else
+				if setFilters.Important and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, auraInstanceID, "HELPFUL|IMPORTANT") then return true end
+				if setFilters.CrowdControl and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, auraInstanceID, "HELPFUL|CROWD_CONTROL") then return true end
+				if setFilters.BigDefensive and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, auraInstanceID, "HELPFUL|BIG_DEFENSIVE") then return true end
+				if setFilters.ExternalDefensive and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, auraInstanceID, "HELPFUL|EXTERNAL_DEFENSIVE") then return true end
+				if setFilters.RaidInCombat and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, auraInstanceID, "HELPFUL|RAID_IN_COMBAT") then return true end
+				if setFilters.Raid and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, auraInstanceID, "HELPFUL|RAID") then return true end
+			end
+		end
+		unitFrame.BuffContainer.PostCreateButton = function(_, button) StyleAuras(_, button, unit, "HELPFUL") end
+		unitFrame.BuffContainer.anchoredButtons = 0
+		unitFrame.BuffContainer.createdButtons = 0
+		unitFrame.BuffContainer.tooltipAnchor = "ANCHOR_CURSOR"
+		unitFrame.BuffContainer.showType = BuffsDB.ShowType
+		unitFrame.BuffContainer.showBuffType = BuffsDB.ShowType
+		unitFrame.BuffContainer.dispelColorCurve = C_CurveUtil.CreateColorCurve()
+		unitFrame.BuffContainer.dispelColorCurve:SetType(Enum.LuaCurveType.Step)
+		for _, dispelIndex in next, oUF.Enum.DispelType do
+			if(oUF.colors.dispel[dispelIndex]) then
+				unitFrame.BuffContainer.dispelColorCurve:AddPoint(dispelIndex, oUF.colors.dispel[dispelIndex])
+			end
+		end
+		if not oUF.colors.dispel[0] then unitFrame.BuffContainer.dispelColorCurve:AddPoint(0, CreateColor(0.8, 0, 0, 1)) end
+
+		if BuffsDB.Enabled then
+			unitFrame.Buffs = unitFrame.BuffContainer
+		else
+			unitFrame.Buffs = nil
+		end
+	end
+
+	if not unitFrame.DebuffContainer then
+		unitFrame.DebuffContainer = CreateFrame("Frame", UUF:FetchFrameName(unit) .. "_DebuffsContainer", unitFrame)
+		unitFrame.DebuffContainer:SetFrameStrata(AurasDB.FrameStrata)
+		local debuffPerRow = DebuffsDB.Wrap or 3
+		local debuffRows = math.ceil(DebuffsDB.Num / debuffPerRow)
+		local debuffContainerWidth = (DebuffsDB.Size + DebuffsDB.Layout[5]) * debuffPerRow - DebuffsDB.Layout[5]
+		local debuffContainerHeight = (DebuffsDB.Size + DebuffsDB.Layout[5]) * debuffRows - DebuffsDB.Layout[5]
+		unitFrame.DebuffContainer:SetSize(debuffContainerWidth, debuffContainerHeight)
+		unitFrame.DebuffContainer:SetPoint(DebuffsDB.Layout[1], unitFrame, DebuffsDB.Layout[2], DebuffsDB.Layout[3], DebuffsDB.Layout[4])
+		unitFrame.DebuffContainer.size = DebuffsDB.Size
+		unitFrame.DebuffContainer.spacing = DebuffsDB.Layout[5]
+		unitFrame.DebuffContainer.num = DebuffsDB.Num
+		unitFrame.DebuffContainer.initialAnchor = DebuffsDB.Layout[1]
+		unitFrame.DebuffContainer.onlyShowPlayer = DebuffsDB.OnlyShowPlayer
+		unitFrame.DebuffContainer["growthX"] = DebuffsDB.GrowthDirection
+		unitFrame.DebuffContainer["growthY"] = DebuffsDB.WrapDirection
+		unitFrame.DebuffContainer.filter = "HARMFUL"
+		unitFrame.DebuffContainer.FilterAura = function(_, filterUnit, aura)
+			if DebuffsDB.Blacklist then
+				local spellId = not UUF:IsSecretValue(aura.spellId) and aura.spellId
+				local name = not UUF:IsSecretValue(aura.name) and aura.name
+				if (spellId and UUF.AURA_BLACKLIST[spellId]) or (name and UUF.AURA_BLACKLIST[name]) then return false end
+			end
+			if DebuffsDB.OnlyShowPlayer then return aura.isPlayerAura end
+			local setFilters = DebuffsDB.Filters
+			if not setFilters or not next(setFilters) then return true end
+
+			local auraInstanceID = aura.auraInstanceID
+			local isPlayer = aura.isPlayerAura
+			local cancelFilter = isPlayer and "CancelablePlayer" or "Cancelable"
+			local noCancelFilter = isPlayer and "NotCancelablePlayer" or "NotCancelable"
+
+			if setFilters.Player and isPlayer then return true end
+			if setFilters.RaidPlayerDispellable and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, auraInstanceID, "HARMFUL|RAID_PLAYER_DISPELLABLE") then return true end
+
+            if (setFilters[cancelFilter] or setFilters[noCancelFilter]) then
+				local isCancellable = not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, auraInstanceID, "HARMFUL|CANCELABLE")
+				if setFilters[cancelFilter] and isCancellable then return true end
+				if setFilters[noCancelFilter] and not isCancellable then return true end
+			end
+
+			if isPlayer then
+				if setFilters.ImportantPlayer and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, auraInstanceID, "HARMFUL|IMPORTANT") then return true end
+				if setFilters.CrowdControlPlayer and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, auraInstanceID, "HARMFUL|CROWD_CONTROL") then return true end
+				if setFilters.BigDefensivePlayer and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, auraInstanceID, "HARMFUL|BIG_DEFENSIVE") then return true end
+				if setFilters.ExternalDefensivePlayer and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, auraInstanceID, "HARMFUL|EXTERNAL_DEFENSIVE") then return true end
+				if setFilters.RaidInCombatPlayer and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, auraInstanceID, "HARMFUL|RAID_IN_COMBAT") then return true end
+				if setFilters.RaidPlayer and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, auraInstanceID, "HARMFUL|RAID") then return true end
+			else
+				if setFilters.Important and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, auraInstanceID, "HARMFUL|IMPORTANT") then return true end
+				if setFilters.CrowdControl and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, auraInstanceID, "HARMFUL|CROWD_CONTROL") then return true end
+				if setFilters.BigDefensive and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, auraInstanceID, "HARMFUL|BIG_DEFENSIVE") then return true end
+				if setFilters.ExternalDefensive and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, auraInstanceID, "HARMFUL|EXTERNAL_DEFENSIVE") then return true end
+				if setFilters.RaidInCombat and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, auraInstanceID, "HARMFUL|RAID_IN_COMBAT") then return true end
+				if setFilters.Raid and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, auraInstanceID, "HARMFUL|RAID") then return true end
+			end
+		end
+
+		unitFrame.DebuffContainer.anchoredButtons = 0
+		unitFrame.DebuffContainer.createdButtons = 0
+		unitFrame.DebuffContainer.PostCreateButton = function(_, button) StyleAuras(_, button, unit, "HARMFUL") end
+		unitFrame.DebuffContainer.tooltipAnchor = "ANCHOR_CURSOR"
+		unitFrame.DebuffContainer.showType = DebuffsDB.ShowType
+		unitFrame.DebuffContainer.showDebuffType = DebuffsDB.ShowType
+		unitFrame.DebuffContainer.dispelColorCurve = C_CurveUtil.CreateColorCurve()
+		unitFrame.DebuffContainer.dispelColorCurve:SetType(Enum.LuaCurveType.Step)
+
+		for _, dispelIndex in next, oUF.Enum.DispelType do
+			if(oUF.colors.dispel[dispelIndex]) then
+				unitFrame.DebuffContainer.dispelColorCurve:AddPoint(dispelIndex, oUF.colors.dispel[dispelIndex])
+			end
+		end
+
+		if not oUF.colors.dispel[0] then unitFrame.DebuffContainer.dispelColorCurve:AddPoint(0, CreateColor(0.8, 0, 0, 1)) end
+
+		if DebuffsDB.Enabled then
+			unitFrame.Debuffs = unitFrame.DebuffContainer
+		else
+			unitFrame.Debuffs = nil
+		end
+	end
 
     if unit == "player" then
-        local AurasDB = UUF.db.profile.Units.player.Auras
         local PrivateAurasDB = AurasDB.PrivateAuras
         local privateAuraContainerWidth = PrivateAurasDB.Size * PrivateAurasDB.Num + PrivateAurasDB.Spacing * (PrivateAurasDB.Num - 1)
 
