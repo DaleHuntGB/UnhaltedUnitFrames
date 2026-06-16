@@ -831,21 +831,30 @@ local function CreateHealPredictionSettings(containerParent, unit, updateCallbac
     ShowAbsorbToggle:SetLabel("Show Absorbs")
     ShowAbsorbToggle:SetValue(HealPredictionDB.Absorbs.Enabled)
     ShowAbsorbToggle:SetCallback("OnValueChanged", function(_, _, value) HealPredictionDB.Absorbs.Enabled = value updateCallback() RefreshHealPredictionSettings() end)
-    ShowAbsorbToggle:SetRelativeWidth(0.33)
+    ShowAbsorbToggle:SetRelativeWidth(0.25)
     AbsorbSettings:AddChild(ShowAbsorbToggle)
+
+    local ShowOverAbsorbToggle = AG:Create("CheckBox")
+    ShowOverAbsorbToggle:SetLabel("Show Over Absorb")
+    ShowOverAbsorbToggle:SetValue(HealPredictionDB.Absorbs.ShowOverAbsorb or false)
+    ShowOverAbsorbToggle:SetCallback("OnValueChanged", function(_, _, value) HealPredictionDB.Absorbs.ShowOverAbsorb = HealPredictionDB.Absorbs.Position == "ATTACH" and value or false updateCallback() RefreshHealPredictionSettings() end)
+    ShowOverAbsorbToggle:SetCallback("OnEnter", function() GameTooltip:SetOwner(ShowOverAbsorbToggle.frame, "ANCHOR_CURSOR") GameTooltip:AddLine("This will add an overlay of your current absorbs when at maximum health.\nThis will only work when the |cFF8080FFPosition|r is set to |cFF8080FFAttach To Missing Health|r.", 1, 1, 1, false) GameTooltip:Show() end)
+    ShowOverAbsorbToggle:SetCallback("OnLeave", function() GameTooltip:Hide() end)
+    ShowOverAbsorbToggle:SetRelativeWidth(0.25)
+    AbsorbSettings:AddChild(ShowOverAbsorbToggle)
 
     local UseStripedTextureAbsorbToggle = AG:Create("CheckBox")
     UseStripedTextureAbsorbToggle:SetLabel("Use Striped Texture")
     UseStripedTextureAbsorbToggle:SetValue(HealPredictionDB.Absorbs.UseStripedTexture)
     UseStripedTextureAbsorbToggle:SetCallback("OnValueChanged", function(_, _, value) HealPredictionDB.Absorbs.UseStripedTexture = value updateCallback() end)
-    UseStripedTextureAbsorbToggle:SetRelativeWidth(0.33)
+    UseStripedTextureAbsorbToggle:SetRelativeWidth(0.25)
     AbsorbSettings:AddChild(UseStripedTextureAbsorbToggle)
 
     local MatchParentHeightToggle = AG:Create("CheckBox")
     MatchParentHeightToggle:SetLabel("Match Parent Height")
     MatchParentHeightToggle:SetValue(HealPredictionDB.Absorbs.MatchParentHeight)
     MatchParentHeightToggle:SetCallback("OnValueChanged", function(_, _, value) HealPredictionDB.Absorbs.MatchParentHeight = value updateCallback() RefreshHealPredictionSettings() end)
-    MatchParentHeightToggle:SetRelativeWidth(0.33)
+    MatchParentHeightToggle:SetRelativeWidth(0.25)
     AbsorbSettings:AddChild(MatchParentHeightToggle)
 
     local AbsorbColourPicker = AG:Create("ColorPicker")
@@ -871,7 +880,7 @@ local function CreateHealPredictionSettings(containerParent, unit, updateCallbac
     AbsorbPositionDropdown:SetLabel("Position")
     AbsorbPositionDropdown:SetValue(HealPredictionDB.Absorbs.Position)
     AbsorbPositionDropdown:SetRelativeWidth(0.33)
-    AbsorbPositionDropdown:SetCallback("OnValueChanged", function(_, _, value) HealPredictionDB.Absorbs.Position = value updateCallback() RefreshHealPredictionSettings() end)
+    AbsorbPositionDropdown:SetCallback("OnValueChanged", function(_, _, value) HealPredictionDB.Absorbs.Position = value if value ~= "ATTACH" then HealPredictionDB.Absorbs.ShowOverAbsorb = false ShowOverAbsorbToggle:SetValue(false) end updateCallback() RefreshHealPredictionSettings() end)
     AbsorbSettings:AddChild(AbsorbPositionDropdown)
 
     local HealAbsorbSettings = GUIWidgets.CreateInlineGroup(containerParent, "Heal Absorb Settings")
@@ -928,6 +937,7 @@ local function CreateHealPredictionSettings(containerParent, unit, updateCallbac
         GUIWidgets.DeepDisable(AbsorbSettings, not HealPredictionDB.Absorbs.Enabled, ShowAbsorbToggle)
         GUIWidgets.DeepDisable(HealAbsorbSettings, not HealPredictionDB.HealAbsorbs.Enabled, ShowHealAbsorbToggle)
         AbsorbHeightSlider:SetDisabled(HealPredictionDB.Absorbs.MatchParentHeight or HealPredictionDB.Absorbs.Position == "ATTACH")
+        ShowOverAbsorbToggle:SetDisabled(not HealPredictionDB.Absorbs.Enabled or HealPredictionDB.Absorbs.Position ~= "ATTACH")
         HealAbsorbHeightSlider:SetDisabled(HealPredictionDB.HealAbsorbs.MatchParentHeight or HealPredictionDB.HealAbsorbs.Position == "ATTACH")
     end
 
