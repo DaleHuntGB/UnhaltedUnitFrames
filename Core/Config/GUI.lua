@@ -2594,6 +2594,8 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
         end
     end
 
+    GUIWidgets.CreateInformationTag(FilterContainer, "Dropdowns support |cFF8080FFmultiple selections|r. |cFFFFCC00Player|r is specifically you, where |cFFFFCC00Others|r are all other players/units.")
+
     for _, filterGroup in ipairs({"Player (You)", "Others (Not You)"}) do
         local filterList = {}
         local filterOrder = {}
