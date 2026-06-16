@@ -91,6 +91,8 @@ function UUF:UpdateUnitAuras(unitFrame, unit)
     if not AurasDB then return end
     local BuffsDB = AurasDB.Buffs
     local DebuffsDB = AurasDB.Debuffs
+    BuffsDB.Filter = "HELPFUL"
+    DebuffsDB.Filter = "HARMFUL"
 
     if unit == "player" then
         local PrivateAurasDB = AurasDB.PrivateAuras
@@ -214,6 +216,8 @@ function UUF:CreateUnitAuras(unitFrame, unit)
 	local AurasDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Auras
 	local BuffsDB = AurasDB.Buffs
 	local DebuffsDB = AurasDB.Debuffs
+	BuffsDB.Filter = "HELPFUL"
+	DebuffsDB.Filter = "HARMFUL"
 
 	if not unitFrame.BuffContainer then
 		unitFrame.BuffContainer = CreateFrame("Frame", UUF:FetchFrameName(unit) .. "_BuffsContainer", unitFrame)
