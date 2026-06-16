@@ -127,6 +127,7 @@ local Defaults = {
                     },
                     Absorbs = {
                         Enabled = true,
+                        ShowOverAbsorb = false,
                         UseStripedTexture = true,
                         MatchParentHeight = true,
                         Colour = {255/255, 204/255, 0/255, 1.0},
@@ -384,6 +385,7 @@ local Defaults = {
                     },
                     Absorbs = {
                         Enabled = true,
+                        ShowOverAbsorb = false,
                         UseStripedTexture = true,
                         MatchParentHeight = true,
                         Colour = {255/255, 204/255, 0/255, 1.0},
@@ -608,6 +610,7 @@ local Defaults = {
                     },
                     Absorbs = {
                         Enabled = true,
+                        ShowOverAbsorb = false,
                         UseStripedTexture = true,
                         MatchParentHeight = true,
                         Colour = {255/255, 204/255, 0/255, 1.0},
@@ -805,6 +808,7 @@ local Defaults = {
                     },
                     Absorbs = {
                         Enabled = true,
+                        ShowOverAbsorb = false,
                         UseStripedTexture = true,
                         MatchParentHeight = true,
                         Colour = {255/255, 204/255, 0/255, 1.0},
@@ -1001,6 +1005,7 @@ local Defaults = {
                     },
                     Absorbs = {
                         Enabled = true,
+                        ShowOverAbsorb = false,
                         UseStripedTexture = true,
                         MatchParentHeight = true,
                         Colour = {255/255, 204/255, 0/255, 1.0},
@@ -1194,6 +1199,7 @@ local Defaults = {
                     },
                     Absorbs = {
                         Enabled = true,
+                        ShowOverAbsorb = false,
                         UseStripedTexture = true,
                         MatchParentHeight = true,
                         Colour = {255/255, 204/255, 0/255, 1.0},
@@ -1390,6 +1396,7 @@ local Defaults = {
                     },
                     Absorbs = {
                         Enabled = true,
+                        ShowOverAbsorb = false,
                         UseStripedTexture = true,
                         MatchParentHeight = true,
                         Colour = {255/255, 204/255, 0/255, 1.0},
