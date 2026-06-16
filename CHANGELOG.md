@@ -21,3 +21,4 @@
 - Added Custom Quest Texture.
 - Added Cooldown Break Points. This might reset some of your options with regards to the Cooldown Text.
 - GUI Rework with the new options.
+- Added `Show Over Absorb` toggle for Absorbs. This should now show you an absorb when at full health, this is only enabled when you select `Attach to Missing Health`.
