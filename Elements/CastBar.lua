@@ -112,6 +112,17 @@ function UUF:CreateUnitCastBar(unitFrame, unit)
         unitFrame.Castbar:HookScript("OnHide", function() CastBarContainer:Hide() end)
 
         unitFrame.Castbar.PostCastStart = function(frameCastBar)
+            if CastBarDB.ColourByClass then
+                local unitForClass = unit == "pet" and "player" or unit
+                local unitClass = select(2, UnitClass(unitForClass))
+                local unitColor = RAID_CLASS_COLORS[unitClass]
+                if unitColor then
+                    frameCastBar:SetStatusBarColor(unitColor.r, unitColor.g, unitColor.b, CastBarDB.ForegroundOpacity)
+                end
+            else
+                frameCastBar:SetStatusBarColor(unpack(CastBarDB.Foreground))
+            end
+
             local spellInfo = C_Spell.GetSpellInfo(frameCastBar.spellID)
             local spellName = spellInfo and spellInfo.name
             if spellName then
@@ -133,6 +144,11 @@ function UUF:CreateUnitCastBar(unitFrame, unit)
         unitFrame.Castbar.PostCastInterruptible = function(frameCastBar)
             if frameCastBar.NotInterruptibleOverlay and frameCastBar.notInterruptible ~= nil then frameCastBar.NotInterruptibleOverlay:SetAlphaFromBoolean(frameCastBar.notInterruptible, 1, 0) end
         end
+        unitFrame.Castbar.PostCastFail = function(frameCastBar)
+            frameCastBar:SetStatusBarColor(unpack(CastBarDB.InterruptSuccessColour))
+            if frameCastBar.NotInterruptibleOverlay then frameCastBar.NotInterruptibleOverlay:SetAlpha(0) end
+        end
+        unitFrame.Castbar.PostCastInterrupted = unitFrame.Castbar.PostCastFail
         if SpellNameDB.Enabled then unitFrame.Castbar.Text:SetAlpha(1) else unitFrame.Castbar.Text:SetAlpha(0) end
         if DurationDB.Enabled then unitFrame.Castbar.Time:SetAlpha(1) else unitFrame.Castbar.Time:SetAlpha(0) end
     else
