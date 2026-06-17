@@ -638,18 +638,25 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
 
     local ColourContainer = GUIWidgets.CreateInlineGroup(containerParent, "Colours & Toggles")
 
+    local SmoothUpdatesToggle = AG:Create("CheckBox")
+    SmoothUpdatesToggle:SetLabel("Smooth Updates")
+    SmoothUpdatesToggle:SetValue(HealthBarDB.Smooth ~= false)
+    SmoothUpdatesToggle:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.Smooth = value updateCallback() end)
+    SmoothUpdatesToggle:SetRelativeWidth((unit == "player" or unit == "target") and 0.25 or 0.33)
+    ColourContainer:AddChild(SmoothUpdatesToggle)
+
     local ColourWhenTappedToggle = AG:Create("CheckBox")
     ColourWhenTappedToggle:SetLabel("Colour When Tapped")
     ColourWhenTappedToggle:SetValue(HealthBarDB.ColourWhenTapped)
     ColourWhenTappedToggle:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.ColourWhenTapped = value updateCallback() end)
-    ColourWhenTappedToggle:SetRelativeWidth((unit == "player" or unit == "target") and 0.33 or 0.5)
+    ColourWhenTappedToggle:SetRelativeWidth((unit == "player" or unit == "target") and 0.25 or 0.33)
     ColourContainer:AddChild(ColourWhenTappedToggle)
 
     local InverseGrowthDirectionToggle = AG:Create("CheckBox")
     InverseGrowthDirectionToggle:SetLabel("Inverse Growth Direction")
     InverseGrowthDirectionToggle:SetValue(HealthBarDB.Inverse)
     InverseGrowthDirectionToggle:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.Inverse = value updateCallback() end)
-    InverseGrowthDirectionToggle:SetRelativeWidth((unit == "player" or unit == "target") and 0.33 or 0.5)
+    InverseGrowthDirectionToggle:SetRelativeWidth((unit == "player" or unit == "target") and 0.25 or 0.33)
     ColourContainer:AddChild(InverseGrowthDirectionToggle)
 
     if unit == "player" or unit == "target" then
