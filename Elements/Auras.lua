@@ -470,6 +470,9 @@ function UUF:CreateTestAuras(unitFrame, unit)
     local DebuffsDB = AurasDB.Debuffs
     local CustomDB = AurasDB.Custom
     if UUF.AURA_TEST_MODE then
+        if unitFrame:IsElementEnabled("Auras") then unitFrame:DisableElement("Auras") end
+        if unitFrame:IsElementEnabled("CustomAuras") then unitFrame:DisableElement("CustomAuras") end
+
 		if unit == "player" and unitFrame.PrivateAuraContainer then
 			local PrivateAurasDB = UUF.db.profile.Units.player.Auras.PrivateAuras
 			if PrivateAurasDB.Enabled then
@@ -534,6 +537,9 @@ function UUF:CreateTestAuras(unitFrame, unit)
                 unitFrame.BuffContainer:SetPoint(BuffsDB.Layout[1], unitFrame, BuffsDB.Layout[2], BuffsDB.Layout[3], BuffsDB.Layout[4])
                 unitFrame.BuffContainer:SetFrameStrata(UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Auras.FrameStrata)
                 unitFrame.BuffContainer:Show()
+                for _, button in ipairs(unitFrame.BuffContainer) do
+                    if button then button:Hide() end
+                end
 
                 for j = 1, BuffsDB.Num do
                     local button = unitFrame.BuffContainer["fake" .. j]
@@ -602,6 +608,9 @@ function UUF:CreateTestAuras(unitFrame, unit)
                 unitFrame.DebuffContainer:SetPoint(DebuffsDB.Layout[1], unitFrame, DebuffsDB.Layout[2], DebuffsDB.Layout[3], DebuffsDB.Layout[4])
                 unitFrame.DebuffContainer:SetFrameStrata(UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Auras.FrameStrata)
                 unitFrame.DebuffContainer:Show()
+                for _, button in ipairs(unitFrame.DebuffContainer) do
+                    if button then button:Hide() end
+                end
 
                 for j = 1, DebuffsDB.Num do
                     local button = unitFrame.DebuffContainer["fake" .. j]
@@ -668,6 +677,9 @@ function UUF:CreateTestAuras(unitFrame, unit)
                 unitFrame.CustomAuraContainer:SetPoint(CustomDB.Layout[1], unitFrame, CustomDB.Layout[2], CustomDB.Layout[3], CustomDB.Layout[4])
                 unitFrame.CustomAuraContainer:SetFrameStrata(AurasDB.FrameStrata)
                 unitFrame.CustomAuraContainer:Show()
+                for _, button in ipairs(unitFrame.CustomAuraContainer) do
+                    if button then button:Hide() end
+                end
 
                 for j = 1, CustomDB.Num do
                     local button = unitFrame.CustomAuraContainer["fake" .. j]
@@ -745,6 +757,16 @@ function UUF:CreateTestAuras(unitFrame, unit)
                 local button = unitFrame.CustomAuraContainer["fake" .. j]
                 if button then button:Hide() end
             end
+        end
+        if BuffsDB.Enabled or DebuffsDB.Enabled then
+            if not unitFrame:IsElementEnabled("Auras") then unitFrame:EnableElement("Auras") end
+            if unitFrame.BuffContainer and unitFrame.BuffContainer.ForceUpdate then unitFrame.BuffContainer:ForceUpdate() end
+            if unitFrame.DebuffContainer and unitFrame.DebuffContainer.ForceUpdate then unitFrame.DebuffContainer:ForceUpdate() end
+        end
+        if CustomDB and CustomDB.Enabled then
+            unitFrame.CustomAuras = unitFrame.CustomAuraContainer
+            if not unitFrame:IsElementEnabled("CustomAuras") then unitFrame:EnableElement("CustomAuras") end
+            if unitFrame.CustomAuraContainer and unitFrame.CustomAuraContainer.ForceUpdate then unitFrame.CustomAuraContainer:ForceUpdate() end
         end
 		if unit == "player" and unitFrame.PrivateAuraContainer then
 			for j = 1, (unitFrame.PrivateAuraContainer.maxFake or 0) do
