@@ -583,7 +583,6 @@ UUF.AURA_FILTERS = {
     Buffs = {
         {Key = "RaidPlayerDispellable", Group = "General", Title = "Player Dispellable", Desc = "Show buffs marked as dispellable by the player."},
         {Key = "Player", Group = "Player (You)", Title = "All", Desc = "Show every buff applied by the player or their vehicle."},
-        {Key = "ImportantPlayer", Group = "Player (You)", Title = "Important", Desc = "Show important buffs applied by the player."},
         {Key = "CrowdControlPlayer", Group = "Player (You)", Title = "Crowd Control", Desc = "Show crowd-control buffs applied by the player."},
         {Key = "BigDefensivePlayer", Group = "Player (You)", Title = "Big Defensive", Desc = "Show major defensive buffs applied by the player."},
         {Key = "ExternalDefensivePlayer", Group = "Player (You)", Title = "External Defensive", Desc = "Show external defensive buffs applied by the player."},
@@ -591,7 +590,6 @@ UUF.AURA_FILTERS = {
         {Key = "CancelablePlayer", Group = "Player (You)", Title = "Cancelable", Desc = "Show cancelable buffs applied by the player."},
         {Key = "NotCancelablePlayer", Group = "Player (You)", Title = "Not Cancelable", Desc = "Show non-cancelable buffs applied by the player."},
         {Key = "RaidPlayer", Group = "Player (You)", Title = "Raid", Desc = "Show player-cast buffs marked for raid frames."},
-        {Key = "Important", Group = "Others (Not You)", Title = "Important", Desc = "Show important buffs applied by other units."},
         {Key = "CrowdControl", Group = "Others (Not You)", Title = "Crowd Control", Desc = "Show crowd-control buffs applied by other units."},
         {Key = "BigDefensive", Group = "Others (Not You)", Title = "Big Defensive", Desc = "Show major defensive buffs applied by other units."},
         {Key = "ExternalDefensive", Group = "Others (Not You)", Title = "External Defensive", Desc = "Show external defensive buffs applied by other units."},
@@ -603,7 +601,6 @@ UUF.AURA_FILTERS = {
     Debuffs = {
         {Key = "RaidPlayerDispellable", Group = "General", Title = "Player Dispellable", Desc = "Show debuffs marked as dispellable by the player."},
         {Key = "Player", Group = "Player (You)", Title = "All", Desc = "Show every debuff applied by the player or their vehicle."},
-        {Key = "ImportantPlayer", Group = "Player (You)", Title = "Important", Desc = "Show important debuffs applied by the player."},
         {Key = "CrowdControlPlayer", Group = "Player (You)", Title = "Crowd Control", Desc = "Show crowd-control debuffs applied by the player."},
         {Key = "BigDefensivePlayer", Group = "Player (You)", Title = "Big Defensive", Desc = "Show major defensive debuffs applied by the player."},
         {Key = "ExternalDefensivePlayer", Group = "Player (You)", Title = "External Defensive", Desc = "Show external defensive debuffs applied by the player."},
@@ -611,7 +608,6 @@ UUF.AURA_FILTERS = {
         {Key = "CancelablePlayer", Group = "Player (You)", Title = "Cancelable", Desc = "Show cancelable debuffs applied by the player."},
         {Key = "NotCancelablePlayer", Group = "Player (You)", Title = "Not Cancelable", Desc = "Show non-cancelable debuffs applied by the player."},
         {Key = "RaidPlayer", Group = "Player (You)", Title = "Raid", Desc = "Show player-cast debuffs marked for raid frames."},
-        {Key = "Important", Group = "Others (Not You)", Title = "Important", Desc = "Show important debuffs applied by other units."},
         {Key = "CrowdControl", Group = "Others (Not You)", Title = "Crowd Control", Desc = "Show crowd-control debuffs applied by other units."},
         {Key = "BigDefensive", Group = "Others (Not You)", Title = "Big Defensive", Desc = "Show major defensive debuffs applied by other units."},
         {Key = "ExternalDefensive", Group = "Others (Not You)", Title = "External Defensive", Desc = "Show external defensive debuffs applied by other units."},
