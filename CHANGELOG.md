@@ -1,3 +1,5 @@
+## V12.0.23
+- Added `Interrupt Success` Colour for Cast Bars.
 ## V12.0.22
 - Added `OUTLINE, SLUG` to the Font Selection.
 - Fixed the double creation of Absorbs & Heal Absorbs (Thanks Permok).
