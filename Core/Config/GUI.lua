@@ -1084,14 +1084,14 @@ local function CreateCastBarBarSettings(containerParent, unit, updateCallback)
     NotInterruptibleColourPicker:SetRelativeWidth(isPlayerorPet and 0.5 or 0.25)
     ColourContainer:AddChild(NotInterruptibleColourPicker)
 
-    local InterruptSuccessColour = AG:Create("ColorPicker")
-    InterruptSuccessColour:SetLabel("Interrupted / Failed")
-    local R4, G4, B4 = unpack(CastBarDB.InterruptSuccessColour)
-    InterruptSuccessColour:SetColor(R4, G4, B4)
-    InterruptSuccessColour:SetCallback("OnValueChanged", function(_, _, r, g, b, a) CastBarDB.InterruptSuccessColour = {r, g, b, a} updateCallback() end)
-    InterruptSuccessColour:SetHasAlpha(true)
-    InterruptSuccessColour:SetRelativeWidth(isPlayerorPet and 0.5 or 0.25)
-    ColourContainer:AddChild(InterruptSuccessColour)
+    local InterruptedFailedColour = AG:Create("ColorPicker")
+    InterruptedFailedColour:SetLabel("Interrupted / Failed")
+    local R4, G4, B4 = unpack(CastBarDB.InterruptedFailedColour)
+    InterruptedFailedColour:SetColor(R4, G4, B4)
+    InterruptedFailedColour:SetCallback("OnValueChanged", function(_, _, r, g, b, a) CastBarDB.InterruptedFailedColour = {r, g, b, a} updateCallback() end)
+    InterruptedFailedColour:SetHasAlpha(true)
+    InterruptedFailedColour:SetRelativeWidth(isPlayerorPet and 0.5 or 0.25)
+    ColourContainer:AddChild(InterruptedFailedColour)
 
     function RefreshCastBarBarSettings()
         if CastBarDB.Enabled then
@@ -1106,7 +1106,7 @@ local function CreateCastBarBarSettings(containerParent, unit, updateCallback)
             ForegroundColourPicker:SetDisabled(CastBarDB.ColourByClass)
             BackgroundColourPicker:SetDisabled(false)
             NotInterruptibleColourPicker:SetDisabled(false)
-            InterruptSuccessColour:SetDisabled(false)
+            InterruptedFailedColour:SetDisabled(false)
             if isPlayerorPet then UUFGUI.ClassColourToggle:SetDisabled(false) end
         else
             MatchParentWidthToggle:SetDisabled(true)
@@ -1120,7 +1120,7 @@ local function CreateCastBarBarSettings(containerParent, unit, updateCallback)
             ForegroundColourPicker:SetDisabled(true)
             BackgroundColourPicker:SetDisabled(true)
             NotInterruptibleColourPicker:SetDisabled(true)
-            InterruptSuccessColour:SetDisabled(true)
+            InterruptedFailedColour:SetDisabled(true)
             if isPlayerorPet then UUFGUI.ClassColourToggle:SetDisabled(true) end
         end
     end

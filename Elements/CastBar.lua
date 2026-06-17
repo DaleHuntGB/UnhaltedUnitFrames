@@ -145,7 +145,7 @@ function UUF:CreateUnitCastBar(unitFrame, unit)
             if frameCastBar.NotInterruptibleOverlay and frameCastBar.notInterruptible ~= nil then frameCastBar.NotInterruptibleOverlay:SetAlphaFromBoolean(frameCastBar.notInterruptible, 1, 0) end
         end
         unitFrame.Castbar.PostCastFail = function(frameCastBar)
-            frameCastBar:SetStatusBarColor(unpack(CastBarDB.InterruptSuccessColour))
+            frameCastBar:SetStatusBarColor(unpack(CastBarDB.InterruptedFailedColour))
             if frameCastBar.NotInterruptibleOverlay then frameCastBar.NotInterruptibleOverlay:SetAlpha(0) end
         end
         unitFrame.Castbar.PostCastInterrupted = unitFrame.Castbar.PostCastFail
