@@ -317,6 +317,25 @@ local Defaults = {
                             Colour = {1, 1, 1, 1}
                         }
                     },
+                    Custom = {
+                        Enabled = false,
+                        Type = "Buffs",
+                        OnlyShowPlayer = false,
+                        Size = 42,
+                        Layout = {"RIGHT", "LEFT", -1, 0, 1},
+                        Num = 3,
+                        Wrap = 3,
+                        GrowthDirection = "LEFT",
+                        WrapDirection = "UP",
+                        ShowType = false,
+                        Blacklist = false,
+                        Filter = "HELPFUL",
+                        Count = {
+                            Layout = {"BOTTOMRIGHT", "BOTTOMRIGHT", 0, 2},
+                            FontSize = 12,
+                            Colour = {1, 1, 1, 1}
+                        }
+                    },
                 },
                 Tags = {
                     TagOne = {
@@ -548,6 +567,25 @@ local Defaults = {
                             Colour = {1, 1, 1, 1}
                         }
                     },
+                    Custom = {
+                        Enabled = false,
+                        Type = "Buffs",
+                        OnlyShowPlayer = false,
+                        Size = 42,
+                        Layout = {"RIGHT", "LEFT", -1, 0, 1},
+                        Num = 3,
+                        Wrap = 3,
+                        GrowthDirection = "LEFT",
+                        WrapDirection = "UP",
+                        ShowType = false,
+                        Blacklist = false,
+                        Filter = "HELPFUL",
+                        Count = {
+                            Layout = {"BOTTOMRIGHT", "BOTTOMRIGHT", 0, 2},
+                            FontSize = 12,
+                            Colour = {1, 1, 1, 1}
+                        }
+                    },
                 },
                 Tags = {
                     TagOne = {
@@ -643,38 +681,6 @@ local Defaults = {
                     Inverse = false,
                     BackgroundMultiplier = 0.75,
                 },
-                -- CastBar = {
-                --     Enabled = false,
-                --     Width = 244,
-                --     Height = 24,
-                --     Layout = {"TOPLEFT", "BOTTOMLEFT", 0, -1},
-                --     Foreground = {128/255, 128/255, 255/255},
-                --     Background = {34/255, 34/255, 34/255},
-                --     NotInterruptibleColour = {255/255, 64/255, 64/255},
-                --     InterruptedFailedColour = {64/255, 255/255, 64/255},
-                --     MatchParentWidth = true,
-                --     ColourByClass = false,
-                --     FrameStrata = "MEDIUM",
-                --     Icon = {
-                --         Enabled = true,
-                --         Position = "LEFT",
-                --     },
-                --     Text = {
-                --         SpellName = {
-                --             Enabled = true,
-                --             FontSize = 12,
-                --             Layout = {"LEFT", "LEFT", 3, 0},
-                --             Colour = {1, 1, 1},
-                --             MaxChars = 15,
-                --         },
-                --         Duration = {
-                --             Enabled = true,
-                --             FontSize = 12,
-                --             Layout = {"RIGHT", "RIGHT", -3, 0},
-                --             Colour = {1, 1, 1},
-                --         }
-                --     }
-                -- },
                 Portrait = {
                     Enabled = false,
                     Width = 22,
@@ -947,6 +953,25 @@ local Defaults = {
                             Colour = {1, 1, 1, 1}
                         }
                     },
+                    Custom = {
+                        Enabled = false,
+                        Type = "Buffs",
+                        OnlyShowPlayer = false,
+                        Size = 22,
+                        Layout = {"RIGHT", "LEFT", -1, 0, 1},
+                        Num = 3,
+                        Wrap = 3,
+                        GrowthDirection = "LEFT",
+                        WrapDirection = "UP",
+                        ShowType = false,
+                        Blacklist = false,
+                        Filter = "HELPFUL",
+                        Count = {
+                            Layout = {"BOTTOMRIGHT", "BOTTOMRIGHT", 0, 2},
+                            FontSize = 12,
+                            Colour = {1, 1, 1, 1}
+                        }
+                    },
                 },
                 Tags = {
                     TagOne = {
@@ -1042,38 +1067,6 @@ local Defaults = {
                     Inverse = false,
                     BackgroundMultiplier = 0.75,
                 },
-                -- CastBar = {
-                --     Enabled = false,
-                --     Width = 244,
-                --     Height = 24,
-                --     Layout = {"TOPLEFT", "BOTTOMLEFT", 0, -1},
-                --     Foreground = {128/255, 128/255, 255/255},
-                --     Background = {34/255, 34/255, 34/255},
-                --     NotInterruptibleColour = {255/255, 64/255, 64/255},
-                --     InterruptedFailedColour = {64/255, 255/255, 64/255},
-                --     MatchParentWidth = true,
-                --     ColourByClass = false,
-                --     FrameStrata = "MEDIUM",
-                --     Icon = {
-                --         Enabled = true,
-                --         Position = "LEFT",
-                --     },
-                --     Text = {
-                --         SpellName = {
-                --             Enabled = true,
-                --             FontSize = 12,
-                --             Layout = {"LEFT", "LEFT", 3, 0},
-                --             Colour = {1, 1, 1},
-                --             MaxChars = 15,
-                --         },
-                --         Duration = {
-                --             Enabled = true,
-                --             FontSize = 12,
-                --             Layout = {"RIGHT", "RIGHT", -3, 0},
-                --             Colour = {1, 1, 1},
-                --         }
-                --     }
-                -- },
                 Portrait = {
                     Enabled = false,
                     Width = 22,
@@ -1342,6 +1335,25 @@ local Defaults = {
                             Colour = {1, 1, 1, 1}
                         }
                     },
+                    Custom = {
+                        Enabled = false,
+                        Type = "Buffs",
+                        OnlyShowPlayer = false,
+                        Size = 22,
+                        Layout = {"RIGHT", "LEFT", -1, 0, 1},
+                        Num = 3,
+                        Wrap = 3,
+                        GrowthDirection = "LEFT",
+                        WrapDirection = "UP",
+                        ShowType = false,
+                        Blacklist = false,
+                        Filter = "HELPFUL",
+                        Count = {
+                            Layout = {"BOTTOMRIGHT", "BOTTOMRIGHT", 0, 2},
+                            FontSize = 12,
+                            Colour = {1, 1, 1, 1}
+                        }
+                    },
                 },
                 Tags = {
                     TagOne = {
@@ -1535,6 +1547,25 @@ local Defaults = {
                         ShowType = false,
                         Blacklist = false,
                         Filter = "HARMFUL",
+                        Count = {
+                            Layout = {"BOTTOMRIGHT", "BOTTOMRIGHT", 0, 2},
+                            FontSize = 12,
+                            Colour = {1, 1, 1, 1}
+                        }
+                    },
+                    Custom = {
+                        Enabled = false,
+                        Type = "Buffs",
+                        OnlyShowPlayer = false,
+                        Size = 42,
+                        Layout = {"RIGHT", "LEFT", -1, 0, 1},
+                        Num = 3,
+                        Wrap = 3,
+                        GrowthDirection = "LEFT",
+                        WrapDirection = "UP",
+                        ShowType = false,
+                        Blacklist = false,
+                        Filter = "HELPFUL",
                         Count = {
                             Layout = {"BOTTOMRIGHT", "BOTTOMRIGHT", 0, 2},
                             FontSize = 12,

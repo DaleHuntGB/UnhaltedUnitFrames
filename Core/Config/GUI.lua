@@ -2574,33 +2574,53 @@ end
 
 local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
     local AuraDB = UUF.db.profile.Units[unit].Auras[auraDB]
+    local isCustom = auraDB == "Custom"
+    local filterAuraDB = auraDB == "Custom" and (AuraDB.Type == "Debuffs" and "Debuffs" or "Buffs") or auraDB
+    local auraTitle = auraDB == "Custom" and filterAuraDB or auraDB
 
-    local AuraContainer = GUIWidgets.CreateInlineGroup(containerParent, auraDB .. " Settings")
+    local AuraContainer = GUIWidgets.CreateInlineGroup(containerParent, auraTitle .. " Settings")
 
     local Toggle = AG:Create("CheckBox")
     Toggle:SetLabel("Enable |cFF8080FF"..auraDB.."|r")
     Toggle:SetValue(AuraDB.Enabled)
     Toggle:SetCallback("OnValueChanged", function(_, _, value) AuraDB.Enabled = value if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end RefreshAuraGUI() end)
-    Toggle:SetRelativeWidth(0.33)
+    Toggle:SetRelativeWidth(isCustom and 0.5 or 0.33)
     AuraContainer:AddChild(Toggle)
 
+    if auraDB == "Custom" then
+        local TypeDropdown = AG:Create("Dropdown")
+        TypeDropdown:SetList({["Buffs"] = "Buffs", ["Debuffs"] = "Debuffs"}, {"Buffs", "Debuffs"})
+        TypeDropdown:SetLabel("Type")
+        TypeDropdown:SetValue(filterAuraDB)
+        TypeDropdown:SetRelativeWidth(isCustom and 0.5 or 0.33)
+        TypeDropdown:SetCallback("OnValueChanged", function(_, _, value)
+            AuraDB.Type = value
+            AuraDB.Filter = value == "Buffs" and "HELPFUL" or "HARMFUL"
+            if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end
+            containerParent:ReleaseChildren()
+            CreateSpecificAuraSettings(containerParent, unit, auraDB)
+            containerParent:DoLayout()
+        end)
+        AuraContainer:AddChild(TypeDropdown)
+    end
+
     local OnlyShowPlayerToggle = AG:Create("CheckBox")
-    OnlyShowPlayerToggle:SetLabel("Only Show Player " .. auraDB)
+    OnlyShowPlayerToggle:SetLabel("Only Show Player " .. auraTitle)
     OnlyShowPlayerToggle:SetValue(AuraDB.OnlyShowPlayer)
     OnlyShowPlayerToggle:SetCallback("OnValueChanged", function(_, _, value) AuraDB.OnlyShowPlayer = value if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end RefreshAuraGUI() end)
-    OnlyShowPlayerToggle:SetCallback("OnEnter", function() GameTooltip:SetOwner(OnlyShowPlayerToggle.frame, "ANCHOR_CURSOR") GameTooltip:AddLine("Overrides |cFF8080FF" .. auraDB:lower() .. "|r advanced filters. If |cFF8080FFBlacklist|r is checked, it will be respected.", 1, 1, 1, true) GameTooltip:Show() end)
+    OnlyShowPlayerToggle:SetCallback("OnEnter", function() GameTooltip:SetOwner(OnlyShowPlayerToggle.frame, "ANCHOR_CURSOR") GameTooltip:AddLine("Overrides |cFF8080FF" .. auraTitle:lower() .. "|r advanced filters. If |cFF8080FFBlacklist|r is checked, it will be respected.", 1, 1, 1, true) GameTooltip:Show() end)
     OnlyShowPlayerToggle:SetCallback("OnLeave", function() GameTooltip:Hide() end)
-    OnlyShowPlayerToggle:SetRelativeWidth(0.33)
+    OnlyShowPlayerToggle:SetRelativeWidth(isCustom and 0.5 or 0.33)
     AuraContainer:AddChild(OnlyShowPlayerToggle)
 
     local ShowTypeCheckbox = AG:Create("CheckBox")
-    ShowTypeCheckbox:SetLabel("Show " .. auraDB .. " Type Border")
+    ShowTypeCheckbox:SetLabel("Show " .. auraTitle .. " Type Border")
     ShowTypeCheckbox:SetValue(AuraDB.ShowType)
     ShowTypeCheckbox:SetCallback("OnValueChanged", function(_, _, value) AuraDB.ShowType = value if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end end)
-    ShowTypeCheckbox:SetRelativeWidth(0.33)
+    ShowTypeCheckbox:SetRelativeWidth(isCustom and 0.5 or 0.33)
     AuraContainer:AddChild(ShowTypeCheckbox)
 
-    local FilterContainer = GUIWidgets.CreateInlineGroup(containerParent, auraDB .. " Filters")
+    local FilterContainer = GUIWidgets.CreateInlineGroup(containerParent, auraTitle .. " Filters")
     AuraDB.Filters = AuraDB.Filters or {}
 
     local BlacklistToggle = AG:Create("CheckBox")
@@ -2610,7 +2630,7 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
     BlacklistToggle:SetRelativeWidth(0.5)
     FilterContainer:AddChild(BlacklistToggle)
 
-    for _, filter in ipairs(UUF.AURA_FILTERS[auraDB]) do
+    for _, filter in ipairs(UUF.AURA_FILTERS[filterAuraDB]) do
         if filter.Group == "General" then
             local filterKey = filter.Key
             local FilterToggle = AG:Create("CheckBox")
@@ -2628,7 +2648,7 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
         local filterList = {}
         local filterOrder = {}
         local FilterDropdown = AG:Create("Dropdown")
-        for _, filter in ipairs(UUF.AURA_FILTERS[auraDB]) do
+        for _, filter in ipairs(UUF.AURA_FILTERS[filterAuraDB]) do
             if filter.Group == filterGroup then
                 filterList[filter.Key] = filter.Title
                 filterOrder[#filterOrder + 1] = filter.Key
@@ -2696,7 +2716,7 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
     GUIWidgets.CreateHeader(LayoutContainer, "Layout")
 
     local NumAurasSlider = AG:Create("Slider")
-    NumAurasSlider:SetLabel(auraDB .. " To Display")
+    NumAurasSlider:SetLabel(auraTitle .. " To Display")
     NumAurasSlider:SetValue(AuraDB.Num)
     NumAurasSlider:SetSliderValues(1, 24, 1)
     NumAurasSlider:SetRelativeWidth(0.5)
@@ -2704,7 +2724,7 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
     LayoutContainer:AddChild(NumAurasSlider)
 
     local PerRowSlider = AG:Create("Slider")
-    PerRowSlider:SetLabel(auraDB .. " Per Row")
+    PerRowSlider:SetLabel(auraTitle .. " Per Row")
     PerRowSlider:SetValue(AuraDB.Wrap)
     PerRowSlider:SetSliderValues(1, 24, 1)
     PerRowSlider:SetRelativeWidth(0.5)
@@ -2952,6 +2972,8 @@ local function CreateAuraSettings(containerParent, unit)
             CreateSpecificAuraSettings(AuraContainer, unit, "Buffs")
         elseif AuraTab == "Debuffs" then
             CreateSpecificAuraSettings(AuraContainer, unit, "Debuffs")
+        elseif AuraTab == "Custom" and AurasDB.Custom then
+            CreateSpecificAuraSettings(AuraContainer, unit, "Custom")
         elseif AuraTab == "PrivateAuras" and unit == "player" then
             CreatePrivateAuraSettings(AuraContainer)
         end
@@ -2962,7 +2984,9 @@ local function CreateAuraSettings(containerParent, unit)
     AuraContainerTabGroup:SetLayout("Flow")
     AuraContainerTabGroup:SetFullWidth(true)
     if unit == "player" then
-        AuraContainerTabGroup:SetTabs({ { text = "Buffs", value = "Buffs"}, { text = "Debuffs", value = "Debuffs"}, { text = "Private Auras", value = "PrivateAuras"}, })
+        AuraContainerTabGroup:SetTabs({ { text = "Buffs", value = "Buffs"}, { text = "Debuffs", value = "Debuffs"}, { text = "Custom", value = "Custom"}, { text = "Private Auras", value = "PrivateAuras"}, })
+    elseif AurasDB.Custom then
+        AuraContainerTabGroup:SetTabs({ { text = "Buffs", value = "Buffs"}, { text = "Debuffs", value = "Debuffs"}, { text = "Custom", value = "Custom"}, })
     else
         AuraContainerTabGroup:SetTabs({ { text = "Buffs", value = "Buffs"}, { text = "Debuffs", value = "Debuffs"}, })
     end
