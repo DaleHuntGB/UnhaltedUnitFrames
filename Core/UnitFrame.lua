@@ -158,3 +158,10 @@ function UUF:UpdateBossFrames()
     UUF:CreateTestBossFrames()
     UUF:LayoutBossFrames()
 end
+
+function UUF:UpdateAllUnitFrames()
+	for _, unit in ipairs({"player", "target", "targettarget", "focus", "focustarget", "pet"}) do
+		if UUF[unit:upper()] then UUF:UpdateUnitFrame(UUF[unit:upper()], unit) end
+	end
+	UUF:UpdateBossFrames()
+end
