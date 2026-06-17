@@ -16,14 +16,23 @@ function UnhaltedUnitFrames:OnInitialize()
         local globalProfile = UUF.db.global.GlobalProfile or UUF.db.global.GlobalProfileName or "Default"
         UUF.db:SetProfile(globalProfile)
     end
+	for _, unitDB in pairs(UUF.db.profile.Units) do if unitDB.Portrait then unitDB.Portrait.Style = "2D" end end
 
-    local function HandleProfileChange()
+    UUF.db.RegisterCallback(UUF, "OnProfileChanged", function()
+        UUF:ResolveLSM()
+        UUF:LoadCustomColours()
         UUF:UpdateAllUnitFrames()
-    end
-
-    UUF.db.RegisterCallback(UUF, "OnProfileChanged", HandleProfileChange)
-    UUF.db.RegisterCallback(UUF, "OnProfileCopied", HandleProfileChange)
-    UUF.db.RegisterCallback(UUF, "OnProfileReset", HandleProfileChange)
+    end)
+    UUF.db.RegisterCallback(UUF, "OnProfileCopied", function()
+        UUF:ResolveLSM()
+        UUF:LoadCustomColours()
+        UUF:UpdateAllUnitFrames()
+    end)
+    UUF.db.RegisterCallback(UUF, "OnProfileReset", function()
+        UUF:ResolveLSM()
+        UUF:LoadCustomColours()
+        UUF:UpdateAllUnitFrames()
+    end)
 
     local playerSpecializationChangedEventFrame = CreateFrame("Frame")
     playerSpecializationChangedEventFrame:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
@@ -33,7 +42,11 @@ function UnhaltedUnitFrames:OnInitialize()
 
         local unit = ...
         if unit == "player" then
-            UUF:UpdateAllUnitFrames()
+            C_Timer.After(0.1, function()
+                UUF:ResolveLSM()
+                UUF:LoadCustomColours()
+                UUF:UpdateAllUnitFrames()
+            end)
         end
     end)
 end

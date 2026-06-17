@@ -71,6 +71,17 @@ for i = 1, 25 do
     Tags["name:target:short:" .. i .. ":colour"] = "UNIT_NAME_UPDATE UNIT_TARGET"
 end
 
+for i = 1, 3 do
+    Tags["perhp" .. ":" .. i] = "UNIT_HEALTH UNIT_MAXHEALTH"
+    Tags["curhpperhp" .. ":" .. i] = "UNIT_HEALTH UNIT_MAXHEALTH"
+    Tags["curhpperhp:abbr" .. ":" .. i] = "UNIT_HEALTH UNIT_MAXHEALTH"
+    Tags["perpp" .. ":" .. i] = "UNIT_POWER_UPDATE UNIT_MAXPOWER"
+    Tags["curpp:manapercent" .. ":" .. i] = "UNIT_POWER_UPDATE UNIT_MAXPOWER"
+    Tags["curpp:manapercent:abbr" .. ":" .. i] = "UNIT_POWER_UPDATE UNIT_MAXPOWER"
+    Tags["curpp:manapercent-with-sign" .. ":" .. i] = "UNIT_POWER_UPDATE UNIT_MAXPOWER"
+    Tags["curpp:manapercent-with-sign:abbr" .. ":" .. i] = "UNIT_POWER_UPDATE UNIT_MAXPOWER"
+end
+
 UUF.SEPARATOR_TAGS = {
 {
     ["||"] = "|",
@@ -472,6 +483,101 @@ for i = 1, 25 do
     end
 end
 
+for i = 1, 3 do
+    local precision = i
+
+    oUF.Tags.Methods["perhp" .. ":" .. precision] = function(unit)
+        if not unit or not UnitExists(unit) then return "" end
+        local unitHealthPercent = UnitHealthPercent(unit, false, CurveConstants.ScaleTo100)
+        return string.format("%." .. precision .. "f", unitHealthPercent)
+    end
+
+    oUF.Tags.Methods["curhpperhp" .. ":" .. precision] = function(unit)
+        if not unit or not UnitExists(unit) then return "" end
+        local unitHealth = UnitHealth(unit)
+        local unitHealthPercent = UnitHealthPercent(unit, false, CurveConstants.ScaleTo100)
+        if UUF.SEPARATOR == "[]" then
+            return string.format("%s [%." .. precision .. "f%%]", unitHealth, unitHealthPercent)
+        elseif UUF.SEPARATOR == "()" then
+            return string.format("%s (%." .. precision .. "f%%)", unitHealth, unitHealthPercent)
+        elseif UUF.SEPARATOR == " " then
+            return string.format("%s %." .. precision .. "f%%", unitHealth, unitHealthPercent)
+        else
+            return string.format("%s %s %." .. precision .. "f%%", unitHealth, UUF.SEPARATOR, unitHealthPercent)
+        end
+    end
+
+    oUF.Tags.Methods["curhpperhp:abbr" .. ":" .. precision] = function(unit)
+        if not unit or not UnitExists(unit) then return "" end
+        local unitHealth = UnitHealth(unit)
+        local unitHealthPercent = UnitHealthPercent(unit, false, CurveConstants.ScaleTo100)
+        if UUF.SEPARATOR == "[]" then
+            return string.format("%s [%." .. precision .. "f%%]", AbbreviateValue(unitHealth), unitHealthPercent)
+        elseif UUF.SEPARATOR == "()" then
+            return string.format("%s (%." .. precision .. "f%%)", AbbreviateValue(unitHealth), unitHealthPercent)
+        elseif UUF.SEPARATOR == " " then
+            return string.format("%s %." .. precision .. "f%%", AbbreviateValue(unitHealth), unitHealthPercent)
+        else
+            return string.format("%s %s %." .. precision .. "f%%", AbbreviateValue(unitHealth), UUF.SEPARATOR, unitHealthPercent)
+        end
+    end
+
+    oUF.Tags.Methods["perpp" .. ":" .. precision] = function(unit)
+        if not unit or not UnitExists(unit) then return "" end
+        local unitPowerPercent = UnitPowerPercent(unit, nil, true, CurveConstants.ScaleTo100)
+        return string.format("%." .. precision .. "f", unitPowerPercent)
+    end
+
+    oUF.Tags.Methods["curpp:manapercent" .. ":" .. precision] = function(unit)
+        if not unit or not UnitExists(unit) then return "" end
+        local unitPower = UnitPower(unit)
+        local unitPowerType = UnitPowerType(unit)
+        if unitPowerType == Enum.PowerType.Mana and unitPower then
+            local powerPercent = UnitPowerPercent(unit, Enum.PowerType.Mana, true, CurveConstants.ScaleTo100)
+            return string.format("%." .. precision .. "f", powerPercent)
+        else
+            return string.format("%s", unitPower)
+        end
+    end
+
+    oUF.Tags.Methods["curpp:manapercent:abbr" .. ":" .. precision] = function(unit)
+        if not unit or not UnitExists(unit) then return "" end
+        local unitPower = UnitPower(unit)
+        local unitPowerType = UnitPowerType(unit)
+        if unitPowerType == Enum.PowerType.Mana and unitPower then
+            local powerPercent = UnitPowerPercent(unit, Enum.PowerType.Mana, true, CurveConstants.ScaleTo100)
+            return string.format("%." .. precision .. "f", powerPercent)
+        else
+            return string.format("%s", AbbreviateValue(unitPower))
+        end
+    end
+
+    oUF.Tags.Methods["curpp:manapercent-with-sign" .. ":" .. precision] = function(unit)
+        if not unit or not UnitExists(unit) then return "" end
+        local unitPower = UnitPower(unit)
+        local unitPowerType = UnitPowerType(unit)
+        if unitPowerType == Enum.PowerType.Mana and unitPower then
+            local powerPercent = UnitPowerPercent(unit, Enum.PowerType.Mana, true, CurveConstants.ScaleTo100)
+            return string.format("%." .. precision .. "f%%", powerPercent)
+        else
+            return string.format("%s", unitPower)
+        end
+    end
+
+    oUF.Tags.Methods["curpp:manapercent-with-sign:abbr" .. ":" .. precision] = function(unit)
+        if not unit or not UnitExists(unit) then return "" end
+        local unitPower = UnitPower(unit)
+        local unitPowerType = UnitPowerType(unit)
+        if unitPowerType == Enum.PowerType.Mana and unitPower then
+            local powerPercent = UnitPowerPercent(unit, Enum.PowerType.Mana, true, CurveConstants.ScaleTo100)
+            return string.format("%." .. precision .. "f%%", powerPercent)
+        else
+            return string.format("%s", AbbreviateValue(unitPower))
+        end
+    end
+end
+
+
 local HealthTags = {
     {
         ["curhp"] = "Current Health",
@@ -484,6 +590,9 @@ local HealthTags = {
         ["absorbs:abbr"] = "Total Absorbs with Abbreviation",
         ["absorbs:truncate"] = "Total Absorbs but will hide when at zero.",
         ["missinghp"] = "Missing Health",
+        ["perhp:2"] = "Percentage Health with Decimal Precision (1 - 3)",
+        ["curhpperhp:2"] = "Current Health and Percentage with Decimal Precision (1 - 3)",
+        ["curhpperhp:abbr:2"] = "Current Health and Percentage with Abbreviation and Decimal Precision (1 - 3)",
     },
     {
         "curhp",
@@ -496,6 +605,9 @@ local HealthTags = {
         "absorbs:abbr",
         "absorbs:truncate",
         "missinghp",
+        "perhp:2",
+        "curhpperhp:2",
+        "curhpperhp:abbr:2",
     }
 
 }
@@ -516,6 +628,11 @@ local PowerTags = {
         ["curpp:manapercent:abbr"] = "Current Power but Mana as Percentage with Abbreviation",
         ["curpp:manapercent-with-sign"] = "Current Power but Mana as Percentage with % Sign",
         ["curpp:manapercent-with-sign:abbr"] = "Current Power but Mana as Percentage with % Sign and Abbreviation",
+        ["perpp:2"] = "Percentage Power with Decimal Precision (1 - 3)",
+        ["curpp:manapercent:2"] = "Current Power but Mana as Percentage with Decimal Precision (1 - 3)",
+        ["curpp:manapercent:abbr:2"] = "Current Power but Mana as Percentage with Abbreviation and Decimal Precision (1 - 3)",
+        ["curpp:manapercent-with-sign:2"] = "Current Power but Mana as Percentage with % Sign and Decimal Precision (1 - 3)",
+        ["curpp:manapercent-with-sign:abbr:2"] = "Current Power but Mana as Percentage with % Sign, Abbreviation and Decimal Precision (1 - 3)",
     },
     {
         "perpp",
@@ -525,6 +642,13 @@ local PowerTags = {
         "curpp:abbr:colour",
         "curpp:manapercent",
         "curpp:manapercent:abbr",
+        "curpp:manapercent-with-sign",
+        "curpp:manapercent-with-sign:abbr",
+        "perpp:2",
+        "curpp:manapercent:2",
+        "curpp:manapercent:abbr:2",
+        "curpp:manapercent-with-sign:2",
+        "curpp:manapercent-with-sign:abbr:2",
         "maxpp",
         "maxpp:abbr",
         "maxpp:colour",

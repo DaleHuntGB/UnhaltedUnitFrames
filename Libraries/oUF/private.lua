@@ -30,9 +30,15 @@ function Private.unitExists(unit)
 	return unit and (UnitExists(unit) or UnitIsVisible(unit))
 end
 
+function Private.unitIsUnit(unit1, unit2)
+	-- TODO: use C_Secrets.CanCompareUnitTokens instead of pcall
+	local isOk, isUnit = pcall(UnitIsUnit, unit1, unit2)
+	return isOk and isUnit
+end
+
 local validator = CreateFrame('Frame')
 
-function Private.validateUnit(unit)
+function Private.validateEventUnit(unit)
 	local isOK, _ = pcall(validator.RegisterUnitEvent, validator, 'UNIT_HEALTH', unit)
 	if(isOK) then
 		_, unit = validator:IsEventRegistered('UNIT_HEALTH')

@@ -13,11 +13,14 @@
 	<Script file="Range.lua"/>
 	<Script file="Tags.lua"/>
 
+	<Script file="Indicators/Combat.lua"/>
+	<Script file="Indicators/Classification.lua"/>
 	<Script file="Indicators/LeaderAssistant.lua"/>
 	<Script file="Indicators/Mouseover.lua"/>
+	<Script file="Indicators/PvP.lua"/>
+	<Script file="Indicators/Quest.lua"/>
 	<Script file="Indicators/RaidTargetMarker.lua"/>
 	<Script file="Indicators/Resting.lua"/>
-	<Script file="Indicators/Combat.lua"/>
 	<Script file="Indicators/TargetGlow.lua"/>
-	<!-- <Script file="Indicators/Totems.lua"/> -->
+	<Script file="Indicators/Totems.lua"/>
 </Ui>

@@ -1,10 +1,5 @@
 local _, UUF = ...
 
-local function SetCombatTexture(combatTexture)
-    if not combatTexture then return end
-    return UUF.StatusTextures["Combat"][combatTexture]
-end
-
 function UUF:CreateUnitCombatIndicator(unitFrame, unit)
     local CombatDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Indicators.Combat
 
@@ -18,7 +13,7 @@ function UUF:CreateUnitCombatIndicator(unitFrame, unit)
             Combat:SetTexture([[Interface\CharacterFrame\UI-StateIcon]])
             Combat:SetTexCoord(0.5, 1, 0, 0.49)
         else
-            Combat:SetTexture(SetCombatTexture(CombatDB.Texture))
+            Combat:SetTexture(UUF.StatusTextures["Combat"][CombatDB.Texture])
             Combat:SetTexCoord(0, 1, 0, 1)
         end
         if UnitAffectingCombat(unitFrame.unit) then Combat:Show() end
@@ -43,7 +38,7 @@ function UUF:UpdateUnitCombatIndicator(unitFrame, unit)
                 unitFrame.CombatIndicator:SetTexture([[Interface\CharacterFrame\UI-StateIcon]])
                 unitFrame.CombatIndicator:SetTexCoord(0.5, 1, 0, 0.49)
             else
-                unitFrame.CombatIndicator:SetTexture(SetCombatTexture(CombatDB.Texture))
+                unitFrame.CombatIndicator:SetTexture(UUF.StatusTextures["Combat"][CombatDB.Texture])
                 unitFrame.CombatIndicator:SetTexCoord(0, 1, 0, 1)
             end
             if UnitAffectingCombat(unitFrame.unit) then

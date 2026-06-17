@@ -51,7 +51,7 @@ UUF.GUIWidgets.CreateInlineGroup = CreateInlineGroup
 
 local function CreateHeader(containerParent, headerTitle)
     local headingText = AG:Create("Heading")
-    headingText:SetText("|cFFFFCC00" .. headerTitle .. "|r")
+    headingText:SetText("|cFF8080FF" .. headerTitle .. "|r")
     headingText:SetFullWidth(true)
     containerParent:AddChild(headingText)
     return headingText

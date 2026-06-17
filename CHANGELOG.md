@@ -1,0 +1,27 @@
+## V12.0.23
+- Added `Interrupt Success` Colour for Cast Bars.
+- Added `Smooth Updates` for Health Bars.
+## V12.0.22
+- Added `OUTLINE, SLUG` to the Font Selection.
+- Fixed the double creation of Absorbs & Heal Absorbs (Thanks Permok).
+- Added Totems back.
+- Private Auras for Player.
+- Improved on the Filters for Auras. This includes blacklisting what Blizzard allows.
+- Added `Display Login Message` toggle (Thanks Femxiii).
+- Added `Colour By Class` for Player/Pet CastBars (Thanks Lichie567).
+- Added new tags for percent health. You can now specify `decimals` to show (Thanks Rodrigodias4).
+- 3D Portraits are removed as they are now secret inside instances.
+- Bumped Interface Version.
+- Added Incoming Heals for all frames.
+- Added `Movers` for all frames.
+- Added `Show Target` and `Hold Time` for CastBars.
+- Added PVP Badge / Indicator.
+- Tidied up code.
+- Fixed Test Environment errors.
+- Improved upon the `SecondaryPowerBar` logic & code.
+- Added Quest Indicator.
+- Added Classification Indicator (Rare/Rare Elite/Elite).
+- Added Custom Quest Texture.
+- Added Cooldown Break Points. This might reset some of your options with regards to the Cooldown Text.
+- GUI Rework with the new options.
+- Added `Show Over Absorb` toggle for Absorbs. This should now show you an absorb when at full health, this is only enabled when you select `Attach to Missing Health`.
