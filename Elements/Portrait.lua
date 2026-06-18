@@ -1,5 +1,49 @@
 local _, UUF = ...
 
+local function Update3DPortrait(unitFrame, _, unit)
+	if not unit or not UnitIsUnit(unitFrame.unit, unit) then return end
+
+	local unitPortrait = unitFrame.Portrait
+	if unitPortrait.PreUpdate then unitPortrait:PreUpdate(unit) end
+
+	local unitGUID = UnitGUID(unit)
+	local isAvailable = UnitIsConnected(unit) and UnitIsVisible(unit)
+	local isSecretGUID = UUF:IsSecretValue(unitGUID)
+	local useFallback = isAvailable and isSecretGUID
+	local isSecretPreviousGUID = UUF:IsSecretValue(unitPortrait.guid)
+	local portraitChanged = unitPortrait.state ~= isAvailable or unitPortrait.useFallback ~= useFallback or (not isSecretGUID and not isSecretPreviousGUID and unitPortrait.guid ~= unitGUID)
+
+	if useFallback then
+		unitPortrait:ClearModel()
+		unitPortrait:Hide()
+		unitPortrait.Fallback:Show()
+		SetPortraitTexture(unitPortrait.Fallback, unit)
+	else
+		unitPortrait.Fallback:Hide()
+		unitPortrait:Show()
+
+		if not isAvailable then
+			unitPortrait:SetCamDistanceScale(0.25)
+			unitPortrait:SetPortraitZoom(0)
+			unitPortrait:SetPosition(0, 0, 0.25)
+			unitPortrait:ClearModel()
+			unitPortrait:SetModel([[Interface\Buttons\TalkToMeQuestionMark.m2]])
+		else
+			unitPortrait:SetCamDistanceScale(1)
+			unitPortrait:SetPortraitZoom(1)
+			unitPortrait:SetPosition(0, 0, 0)
+			unitPortrait:ClearModel()
+			unitPortrait:SetUnit(unit)
+		end
+	end
+
+	unitPortrait.guid = unitGUID
+	unitPortrait.state = isAvailable
+	unitPortrait.useFallback = useFallback
+
+	if unitPortrait.PostUpdate then return unitPortrait:PostUpdate(unit, portraitChanged) end
+end
+
 function UUF:CreateUnitPortrait(unitFrame, unit)
 	local PortraitDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Portrait
 	local portraitStyle = PortraitDB.Style or "2D"
@@ -18,6 +62,12 @@ function UUF:CreateUnitPortrait(unitFrame, unit)
 		unitPortrait:SetPortraitZoom(1)
 		unitPortrait:SetPosition(0, 0, 0)
 		unitPortrait.Backdrop = portraitBackdrop
+		unitPortrait.Override = Update3DPortrait
+
+		unitPortrait.Fallback = portraitBackdrop:CreateTexture(UUF:FetchFrameName(unit) .. "_Portrait3DFallback", "ARTWORK")
+		unitPortrait.Fallback:SetAllPoints(portraitBackdrop)
+		unitPortrait.Fallback:SetTexCoord((PortraitDB.Zoom or 0) * 0.5, 1 - (PortraitDB.Zoom or 0) * 0.5, (PortraitDB.Zoom or 0) * 0.5, 1 - (PortraitDB.Zoom or 0) * 0.5)
+		unitPortrait.Fallback:Hide()
 
 		unitPortrait.Border = CreateFrame("Frame", UUF:FetchFrameName(unit) .. "_PortraitBorder", portraitBackdrop, "BackdropTemplate")
 		unitPortrait.Border:SetAllPoints(portraitBackdrop)
@@ -79,6 +129,10 @@ function UUF:UpdateUnitPortrait(unitFrame, unit)
 				unitFrame.Portrait.Backdrop:Hide()
 				unitFrame.Portrait.Backdrop = nil
 			end
+			if unitFrame.Portrait.Fallback then
+				unitFrame.Portrait.Fallback:Hide()
+				unitFrame.Portrait.Fallback = nil
+			end
 			unitFrame.Portrait:Hide()
 			unitFrame.Portrait = nil
 		end
@@ -91,6 +145,7 @@ function UUF:UpdateUnitPortrait(unitFrame, unit)
 			unitFrame.Portrait.Backdrop:SetSize(PortraitDB.Width, PortraitDB.Height)
 			unitFrame.Portrait.Backdrop:SetPoint(PortraitDB.Layout[1], unitFrame.HighLevelContainer, PortraitDB.Layout[2], PortraitDB.Layout[3], PortraitDB.Layout[4])
 			unitFrame.Portrait:SetAllPoints(unitFrame.Portrait.Backdrop)
+			unitFrame.Portrait.Fallback:SetTexCoord((PortraitDB.Zoom or 0) * 0.5, 1 - (PortraitDB.Zoom or 0) * 0.5, (PortraitDB.Zoom or 0) * 0.5, 1 - (PortraitDB.Zoom or 0) * 0.5)
 			unitFrame.Portrait:SetCamDistanceScale(1)
 			unitFrame.Portrait:SetPortraitZoom(1)
 			unitFrame.Portrait:SetPosition(0, 0, 0)
@@ -111,6 +166,7 @@ function UUF:UpdateUnitPortrait(unitFrame, unit)
 		if unitFrame:IsElementEnabled("Portrait") then unitFrame:DisableElement("Portrait") end
 		unitFrame.Portrait:Hide()
 		unitFrame.Portrait.Border:Hide()
+		if unitFrame.Portrait.Fallback then unitFrame.Portrait.Fallback:Hide() end
 		if unitFrame.Portrait.Backdrop then unitFrame.Portrait.Backdrop:Hide() end
 		unitFrame.Portrait = nil
 	end
