@@ -7,6 +7,7 @@
 - Fixed Auras in the Test Environment.
 - Fixed the `HealPrediction` error.
 - Added 3D Portraits back (for now).
+- Added 2D Portrait as a fallback for 3D Portraits that are secret.
 ## V12.0.22
 - Added `OUTLINE, SLUG` to the Font Selection.
 - Fixed the double creation of Absorbs & Heal Absorbs (Thanks Permok).
