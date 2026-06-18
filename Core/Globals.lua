@@ -599,6 +599,7 @@ UUF.AURA_FILTERS = {
         {Key = "Raid", Group = "Others (Not You)", Title = "Raid", Desc = "Show other-cast buffs marked for raid frames."},
     },
     Debuffs = {
+        {Key = "Typed", Group = "General", Title = "Typed", Desc = "Show debuffs with a debuff type, such as Magic, Curse, Disease, Poison, or Bleed."},
         {Key = "RaidPlayerDispellable", Group = "General", Title = "Player Dispellable", Desc = "Show debuffs marked as dispellable by the player."},
         {Key = "Player", Group = "Player (You)", Title = "All", Desc = "Show every debuff applied by the player or their vehicle."},
         {Key = "CrowdControlPlayer", Group = "Player (You)", Title = "Crowd Control", Desc = "Show crowd-control debuffs applied by the player."},

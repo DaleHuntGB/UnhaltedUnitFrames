@@ -2638,7 +2638,7 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
     BlacklistToggle:SetLabel("Blacklist")
     BlacklistToggle:SetValue(AuraDB.Blacklist or false)
     BlacklistToggle:SetCallback("OnValueChanged", function(_, _, value) AuraDB.Blacklist = value if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end end)
-    BlacklistToggle:SetRelativeWidth(0.5)
+    BlacklistToggle:SetRelativeWidth(auraDB == "Debuffs" and 0.33 or 0.5)
     FilterContainer:AddChild(BlacklistToggle)
 
     for _, filter in ipairs(UUF.AURA_FILTERS[filterAuraDB]) do
@@ -2647,8 +2647,10 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
             local FilterToggle = AG:Create("CheckBox")
             FilterToggle:SetLabel(filter.Title)
             FilterToggle:SetValue(AuraDB.Filters[filterKey] or false)
-            FilterToggle:SetRelativeWidth(0.5)
+            FilterToggle:SetRelativeWidth(0.33)
             FilterToggle:SetCallback("OnValueChanged", function(_, _, value) AuraDB.Filters[filterKey] = value or nil if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end end)
+            FilterToggle:SetCallback("OnEnter", function() GameTooltip:SetOwner(FilterToggle.frame, "ANCHOR_CURSOR") GameTooltip:AddLine(filter.Desc, 1, 1, 1, true) GameTooltip:Show() end)
+            FilterToggle:SetCallback("OnLeave", function() GameTooltip:Hide() end)
             FilterContainer:AddChild(FilterToggle)
         end
     end
