@@ -1700,7 +1700,7 @@ local function CreatePortraitSettings(containerParent, unit, updateCallback)
 
     local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Portrait Settings")
 
-    GUIWidgets.CreateInformationTag(ToggleContainer, "|cFF8080FF3D Portraits|r will |cFFFF4040NOT|r work in instances, as they are now secret.|cFF8080FF2D Portraits|r will be used as a fallback if this is the case.")
+    GUIWidgets.CreateInformationTag(ToggleContainer, "|cFF8080FF3D Portraits|r will |cFFFF4040NOT|r work in instances, as they are now secret. |cFF8080FF2D Portraits|r will be used as a fallback if this is the case.")
 
     local Toggle = AG:Create("CheckBox")
     Toggle:SetLabel("Enable |cFF8080FFPortrait|r")
