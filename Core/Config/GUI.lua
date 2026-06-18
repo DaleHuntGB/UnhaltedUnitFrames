@@ -2663,17 +2663,26 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
 
     for _, filterGroup in ipairs({"Player (You)", "Others (Not You)"}) do
         local filterList = {}
+        local filterDesc = {}
         local filterOrder = {}
         local FilterDropdown = AG:Create("Dropdown")
         for _, filter in ipairs(UUF.AURA_FILTERS[filterAuraDB]) do
             if filter.Group == filterGroup then
                 filterList[filter.Key] = filter.Title
+                filterDesc[filter.Key] = filter.Desc
                 filterOrder[#filterOrder + 1] = filter.Key
             end
         end
         FilterDropdown:SetLabel(filterGroup .. " Filters")
         FilterDropdown:SetMultiselect(true)
         FilterDropdown:SetList(filterList, filterOrder)
+        for _, dropdownItem in FilterDropdown.pullout:IterateItems() do
+            local desc = filterDesc[dropdownItem.userdata and dropdownItem.userdata.value]
+            if desc then
+                dropdownItem:SetCallback("OnEnter", function() GameTooltip:SetOwner(dropdownItem.frame, "ANCHOR_CURSOR_RIGHT") GameTooltip:SetFrameStrata("TOOLTIP") GameTooltip:SetFrameLevel((FilterDropdown.pullout.frame:GetFrameLevel() or 0) + 100) GameTooltip:SetToplevel(true) GameTooltip:AddLine(desc, 1, 1, 1, false) GameTooltip:Show() GameTooltip:SetFrameLevel((FilterDropdown.pullout.frame:GetFrameLevel() or 0) + 100) end)
+                dropdownItem:SetCallback("OnLeave", function() GameTooltip:Hide() end)
+            end
+        end
         for _, filterKey in ipairs(filterOrder) do FilterDropdown:SetItemValue(filterKey, AuraDB.Filters[filterKey] or false) end
         FilterDropdown:SetRelativeWidth(0.5)
         FilterDropdown:SetCallback("OnValueChanged", function(_, _, filterKey, value) AuraDB.Filters[filterKey] = value or nil if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end end)
@@ -2687,7 +2696,7 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
     AnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
     AnchorFromDropdown:SetLabel("Anchor From")
     AnchorFromDropdown:SetValue(AuraDB.Layout[1])
-    AnchorFromDropdown:SetRelativeWidth(0.5)
+    AnchorFromDropdown:SetRelativeWidth(0.33)
     AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) AuraDB.Layout[1] = value if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end end)
     LayoutContainer:AddChild(AnchorFromDropdown)
 
@@ -2695,9 +2704,33 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
     AnchorToDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
     AnchorToDropdown:SetLabel("Anchor To")
     AnchorToDropdown:SetValue(AuraDB.Layout[2])
-    AnchorToDropdown:SetRelativeWidth(0.5)
+    AnchorToDropdown:SetRelativeWidth(0.33)
     AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) AuraDB.Layout[2] = value if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end end)
     LayoutContainer:AddChild(AnchorToDropdown)
+
+    local SortingDropdown = AG:Create("Dropdown")
+    SortingDropdown:SetList({
+        BLIZZARD = "Blizzard",
+        BLIZZARD_REVERSED = "Blizzard Reversed",
+        DURATION = "Duration",
+        DURATION_REVERSED = "Duration Reversed",
+    }, {"BLIZZARD", "BLIZZARD_REVERSED", "DURATION", "DURATION_REVERSED"})
+    SortingDropdown:SetLabel("Aura Sorting")
+    SortingDropdown:SetValue(AuraDB.Sorting or "BLIZZARD")
+    SortingDropdown:SetRelativeWidth(0.33)
+    SortingDropdown:SetCallback("OnValueChanged", function(_, _, value) AuraDB.Sorting = value if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end end)
+    for _, dropdownItem in SortingDropdown.pullout:IterateItems() do
+        local value = dropdownItem.userdata and dropdownItem.userdata.value
+        local desc = value == "BLIZZARD" and "|cFF00B4FFBlizzard|r's Default Ordering."
+            or value == "BLIZZARD_REVERSED" and "|cFF00B4FFBlizzard|r's Default Ordering in Reverse."
+            or value == "DURATION" and "|cFF8080FFDuration-Based|r Ordering.\nAuras with the shortest remaining duration will be displayed first."
+            or value == "DURATION_REVERSED" and "|cFF8080FFDuration-Based|r Ordering in Reverse.\nAuras with the longest remaining duration will be displayed first."
+        if desc then
+            dropdownItem:SetCallback("OnEnter", function() GameTooltip:SetOwner(dropdownItem.frame, "ANCHOR_CURSOR_RIGHT") GameTooltip:SetFrameStrata("TOOLTIP") GameTooltip:SetFrameLevel((SortingDropdown.pullout.frame:GetFrameLevel() or 0) + 100) GameTooltip:SetToplevel(true) GameTooltip:AddLine(desc, 1, 1, 1, false) GameTooltip:Show() GameTooltip:SetFrameLevel((SortingDropdown.pullout.frame:GetFrameLevel() or 0) + 100) end)
+            dropdownItem:SetCallback("OnLeave", function() GameTooltip:Hide() end)
+        end
+    end
+    LayoutContainer:AddChild(SortingDropdown)
 
     local XPosSlider = AG:Create("Slider")
     XPosSlider:SetLabel("X Position")

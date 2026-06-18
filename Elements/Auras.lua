@@ -184,6 +184,7 @@ function UUF:UpdateUnitAuras(unitFrame, unit)
         unitFrame.BuffContainer["growthX"] = BuffsDB.GrowthDirection
         unitFrame.BuffContainer["growthY"] = BuffsDB.WrapDirection
         unitFrame.BuffContainer.filter = "HELPFUL"
+        UUF:ConfigureAuraSorting(unitFrame.BuffContainer, BuffsDB.Sorting)
         unitFrame.BuffContainer.createdButtons = unitFrame.Buffs.createdButtons or 0
         unitFrame.BuffContainer.anchoredButtons = unitFrame.Buffs.anchoredButtons or 0
         unitFrame.BuffContainer.PostCreateButton = function(_, button) StyleAuras(_, button, unit, "HELPFUL") end
@@ -213,6 +214,7 @@ function UUF:UpdateUnitAuras(unitFrame, unit)
         unitFrame.DebuffContainer["growthX"] = DebuffsDB.GrowthDirection
         unitFrame.DebuffContainer["growthY"] = DebuffsDB.WrapDirection
         unitFrame.DebuffContainer.filter = "HARMFUL"
+        UUF:ConfigureAuraSorting(unitFrame.DebuffContainer, DebuffsDB.Sorting)
         unitFrame.DebuffContainer.createdButtons = unitFrame.Debuffs.createdButtons or 0
         unitFrame.DebuffContainer.anchoredButtons = unitFrame.Debuffs.anchoredButtons or 0
         unitFrame.DebuffContainer.PostCreateButton = function(_, button) StyleAuras(_, button, unit, "HARMFUL") end
@@ -245,6 +247,7 @@ function UUF:UpdateUnitAuras(unitFrame, unit)
             unitFrame.CustomAuraContainer.growthX = CustomDB.GrowthDirection
             unitFrame.CustomAuraContainer.growthY = CustomDB.WrapDirection
             unitFrame.CustomAuraContainer.filter = customAuraFilter
+            UUF:ConfigureAuraSorting(unitFrame.CustomAuraContainer, CustomDB.Sorting)
             unitFrame.CustomAuraContainer.FilterAura = function(_, filterUnit, aura, auraType)
                 return FilterAura(CustomDB, filterUnit, aura, auraType)
             end
@@ -321,6 +324,7 @@ function UUF:CreateUnitAuras(unitFrame, unit)
 		unitFrame.BuffContainer["growthX"] = BuffsDB.GrowthDirection
 		unitFrame.BuffContainer["growthY"] = BuffsDB.WrapDirection
 		unitFrame.BuffContainer.filter = "HELPFUL"
+		UUF:ConfigureAuraSorting(unitFrame.BuffContainer, BuffsDB.Sorting)
 		unitFrame.BuffContainer.FilterAura = function(_, filterUnit, aura)
 			return FilterAura(BuffsDB, filterUnit, aura, "HELPFUL")
 		end
@@ -363,6 +367,7 @@ function UUF:CreateUnitAuras(unitFrame, unit)
 		unitFrame.DebuffContainer["growthX"] = DebuffsDB.GrowthDirection
 		unitFrame.DebuffContainer["growthY"] = DebuffsDB.WrapDirection
 		unitFrame.DebuffContainer.filter = "HARMFUL"
+		UUF:ConfigureAuraSorting(unitFrame.DebuffContainer, DebuffsDB.Sorting)
 		unitFrame.DebuffContainer.FilterAura = function(_, filterUnit, aura)
 			return FilterAura(DebuffsDB, filterUnit, aura, "HARMFUL")
 		end
@@ -410,6 +415,7 @@ function UUF:CreateUnitAuras(unitFrame, unit)
 		unitFrame.CustomAuraContainer.growthX = CustomDB.GrowthDirection
 		unitFrame.CustomAuraContainer.growthY = CustomDB.WrapDirection
 		unitFrame.CustomAuraContainer.filter = customAuraFilter
+		UUF:ConfigureAuraSorting(unitFrame.CustomAuraContainer, CustomDB.Sorting)
 		unitFrame.CustomAuraContainer.FilterAura = function(_, filterUnit, aura, auraType)
 			return FilterAura(CustomDB, filterUnit, aura, auraType)
 		end
