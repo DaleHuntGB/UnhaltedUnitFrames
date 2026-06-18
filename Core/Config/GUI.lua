@@ -623,7 +623,7 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
         SpacingSlider:SetLabel("Frame Spacing")
         SpacingSlider:SetValue(FrameDB.Layout[5])
         SpacingSlider:SetSliderValues(-1, 100, 0.1)
-        SpacingSlider:SetRelativeWidth(0.33)
+        SpacingSlider:SetRelativeWidth(0.25)
         SpacingSlider:SetCallback("OnValueChanged", function(_, _, value) FrameDB.Layout[5] = value updateCallback() end)
         LayoutContainer:AddChild(SpacingSlider)
     end
@@ -1696,6 +1696,7 @@ end
 
 local function CreatePortraitSettings(containerParent, unit, updateCallback)
     local PortraitDB = UUF.db.profile.Units[unit].Portrait
+    PortraitDB.Style = PortraitDB.Style or "2D"
 
     local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Portrait Settings")
 
@@ -1703,15 +1704,23 @@ local function CreatePortraitSettings(containerParent, unit, updateCallback)
     Toggle:SetLabel("Enable |cFF8080FFPortrait|r")
     Toggle:SetValue(PortraitDB.Enabled)
     Toggle:SetCallback("OnValueChanged", function(_, _, value) PortraitDB.Enabled = value updateCallback() RefreshPortraitGUI() end)
-    Toggle:SetRelativeWidth(0.5)
+    Toggle:SetRelativeWidth(0.33)
     ToggleContainer:AddChild(Toggle)
 
     local UseClassPortraitToggle = AG:Create("CheckBox")
     UseClassPortraitToggle:SetLabel("Use Class Portrait")
     UseClassPortraitToggle:SetValue(PortraitDB.UseClassPortrait)
     UseClassPortraitToggle:SetCallback("OnValueChanged", function(_, _, value) PortraitDB.UseClassPortrait = value updateCallback() end)
-    UseClassPortraitToggle:SetRelativeWidth(0.5)
+    UseClassPortraitToggle:SetRelativeWidth(0.33)
     ToggleContainer:AddChild(UseClassPortraitToggle)
+
+    local PortraitStyleDropdown = AG:Create("Dropdown")
+    PortraitStyleDropdown:SetList({["2D"] = "2D", ["3D"] = "3D"})
+    PortraitStyleDropdown:SetLabel("Portrait Style")
+    PortraitStyleDropdown:SetValue(PortraitDB.Style)
+    PortraitStyleDropdown:SetRelativeWidth(0.33)
+    PortraitStyleDropdown:SetCallback("OnValueChanged", function(_, _, value) PortraitDB.Style = value updateCallback() RefreshPortraitGUI() end)
+    ToggleContainer:AddChild(PortraitStyleDropdown)
 
     local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
 
@@ -1759,7 +1768,7 @@ local function CreatePortraitSettings(containerParent, unit, updateCallback)
     local WidthSlider = AG:Create("Slider")
     WidthSlider:SetLabel("Width")
     WidthSlider:SetValue(PortraitDB.Width)
-    WidthSlider:SetSliderValues(8, 64, 0.1)
+    WidthSlider:SetSliderValues(8, 128, 0.1)
     WidthSlider:SetRelativeWidth(0.5)
     WidthSlider:SetCallback("OnValueChanged", function(_, _, value) PortraitDB.Width = value updateCallback() end)
     LayoutContainer:AddChild(WidthSlider)
@@ -1767,7 +1776,7 @@ local function CreatePortraitSettings(containerParent, unit, updateCallback)
     local HeightSlider = AG:Create("Slider")
     HeightSlider:SetLabel("Height")
     HeightSlider:SetValue(PortraitDB.Height)
-    HeightSlider:SetSliderValues(8, 64, 0.1)
+    HeightSlider:SetSliderValues(8, 128, 0.1)
     HeightSlider:SetRelativeWidth(0.5)
     HeightSlider:SetCallback("OnValueChanged", function(_, _, value) PortraitDB.Height = value updateCallback() end)
     LayoutContainer:AddChild(HeightSlider)
@@ -1780,6 +1789,8 @@ local function CreatePortraitSettings(containerParent, unit, updateCallback)
             GUIWidgets.DeepDisable(ToggleContainer, true, Toggle)
             GUIWidgets.DeepDisable(LayoutContainer, true, Toggle)
         end
+        UseClassPortraitToggle:SetDisabled(not PortraitDB.Enabled or PortraitDB.Style ~= "2D")
+        ZoomSlider:SetDisabled(not PortraitDB.Enabled or PortraitDB.Style ~= "2D")
     end
 
     RefreshPortraitGUI()

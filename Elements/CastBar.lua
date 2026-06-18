@@ -314,11 +314,10 @@ function UUF:CreateTestCastBar(unitFrame, unit)
             unitFrame.Castbar.Time:SetText("0.0")
             unitFrame.Castbar:SetMinMaxValues(0, 1000)
             unitFrame.Castbar.testValue = 0
-            unitFrame.Castbar:SetScript("OnUpdate", function(self)
-                self.testValue = (self.testValue or 0) + 1
-                if self.testValue >= 1000 then self.testValue = 0 end
-                self:SetValue(self.testValue)
-                unitFrame.Castbar.Time:SetText(string.format("%.1f", (self.testValue / 1000) * 5))
+            unitFrame.Castbar:SetScript("OnUpdate", function(self, elapsed)
+                self.testValue = ((self.testValue or 0) + elapsed) % 5
+                self:SetValue((self.testValue / 5) * 1000)
+                self.Time:SetText(string.format("%.1f", self.testValue))
             end)
             if CastBarDB.ColourByClass then
                 local unitForClass = unit == "pet" and "player" or unit
@@ -340,6 +339,7 @@ function UUF:CreateTestCastBar(unitFrame, unit)
         end
     else
         if unitFrame.Castbar then
+            unitFrame.Castbar:SetScript("OnUpdate", nil)
             unitFrame.Castbar:Hide()
             if CastBarContainer then CastBarContainer:Hide() end
             if CastBarDB.Enabled then

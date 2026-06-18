@@ -104,7 +104,12 @@ function UUF:CreateTestBossFrames()
                     [9] = "achievement_character_orc_male",
                     [10]= "achievement_character_orc_female"
                 }
-                BossFrame.Portrait:SetTexture("Interface\\ICONS\\" .. PortraitOptions[i])
+                if BossFrame.Portrait:IsObjectType("PlayerModel") then
+                    BossFrame.Portrait:ClearModel()
+                    BossFrame.Portrait:SetUnit("player")
+                else
+                    BossFrame.Portrait:SetTexture("Interface\\ICONS\\" .. PortraitOptions[i])
+                end
             end
 
             if BossFrame.Power then
@@ -131,7 +136,7 @@ function UUF:CreateTestBossFrames()
                     BossFrame.Castbar.Time:SetText("0.0")
                     BossFrame.Castbar:SetMinMaxValues(0, 1000)
                     BossFrame.Castbar.testValue = 0
-                    BossFrame.Castbar:SetScript("OnUpdate", function(self) self.testValue = (self.testValue or 0) + 1 if self.testValue >= 1000 then self.testValue = 0 end self:SetValue(self.testValue) self.Time:SetText(string.format("%.1f", (self.testValue / 1000) * 5)) end)
+                    BossFrame.Castbar:SetScript("OnUpdate", function(self, elapsed) self.testValue = ((self.testValue or 0) + elapsed) % 5 self:SetValue((self.testValue / 5) * 1000) self.Time:SetText(string.format("%.1f", self.testValue)) end)
                     local castBarColour = (false and CastBarDB.NotInterruptibleColour) or (CastBarDB.ColourByClass and UUF:GetClassColour(BossFrame)) or CastBarDB.Foreground
                     BossFrame.Castbar:SetStatusBarColor(castBarColour[1], castBarColour[2], castBarColour[3], castBarColour[4])
                     if CastBarDB.Icon.Enabled and BossFrame.Castbar.Icon then BossFrame.Castbar.Icon:SetTexture("Interface\\Icons\\ability_mage_netherwindpresence") BossFrame.Castbar.Icon:Show() end
@@ -342,6 +347,7 @@ function UUF:CreateTestBossFrames()
             BossFrame:SetAttribute("unit", "boss" .. i)
             RegisterUnitWatch(BossFrame)
             if BossFrame.Castbar then
+                BossFrame.Castbar:SetScript("OnUpdate", nil)
                 BossFrame.Castbar:Hide()
                 BossFrame.Castbar:GetParent():Hide()
                 if UUF.db.profile.Units.boss.CastBar.Enabled then

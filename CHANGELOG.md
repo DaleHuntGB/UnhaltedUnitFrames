@@ -1,6 +1,12 @@
 ## V12.0.23
 - Added `Interrupt Success` Colour for Cast Bars.
 - Added `Smooth Updates` for Health Bars.
+- Added `reactioncolour` tag.
+- Added Custom Aura Container for `Player`, `Target`, `Focus`, `Pet` and `Boss`.
+- Removed `IMPORTANT` filter flag.
+- Fixed Auras in the Test Environment.
+- Fixed the `HealPrediction` error.
+- Added 3D Portraits back (for now).
 ## V12.0.22
 - Added `OUTLINE, SLUG` to the Font Selection.
 - Fixed the double creation of Absorbs & Heal Absorbs (Thanks Permok).
