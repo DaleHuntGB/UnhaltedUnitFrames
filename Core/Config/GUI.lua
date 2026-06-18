@@ -2643,6 +2643,8 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
     BlacklistToggle:SetRelativeWidth(auraDB == "Debuffs" and 0.33 or 0.5)
     FilterContainer:AddChild(BlacklistToggle)
 
+    local FilterDropdowns = {}
+
     for _, filter in ipairs(UUF.AURA_FILTERS[filterAuraDB]) do
         if filter.Group == "General" then
             local filterKey = filter.Key
@@ -2650,7 +2652,7 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
             FilterToggle:SetLabel(filter.Title)
             FilterToggle:SetValue(AuraDB.Filters[filterKey] or false)
             FilterToggle:SetRelativeWidth(0.33)
-            FilterToggle:SetCallback("OnValueChanged", function(_, _, value) AuraDB.Filters[filterKey] = value or nil if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end end)
+            FilterToggle:SetCallback("OnValueChanged", function(_, _, value) AuraDB.Filters[filterKey] = value or nil if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end RefreshAuraGUI() end)
             FilterToggle:SetCallback("OnEnter", function() GameTooltip:SetOwner(FilterToggle.frame, "ANCHOR_CURSOR") GameTooltip:AddLine(filter.Desc, 1, 1, 1, true) GameTooltip:Show() end)
             FilterToggle:SetCallback("OnLeave", function() GameTooltip:Hide() end)
             FilterContainer:AddChild(FilterToggle)
@@ -2676,6 +2678,7 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
         FilterDropdown:SetRelativeWidth(0.5)
         FilterDropdown:SetCallback("OnValueChanged", function(_, _, filterKey, value) AuraDB.Filters[filterKey] = value or nil if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end end)
         FilterContainer:AddChild(FilterDropdown)
+        FilterDropdowns[#FilterDropdowns + 1] = FilterDropdown
     end
 
     local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
@@ -2816,6 +2819,7 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
         if AuraDB.Enabled then
             GUIWidgets.DeepDisable(AuraContainer, false, Toggle)
             GUIWidgets.DeepDisable(FilterContainer, AuraDB.OnlyShowPlayer, BlacklistToggle)
+            for _, FilterDropdown in ipairs(FilterDropdowns) do FilterDropdown:SetDisabled(AuraDB.OnlyShowPlayer or (filterAuraDB == "Debuffs" and AuraDB.Filters.Typed)) end
             GUIWidgets.DeepDisable(LayoutContainer, false, Toggle)
             GUIWidgets.DeepDisable(CountContainer, false, Toggle)
         else

@@ -2,12 +2,19 @@ local _, UUF = ...
 local oUF = UUF.oUF
 
 local TypedDebuffTypes = {
-	Magic = true,
-	Curse = true,
-	Disease = true,
-	Poison = true,
-	Bleed = true,
+	Magic = oUF.Enum.DispelType.Magic,
+	Curse = oUF.Enum.DispelType.Curse,
+	Disease = oUF.Enum.DispelType.Disease,
+	Poison = oUF.Enum.DispelType.Poison,
+	Bleed = oUF.Enum.DispelType.Bleed,
 }
+
+local TypedDebuffColorCurve = C_CurveUtil.CreateColorCurve()
+TypedDebuffColorCurve:SetType(Enum.LuaCurveType.Step)
+for _, dispelIndex in pairs(TypedDebuffTypes) do
+	local color = oUF.colors.dispel[dispelIndex]
+	if color then TypedDebuffColorCurve:AddPoint(dispelIndex, color) end
+end
 
 local function StyleAuras(_, button, unit, auraType, restyle, auraDB)
 	if not button or not unit or not auraType then return end
@@ -68,7 +75,11 @@ local function FilterAura(AuraDB, filterUnit, aura, auraType)
 	local noCancelFilter = isPlayer and "NotCancelablePlayer" or "NotCancelable"
 
 	if setFilters.Player and isPlayer then return true end
-	if auraType == "HARMFUL" and setFilters.Typed and TypedDebuffTypes[aura.dispelName] then return true end
+	if auraType == "HARMFUL" and setFilters.Typed then
+		if C_UnitAuras.GetAuraDispelTypeColor(filterUnit, auraInstanceID, TypedDebuffColorCurve) then return true end
+		local dispelName = not UUF:IsSecretValue(aura.dispelName) and aura.dispelName
+		if dispelName and TypedDebuffTypes[dispelName] then return true end
+	end
 	if setFilters.RaidPlayerDispellable and not C_UnitAuras.IsAuraFilteredOutByInstanceID(filterUnit, auraInstanceID, auraType .. "|RAID_PLAYER_DISPELLABLE") then return true end
 
 	if (setFilters[cancelFilter] or setFilters[noCancelFilter]) then
