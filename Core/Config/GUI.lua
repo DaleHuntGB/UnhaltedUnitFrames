@@ -611,7 +611,22 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
         GrowthDirectionDropdown:SetLabel("Growth Direction")
         GrowthDirectionDropdown:SetValue(FrameDB.GrowthDirection)
         GrowthDirectionDropdown:SetRelativeWidth(0.33)
-        GrowthDirectionDropdown:SetCallback("OnValueChanged", function(_, _, value) FrameDB.GrowthDirection = value if unit == "party" then UUF:LayoutPartyFrames() else updateCallback() end end)
+        GrowthDirectionDropdown:SetCallback("OnValueChanged", function(_, _, value)
+			if unit ~= "party" then FrameDB.GrowthDirection = value updateCallback() return end
+			if value == FrameDB.GrowthDirection then return end
+			StaticPopupDialogs["UUF_RELOAD_UI"] = {
+				text = "You must reload to apply this change, do you want to reload now?",
+				button1 = "Reload Now",
+				button2 = "Later",
+				showAlert = true,
+				OnAccept = function() FrameDB.GrowthDirection = value C_UI.Reload() end,
+				OnCancel = function() GrowthDirectionDropdown:SetValue(FrameDB.GrowthDirection) containerParent:DoLayout() end,
+				timeout = 0,
+				whileDead = true,
+				hideOnEscape = true,
+			}
+			StaticPopup_Show("UUF_RELOAD_UI")
+		end)
         LayoutContainer:AddChild(GrowthDirectionDropdown)
     end
 
