@@ -4,8 +4,15 @@ UUFG = UUFG or {}
 UUF.AURA_TEST_MODE = false
 UUF.CASTBAR_TEST_MODE = false
 UUF.BOSS_TEST_MODE = false
+UUF.PARTY_TEST_MODE = false
+UUF.RAID_TEST_MODE = false
 UUF.BOSS_FRAMES = {}
 UUF.PARTY_FRAMES = {}
+UUF.RAID_FRAMES = {}
+UUF.PARTY_TEST_FRAMES = {}
+UUF.RAID_TEST_FRAMES = {}
+UUF.PARTY_TEST_CONTAINER = CreateFrame("Frame", "UUF_PartyTestContainer", UIParent)
+UUF.RAID_TEST_CONTAINER = CreateFrame("Frame", "UUF_RaidTestContainer", UIParent)
 UUF.MAX_BOSS_FRAMES = 5
 local CooldownDurationFormatter = C_StringUtil.CreateNumericRuleFormatter()
 
@@ -106,10 +113,14 @@ function UUF:FetchFrameName(unit)
         ["pet"] = "UUF_Pet",
         ["boss"] = "UUF_Boss",
         ["party"] = "UUF_Party",
+		["raid"] = "UUF_Raid",
     }
     if not unit then return end
+	if unit:match("^partytest(%d+)$") then local unitID = unit:match("^partytest(%d+)$") return "UUF_PartyTest" .. unitID end
+	if unit:match("^raidtest(%d+)$") then local unitID = unit:match("^raidtest(%d+)$") return "UUF_RaidTest" .. unitID end
     if unit:match("^boss(%d+)$") then local unitID = unit:match("^boss(%d+)$") return "UUF_Boss" .. unitID end
     if unit:match("^party(%d+)$") then local unitID = unit:match("^party(%d+)$") return "UUF_Party" .. unitID end
+	if unit:match("^raid(%d+)$") then local unitID = unit:match("^raid(%d+)$") return "UUF_Raid" .. unitID end
     return UnitToFrame[unit]
 end
 
@@ -353,7 +364,7 @@ function UUF:GetReactionColour(reaction)
 end
 
 function UUF:GetNormalizedUnit(unit)
-    local normalizedUnit = unit == "vehicle" and "player" or unit:match("^boss%d+$") and "boss" or unit:match("^party%d*$") and "party" or unit
+    local normalizedUnit = unit == "vehicle" and "player" or unit:match("^boss%d+$") and "boss" or unit:match("^partytest%d+$") and "party" or unit:match("^raidtest%d+$") and "raid" or unit:match("^party%d*$") and "party" or unit:match("^raid%d*$") and "raid" or unit
     return normalizedUnit
 end
 

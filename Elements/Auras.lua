@@ -129,7 +129,7 @@ function UUF:UpdateUnitAuras(unitFrame, unit)
     DebuffsDB.Filter = "HARMFUL"
     if CustomDB then CustomDB.Filter = GetCustomAuraFilter(CustomDB) end
 
-    if unit == "player" then
+    if AurasDB.PrivateAuras and unitFrame.PrivateAuraContainer then
         local PrivateAurasDB = AurasDB.PrivateAuras
         local privateAuraContainerWidth = PrivateAurasDB.Size * PrivateAurasDB.Num + PrivateAurasDB.Spacing * (PrivateAurasDB.Num - 1)
 
@@ -152,7 +152,7 @@ function UUF:UpdateUnitAuras(unitFrame, unit)
         unitFrame.PrivateAuraContainer.disableCooldown = PrivateAurasDB.DisableCooldown
         unitFrame.PrivateAuraContainer.disableCooldownText = PrivateAurasDB.DisableCooldownText
 
-        if PrivateAurasDB.Enabled then
+        if PrivateAurasDB.Enabled and not unit:find("test", 1, true) then
             unitFrame.PrivateAuras = unitFrame.PrivateAuraContainer
             unitFrame.PrivateAuraContainer:Show()
             if not unitFrame:IsElementEnabled("PrivateAuras") then unitFrame:EnableElement("PrivateAuras") end
@@ -444,7 +444,7 @@ function UUF:CreateUnitAuras(unitFrame, unit)
 		end
 	end
 
-    if unit == "player" then
+    if AurasDB.PrivateAuras then
         local PrivateAurasDB = AurasDB.PrivateAuras
         local privateAuraContainerWidth = PrivateAurasDB.Size * PrivateAurasDB.Num + PrivateAurasDB.Spacing * (PrivateAurasDB.Num - 1)
 
@@ -467,7 +467,7 @@ function UUF:CreateUnitAuras(unitFrame, unit)
         unitFrame.PrivateAuraContainer.disableCooldown = PrivateAurasDB.DisableCooldown
         unitFrame.PrivateAuraContainer.disableCooldownText = PrivateAurasDB.DisableCooldownText
 
-        if PrivateAurasDB.Enabled then
+        if PrivateAurasDB.Enabled and not unit:find("test", 1, true) then
             unitFrame.PrivateAuras = unitFrame.PrivateAuraContainer
         else
             unitFrame.PrivateAuraContainer:Hide()
@@ -478,12 +478,14 @@ end
 function UUF:UpdateUnitAurasStrata(unit)
     if not unit then return end
     local normalizedUnit = UUF:GetNormalizedUnit(unit)
-    if unit == "party" then
-        local unitDB = UUF.db.profile.Units.party
-        for _, partyFrame in pairs(UUF.PARTY_FRAMES) do
-            if partyFrame.BuffContainer then partyFrame.BuffContainer:SetFrameStrata(unitDB.Auras.FrameStrata) end
-            if partyFrame.DebuffContainer then partyFrame.DebuffContainer:SetFrameStrata(unitDB.Auras.FrameStrata) end
-            if partyFrame.CustomAuraContainer then partyFrame.CustomAuraContainer:SetFrameStrata(unitDB.Auras.FrameStrata) end
+    if unit == "party" or unit == "raid" then
+        local unitDB = UUF.db.profile.Units[unit]
+		local unitFrames = unit == "party" and UUF.PARTY_FRAMES or UUF.RAID_FRAMES
+		for _, unitFrame in pairs(unitFrames) do
+            if unitFrame.BuffContainer then unitFrame.BuffContainer:SetFrameStrata(unitDB.Auras.FrameStrata) end
+            if unitFrame.DebuffContainer then unitFrame.DebuffContainer:SetFrameStrata(unitDB.Auras.FrameStrata) end
+            if unitFrame.CustomAuraContainer then unitFrame.CustomAuraContainer:SetFrameStrata(unitDB.Auras.FrameStrata) end
+			if unitFrame.PrivateAuraContainer and unitDB.Auras.PrivateAuras then unitFrame.PrivateAuraContainer:SetFrameStrata(unitDB.Auras.PrivateAuras.FrameStrata) end
         end
         return
     end
@@ -493,10 +495,10 @@ function UUF:UpdateUnitAurasStrata(unit)
     if unitFrame.BuffContainer then unitFrame.BuffContainer:SetFrameStrata(unitDB.Auras.FrameStrata) end
     if unitFrame.DebuffContainer then unitFrame.DebuffContainer:SetFrameStrata(unitDB.Auras.FrameStrata) end
     if unitFrame.CustomAuraContainer then unitFrame.CustomAuraContainer:SetFrameStrata(unitDB.Auras.FrameStrata) end
-    if unit == "player" and unitFrame.PrivateAuraContainer and unitDB.Auras.PrivateAuras then unitFrame.PrivateAuraContainer:SetFrameStrata(unitDB.Auras.PrivateAuras.FrameStrata) end
+    if unitFrame.PrivateAuraContainer and unitDB.Auras.PrivateAuras then unitFrame.PrivateAuraContainer:SetFrameStrata(unitDB.Auras.PrivateAuras.FrameStrata) end
 end
 
-function UUF:CreateTestAuras(unitFrame, unit)
+function UUF:CreateTestAuras(unitFrame, unit, testMode)
     if not unit then return end
     if not unitFrame then return end
     local General = UUF.db.profile.General
@@ -504,12 +506,15 @@ function UUF:CreateTestAuras(unitFrame, unit)
     local BuffsDB = AurasDB.Buffs
     local DebuffsDB = AurasDB.Debuffs
     local CustomDB = AurasDB.Custom
-    if UUF.AURA_TEST_MODE then
+	if testMode == nil then testMode = UUF.AURA_TEST_MODE end
+    if testMode then
         if unitFrame:IsElementEnabled("Auras") then unitFrame:DisableElement("Auras") end
         if unitFrame:IsElementEnabled("CustomAuras") then unitFrame:DisableElement("CustomAuras") end
+		if unitFrame:IsElementEnabled("PrivateAuras") then unitFrame:DisableElement("PrivateAuras") end
+		unitFrame.PrivateAuras = nil
 
-		if unit == "player" and unitFrame.PrivateAuraContainer then
-			local PrivateAurasDB = UUF.db.profile.Units.player.Auras.PrivateAuras
+		if AurasDB.PrivateAuras and unitFrame.PrivateAuraContainer then
+			local PrivateAurasDB = AurasDB.PrivateAuras
 			if PrivateAurasDB.Enabled then
 				unitFrame.PrivateAuraContainer:Show()
 
@@ -803,7 +808,7 @@ function UUF:CreateTestAuras(unitFrame, unit)
             if not unitFrame:IsElementEnabled("CustomAuras") then unitFrame:EnableElement("CustomAuras") end
             if unitFrame.CustomAuraContainer and unitFrame.CustomAuraContainer.ForceUpdate then unitFrame.CustomAuraContainer:ForceUpdate() end
         end
-		if unit == "player" and unitFrame.PrivateAuraContainer then
+		if AurasDB.PrivateAuras and unitFrame.PrivateAuraContainer then
 			for j = 1, (unitFrame.PrivateAuraContainer.maxFake or 0) do
 				local button = unitFrame.PrivateAuraContainer["fake" .. j]
 				if button then button:Hide() end

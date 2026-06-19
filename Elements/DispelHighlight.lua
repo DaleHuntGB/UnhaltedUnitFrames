@@ -144,7 +144,8 @@ function UUF:RegisterDispelHighlightEvents(unitFrame, unit)
 
     unitFrame.DispelHighlightUnit = unit
     unitFrame.DispelHighlightHandler:UnregisterAllEvents()
-    if UUF:GetNormalizedUnit(unit) == "party" then
+	local normalizedUnit = UUF:GetNormalizedUnit(unit)
+    if normalizedUnit == "party" or normalizedUnit == "raid" then
         unitFrame.DispelHighlightHandler:RegisterEvent("UNIT_AURA")
         if not unitFrame.DispelHighlightUnitHooked then
             unitFrame:HookScript("OnAttributeChanged", function(_, attribute, value)

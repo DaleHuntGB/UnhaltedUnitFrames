@@ -4,19 +4,22 @@ local function RefreshMover(frameMover)
 	local unitFrame = frameMover.unit == "boss" and UUF.BOSS1 or UUF[frameMover.unit:upper()]
 	if not unitFrame then return end
 	frameMover:ClearAllPoints()
-	if frameMover.unit == "party" then
-		local topFrame, bottomFrame
-		for _, partyFrame in pairs(UUF.PARTY_FRAMES) do
-			if partyFrame:IsShown() then
-				if not topFrame or partyFrame:GetTop() > topFrame:GetTop() then topFrame = partyFrame end
-				if not bottomFrame or partyFrame:GetBottom() < bottomFrame:GetBottom() then bottomFrame = partyFrame end
+	if frameMover.unit == "party" or frameMover.unit == "raid" then
+		local topFrame, bottomFrame, leftFrame, rightFrame
+		local unitFrames = frameMover.unit == "party" and (UUF.PARTY_TEST_MODE and UUF.PARTY_TEST_FRAMES or UUF.PARTY_FRAMES) or UUF.RAID_TEST_MODE and UUF.RAID_TEST_FRAMES or UUF.RAID_FRAMES
+		for _, groupFrame in pairs(unitFrames) do
+			if groupFrame:IsShown() then
+				if not topFrame or groupFrame:GetTop() > topFrame:GetTop() then topFrame = groupFrame end
+				if not bottomFrame or groupFrame:GetBottom() < bottomFrame:GetBottom() then bottomFrame = groupFrame end
+				if not leftFrame or groupFrame:GetLeft() < leftFrame:GetLeft() then leftFrame = groupFrame end
+				if not rightFrame or groupFrame:GetRight() > rightFrame:GetRight() then rightFrame = groupFrame end
 			end
 		end
 		if topFrame then
-			frameMover:SetPoint("TOPLEFT", topFrame, "TOPLEFT")
-			frameMover:SetPoint("BOTTOMRIGHT", bottomFrame, "BOTTOMRIGHT")
+			frameMover:SetPoint("TOPLEFT", leftFrame, "TOPLEFT", 0, topFrame:GetTop() - leftFrame:GetTop())
+			frameMover:SetPoint("BOTTOMRIGHT", rightFrame, "BOTTOMRIGHT", 0, bottomFrame:GetBottom() - rightFrame:GetBottom())
 		else
-			local FrameDB = UUF.db.profile.Units.party.Frame
+			local FrameDB = UUF.db.profile.Units[frameMover.unit].Frame
 			frameMover:SetSize(FrameDB.Width, FrameDB.Height)
 			frameMover:SetPoint(FrameDB.Layout[1], UIParent, FrameDB.Layout[2], FrameDB.Layout[3], FrameDB.Layout[4])
 		end
@@ -45,7 +48,7 @@ local function StopMoving(frameMover)
 	FrameDB.Layout[3] = FrameDB.Layout[3] + moverX - frameMover.startX
 	FrameDB.Layout[4] = FrameDB.Layout[4] + moverY - frameMover.startY
 
-	if frameMover.unit == "boss" then UUF:LayoutBossFrames() elseif frameMover.unit == "party" then UUF:UpdatePartyFrames() else UUF:UpdateUnitFrame(unitFrame, frameMover.unit) end
+	if frameMover.unit == "boss" then UUF:LayoutBossFrames() elseif frameMover.unit == "party" then UUF:UpdatePartyFrames() elseif frameMover.unit == "raid" then UUF:UpdateRaidFrames() else UUF:UpdateUnitFrame(unitFrame, frameMover.unit) end
 	RefreshMover(frameMover)
 end
 

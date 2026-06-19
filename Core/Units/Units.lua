@@ -16,20 +16,23 @@ function UUF:CreateUnitFrame(unitFrame, unit)
 	local isFocus = unit == "focus"
 	local isTargetTarget = unit == "targettarget"
 	local isFocusTarget = unit == "focustarget"
-	local isParty = UUF:GetNormalizedUnit(unit) == "party"
+	local normalizedUnit = UUF:GetNormalizedUnit(unit)
+	local isParty = normalizedUnit == "party"
+	local isRaid = normalizedUnit == "raid"
+	local isGroup = isParty or isRaid
 
 	UUF:CreateUnitContainer(unitFrame, unit)
-	if not isTargetTarget and not isFocusTarget and not isParty then UUF:CreateUnitCastBar(unitFrame, unit) end
+	if not isTargetTarget and not isFocusTarget and not isGroup then UUF:CreateUnitCastBar(unitFrame, unit) end
 	UUF:CreateUnitHealthBar(unitFrame, unit)
-	if isPlayer or isTarget or isFocus or isParty then UUF:CreateUnitDispelHighlight(unitFrame, unit) end
+	if isPlayer or isTarget or isFocus or isGroup then UUF:CreateUnitDispelHighlight(unitFrame, unit) end
 	UUF:CreateUnitHealPrediction(unitFrame, unit)
-	if not isTargetTarget and not isFocusTarget and not isParty then UUF:CreateUnitPortrait(unitFrame, unit) end
+	if not isTargetTarget and not isFocusTarget and not isGroup then UUF:CreateUnitPortrait(unitFrame, unit) end
 	UUF:CreateUnitPowerBar(unitFrame, unit)
 	if isPlayer then UUF:CreateUnitAlternativePowerBar(unitFrame, unit) end
 	if isPlayer then UUF:CreateUnitSecondaryPowerBar(unitFrame, unit) end
 	UUF:CreateUnitRaidTargetMarker(unitFrame, unit)
-	if isPlayer or isTarget or isParty then UUF:CreateUnitLeaderAssistantIndicator(unitFrame, unit) end
-	if isParty then UUF:CreateUnitRoleIndicator(unitFrame, unit) end
+	if isPlayer or isTarget or isGroup then UUF:CreateUnitLeaderAssistantIndicator(unitFrame, unit) end
+	if isGroup then UUF:CreateUnitRoleIndicator(unitFrame, unit) end
 	if isPlayer or isTarget then UUF:CreateUnitCombatIndicator(unitFrame, unit) end
 	if isPlayer then UUF:CreateUnitRestingIndicator(unitFrame, unit) end
 	if isPlayer then UUF:CreateUnitPvPIndicator(unitFrame, unit) end
@@ -46,6 +49,7 @@ end
 
 function UUF:SpawnUnitFrame(unit)
 	if unit == "party" then return UUF:SpawnPartyFrames() end
+	if unit == "raid" then return UUF:SpawnRaidFrames() end
 	if unit == "boss" then return UUF:SpawnBossFrames() end
 
 	local UnitDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)]
@@ -79,23 +83,26 @@ function UUF:SpawnUnitFrame(unit)
 end
 
 function UUF:UpdateUnitFrame(unitFrame, unit)
-	local UnitDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)]
+	local normalizedUnit = UUF:GetNormalizedUnit(unit)
+	local UnitDB = UUF.db.profile.Units[normalizedUnit]
 	local isPlayer = unit == "player"
 	local isTarget = unit == "target"
 	local isTargetTarget = unit == "targettarget"
 	local isFocusTarget = unit == "focustarget"
-	local isParty = UUF:GetNormalizedUnit(unit) == "party"
+	local isParty = normalizedUnit == "party"
+	local isRaid = normalizedUnit == "raid"
+	local isGroup = isParty or isRaid
 
-	if not isTargetTarget and not isFocusTarget and not isParty then UUF:UpdateUnitCastBar(unitFrame, unit) end
+	if not isTargetTarget and not isFocusTarget and not isGroup then UUF:UpdateUnitCastBar(unitFrame, unit) end
 	UUF:UpdateUnitHealthBar(unitFrame, unit)
 	UUF:UpdateUnitHealPrediction(unitFrame, unit)
-	if not isTargetTarget and not isFocusTarget and not isParty then UUF:UpdateUnitPortrait(unitFrame, unit) end
+	if not isTargetTarget and not isFocusTarget and not isGroup then UUF:UpdateUnitPortrait(unitFrame, unit) end
 	UUF:UpdateUnitPowerBar(unitFrame, unit)
 	if isPlayer then UUF:UpdateUnitAlternativePowerBar(unitFrame, unit) end
 	if isPlayer then UUF:UpdateUnitSecondaryPowerBar(unitFrame, unit) end
 	UUF:UpdateUnitRaidTargetMarker(unitFrame, unit)
-	if isPlayer or isTarget or isParty then UUF:UpdateUnitLeaderAssistantIndicator(unitFrame, unit) end
-	if isParty then UUF:UpdateUnitRoleIndicator(unitFrame, unit) end
+	if isPlayer or isTarget or isGroup then UUF:UpdateUnitLeaderAssistantIndicator(unitFrame, unit) end
+	if isGroup then UUF:UpdateUnitRoleIndicator(unitFrame, unit) end
 	if isPlayer or isTarget then UUF:UpdateUnitCombatIndicator(unitFrame, unit) end
 	if isPlayer then UUF:UpdateUnitRestingIndicator(unitFrame, unit) end
 	if isPlayer then UUF:UpdateUnitPvPIndicator(unitFrame, unit) end
@@ -105,14 +112,17 @@ function UUF:UpdateUnitFrame(unitFrame, unit)
 	UUF:UpdateUnitMouseoverIndicator(unitFrame, unit)
 	UUF:UpdateUnitTargetGlowIndicator(unitFrame, unit)
 	UUF:UpdateUnitAuras(unitFrame, unit)
-	UUF:UpdateUnitTags()
+	for tagName in pairs(UnitDB.Tags) do UUF:UpdateUnitTag(unitFrame, unit, tagName) end
 	unitFrame:SetFrameStrata(UnitDB.Frame.FrameStrata)
 end
 
 function UUF:UpdateAllUnitFrames()
+	UUF.SEPARATOR = UUF.db.profile.General.Separator or "||"
+	UUF.TOT_SEPARATOR = UUF.db.profile.General.ToTSeparator or "»"
 	for _, unit in ipairs({"player", "target", "targettarget", "focus", "focustarget", "pet"}) do
 		if UUF[unit:upper()] then UUF:UpdateUnitFrame(UUF[unit:upper()], unit) end
 	end
 	UUF:UpdateBossFrames()
 	UUF:UpdatePartyFrames()
+	UUF:UpdateRaidFrames()
 end

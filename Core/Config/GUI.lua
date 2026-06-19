@@ -30,6 +30,7 @@ local UnitDBToUnitPrettyName = {
     pet = "Pet",
     boss = "Boss",
     party = "Party",
+	raid = "Raid",
 }
 
 local function UpdateConfiguredUnit(unit, updateFunction, ...)
@@ -37,6 +38,8 @@ local function UpdateConfiguredUnit(unit, updateFunction, ...)
 		UUF:UpdateBossFrames()
 	elseif unit == "party" then
 		UUF:UpdatePartyFrames()
+	elseif unit == "raid" then
+		UUF:UpdateRaidFrames()
 	else
 		updateFunction(UUF, UUF[unit:upper()], unit, ...)
 	end
@@ -159,18 +162,27 @@ local function DisableBossFramesTestMode()
     UUF:CreateTestBossFrames()
 end
 
+local function SetGroupFramesTestMode(unit, enabled)
+	if unit == "party" then UUF.PARTY_TEST_MODE = enabled else UUF.RAID_TEST_MODE = enabled end
+	UUF:CreateTestGroupFrames(unit)
+end
+
 local function DisableAllTestModes()
     UUF.AURA_TEST_MODE = false
     UUF.CASTBAR_TEST_MODE = false
     UUF.BOSS_TEST_MODE = false
+	UUF.PARTY_TEST_MODE = false
+	UUF.RAID_TEST_MODE = false
     UUF.MOVERS_UNLOCKED = false
     for unit, _ in pairs(UUF.db.profile.Units) do
-        if unit ~= "party" and UUF[unit:upper()] then
+        if unit ~= "party" and unit ~= "raid" and UUF[unit:upper()] then
             UUF:CreateTestAuras(UUF[unit:upper()], unit)
             UUF:CreateTestCastBar(UUF[unit:upper()], unit)
         end
     end
     UUF:CreateTestBossFrames()
+	UUF:CreateTestGroupFrames("party")
+	UUF:CreateTestGroupFrames("raid")
     for _, frameMover in pairs(UUF.MOVERS or {}) do frameMover:Hide() end
 end
 
@@ -200,6 +212,7 @@ local function BuildMainNavigationTree()
         { text = "Focus Target", value = "FocusTarget" },
         { text = "Boss", value = "Boss" },
         { text = "Party", value = "Party" },
+		{ text = "Raid", value = "Raid" },
         { text = "Tags", value = "Tags" },
         { text = "Profiles", value = "Profiles" },
     }
@@ -559,7 +572,7 @@ end
 local function CreateFrameSettings(containerParent, unit, unitHasParent, updateCallback)
     local FrameDB = UUF.db.profile.Units[unit].Frame
     local HealthBarDB = UUF.db.profile.Units[unit].HealthBar
-    local isGroup = unit == "boss" or unit == "party"
+    local isGroup = unit == "boss" or unit == "party" or unit == "raid"
 
     local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
 
@@ -605,7 +618,7 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
     AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) FrameDB.Layout[2] = value updateCallback() end)
     LayoutContainer:AddChild(AnchorToDropdown)
 
-    if isGroup then
+    if isGroup and unit ~= "raid" then
         local GrowthDirectionDropdown = AG:Create("Dropdown")
         GrowthDirectionDropdown:SetList({["UP"] = "Up", ["DOWN"] = "Down"})
         GrowthDirectionDropdown:SetLabel("Growth Direction")
@@ -630,50 +643,108 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
         LayoutContainer:AddChild(GrowthDirectionDropdown)
     end
 
-    if unit == "party" then
-        local roleOrderDropdowns = {}
-        local roleList = {TANK = "Tank", HEALER = "Healer", DAMAGER = "Damage"}
-        local roleListOrder = {"TANK", "HEALER", "DAMAGER"}
+	if unit == "raid" then
+		local RowDirectionDropdown = AG:Create("Dropdown")
+		RowDirectionDropdown:SetList({LEFT = "Left", RIGHT = "Right"}, {"LEFT", "RIGHT"})
+		RowDirectionDropdown:SetLabel("Row Direction")
+		RowDirectionDropdown:SetValue(FrameDB.RowDirection)
+		RowDirectionDropdown:SetRelativeWidth(0.33)
+		RowDirectionDropdown:SetCallback("OnValueChanged", function(_, _, value) FrameDB.RowDirection = value updateCallback() end)
+		LayoutContainer:AddChild(RowDirectionDropdown)
 
+		local ColumnDirectionDropdown = AG:Create("Dropdown")
+		ColumnDirectionDropdown:SetList({UP = "Up", DOWN = "Down"}, {"UP", "DOWN"})
+		ColumnDirectionDropdown:SetLabel("Column Direction")
+		ColumnDirectionDropdown:SetValue(FrameDB.ColumnDirection)
+		ColumnDirectionDropdown:SetRelativeWidth(0.33)
+		ColumnDirectionDropdown:SetCallback("OnValueChanged", function(_, _, value) FrameDB.ColumnDirection = value updateCallback() end)
+		LayoutContainer:AddChild(ColumnDirectionDropdown)
+
+		local UnitsPerColumnSlider = AG:Create("Slider")
+		UnitsPerColumnSlider:SetLabel("Units Per Column")
+		UnitsPerColumnSlider:SetValue(FrameDB.UnitsPerColumn)
+		UnitsPerColumnSlider:SetSliderValues(1, 40, 1)
+		UnitsPerColumnSlider:SetRelativeWidth(0.33)
+		UnitsPerColumnSlider:SetCallback("OnValueChanged", function(_, _, value) FrameDB.UnitsPerColumn = value updateCallback() end)
+		LayoutContainer:AddChild(UnitsPerColumnSlider)
+	end
+
+    if unit == "party" or unit == "raid" then
         local SortByDropdown = AG:Create("Dropdown")
-        SortByDropdown:SetList({INDEX = "Group Index", ROLE = "Assigned Role"}, {"INDEX", "ROLE"})
-        SortByDropdown:SetLabel("Sort By")
-        SortByDropdown:SetValue(FrameDB.SortBy)
-        SortByDropdown:SetRelativeWidth(0.25)
+		local sortList = unit == "raid" and {INDEX = "Raid Index", GROUP = "Raid Group"} or {INDEX = "Group Index", ROLE = "Assigned Role"}
+		local sortOrder = unit == "raid" and {"INDEX", "GROUP"} or {"INDEX", "ROLE"}
+        SortByDropdown:SetList(sortList, sortOrder)
+		local groupBy = unit == "raid" and FrameDB.GroupBy or FrameDB.SortBy
+		if unit == "raid" and groupBy ~= "INDEX" and groupBy ~= "GROUP" then groupBy = "GROUP" FrameDB.GroupBy = groupBy end
+        SortByDropdown:SetLabel(unit == "raid" and "Group By" or "Sort By")
+		SortByDropdown:SetValue(groupBy)
+        SortByDropdown:SetRelativeWidth(unit == "raid" and 0.33 or 0.25)
         SortByDropdown:SetCallback("OnValueChanged", function(_, _, value)
-			FrameDB.SortBy = value
-			for _, roleOrderDropdown in ipairs(roleOrderDropdowns) do roleOrderDropdown:SetDisabled(value ~= "ROLE") end
-			UUF:UpdatePartyFrames()
+			if unit == "raid" then FrameDB.GroupBy = value else FrameDB.SortBy = value end
+			updateCallback()
 		end)
         LayoutContainer:AddChild(SortByDropdown)
 
-        local function CreateRoleOrderDropdown(roleIndex, label)
-            local RoleOrderDropdown = AG:Create("Dropdown")
-            RoleOrderDropdown:SetList(roleList, roleListOrder)
-            RoleOrderDropdown:SetLabel(label)
-            RoleOrderDropdown:SetValue(FrameDB.RoleOrder[roleIndex])
-            RoleOrderDropdown:SetRelativeWidth(0.25)
-            RoleOrderDropdown:SetCallback("OnValueChanged", function(_, _, value)
-                local previousRole = FrameDB.RoleOrder[roleIndex]
-                for existingIndex, existingRole in ipairs(FrameDB.RoleOrder) do
-                    if existingIndex ~= roleIndex and existingRole == value then
-                        FrameDB.RoleOrder[existingIndex] = previousRole
-                        roleOrderDropdowns[existingIndex]:SetValue(previousRole)
-                        break
-                    end
-                end
-                FrameDB.RoleOrder[roleIndex] = value
-                UUF:UpdatePartyFrames()
-            end)
-            roleOrderDropdowns[roleIndex] = RoleOrderDropdown
-            LayoutContainer:AddChild(RoleOrderDropdown)
-        end
+		if unit == "party" then
+			local roleOrderDropdowns = {}
+			local roleList = {TANK = "Tank", HEALER = "Healer", DAMAGER = "Damage"}
+			local roleListOrder = {"TANK", "HEALER", "DAMAGER"}
+			local function CreateRoleOrderDropdown(roleIndex, label)
+				local RoleOrderDropdown = AG:Create("Dropdown")
+				RoleOrderDropdown:SetList(roleList, roleListOrder)
+				RoleOrderDropdown:SetLabel(label)
+				RoleOrderDropdown:SetValue(FrameDB.RoleOrder[roleIndex])
+				RoleOrderDropdown:SetRelativeWidth(0.25)
+				RoleOrderDropdown:SetCallback("OnValueChanged", function(_, _, value)
+					local previousRole = FrameDB.RoleOrder[roleIndex]
+					for existingIndex, existingRole in ipairs(FrameDB.RoleOrder) do
+						if existingIndex ~= roleIndex and existingRole == value then
+							FrameDB.RoleOrder[existingIndex] = previousRole
+							roleOrderDropdowns[existingIndex]:SetValue(previousRole)
+							break
+						end
+					end
+					FrameDB.RoleOrder[roleIndex] = value
+					updateCallback()
+				end)
+				roleOrderDropdowns[roleIndex] = RoleOrderDropdown
+				LayoutContainer:AddChild(RoleOrderDropdown)
+			end
 
-        CreateRoleOrderDropdown(1, "First Role")
-        CreateRoleOrderDropdown(2, "Second Role")
-        CreateRoleOrderDropdown(3, "Third Role")
-
-        for _, roleOrderDropdown in ipairs(roleOrderDropdowns) do roleOrderDropdown:SetDisabled(FrameDB.SortBy ~= "ROLE") end
+			CreateRoleOrderDropdown(1, "First Role")
+			CreateRoleOrderDropdown(2, "Second Role")
+			CreateRoleOrderDropdown(3, "Third Role")
+			for _, roleOrderDropdown in ipairs(roleOrderDropdowns) do roleOrderDropdown:SetDisabled(groupBy ~= "ROLE") end
+		else
+			local groupList, groupOrder = {}, {}
+			for groupIndex = 1, 8 do
+				groupList[groupIndex] = "Group " .. groupIndex
+				groupOrder[groupIndex] = groupIndex
+			end
+			local GroupsDropdown = AG:Create("Dropdown")
+			GroupsDropdown:SetLabel("Raid Groups")
+			GroupsDropdown:SetMultiselect(true)
+			GroupsDropdown:SetList(groupList, groupOrder)
+			local selectedGroups = {}
+			for _, groupIndex in ipairs(FrameDB.GroupingOrder) do selectedGroups[tonumber(groupIndex)] = true end
+			for groupIndex = 1, 8 do GroupsDropdown:SetItemValue(groupIndex, selectedGroups[groupIndex] or false) end
+			GroupsDropdown:SetFullWidth(true)
+			GroupsDropdown:SetCallback("OnValueChanged", function(_, _, groupIndex, value)
+				groupIndex = tonumber(groupIndex)
+				if not groupIndex then return end
+				local groupingOrder = {}
+				for _, existingGroup in ipairs(FrameDB.GroupingOrder) do
+					existingGroup = tonumber(existingGroup)
+					if existingGroup and existingGroup >= 1 and existingGroup <= 8 and existingGroup ~= groupIndex then groupingOrder[#groupingOrder + 1] = existingGroup end
+				end
+				if value then
+					groupingOrder[#groupingOrder + 1] = groupIndex
+				end
+				FrameDB.GroupingOrder = groupingOrder
+				UUF:UpdateRaidFrames()
+			end)
+			LayoutContainer:AddChild(GroupsDropdown)
+		end
     end
 
     local XPosSlider = AG:Create("Slider")
@@ -843,7 +914,7 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
     BackgroundOpacitySlider:SetIsPercent(true)
     ColourContainer:AddChild(BackgroundOpacitySlider)
 
-    if unit == "player" or unit == "target" or unit == "focus" or unit == "party" then
+    if unit == "player" or unit == "target" or unit == "focus" or unit == "party" or unit == "raid" then
         local DispelHighlightContainer = GUIWidgets.CreateInlineGroup(containerParent, "Dispel Highlighting")
 
         local EnableDispelHighlightingToggle = AG:Create("CheckBox")
@@ -2015,8 +2086,8 @@ local function CreateLeaderAssistaintSettings(containerParent, unit, updateCallb
     RefreshStatusGUI()
 end
 
-local function CreateRoleIndicatorSettings(containerParent, updateCallback)
-	local RoleDB = UUF.db.profile.Units.party.Indicators.Role
+local function CreateRoleIndicatorSettings(containerParent, unit, updateCallback)
+	local RoleDB = UUF.db.profile.Units[unit].Indicators.Role
 	local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Role Indicator Settings")
 	local Toggle = AG:Create("CheckBox")
 	Toggle:SetLabel("Enable |cFF8080FFRole|r Indicator")
@@ -2545,7 +2616,7 @@ local function CreateIndicatorSettings(containerParent, unit)
         elseif IndicatorTab == "LeaderAssistant" then
             CreateLeaderAssistaintSettings(IndicatorContainer, unit, function() UpdateConfiguredUnit(unit, UUF.UpdateUnitLeaderAssistantIndicator) end)
         elseif IndicatorTab == "Role" then
-            CreateRoleIndicatorSettings(IndicatorContainer, function() UUF:UpdatePartyFrames() end)
+			CreateRoleIndicatorSettings(IndicatorContainer, unit, function() UpdateConfiguredUnit(unit, UUF.UpdateUnitRoleIndicator) end)
         elseif IndicatorTab == "Resting" then
             CreateStatusSettings(IndicatorContainer, unit, "Resting", function() UUF:UpdateUnitRestingIndicator(UUF[unit:upper()], unit) end)
         elseif IndicatorTab == "Combat" then
@@ -2588,7 +2659,7 @@ local function CreateIndicatorSettings(containerParent, unit)
             { text = "Classification", value = "Classification" },
             { text = "Quest", value = "Quest" },
         })
-    elseif unit == "party" then
+    elseif unit == "party" or unit == "raid" then
         IndicatorContainerTabGroup:SetTabs({
             { text = "Raid Target Marker", value = "RaidTargetMarker" },
             { text = "Leader & Assistant", value = "LeaderAssistant" },
@@ -3020,8 +3091,9 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
     containerParent:DoLayout()
 end
 
-local function CreatePrivateAuraSettings(containerParent)
-    local PrivateAurasDB = UUF.db.profile.Units.player.Auras.PrivateAuras
+local function CreatePrivateAuraSettings(containerParent, unit)
+    local PrivateAurasDB = UUF.db.profile.Units[unit].Auras.PrivateAuras
+	local function UpdatePrivateAuras() UpdateConfiguredUnit(unit, UUF.UpdateUnitAuras) end
 
     local GeneralContainer = GUIWidgets.CreateInlineGroup(containerParent, "Private Aura Settings")
     GUIWidgets.CreateInformationTag(GeneralContainer, "Private Auras are controlled by |cFF00B0F7Blizzard|r. The options below are as far as customization will allow.")
@@ -3035,7 +3107,7 @@ local function CreatePrivateAuraSettings(containerParent)
     Toggle:SetRelativeWidth(0.33)
     Toggle:SetCallback("OnValueChanged", function(_, _, value)
         PrivateAurasDB.Enabled = value
-        UUF:UpdateUnitAuras(UUF.PLAYER, "player")
+        UpdatePrivateAuras()
         GUIWidgets.DeepDisable(GeneralContainer, not value, Toggle)
         GUIWidgets.DeepDisable(LayoutContainer, not value)
         GUIWidgets.DeepDisable(SizeContainer, not value)
@@ -3046,14 +3118,14 @@ local function CreatePrivateAuraSettings(containerParent)
     DisableCooldownToggle:SetLabel("Disable Cooldown Spiral")
     DisableCooldownToggle:SetValue(PrivateAurasDB.DisableCooldown)
     DisableCooldownToggle:SetRelativeWidth(0.33)
-    DisableCooldownToggle:SetCallback("OnValueChanged", function(_, _, value) PrivateAurasDB.DisableCooldown = value UUF:UpdateUnitAuras(UUF.PLAYER, "player") end)
+    DisableCooldownToggle:SetCallback("OnValueChanged", function(_, _, value) PrivateAurasDB.DisableCooldown = value UpdatePrivateAuras() end)
     GeneralContainer:AddChild(DisableCooldownToggle)
 
     local DisableCooldownTextToggle = AG:Create("CheckBox")
     DisableCooldownTextToggle:SetLabel("Disable Cooldown Text")
     DisableCooldownTextToggle:SetValue(PrivateAurasDB.DisableCooldownText)
     DisableCooldownTextToggle:SetRelativeWidth(0.33)
-    DisableCooldownTextToggle:SetCallback("OnValueChanged", function(_, _, value) PrivateAurasDB.DisableCooldownText = value UUF:UpdateUnitAuras(UUF.PLAYER, "player") end)
+    DisableCooldownTextToggle:SetCallback("OnValueChanged", function(_, _, value) PrivateAurasDB.DisableCooldownText = value UpdatePrivateAuras() end)
     GeneralContainer:AddChild(DisableCooldownTextToggle)
 
     local BorderScaleSlider = AG:Create("Slider")
@@ -3061,7 +3133,7 @@ local function CreatePrivateAuraSettings(containerParent)
     BorderScaleSlider:SetValue(PrivateAurasDB.BorderScale == -100 and -1 or PrivateAurasDB.BorderScale)
     BorderScaleSlider:SetSliderValues(-1, 3, 0.1)
     BorderScaleSlider:SetRelativeWidth(0.5)
-    BorderScaleSlider:SetCallback("OnValueChanged", function(widget, _, value) if value < 0 then value = -1 widget:SetValue(value) end PrivateAurasDB.BorderScale = value UUF:UpdateUnitAuras(UUF.PLAYER, "player") end)
+    BorderScaleSlider:SetCallback("OnValueChanged", function(widget, _, value) if value < 0 then value = -1 widget:SetValue(value) end PrivateAurasDB.BorderScale = value UpdatePrivateAuras() end)
     GeneralContainer:AddChild(BorderScaleSlider)
 
     local FrameStrataDropdown = AG:Create("Dropdown")
@@ -3069,7 +3141,7 @@ local function CreatePrivateAuraSettings(containerParent)
     FrameStrataDropdown:SetLabel("Frame Strata")
     FrameStrataDropdown:SetValue(PrivateAurasDB.FrameStrata)
     FrameStrataDropdown:SetRelativeWidth(0.5)
-    FrameStrataDropdown:SetCallback("OnValueChanged", function(_, _, value) PrivateAurasDB.FrameStrata = value UUF:UpdateUnitAuras(UUF.PLAYER, "player") end)
+    FrameStrataDropdown:SetCallback("OnValueChanged", function(_, _, value) PrivateAurasDB.FrameStrata = value UpdatePrivateAuras() end)
     GeneralContainer:AddChild(FrameStrataDropdown)
 
     local AnchorFromDropdown = AG:Create("Dropdown")
@@ -3077,7 +3149,7 @@ local function CreatePrivateAuraSettings(containerParent)
     AnchorFromDropdown:SetLabel("Anchor From")
     AnchorFromDropdown:SetValue(PrivateAurasDB.Layout[1])
     AnchorFromDropdown:SetRelativeWidth(0.5)
-    AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) PrivateAurasDB.Layout[1] = value UUF:UpdateUnitAuras(UUF.PLAYER, "player") end)
+    AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) PrivateAurasDB.Layout[1] = value UpdatePrivateAuras() end)
     LayoutContainer:AddChild(AnchorFromDropdown)
 
     local AnchorToDropdown = AG:Create("Dropdown")
@@ -3085,7 +3157,7 @@ local function CreatePrivateAuraSettings(containerParent)
     AnchorToDropdown:SetLabel("Anchor To")
     AnchorToDropdown:SetValue(PrivateAurasDB.Layout[2])
     AnchorToDropdown:SetRelativeWidth(0.5)
-    AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) PrivateAurasDB.Layout[2] = value UUF:UpdateUnitAuras(UUF.PLAYER, "player") end)
+    AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) PrivateAurasDB.Layout[2] = value UpdatePrivateAuras() end)
     LayoutContainer:AddChild(AnchorToDropdown)
 
     local XPosSlider = AG:Create("Slider")
@@ -3093,7 +3165,7 @@ local function CreatePrivateAuraSettings(containerParent)
     XPosSlider:SetValue(PrivateAurasDB.Layout[3])
     XPosSlider:SetSliderValues(-3000, 3000, 0.1)
     XPosSlider:SetRelativeWidth(0.5)
-    XPosSlider:SetCallback("OnValueChanged", function(_, _, value) PrivateAurasDB.Layout[3] = value UUF:UpdateUnitAuras(UUF.PLAYER, "player") end)
+    XPosSlider:SetCallback("OnValueChanged", function(_, _, value) PrivateAurasDB.Layout[3] = value UpdatePrivateAuras() end)
     LayoutContainer:AddChild(XPosSlider)
 
     local YPosSlider = AG:Create("Slider")
@@ -3101,7 +3173,7 @@ local function CreatePrivateAuraSettings(containerParent)
     YPosSlider:SetValue(PrivateAurasDB.Layout[4])
     YPosSlider:SetSliderValues(-3000, 3000, 0.1)
     YPosSlider:SetRelativeWidth(0.5)
-    YPosSlider:SetCallback("OnValueChanged", function(_, _, value) PrivateAurasDB.Layout[4] = value UUF:UpdateUnitAuras(UUF.PLAYER, "player") end)
+    YPosSlider:SetCallback("OnValueChanged", function(_, _, value) PrivateAurasDB.Layout[4] = value UpdatePrivateAuras() end)
     LayoutContainer:AddChild(YPosSlider)
 
     local InitialAnchorDropdown = AG:Create("Dropdown")
@@ -3109,7 +3181,7 @@ local function CreatePrivateAuraSettings(containerParent)
     InitialAnchorDropdown:SetLabel("Initial Aura Anchor")
     InitialAnchorDropdown:SetValue(PrivateAurasDB.InitialAnchor)
     InitialAnchorDropdown:SetRelativeWidth(0.33)
-    InitialAnchorDropdown:SetCallback("OnValueChanged", function(_, _, value) PrivateAurasDB.InitialAnchor = value UUF:UpdateUnitAuras(UUF.PLAYER, "player") end)
+    InitialAnchorDropdown:SetCallback("OnValueChanged", function(_, _, value) PrivateAurasDB.InitialAnchor = value UpdatePrivateAuras() end)
     LayoutContainer:AddChild(InitialAnchorDropdown)
 
     local GrowthXDropdown = AG:Create("Dropdown")
@@ -3117,7 +3189,7 @@ local function CreatePrivateAuraSettings(containerParent)
     GrowthXDropdown:SetLabel("Horizontal Growth")
     GrowthXDropdown:SetValue(PrivateAurasDB.GrowthX)
     GrowthXDropdown:SetRelativeWidth(0.33)
-    GrowthXDropdown:SetCallback("OnValueChanged", function(_, _, value) PrivateAurasDB.GrowthX = value UUF:UpdateUnitAuras(UUF.PLAYER, "player") end)
+    GrowthXDropdown:SetCallback("OnValueChanged", function(_, _, value) PrivateAurasDB.GrowthX = value UpdatePrivateAuras() end)
     LayoutContainer:AddChild(GrowthXDropdown)
 
     local GrowthYDropdown = AG:Create("Dropdown")
@@ -3125,7 +3197,7 @@ local function CreatePrivateAuraSettings(containerParent)
     GrowthYDropdown:SetLabel("Vertical Growth")
     GrowthYDropdown:SetValue(PrivateAurasDB.GrowthY)
     GrowthYDropdown:SetRelativeWidth(0.33)
-    GrowthYDropdown:SetCallback("OnValueChanged", function(_, _, value) PrivateAurasDB.GrowthY = value UUF:UpdateUnitAuras(UUF.PLAYER, "player") end)
+    GrowthYDropdown:SetCallback("OnValueChanged", function(_, _, value) PrivateAurasDB.GrowthY = value UpdatePrivateAuras() end)
     LayoutContainer:AddChild(GrowthYDropdown)
 
     local SizeSlider = AG:Create("Slider")
@@ -3133,7 +3205,7 @@ local function CreatePrivateAuraSettings(containerParent)
     SizeSlider:SetValue(PrivateAurasDB.Size)
     SizeSlider:SetSliderValues(8, 128, 1)
     SizeSlider:SetRelativeWidth(0.33)
-    SizeSlider:SetCallback("OnValueChanged", function(_, _, value) PrivateAurasDB.Size = value UUF:UpdateUnitAuras(UUF.PLAYER, "player") end)
+    SizeSlider:SetCallback("OnValueChanged", function(_, _, value) PrivateAurasDB.Size = value UpdatePrivateAuras() end)
     SizeContainer:AddChild(SizeSlider)
 
     local SpacingSlider = AG:Create("Slider")
@@ -3141,7 +3213,7 @@ local function CreatePrivateAuraSettings(containerParent)
     SpacingSlider:SetValue(PrivateAurasDB.Spacing)
     SpacingSlider:SetSliderValues(-20, 100, 1)
     SpacingSlider:SetRelativeWidth(0.33)
-    SpacingSlider:SetCallback("OnValueChanged", function(_, _, value) PrivateAurasDB.Spacing = value UUF:UpdateUnitAuras(UUF.PLAYER, "player") end)
+    SpacingSlider:SetCallback("OnValueChanged", function(_, _, value) PrivateAurasDB.Spacing = value UpdatePrivateAuras() end)
     SizeContainer:AddChild(SpacingSlider)
 
     local NumSlider = AG:Create("Slider")
@@ -3149,7 +3221,7 @@ local function CreatePrivateAuraSettings(containerParent)
     NumSlider:SetValue(PrivateAurasDB.Num)
     NumSlider:SetSliderValues(1, 12, 1)
     NumSlider:SetRelativeWidth(0.33)
-    NumSlider:SetCallback("OnValueChanged", function(_, _, value) PrivateAurasDB.Num = value UUF:UpdateUnitAuras(UUF.PLAYER, "player") end)
+    NumSlider:SetCallback("OnValueChanged", function(_, _, value) PrivateAurasDB.Num = value UpdatePrivateAuras() end)
     SizeContainer:AddChild(NumSlider)
 
     GUIWidgets.DeepDisable(GeneralContainer, not PrivateAurasDB.Enabled, Toggle)
@@ -3178,8 +3250,8 @@ local function CreateAuraSettings(containerParent, unit)
             CreateSpecificAuraSettings(AuraContainer, unit, "Debuffs")
         elseif AuraTab == "Custom" and AurasDB.Custom then
             CreateSpecificAuraSettings(AuraContainer, unit, "Custom")
-        elseif AuraTab == "PrivateAuras" and unit == "player" then
-            CreatePrivateAuraSettings(AuraContainer)
+        elseif AuraTab == "PrivateAuras" and AurasDB.PrivateAuras then
+            CreatePrivateAuraSettings(AuraContainer, unit)
         end
         containerParent:DoLayout()
     end
@@ -3187,7 +3259,7 @@ local function CreateAuraSettings(containerParent, unit)
     local AuraContainerTabGroup = AG:Create("TabGroup")
     AuraContainerTabGroup:SetLayout("Flow")
     AuraContainerTabGroup:SetFullWidth(true)
-    if unit == "player" then
+    if AurasDB.PrivateAuras then
         AuraContainerTabGroup:SetTabs({ { text = "Buffs", value = "Buffs"}, { text = "Debuffs", value = "Debuffs"}, { text = "Custom", value = "Custom"}, { text = "Private Auras", value = "PrivateAuras"}, })
     elseif AurasDB.Custom then
         AuraContainerTabGroup:SetTabs({ { text = "Buffs", value = "Buffs"}, { text = "Debuffs", value = "Debuffs"}, { text = "Custom", value = "Custom"}, })
@@ -3288,6 +3360,7 @@ local function CreateCooldownTextSettings(containerParent)
                     { text = "Pet", value = "pet" },
                     { text = "Boss", value = "boss" },
                     { text = "Party", value = "party" },
+					{ text = "Raid", value = "raid" },
                 })
                 AuraUnitTabs:SetCallback("OnGroupSelected", SelectAuraUnit)
                 AuraUnitTabs:SelectTab("player")
@@ -3543,7 +3616,7 @@ local function CreateUnitSettings(containerParent, unit)
         elseif UnitTab == "Tags" then
             CreateTagsSettings(SubContainer, unit)
         end
-        if unit ~= "party" then
+        if unit ~= "party" and unit ~= "raid" then
             if UnitTab == "Auras" then EnableAurasTestMode(unit) else DisableAurasTestMode(unit) end
             if UnitTab == "CastBar" then EnableCastBarTestMode(unit) else DisableCastBarTestMode(unit) end
         end
@@ -3576,7 +3649,7 @@ local function CreateUnitSettings(containerParent, unit)
         end
 
         SubContainerTabGroup:SetTabs(playerTabs)
-    elseif unit == "party" then
+    elseif unit == "party" or unit == "raid" then
         SubContainerTabGroup:SetTabs({
             { text = "Frame", value = "Frame"},
             { text = "Heal Prediction", value = "HealPrediction"},
@@ -4019,6 +4092,12 @@ function UUF:CreateGUI()
             CreateUnitSettings(ScrollFrame, "party")
 
             ScrollFrame:DoLayout()
+		elseif MainTab == "Raid" then
+			local ScrollFrame = GUIWidgets.CreateScrollFrame(Wrapper)
+
+			CreateUnitSettings(ScrollFrame, "raid")
+
+			ScrollFrame:DoLayout()
         elseif MainTab == "Tags" then
             local ScrollFrame = GUIWidgets.CreateScrollFrame(Wrapper)
             CreateTagSettings(ScrollFrame)
@@ -4030,7 +4109,9 @@ function UUF:CreateGUI()
 
             ScrollFrame:DoLayout()
         end
-        if MainTab == "Boss" then EnableBossFramesTestMode() else DisableBossFramesTestMode() end
+		if MainTab == "Boss" then EnableBossFramesTestMode() else DisableBossFramesTestMode() end
+		SetGroupFramesTestMode("party", MainTab == "Party")
+		SetGroupFramesTestMode("raid", MainTab == "Raid")
         GenerateSupportText(Container)
     end
 
