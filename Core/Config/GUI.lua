@@ -616,7 +616,6 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
     end
 
     if unit == "party" then
-        local RoleOrderContainer = GUIWidgets.CreateInlineGroup(containerParent, "Role Sorting")
         local roleOrderDropdowns = {}
         local roleList = {TANK = "Tank", HEALER = "Healer", DAMAGER = "Damage"}
         local roleListOrder = {"TANK", "HEALER", "DAMAGER"}
