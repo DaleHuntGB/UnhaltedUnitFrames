@@ -663,30 +663,34 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
 		local UnitsPerColumnSlider = AG:Create("Slider")
 		UnitsPerColumnSlider:SetLabel("Units Per Column")
 		UnitsPerColumnSlider:SetValue(FrameDB.UnitsPerColumn)
-		UnitsPerColumnSlider:SetSliderValues(1, 40, 1)
+		UnitsPerColumnSlider:SetSliderValues(1, UUF.MAX_RAID_FRAMES, 1)
 		UnitsPerColumnSlider:SetRelativeWidth(0.33)
 		UnitsPerColumnSlider:SetCallback("OnValueChanged", function(_, _, value) FrameDB.UnitsPerColumn = value updateCallback() end)
 		LayoutContainer:AddChild(UnitsPerColumnSlider)
 	end
 
     if unit == "party" or unit == "raid" then
+		local roleOrderDropdowns = {}
         local SortByDropdown = AG:Create("Dropdown")
 		local sortList = unit == "raid" and {INDEX = "Raid Index", GROUP = "Raid Group"} or {INDEX = "Group Index", ROLE = "Assigned Role"}
 		local sortOrder = unit == "raid" and {"INDEX", "GROUP"} or {"INDEX", "ROLE"}
         SortByDropdown:SetList(sortList, sortOrder)
 		local groupBy = unit == "raid" and FrameDB.GroupBy or FrameDB.SortBy
-		if unit == "raid" and groupBy ~= "INDEX" and groupBy ~= "GROUP" then groupBy = "GROUP" FrameDB.GroupBy = groupBy end
+		if unit == "raid" and groupBy ~= "INDEX" and groupBy ~= "GROUP" then
+			groupBy = "GROUP"
+			FrameDB.GroupBy = groupBy
+		end
         SortByDropdown:SetLabel(unit == "raid" and "Group By" or "Sort By")
 		SortByDropdown:SetValue(groupBy)
         SortByDropdown:SetRelativeWidth(unit == "raid" and 0.33 or 0.25)
         SortByDropdown:SetCallback("OnValueChanged", function(_, _, value)
 			if unit == "raid" then FrameDB.GroupBy = value else FrameDB.SortBy = value end
+			for _, roleOrderDropdown in ipairs(roleOrderDropdowns) do roleOrderDropdown:SetDisabled(value ~= "ROLE") end
 			updateCallback()
 		end)
         LayoutContainer:AddChild(SortByDropdown)
 
 		if unit == "party" then
-			local roleOrderDropdowns = {}
 			local roleList = {TANK = "Tank", HEALER = "Healer", DAMAGER = "Damage"}
 			local roleListOrder = {"TANK", "HEALER", "DAMAGER"}
 			local function CreateRoleOrderDropdown(roleIndex, label)
@@ -717,7 +721,7 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
 			for _, roleOrderDropdown in ipairs(roleOrderDropdowns) do roleOrderDropdown:SetDisabled(groupBy ~= "ROLE") end
 		else
 			local groupList, groupOrder = {}, {}
-			for groupIndex = 1, 8 do
+			for groupIndex = 1, UUF.MAX_RAID_GROUPS do
 				groupList[groupIndex] = "Group " .. groupIndex
 				groupOrder[groupIndex] = groupIndex
 			end
@@ -726,8 +730,11 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
 			GroupsDropdown:SetMultiselect(true)
 			GroupsDropdown:SetList(groupList, groupOrder)
 			local selectedGroups = {}
-			for _, groupIndex in ipairs(FrameDB.GroupingOrder) do selectedGroups[tonumber(groupIndex)] = true end
-			for groupIndex = 1, 8 do GroupsDropdown:SetItemValue(groupIndex, selectedGroups[groupIndex] or false) end
+			for _, groupIndex in ipairs(FrameDB.GroupingOrder) do
+				groupIndex = tonumber(groupIndex)
+				if groupIndex and groupIndex >= 1 and groupIndex <= UUF.MAX_RAID_GROUPS then selectedGroups[groupIndex] = true end
+			end
+			for groupIndex = 1, UUF.MAX_RAID_GROUPS do GroupsDropdown:SetItemValue(groupIndex, selectedGroups[groupIndex] or false) end
 			GroupsDropdown:SetFullWidth(true)
 			GroupsDropdown:SetCallback("OnValueChanged", function(_, _, groupIndex, value)
 				groupIndex = tonumber(groupIndex)
@@ -735,13 +742,11 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
 				local groupingOrder = {}
 				for _, existingGroup in ipairs(FrameDB.GroupingOrder) do
 					existingGroup = tonumber(existingGroup)
-					if existingGroup and existingGroup >= 1 and existingGroup <= 8 and existingGroup ~= groupIndex then groupingOrder[#groupingOrder + 1] = existingGroup end
+					if existingGroup and existingGroup >= 1 and existingGroup <= UUF.MAX_RAID_GROUPS and existingGroup ~= groupIndex then groupingOrder[#groupingOrder + 1] = existingGroup end
 				end
-				if value then
-					groupingOrder[#groupingOrder + 1] = groupIndex
-				end
+				if value then groupingOrder[#groupingOrder + 1] = groupIndex end
 				FrameDB.GroupingOrder = groupingOrder
-				UUF:UpdateRaidFrames()
+				updateCallback()
 			end)
 			LayoutContainer:AddChild(GroupsDropdown)
 		end

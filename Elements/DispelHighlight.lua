@@ -63,6 +63,7 @@ end
 function UUF:UpdateUnitDispelHighlight(unitFrame, unit)
     if not unitFrame.DispelHighlight then return end
     local DispelHighlightDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].HealthBar.DispelHighlight
+	if unit:find("test", 1, true) then UUF:UnregisterDispelHighlightEvents(unitFrame) unitFrame.DispelHighlight:Hide() return end
     if unitFrame.DispelHighlight then
         if DispelHighlightDB.Enabled then
             UUF:RegisterDispelHighlightEvents(unitFrame, unit)
@@ -93,10 +94,10 @@ end
 function UUF:UpdateUnitDispelState(unitFrame, unit, databaseUnit)
     if not unitFrame.DispelHighlight then return end
     if not UUF.db.profile.Units[UUF:GetNormalizedUnit(databaseUnit or unit)].HealthBar.DispelHighlight.Enabled then return end
+	if not unit or not UnitExists(unit) then unitFrame.DispelHighlight:Hide() return end
 
     local LibDispel = UUF.LD
     if not LibDispel then return end
-	if not unit or not UnitExists(unit) then unitFrame.DispelHighlight:Hide() return end
 
     if unitFrame.dispelColorCurve and unitFrame.dispelColorCurveGeneration ~= UUF.dispelColorGeneration then
         UUF:UpdateDispelColorCurve(unitFrame)
@@ -136,9 +137,9 @@ function UUF:RegisterDispelHighlightEvents(unitFrame, unit)
 
     if not unitFrame.DispelHighlightHandler then
         unitFrame.DispelHighlightHandler = CreateFrame("Frame")
-        unitFrame.DispelHighlightHandler:SetScript("OnEvent", function(_, event, eventUnit)
+        unitFrame.DispelHighlightHandler:SetScript("OnEvent", function()
             local currentUnit = unitFrame.unit or unitFrame.DispelHighlightUnit
-            if event ~= "UNIT_AURA" or eventUnit == currentUnit then UUF:UpdateUnitDispelState(unitFrame, currentUnit, unitFrame.DispelHighlightUnit) end
+			UUF:UpdateUnitDispelState(unitFrame, currentUnit, unitFrame.DispelHighlightUnit)
         end)
     end
 
@@ -146,17 +147,19 @@ function UUF:RegisterDispelHighlightEvents(unitFrame, unit)
     unitFrame.DispelHighlightHandler:UnregisterAllEvents()
 	local normalizedUnit = UUF:GetNormalizedUnit(unit)
     if normalizedUnit == "party" or normalizedUnit == "raid" then
-        unitFrame.DispelHighlightHandler:RegisterEvent("UNIT_AURA")
         if not unitFrame.DispelHighlightUnitHooked then
             unitFrame:HookScript("OnAttributeChanged", function(_, attribute, value)
-                if attribute == "unit" then UUF:UpdateUnitDispelState(unitFrame, value, unitFrame.DispelHighlightUnit) end
+				if attribute ~= "unit" then return end
+				unitFrame.DispelHighlightHandler:UnregisterEvent("UNIT_AURA")
+				if value then unitFrame.DispelHighlightHandler:RegisterUnitEvent("UNIT_AURA", value) end
+				UUF:UpdateUnitDispelState(unitFrame, value, unitFrame.DispelHighlightUnit)
             end)
             unitFrame:HookScript("OnShow", function() UUF:UpdateUnitDispelState(unitFrame, unitFrame.unit, unitFrame.DispelHighlightUnit) end)
             unitFrame.DispelHighlightUnitHooked = true
         end
-    else
-        unitFrame.DispelHighlightHandler:RegisterUnitEvent("UNIT_AURA", unit)
     end
+	local currentUnit = (normalizedUnit == "party" or normalizedUnit == "raid") and (unitFrame.unit or unit) or unit
+	if currentUnit then unitFrame.DispelHighlightHandler:RegisterUnitEvent("UNIT_AURA", currentUnit) end
     unitFrame.DispelHighlightHandler:RegisterEvent("SPELLS_CHANGED")
     unitFrame.DispelHighlightHandler:RegisterEvent("PLAYER_TALENT_UPDATE")
     unitFrame.DispelHighlightHandler:RegisterEvent("PLAYER_TARGET_CHANGED")

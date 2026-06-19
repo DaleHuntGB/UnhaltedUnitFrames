@@ -65,19 +65,20 @@ function UUF:CreateUnitHealthBar(unitFrame, unit)
 end
 
 function UUF:UpdateUnitHealthBar(unitFrame, unit)
-    local FrameDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Frame
-    local HealthBarDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].HealthBar
-    local DispelHighlightDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].HealthBar.DispelHighlight
+	local normalizedUnit = UUF:GetNormalizedUnit(unit)
+	local UnitDB = UUF.db.profile.Units[normalizedUnit]
+	local FrameDB = UnitDB.Frame
+	local HealthBarDB = UnitDB.HealthBar
 
     if unitFrame then
-        if UUF:GetNormalizedUnit(unit) ~= "party" and UUF:GetNormalizedUnit(unit) ~= "raid" then unitFrame:ClearAllPoints() end
+		if normalizedUnit ~= "party" and normalizedUnit ~= "raid" then unitFrame:ClearAllPoints() end
         unitFrame:SetSize(FrameDB.Width, FrameDB.Height)
         if unit == "player" or unit == "target" then
-            local parentFrame = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].HealthBar.AnchorToCooldownViewer and _G["UUF_CDMAnchor"] or UIParent
+			local parentFrame = HealthBarDB.AnchorToCooldownViewer and _G["UUF_CDMAnchor"] or UIParent
             UUF[unit:upper()]:SetPoint(FrameDB.Layout[1], parentFrame, FrameDB.Layout[2], FrameDB.Layout[3], FrameDB.Layout[4])
             UUF[unit:upper()]:SetSize(FrameDB.Width, FrameDB.Height)
         elseif unit == "targettarget" or unit == "focus" or unit == "focustarget" or unit == "pet" then
-            local parentFrame = _G[UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Frame.AnchorParent] or UIParent
+			local parentFrame = _G[FrameDB.AnchorParent] or UIParent
             UUF[unit:upper()]:SetPoint(FrameDB.Layout[1], parentFrame, FrameDB.Layout[2], FrameDB.Layout[3], FrameDB.Layout[4])
             UUF[unit:upper()]:SetSize(FrameDB.Width, FrameDB.Height)
         end

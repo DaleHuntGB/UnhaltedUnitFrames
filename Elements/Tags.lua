@@ -21,7 +21,6 @@ local function CreateUnitTag(unitFrame, unit, tagDB)
     end
 end
 
-
 function UUF:UpdateUnitTag(unitFrame, unit, tagDB)
     local GeneralDB = UUF.db.profile.General
     local TagDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Tags[tagDB]
@@ -68,7 +67,7 @@ function UUF:UpdateUnitTags()
         elseif unit == "party" then
             for partyIndex, partyFrame in pairs(UUF.PARTY_FRAMES) do
                 for tagName in pairs(UnitDB.Tags) do
-                    UUF:UpdateUnitTag(partyFrame, "party" .. partyIndex, tagName)
+					UUF:UpdateUnitTag(partyFrame, partyFrame.unit or "party" .. partyIndex, tagName)
                 end
             end
 		elseif unit == "raid" then

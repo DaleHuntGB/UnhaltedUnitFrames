@@ -14,6 +14,9 @@ UUF.RAID_TEST_FRAMES = {}
 UUF.PARTY_TEST_CONTAINER = CreateFrame("Frame", "UUF_PartyTestContainer", UIParent)
 UUF.RAID_TEST_CONTAINER = CreateFrame("Frame", "UUF_RaidTestContainer", UIParent)
 UUF.MAX_BOSS_FRAMES = 5
+UUF.MAX_PARTY_FRAMES = 5
+UUF.MAX_RAID_FRAMES = 40
+UUF.MAX_RAID_GROUPS = 8
 local CooldownDurationFormatter = C_StringUtil.CreateNumericRuleFormatter()
 
 UUF.LSM = LibStub("LibSharedMedia-3.0")
@@ -103,25 +106,31 @@ UUF.QuestTextures = {
 
 function UUF:PrettyPrint(MSG) print(UUF.ADDON_NAME .. ":|r " .. MSG) end
 
+local UnitToFrame = {
+	player = "UUF_Player",
+	target = "UUF_Target",
+	targettarget = "UUF_TargetTarget",
+	focus = "UUF_Focus",
+	focustarget = "UUF_FocusTarget",
+	pet = "UUF_Pet",
+	boss = "UUF_Boss",
+	party = "UUF_Party",
+	raid = "UUF_Raid",
+}
+
+local IndexedUnitToFrame = {
+	boss = "UUF_Boss",
+	party = "UUF_Party",
+	partytest = "UUF_PartyTest",
+	raid = "UUF_Raid",
+	raidtest = "UUF_RaidTest",
+}
+
 function UUF:FetchFrameName(unit)
-    local UnitToFrame = {
-        ["player"] = "UUF_Player",
-        ["target"] = "UUF_Target",
-        ["targettarget"] = "UUF_TargetTarget",
-        ["focus"] = "UUF_Focus",
-        ["focustarget"] = "UUF_FocusTarget",
-        ["pet"] = "UUF_Pet",
-        ["boss"] = "UUF_Boss",
-        ["party"] = "UUF_Party",
-		["raid"] = "UUF_Raid",
-    }
-    if not unit then return end
-	if unit:match("^partytest(%d+)$") then local unitID = unit:match("^partytest(%d+)$") return "UUF_PartyTest" .. unitID end
-	if unit:match("^raidtest(%d+)$") then local unitID = unit:match("^raidtest(%d+)$") return "UUF_RaidTest" .. unitID end
-    if unit:match("^boss(%d+)$") then local unitID = unit:match("^boss(%d+)$") return "UUF_Boss" .. unitID end
-    if unit:match("^party(%d+)$") then local unitID = unit:match("^party(%d+)$") return "UUF_Party" .. unitID end
-	if unit:match("^raid(%d+)$") then local unitID = unit:match("^raid(%d+)$") return "UUF_Raid" .. unitID end
-    return UnitToFrame[unit]
+	if not unit then return end
+	local unitType, unitID = unit:match("^(%a+)(%d+)$")
+	if unitID and IndexedUnitToFrame[unitType] then return IndexedUnitToFrame[unitType] .. unitID end
+	return UnitToFrame[unit]
 end
 
 function UUF:ResolveLSM()
@@ -364,8 +373,11 @@ function UUF:GetReactionColour(reaction)
 end
 
 function UUF:GetNormalizedUnit(unit)
-    local normalizedUnit = unit == "vehicle" and "player" or unit:match("^boss%d+$") and "boss" or unit:match("^partytest%d+$") and "party" or unit:match("^raidtest%d+$") and "raid" or unit:match("^party%d*$") and "party" or unit:match("^raid%d*$") and "raid" or unit
-    return normalizedUnit
+	if unit == "vehicle" then return "player" end
+	if unit:match("^boss%d+$") then return "boss" end
+	if unit:match("^party%d*$") or unit:match("^partytest%d+$") then return "party" end
+	if unit:match("^raid%d*$") or unit:match("^raidtest%d+$") then return "raid" end
+	return unit
 end
 
 function UUF:RequiresAlternativePowerBar()

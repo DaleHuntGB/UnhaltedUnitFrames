@@ -17,9 +17,7 @@ function UUF:CreateUnitFrame(unitFrame, unit)
 	local isTargetTarget = unit == "targettarget"
 	local isFocusTarget = unit == "focustarget"
 	local normalizedUnit = UUF:GetNormalizedUnit(unit)
-	local isParty = normalizedUnit == "party"
-	local isRaid = normalizedUnit == "raid"
-	local isGroup = isParty or isRaid
+	local isGroup = normalizedUnit == "party" or normalizedUnit == "raid"
 
 	UUF:CreateUnitContainer(unitFrame, unit)
 	if not isTargetTarget and not isFocusTarget and not isGroup then UUF:CreateUnitCastBar(unitFrame, unit) end
@@ -89,9 +87,7 @@ function UUF:UpdateUnitFrame(unitFrame, unit)
 	local isTarget = unit == "target"
 	local isTargetTarget = unit == "targettarget"
 	local isFocusTarget = unit == "focustarget"
-	local isParty = normalizedUnit == "party"
-	local isRaid = normalizedUnit == "raid"
-	local isGroup = isParty or isRaid
+	local isGroup = normalizedUnit == "party" or normalizedUnit == "raid"
 
 	if not isTargetTarget and not isFocusTarget and not isGroup then UUF:UpdateUnitCastBar(unitFrame, unit) end
 	UUF:UpdateUnitHealthBar(unitFrame, unit)

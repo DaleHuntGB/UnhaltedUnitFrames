@@ -3,10 +3,10 @@
     <Script file="Defaults.lua"/>
     <Script file="Globals.lua"/>
     <Script file="TestEnvironment.lua"/>
-	<Script file="Units/Units.lua"/>
-	<Script file="Units/Boss.lua"/>
-	<Script file="Units/Party.lua"/>
-	<Script file="Units/Raid.lua"/>
+    <Script file="Units/Units.lua"/>
+    <Script file="Units/Boss.lua"/>
+    <Script file="Units/Party.lua"/>
+    <Script file="Units/Raid.lua"/>
 
     <Script file="Config/GUIWidgets.lua"/>
     <Script file="Config/GUI.lua"/>

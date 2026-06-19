@@ -476,26 +476,26 @@ function UUF:CreateUnitAuras(unitFrame, unit)
 end
 
 function UUF:UpdateUnitAurasStrata(unit)
-    if not unit then return end
-    local normalizedUnit = UUF:GetNormalizedUnit(unit)
-    if unit == "party" or unit == "raid" then
-        local unitDB = UUF.db.profile.Units[unit]
+	if not unit then return end
+	local normalizedUnit = UUF:GetNormalizedUnit(unit)
+	if unit == "party" or unit == "raid" then
+		local unitDB = UUF.db.profile.Units[unit]
 		local unitFrames = unit == "party" and UUF.PARTY_FRAMES or UUF.RAID_FRAMES
 		for _, unitFrame in pairs(unitFrames) do
-            if unitFrame.BuffContainer then unitFrame.BuffContainer:SetFrameStrata(unitDB.Auras.FrameStrata) end
-            if unitFrame.DebuffContainer then unitFrame.DebuffContainer:SetFrameStrata(unitDB.Auras.FrameStrata) end
-            if unitFrame.CustomAuraContainer then unitFrame.CustomAuraContainer:SetFrameStrata(unitDB.Auras.FrameStrata) end
+			if unitFrame.BuffContainer then unitFrame.BuffContainer:SetFrameStrata(unitDB.Auras.FrameStrata) end
+			if unitFrame.DebuffContainer then unitFrame.DebuffContainer:SetFrameStrata(unitDB.Auras.FrameStrata) end
+			if unitFrame.CustomAuraContainer then unitFrame.CustomAuraContainer:SetFrameStrata(unitDB.Auras.FrameStrata) end
 			if unitFrame.PrivateAuraContainer and unitDB.Auras.PrivateAuras then unitFrame.PrivateAuraContainer:SetFrameStrata(unitDB.Auras.PrivateAuras.FrameStrata) end
-        end
-        return
-    end
-    local unitFrame = UUF[unit:upper()]
-    local unitDB = UUF.db.profile.Units[normalizedUnit]
-    if not unitFrame or not unitDB or not unitDB.Auras then return end
-    if unitFrame.BuffContainer then unitFrame.BuffContainer:SetFrameStrata(unitDB.Auras.FrameStrata) end
-    if unitFrame.DebuffContainer then unitFrame.DebuffContainer:SetFrameStrata(unitDB.Auras.FrameStrata) end
-    if unitFrame.CustomAuraContainer then unitFrame.CustomAuraContainer:SetFrameStrata(unitDB.Auras.FrameStrata) end
-    if unitFrame.PrivateAuraContainer and unitDB.Auras.PrivateAuras then unitFrame.PrivateAuraContainer:SetFrameStrata(unitDB.Auras.PrivateAuras.FrameStrata) end
+		end
+		return
+	end
+	local unitFrame = UUF[unit:upper()]
+	local unitDB = UUF.db.profile.Units[normalizedUnit]
+	if not unitFrame or not unitDB or not unitDB.Auras then return end
+	if unitFrame.BuffContainer then unitFrame.BuffContainer:SetFrameStrata(unitDB.Auras.FrameStrata) end
+	if unitFrame.DebuffContainer then unitFrame.DebuffContainer:SetFrameStrata(unitDB.Auras.FrameStrata) end
+	if unitFrame.CustomAuraContainer then unitFrame.CustomAuraContainer:SetFrameStrata(unitDB.Auras.FrameStrata) end
+	if unitFrame.PrivateAuraContainer and unitDB.Auras.PrivateAuras then unitFrame.PrivateAuraContainer:SetFrameStrata(unitDB.Auras.PrivateAuras.FrameStrata) end
 end
 
 function UUF:CreateTestAuras(unitFrame, unit, testMode)
@@ -798,6 +798,20 @@ function UUF:CreateTestAuras(unitFrame, unit, testMode)
                 if button then button:Hide() end
             end
         end
+		if unit:find("test", 1, true) then
+			if unitFrame:IsElementEnabled("Auras") then unitFrame:DisableElement("Auras") end
+			if unitFrame:IsElementEnabled("CustomAuras") then unitFrame:DisableElement("CustomAuras") end
+			if unitFrame:IsElementEnabled("PrivateAuras") then unitFrame:DisableElement("PrivateAuras") end
+			unitFrame.Buffs = nil
+			unitFrame.Debuffs = nil
+			unitFrame.CustomAuras = nil
+			unitFrame.PrivateAuras = nil
+			if unitFrame.BuffContainer then unitFrame.BuffContainer:Hide() end
+			if unitFrame.DebuffContainer then unitFrame.DebuffContainer:Hide() end
+			if unitFrame.CustomAuraContainer then unitFrame.CustomAuraContainer:Hide() end
+			if unitFrame.PrivateAuraContainer then unitFrame.PrivateAuraContainer:Hide() end
+			return
+		end
         if BuffsDB.Enabled or DebuffsDB.Enabled then
             if not unitFrame:IsElementEnabled("Auras") then unitFrame:EnableElement("Auras") end
             if unitFrame.BuffContainer and unitFrame.BuffContainer.ForceUpdate then unitFrame.BuffContainer:ForceUpdate() end

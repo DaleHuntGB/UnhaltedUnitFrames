@@ -20,7 +20,7 @@ function UUF:SpawnPartyFrames()
 	oUF:SetActiveStyle(UUF:FetchFrameName("party"))
 
 	local point = FrameDB.GrowthDirection == "UP" and "BOTTOM" or "TOP"
-	local offset = FrameDB.GrowthDirection == "UP" and FrameDB.Layout[5] or -FrameDB.Layout[5]
+	local yOffset = FrameDB.GrowthDirection == "UP" and FrameDB.Layout[5] or -FrameDB.Layout[5]
 	local headerAttributes = {
 		showParty = true,
 		showPlayer = FrameDB.ShowPlayer,
@@ -28,14 +28,16 @@ function UUF:SpawnPartyFrames()
 		sortMethod = "INDEX",
 		point = point,
 		xOffset = 0,
-		yOffset = offset,
+		yOffset = yOffset,
 		["oUF-initialConfigFunction"] = ("self:SetWidth(%s); self:SetHeight(%s)"):format(FrameDB.Width, FrameDB.Height),
 	}
-	if FrameDB.SortBy == "ROLE" then headerAttributes.groupingOrder = table.concat(FrameDB.RoleOrder, ",") .. ",NONE" end
+	if FrameDB.SortBy == "ROLE" then
+		headerAttributes.groupBy = "ASSIGNEDROLE"
+		headerAttributes.groupingOrder = table.concat(FrameDB.RoleOrder, ",") .. ",NONE"
+	end
 	UUF.PARTY = oUF:SpawnHeader(UUF:FetchFrameName("party"), nil, headerAttributes)
-	if FrameDB.SortBy == "ROLE" then UUF.PARTY:SetAttribute("groupBy", "ASSIGNEDROLE") end
 	UUF.PARTY:SetPoint(FrameDB.Layout[1], UIParent, FrameDB.Layout[2], FrameDB.Layout[3], FrameDB.Layout[4])
-	UUF.PARTY:SetAttribute("startingIndex", -4)
+	UUF.PARTY:SetAttribute("startingIndex", -(UUF.MAX_PARTY_FRAMES - 1))
 	UUF.PARTY:Show()
 	UUF.PARTY:SetAttribute("startingIndex", 1)
 	UUF.PARTY:SetVisibility(UnitDB.Enabled and "party" or "custom hide")
@@ -48,10 +50,15 @@ function UUF:SpawnPartyFrames()
 	oUF:SetActiveStyle(UUF:FetchFrameName("party") .. "Test")
 	local DisableBlizzard = oUF.DisableBlizzard
 	oUF.DisableBlizzard = function() end
-	for partyIndex = 1, 5 do
+	for partyIndex = 1, UUF.MAX_PARTY_FRAMES do
 		local partyFrame = oUF:Spawn("party" .. partyIndex, UUF:FetchFrameName("party") .. "Test" .. partyIndex)
 		UnregisterUnitWatch(partyFrame)
 		partyFrame:SetAttribute("unit", nil)
+		partyFrame:SetScript("OnShow", nil)
+		partyFrame:EnableMouse(false)
+		UUF:CreateTestAuras(partyFrame, "partytest" .. partyIndex, false)
+		UUF:DisableTestGroupFrameTags(partyFrame)
+		partyFrame:UnregisterAllEvents()
 		partyFrame:Hide()
 		UUF.PARTY_TEST_FRAMES[partyIndex] = partyFrame
 	end
@@ -63,7 +70,7 @@ function UUF:UpdatePartyFrames()
 	local UnitDB = UUF.db.profile.Units.party
 	local FrameDB = UnitDB.Frame
 	if UUF.PARTY and InCombatLockdown() then return end
-	for partyIndex, partyFrame in pairs(UUF.PARTY_FRAMES) do UUF:UpdateUnitFrame(partyFrame, "party" .. partyIndex) end
+	for partyIndex, partyFrame in pairs(UUF.PARTY_FRAMES) do UUF:UpdateUnitFrame(partyFrame, partyFrame.unit or "party" .. partyIndex) end
 	if not UUF.PARTY then return end
 	UUF.PARTY:ClearAllPoints()
 	UUF.PARTY:SetPoint(FrameDB.Layout[1], UIParent, FrameDB.Layout[2], FrameDB.Layout[3], FrameDB.Layout[4])

@@ -6,9 +6,10 @@ unitIsTargetEvtFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
 unitIsTargetEvtFrame:RegisterEvent("UNIT_TARGET")
 unitIsTargetEvtFrame:SetScript("OnEvent", function()
     for _, frameData in ipairs(UUF.TargetHighlightEvtFrames) do
-        local frame, unit = frameData.frame, frameData.frame.unit or frameData.unit
+		local unitFrame = frameData.frame
+		local unit = unitFrame.unit or frameData.unit
         if UUF.db.profile.Units[UUF:GetNormalizedUnit(frameData.unit)].Indicators.Target.Enabled then
-            UUF:UpdateTargetGlowIndicator(frame, unit, frameData.unit)
+			UUF:UpdateTargetGlowIndicator(unitFrame, unit, frameData.unit)
         end
     end
 end)
@@ -45,16 +46,16 @@ function UUF:UpdateTargetGlowIndicator(unitFrame, unit, databaseUnit)
     end
 end
 
-function UUF:RegisterTargetGlowIndicatorFrame(frameName, unit)
-    if not unit or not frameName then return end
-        if UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Indicators.Target then
-            local unitFrame = type(frameName) == "table" and frameName or _G[frameName]
-            local DB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)]
-            table.insert(UUF.TargetHighlightEvtFrames, { frame = unitFrame, unit = unit })
-            if DB and DB.Indicators.Target and DB.Indicators.Target.Enabled then
-                UUF:UpdateTargetGlowIndicator(unitFrame, unitFrame.unit or unit, unit)
-            else
-                unitFrame.TargetIndicator:SetAlpha(0)
-            end
-    end
+function UUF:RegisterTargetGlowIndicatorFrame(frameReference, unit)
+	if not unit or not frameReference then return end
+	local UnitDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)]
+	if not UnitDB.Indicators.Target then return end
+	local unitFrame = type(frameReference) == "table" and frameReference or _G[frameReference]
+	if not unitFrame then return end
+	table.insert(UUF.TargetHighlightEvtFrames, {frame = unitFrame, unit = unit})
+	if UnitDB.Indicators.Target.Enabled then
+		UUF:UpdateTargetGlowIndicator(unitFrame, unitFrame.unit or unit, unit)
+	else
+		unitFrame.TargetIndicator:SetAlpha(0)
+	end
 end

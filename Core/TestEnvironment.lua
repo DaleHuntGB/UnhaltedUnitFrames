@@ -1,6 +1,9 @@
 local _, UUF = ...
 local EnvironmenTestData = {}
 local oUF = UUF.oUF
+local RAID_GROUP_SIZE = 5
+
+local GroupRoles = {"TANK", "HEALER", "DAMAGER", "DAMAGER", "DAMAGER"}
 
 local Classes = {
     [1] = "WARRIOR",
@@ -63,60 +66,67 @@ local function GetTestUnitColour(id, defaultColour, colourByClass, opacity)
     end
 end
 
+function UUF:DisableTestGroupFrameTags(unitFrame)
+	for _, fontString in pairs(unitFrame.Tags) do unitFrame:Untag(fontString) end
+end
+
 function UUF:CreateTestGroupFrames(unit)
 	if unit ~= "party" and unit ~= "raid" then return end
+	local isParty = unit == "party"
 	local UnitDB = UUF.db.profile.Units[unit]
 	local FrameDB = UnitDB.Frame
-	local testMode = unit == "party" and UUF.PARTY_TEST_MODE or UUF.RAID_TEST_MODE
-	local testFrames = unit == "party" and UUF.PARTY_TEST_FRAMES or UUF.RAID_TEST_FRAMES
-	local header = unit == "party" and UUF.PARTY or UUF.RAID
+	local testMode = isParty and UUF.PARTY_TEST_MODE or UUF.RAID_TEST_MODE
+	local testFrames = isParty and UUF.PARTY_TEST_FRAMES or UUF.RAID_TEST_FRAMES
+	local header = isParty and UUF.PARTY or UUF.RAID
 	if not header then return end
 
 	if not testMode then
 		for unitIndex, unitFrame in ipairs(testFrames) do
 			UUF:CreateTestAuras(unitFrame, unit .. "test" .. unitIndex, false)
+			UUF:DisableTestGroupFrameTags(unitFrame)
+			unitFrame:UnregisterAllEvents()
 			unitFrame:Hide()
 		end
-		header:SetVisibility(UnitDB.Enabled and unit or "custom hide")
+		local shouldShowHeader = UnitDB.Enabled and (isParty or UUF:GetRaidGroupFilter() ~= "0")
+		header:SetVisibility(shouldShowHeader and unit or "custom hide")
 		return
 	end
 
 	header:SetVisibility("custom hide")
 	local testIndices = {}
-	if unit == "party" then
-		for unitIndex = 1, FrameDB.ShowPlayer and 5 or 4 do testIndices[#testIndices + 1] = unitIndex end
+	if isParty then
+		for unitIndex = 1, FrameDB.ShowPlayer and UUF.MAX_PARTY_FRAMES or UUF.MAX_PARTY_FRAMES - 1 do testIndices[#testIndices + 1] = unitIndex end
 	else
 		local selectedGroups = {}
 		for _, groupIndex in ipairs(FrameDB.GroupingOrder) do
 			groupIndex = tonumber(groupIndex)
-			if groupIndex and groupIndex >= 1 and groupIndex <= 8 then selectedGroups[groupIndex] = true end
+			if groupIndex and groupIndex >= 1 and groupIndex <= UUF.MAX_RAID_GROUPS then selectedGroups[groupIndex] = true end
 		end
 		if FrameDB.GroupBy == "GROUP" then
 			for _, groupIndex in ipairs(FrameDB.GroupingOrder) do
 				groupIndex = tonumber(groupIndex)
-				if groupIndex and groupIndex >= 1 and groupIndex <= 8 then
-					for groupMemberIndex = 1, 5 do testIndices[#testIndices + 1] = (groupIndex - 1) * 5 + groupMemberIndex end
+				if groupIndex and groupIndex >= 1 and groupIndex <= UUF.MAX_RAID_GROUPS then
+					for groupMemberIndex = 1, RAID_GROUP_SIZE do testIndices[#testIndices + 1] = (groupIndex - 1) * RAID_GROUP_SIZE + groupMemberIndex end
 				end
 			end
 		else
-			for raidIndex = 1, 40 do if selectedGroups[math.ceil(raidIndex / 5)] then testIndices[#testIndices + 1] = raidIndex end end
+			for raidIndex = 1, UUF.MAX_RAID_FRAMES do if selectedGroups[math.ceil(raidIndex / RAID_GROUP_SIZE)] then testIndices[#testIndices + 1] = raidIndex end end
 		end
 	end
 
-	local roles = {"TANK", "HEALER", "DAMAGER", "DAMAGER", "DAMAGER"}
-	if unit == "party" and FrameDB.SortBy == "ROLE" then
+	if isParty and FrameDB.SortBy == "ROLE" then
 		local roleOrder = {}
 		for roleIndex, role in ipairs(FrameDB.RoleOrder) do roleOrder[role] = roleIndex end
 		table.sort(testIndices, function(firstIndex, secondIndex)
-			local firstRole = roles[(firstIndex - 1) % 5 + 1]
-			local secondRole = roles[(secondIndex - 1) % 5 + 1]
+			local firstRole = GroupRoles[(firstIndex - 1) % RAID_GROUP_SIZE + 1]
+			local secondRole = GroupRoles[(secondIndex - 1) % RAID_GROUP_SIZE + 1]
 			return roleOrder[firstRole] == roleOrder[secondRole] and firstIndex < secondIndex or roleOrder[firstRole] < roleOrder[secondRole]
 		end)
 	end
 
-	local testContainer = unit == "party" and UUF.PARTY_TEST_CONTAINER or UUF.RAID_TEST_CONTAINER
-	local unitsPerColumn = unit == "party" and #testIndices or math.max(FrameDB.UnitsPerColumn, 1)
-	local columnCount = unit == "party" and math.min(#testIndices, 1) or math.ceil(#testIndices / unitsPerColumn)
+	local testContainer = isParty and UUF.PARTY_TEST_CONTAINER or UUF.RAID_TEST_CONTAINER
+	local unitsPerColumn = isParty and #testIndices or math.max(FrameDB.UnitsPerColumn, 1)
+	local columnCount = isParty and math.min(#testIndices, 1) or math.ceil(#testIndices / unitsPerColumn)
 	local rowCount = math.min(#testIndices, unitsPerColumn)
 	local containerWidth = columnCount * FrameDB.Width + math.max(columnCount - 1, 0) * FrameDB.Layout[5]
 	local containerHeight = rowCount * FrameDB.Height + math.max(rowCount - 1, 0) * FrameDB.Layout[5]
@@ -128,11 +138,12 @@ function UUF:CreateTestGroupFrames(unit)
 	for displayIndex, unitIndex in ipairs(testIndices) do
 		local unitFrame = testFrames[unitIndex]
 		local testData = EnvironmenTestData[(unitIndex - 1) % 10 + 1]
-		local role = roles[(unitIndex - 1) % 5 + 1]
+		local role = GroupRoles[(unitIndex - 1) % RAID_GROUP_SIZE + 1]
 		UUF:UpdateUnitFrame(unitFrame, unit .. "test" .. unitIndex)
 		UUF:CreateTestAuras(unitFrame, unit .. "test" .. unitIndex, true)
+		unitFrame:UnregisterAllEvents()
 		unitFrame:ClearAllPoints()
-		if unit == "raid" then
+		if not isParty then
 			local columnIndex = math.floor((displayIndex - 1) / unitsPerColumn)
 			local rowIndex = (displayIndex - 1) % unitsPerColumn
 			local offsetX = columnIndex * (FrameDB.Width + FrameDB.Layout[5])
@@ -179,11 +190,12 @@ function UUF:CreateTestGroupFrames(unit)
 		end
 		if unitFrame.TargetIndicator then unitFrame.TargetIndicator:SetAlphaFromBoolean(displayIndex % 2 == 1 and UnitDB.Indicators.Target.Enabled, 1, 0) end
 		if unitFrame.DispelHighlight then unitFrame.DispelHighlight:Hide() end
-		if unitFrame.Tags.TagOne then unitFrame.Tags.TagOne:SetText((unit == "party" and "Party " or "Raid ") .. unitIndex) end
+		if unitFrame.Tags.TagOne then unitFrame.Tags.TagOne:SetText((isParty and "Party " or "Raid ") .. unitIndex) end
 		if unitFrame.Tags.TagTwo then unitFrame.Tags.TagTwo:SetText(string.format("%.1f%%", testData.percent)) end
 		if unitFrame.Tags.TagThree then unitFrame.Tags.TagThree:SetText(testData.power) end
 		if unitFrame.Tags.TagFour then unitFrame.Tags.TagFour:SetText("") end
 		if unitFrame.Tags.TagFive then unitFrame.Tags.TagFive:SetText("") end
+		UUF:DisableTestGroupFrameTags(unitFrame)
 		unitFrame:SetShown(UnitDB.Enabled)
 	end
 end
