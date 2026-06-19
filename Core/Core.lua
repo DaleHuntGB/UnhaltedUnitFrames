@@ -16,7 +16,6 @@ function UnhaltedUnitFrames:OnInitialize()
         local globalProfile = UUF.db.global.GlobalProfile or UUF.db.global.GlobalProfileName or "Default"
         UUF.db:SetProfile(globalProfile)
     end
-	for _, unitDB in pairs(UUF.db.profile.Units) do if unitDB.Portrait then unitDB.Portrait.Style = "2D" end end
 
     UUF.db.RegisterCallback(UUF, "OnProfileChanged", function()
         UUF:ResolveLSM()

@@ -623,7 +623,7 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
         SpacingSlider:SetLabel("Frame Spacing")
         SpacingSlider:SetValue(FrameDB.Layout[5])
         SpacingSlider:SetSliderValues(-1, 100, 0.1)
-        SpacingSlider:SetRelativeWidth(0.33)
+        SpacingSlider:SetRelativeWidth(0.25)
         SpacingSlider:SetCallback("OnValueChanged", function(_, _, value) FrameDB.Layout[5] = value updateCallback() end)
         LayoutContainer:AddChild(SpacingSlider)
     end
@@ -1696,22 +1696,33 @@ end
 
 local function CreatePortraitSettings(containerParent, unit, updateCallback)
     local PortraitDB = UUF.db.profile.Units[unit].Portrait
+    PortraitDB.Style = PortraitDB.Style or "2D"
 
     local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Portrait Settings")
+
+    GUIWidgets.CreateInformationTag(ToggleContainer, "|cFF8080FF3D Portraits|r will |cFFFF4040NOT|r work in instances, as they are now secret. |cFF8080FF2D Portraits|r will be used as a fallback if this is the case.")
 
     local Toggle = AG:Create("CheckBox")
     Toggle:SetLabel("Enable |cFF8080FFPortrait|r")
     Toggle:SetValue(PortraitDB.Enabled)
     Toggle:SetCallback("OnValueChanged", function(_, _, value) PortraitDB.Enabled = value updateCallback() RefreshPortraitGUI() end)
-    Toggle:SetRelativeWidth(0.5)
+    Toggle:SetRelativeWidth(0.33)
     ToggleContainer:AddChild(Toggle)
 
     local UseClassPortraitToggle = AG:Create("CheckBox")
     UseClassPortraitToggle:SetLabel("Use Class Portrait")
     UseClassPortraitToggle:SetValue(PortraitDB.UseClassPortrait)
     UseClassPortraitToggle:SetCallback("OnValueChanged", function(_, _, value) PortraitDB.UseClassPortrait = value updateCallback() end)
-    UseClassPortraitToggle:SetRelativeWidth(0.5)
+    UseClassPortraitToggle:SetRelativeWidth(0.33)
     ToggleContainer:AddChild(UseClassPortraitToggle)
+
+    local PortraitStyleDropdown = AG:Create("Dropdown")
+    PortraitStyleDropdown:SetList({["2D"] = "2D", ["3D"] = "3D"})
+    PortraitStyleDropdown:SetLabel("Portrait Style")
+    PortraitStyleDropdown:SetValue(PortraitDB.Style)
+    PortraitStyleDropdown:SetRelativeWidth(0.33)
+    PortraitStyleDropdown:SetCallback("OnValueChanged", function(_, _, value) PortraitDB.Style = value updateCallback() RefreshPortraitGUI() end)
+    ToggleContainer:AddChild(PortraitStyleDropdown)
 
     local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
 
@@ -1759,7 +1770,7 @@ local function CreatePortraitSettings(containerParent, unit, updateCallback)
     local WidthSlider = AG:Create("Slider")
     WidthSlider:SetLabel("Width")
     WidthSlider:SetValue(PortraitDB.Width)
-    WidthSlider:SetSliderValues(8, 64, 0.1)
+    WidthSlider:SetSliderValues(8, 128, 0.1)
     WidthSlider:SetRelativeWidth(0.5)
     WidthSlider:SetCallback("OnValueChanged", function(_, _, value) PortraitDB.Width = value updateCallback() end)
     LayoutContainer:AddChild(WidthSlider)
@@ -1767,7 +1778,7 @@ local function CreatePortraitSettings(containerParent, unit, updateCallback)
     local HeightSlider = AG:Create("Slider")
     HeightSlider:SetLabel("Height")
     HeightSlider:SetValue(PortraitDB.Height)
-    HeightSlider:SetSliderValues(8, 64, 0.1)
+    HeightSlider:SetSliderValues(8, 128, 0.1)
     HeightSlider:SetRelativeWidth(0.5)
     HeightSlider:SetCallback("OnValueChanged", function(_, _, value) PortraitDB.Height = value updateCallback() end)
     LayoutContainer:AddChild(HeightSlider)
@@ -1780,6 +1791,8 @@ local function CreatePortraitSettings(containerParent, unit, updateCallback)
             GUIWidgets.DeepDisable(ToggleContainer, true, Toggle)
             GUIWidgets.DeepDisable(LayoutContainer, true, Toggle)
         end
+        UseClassPortraitToggle:SetDisabled(not PortraitDB.Enabled or PortraitDB.Style ~= "2D")
+        ZoomSlider:SetDisabled(not PortraitDB.Enabled or PortraitDB.Style ~= "2D")
     end
 
     RefreshPortraitGUI()
@@ -2574,50 +2587,74 @@ end
 
 local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
     local AuraDB = UUF.db.profile.Units[unit].Auras[auraDB]
+    local isCustom = auraDB == "Custom"
+    local filterAuraDB = auraDB == "Custom" and (AuraDB.Type == "Debuffs" and "Debuffs" or "Buffs") or auraDB
+    local auraTitle = auraDB == "Custom" and filterAuraDB or auraDB
 
-    local AuraContainer = GUIWidgets.CreateInlineGroup(containerParent, auraDB .. " Settings")
+    local AuraContainer = GUIWidgets.CreateInlineGroup(containerParent, auraTitle .. " Settings")
 
     local Toggle = AG:Create("CheckBox")
     Toggle:SetLabel("Enable |cFF8080FF"..auraDB.."|r")
     Toggle:SetValue(AuraDB.Enabled)
     Toggle:SetCallback("OnValueChanged", function(_, _, value) AuraDB.Enabled = value if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end RefreshAuraGUI() end)
-    Toggle:SetRelativeWidth(0.33)
+    Toggle:SetRelativeWidth(isCustom and 0.5 or 0.33)
     AuraContainer:AddChild(Toggle)
 
+    if auraDB == "Custom" then
+        local TypeDropdown = AG:Create("Dropdown")
+        TypeDropdown:SetList({["Buffs"] = "Buffs", ["Debuffs"] = "Debuffs"}, {"Buffs", "Debuffs"})
+        TypeDropdown:SetLabel("Type")
+        TypeDropdown:SetValue(filterAuraDB)
+        TypeDropdown:SetRelativeWidth(isCustom and 0.5 or 0.33)
+        TypeDropdown:SetCallback("OnValueChanged", function(_, _, value)
+            AuraDB.Type = value
+            AuraDB.Filter = value == "Buffs" and "HELPFUL" or "HARMFUL"
+            if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end
+            containerParent:ReleaseChildren()
+            CreateSpecificAuraSettings(containerParent, unit, auraDB)
+            containerParent:DoLayout()
+        end)
+        AuraContainer:AddChild(TypeDropdown)
+    end
+
     local OnlyShowPlayerToggle = AG:Create("CheckBox")
-    OnlyShowPlayerToggle:SetLabel("Only Show Player " .. auraDB)
+    OnlyShowPlayerToggle:SetLabel("Only Show Player " .. auraTitle)
     OnlyShowPlayerToggle:SetValue(AuraDB.OnlyShowPlayer)
     OnlyShowPlayerToggle:SetCallback("OnValueChanged", function(_, _, value) AuraDB.OnlyShowPlayer = value if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end RefreshAuraGUI() end)
-    OnlyShowPlayerToggle:SetCallback("OnEnter", function() GameTooltip:SetOwner(OnlyShowPlayerToggle.frame, "ANCHOR_CURSOR") GameTooltip:AddLine("Overrides |cFF8080FF" .. auraDB:lower() .. "|r advanced filters. If |cFF8080FFBlacklist|r is checked, it will be respected.", 1, 1, 1, true) GameTooltip:Show() end)
+    OnlyShowPlayerToggle:SetCallback("OnEnter", function() GameTooltip:SetOwner(OnlyShowPlayerToggle.frame, "ANCHOR_CURSOR") GameTooltip:AddLine("Overrides |cFF8080FF" .. auraTitle:lower() .. "|r advanced filters. If |cFF8080FFBlacklist|r is checked, it will be respected.", 1, 1, 1, true) GameTooltip:Show() end)
     OnlyShowPlayerToggle:SetCallback("OnLeave", function() GameTooltip:Hide() end)
-    OnlyShowPlayerToggle:SetRelativeWidth(0.33)
+    OnlyShowPlayerToggle:SetRelativeWidth(isCustom and 0.5 or 0.33)
     AuraContainer:AddChild(OnlyShowPlayerToggle)
 
     local ShowTypeCheckbox = AG:Create("CheckBox")
-    ShowTypeCheckbox:SetLabel("Show " .. auraDB .. " Type Border")
+    ShowTypeCheckbox:SetLabel("Show " .. auraTitle .. " Type Border")
     ShowTypeCheckbox:SetValue(AuraDB.ShowType)
     ShowTypeCheckbox:SetCallback("OnValueChanged", function(_, _, value) AuraDB.ShowType = value if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end end)
-    ShowTypeCheckbox:SetRelativeWidth(0.33)
+    ShowTypeCheckbox:SetRelativeWidth(isCustom and 0.5 or 0.33)
     AuraContainer:AddChild(ShowTypeCheckbox)
 
-    local FilterContainer = GUIWidgets.CreateInlineGroup(containerParent, auraDB .. " Filters")
+    local FilterContainer = GUIWidgets.CreateInlineGroup(containerParent, auraTitle .. " Filters")
     AuraDB.Filters = AuraDB.Filters or {}
 
     local BlacklistToggle = AG:Create("CheckBox")
     BlacklistToggle:SetLabel("Blacklist")
     BlacklistToggle:SetValue(AuraDB.Blacklist or false)
     BlacklistToggle:SetCallback("OnValueChanged", function(_, _, value) AuraDB.Blacklist = value if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end end)
-    BlacklistToggle:SetRelativeWidth(0.5)
+    BlacklistToggle:SetRelativeWidth(auraDB == "Debuffs" and 0.33 or 0.5)
     FilterContainer:AddChild(BlacklistToggle)
 
-    for _, filter in ipairs(UUF.AURA_FILTERS[auraDB]) do
+    local FilterDropdowns = {}
+
+    for _, filter in ipairs(UUF.AURA_FILTERS[filterAuraDB]) do
         if filter.Group == "General" then
             local filterKey = filter.Key
             local FilterToggle = AG:Create("CheckBox")
             FilterToggle:SetLabel(filter.Title)
             FilterToggle:SetValue(AuraDB.Filters[filterKey] or false)
-            FilterToggle:SetRelativeWidth(0.5)
-            FilterToggle:SetCallback("OnValueChanged", function(_, _, value) AuraDB.Filters[filterKey] = value or nil if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end end)
+            FilterToggle:SetRelativeWidth(0.33)
+            FilterToggle:SetCallback("OnValueChanged", function(_, _, value) AuraDB.Filters[filterKey] = value or nil if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end RefreshAuraGUI() end)
+            FilterToggle:SetCallback("OnEnter", function() GameTooltip:SetOwner(FilterToggle.frame, "ANCHOR_CURSOR") GameTooltip:AddLine(filter.Desc, 1, 1, 1, true) GameTooltip:Show() end)
+            FilterToggle:SetCallback("OnLeave", function() GameTooltip:Hide() end)
             FilterContainer:AddChild(FilterToggle)
         end
     end
@@ -2626,21 +2663,31 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
 
     for _, filterGroup in ipairs({"Player (You)", "Others (Not You)"}) do
         local filterList = {}
+        local filterDesc = {}
         local filterOrder = {}
         local FilterDropdown = AG:Create("Dropdown")
-        for _, filter in ipairs(UUF.AURA_FILTERS[auraDB]) do
+        for _, filter in ipairs(UUF.AURA_FILTERS[filterAuraDB]) do
             if filter.Group == filterGroup then
                 filterList[filter.Key] = filter.Title
+                filterDesc[filter.Key] = filter.Desc
                 filterOrder[#filterOrder + 1] = filter.Key
             end
         end
         FilterDropdown:SetLabel(filterGroup .. " Filters")
         FilterDropdown:SetMultiselect(true)
         FilterDropdown:SetList(filterList, filterOrder)
+        for _, dropdownItem in FilterDropdown.pullout:IterateItems() do
+            local desc = filterDesc[dropdownItem.userdata and dropdownItem.userdata.value]
+            if desc then
+                dropdownItem:SetCallback("OnEnter", function() GameTooltip:SetOwner(dropdownItem.frame, "ANCHOR_CURSOR_RIGHT") GameTooltip:SetFrameStrata("TOOLTIP") GameTooltip:SetFrameLevel((FilterDropdown.pullout.frame:GetFrameLevel() or 0) + 100) GameTooltip:SetToplevel(true) GameTooltip:AddLine(desc, 1, 1, 1, false) GameTooltip:Show() GameTooltip:SetFrameLevel((FilterDropdown.pullout.frame:GetFrameLevel() or 0) + 100) end)
+                dropdownItem:SetCallback("OnLeave", function() GameTooltip:Hide() end)
+            end
+        end
         for _, filterKey in ipairs(filterOrder) do FilterDropdown:SetItemValue(filterKey, AuraDB.Filters[filterKey] or false) end
         FilterDropdown:SetRelativeWidth(0.5)
         FilterDropdown:SetCallback("OnValueChanged", function(_, _, filterKey, value) AuraDB.Filters[filterKey] = value or nil if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end end)
         FilterContainer:AddChild(FilterDropdown)
+        FilterDropdowns[#FilterDropdowns + 1] = FilterDropdown
     end
 
     local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
@@ -2649,7 +2696,7 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
     AnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
     AnchorFromDropdown:SetLabel("Anchor From")
     AnchorFromDropdown:SetValue(AuraDB.Layout[1])
-    AnchorFromDropdown:SetRelativeWidth(0.5)
+    AnchorFromDropdown:SetRelativeWidth(0.33)
     AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) AuraDB.Layout[1] = value if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end end)
     LayoutContainer:AddChild(AnchorFromDropdown)
 
@@ -2657,9 +2704,33 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
     AnchorToDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
     AnchorToDropdown:SetLabel("Anchor To")
     AnchorToDropdown:SetValue(AuraDB.Layout[2])
-    AnchorToDropdown:SetRelativeWidth(0.5)
+    AnchorToDropdown:SetRelativeWidth(0.33)
     AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) AuraDB.Layout[2] = value if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end end)
     LayoutContainer:AddChild(AnchorToDropdown)
+
+    local SortingDropdown = AG:Create("Dropdown")
+    SortingDropdown:SetList({
+        BLIZZARD = "Blizzard",
+        BLIZZARD_REVERSED = "Blizzard Reversed",
+        DURATION = "Duration",
+        DURATION_REVERSED = "Duration Reversed",
+    }, {"BLIZZARD", "BLIZZARD_REVERSED", "DURATION", "DURATION_REVERSED"})
+    SortingDropdown:SetLabel("Aura Sorting")
+    SortingDropdown:SetValue(AuraDB.Sorting or "BLIZZARD")
+    SortingDropdown:SetRelativeWidth(0.33)
+    SortingDropdown:SetCallback("OnValueChanged", function(_, _, value) AuraDB.Sorting = value if unit == "boss" then UUF:UpdateBossFrames() else UUF:UpdateUnitAuras(UUF[unit:upper()], unit, auraDB) end end)
+    for _, dropdownItem in SortingDropdown.pullout:IterateItems() do
+        local value = dropdownItem.userdata and dropdownItem.userdata.value
+        local desc = value == "BLIZZARD" and "|cFF00B4FFBlizzard|r's Default Ordering."
+            or value == "BLIZZARD_REVERSED" and "|cFF00B4FFBlizzard|r's Default Ordering in Reverse."
+            or value == "DURATION" and "|cFF8080FFDuration-Based|r Ordering.\nAuras with the shortest remaining duration will be displayed first."
+            or value == "DURATION_REVERSED" and "|cFF8080FFDuration-Based|r Ordering in Reverse.\nAuras with the longest remaining duration will be displayed first."
+        if desc then
+            dropdownItem:SetCallback("OnEnter", function() GameTooltip:SetOwner(dropdownItem.frame, "ANCHOR_CURSOR_RIGHT") GameTooltip:SetFrameStrata("TOOLTIP") GameTooltip:SetFrameLevel((SortingDropdown.pullout.frame:GetFrameLevel() or 0) + 100) GameTooltip:SetToplevel(true) GameTooltip:AddLine(desc, 1, 1, 1, false) GameTooltip:Show() GameTooltip:SetFrameLevel((SortingDropdown.pullout.frame:GetFrameLevel() or 0) + 100) end)
+            dropdownItem:SetCallback("OnLeave", function() GameTooltip:Hide() end)
+        end
+    end
+    LayoutContainer:AddChild(SortingDropdown)
 
     local XPosSlider = AG:Create("Slider")
     XPosSlider:SetLabel("X Position")
@@ -2696,7 +2767,7 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
     GUIWidgets.CreateHeader(LayoutContainer, "Layout")
 
     local NumAurasSlider = AG:Create("Slider")
-    NumAurasSlider:SetLabel(auraDB .. " To Display")
+    NumAurasSlider:SetLabel(auraTitle .. " To Display")
     NumAurasSlider:SetValue(AuraDB.Num)
     NumAurasSlider:SetSliderValues(1, 24, 1)
     NumAurasSlider:SetRelativeWidth(0.5)
@@ -2704,7 +2775,7 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
     LayoutContainer:AddChild(NumAurasSlider)
 
     local PerRowSlider = AG:Create("Slider")
-    PerRowSlider:SetLabel(auraDB .. " Per Row")
+    PerRowSlider:SetLabel(auraTitle .. " Per Row")
     PerRowSlider:SetValue(AuraDB.Wrap)
     PerRowSlider:SetSliderValues(1, 24, 1)
     PerRowSlider:SetRelativeWidth(0.5)
@@ -2781,6 +2852,7 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
         if AuraDB.Enabled then
             GUIWidgets.DeepDisable(AuraContainer, false, Toggle)
             GUIWidgets.DeepDisable(FilterContainer, AuraDB.OnlyShowPlayer, BlacklistToggle)
+            for _, FilterDropdown in ipairs(FilterDropdowns) do FilterDropdown:SetDisabled(AuraDB.OnlyShowPlayer or (filterAuraDB == "Debuffs" and AuraDB.Filters.Typed)) end
             GUIWidgets.DeepDisable(LayoutContainer, false, Toggle)
             GUIWidgets.DeepDisable(CountContainer, false, Toggle)
         else
@@ -2952,6 +3024,8 @@ local function CreateAuraSettings(containerParent, unit)
             CreateSpecificAuraSettings(AuraContainer, unit, "Buffs")
         elseif AuraTab == "Debuffs" then
             CreateSpecificAuraSettings(AuraContainer, unit, "Debuffs")
+        elseif AuraTab == "Custom" and AurasDB.Custom then
+            CreateSpecificAuraSettings(AuraContainer, unit, "Custom")
         elseif AuraTab == "PrivateAuras" and unit == "player" then
             CreatePrivateAuraSettings(AuraContainer)
         end
@@ -2962,7 +3036,9 @@ local function CreateAuraSettings(containerParent, unit)
     AuraContainerTabGroup:SetLayout("Flow")
     AuraContainerTabGroup:SetFullWidth(true)
     if unit == "player" then
-        AuraContainerTabGroup:SetTabs({ { text = "Buffs", value = "Buffs"}, { text = "Debuffs", value = "Debuffs"}, { text = "Private Auras", value = "PrivateAuras"}, })
+        AuraContainerTabGroup:SetTabs({ { text = "Buffs", value = "Buffs"}, { text = "Debuffs", value = "Debuffs"}, { text = "Custom", value = "Custom"}, { text = "Private Auras", value = "PrivateAuras"}, })
+    elseif AurasDB.Custom then
+        AuraContainerTabGroup:SetTabs({ { text = "Buffs", value = "Buffs"}, { text = "Debuffs", value = "Debuffs"}, { text = "Custom", value = "Custom"}, })
     else
         AuraContainerTabGroup:SetTabs({ { text = "Buffs", value = "Buffs"}, { text = "Debuffs", value = "Debuffs"}, })
     end
@@ -3461,6 +3537,7 @@ local function CreateProfileSettings(containerParent)
             specProfilesList[i]:SetValue(UUF.db:GetDualSpecProfile(i))
         end
         SelectProfileDropdown:SetValue(UUF.db:GetCurrentProfile())
+        GlobalProfileDropdown:SetValue((UUF.db.global.GlobalProfile and UUF.db.global.GlobalProfile ~= "" and UUF.db.global.GlobalProfile) or (UUF.db.global.GlobalProfileName and UUF.db.global.GlobalProfileName ~= "" and UUF.db.global.GlobalProfileName) or "Default")
         CopyFromProfileDropdown:SetValue(nil)
         DeleteProfileDropdown:SetValue(nil)
         if not next(profilesToDelete) then
@@ -3539,14 +3616,14 @@ local function CreateProfileSettings(containerParent)
     UseGlobalProfileToggle:SetLabel("Use Global Profile Settings")
     UseGlobalProfileToggle:SetValue(UUF.db.global.UseGlobalProfile)
     UseGlobalProfileToggle:SetRelativeWidth(0.5)
-    UseGlobalProfileToggle:SetCallback("OnValueChanged", function(_, _, value) RefreshProfiles() UUF.db.global.UseGlobalProfile = value if value and UUF.db.global.GlobalProfile and UUF.db.global.GlobalProfile ~= "" then UUF.db:SetProfile(UUF.db.global.GlobalProfile) UUF:SetUIScale() end GlobalProfileDropdown:SetDisabled(not value) for _, child in ipairs(ProfileContainer.children) do if child ~= UseGlobalProfileToggle and child ~= GlobalProfileDropdown then GUIWidgets.DeepDisable(child, value) end end UUF:UpdateAllUnitFrames() RefreshProfiles() end)
+    UseGlobalProfileToggle:SetCallback("OnValueChanged", function(_, _, value) RefreshProfiles() UUF.db.global.UseGlobalProfile = value UUF.db.global.GlobalProfile = (UUF.db.global.GlobalProfile and UUF.db.global.GlobalProfile ~= "" and UUF.db.global.GlobalProfile) or (UUF.db.global.GlobalProfileName and UUF.db.global.GlobalProfileName ~= "" and UUF.db.global.GlobalProfileName) or "Default" if value then UUF.db:SetProfile(UUF.db.global.GlobalProfile) UUF:SetUIScale() end GlobalProfileDropdown:SetDisabled(not value) for _, child in ipairs(ProfileContainer.children) do if child ~= UseGlobalProfileToggle and child ~= GlobalProfileDropdown then GUIWidgets.DeepDisable(child, value) end end UUF:UpdateAllUnitFrames() RefreshProfiles() end)
     ProfileContainer:AddChild(UseGlobalProfileToggle)
 
     GlobalProfileDropdown = AG:Create("Dropdown")
     GlobalProfileDropdown:SetLabel("Global Profile...")
     GlobalProfileDropdown:SetRelativeWidth(0.5)
     GlobalProfileDropdown:SetList(profileKeys)
-    GlobalProfileDropdown:SetValue(UUF.db.global.GlobalProfile)
+    GlobalProfileDropdown:SetValue((UUF.db.global.GlobalProfile and UUF.db.global.GlobalProfile ~= "" and UUF.db.global.GlobalProfile) or (UUF.db.global.GlobalProfileName and UUF.db.global.GlobalProfileName ~= "" and UUF.db.global.GlobalProfileName) or "Default")
     GlobalProfileDropdown:SetCallback("OnValueChanged", function(_, _, value) UUF.db:SetProfile(value) UUF.db.global.GlobalProfile = value UUF:SetUIScale() UUF:UpdateAllUnitFrames() RefreshProfiles() end)
     ProfileContainer:AddChild(GlobalProfileDropdown)
 

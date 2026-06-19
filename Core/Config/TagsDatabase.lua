@@ -53,6 +53,7 @@ local Tags = {
     ["name:target"] = "UNIT_NAME_UPDATE UNIT_TARGET",
     ["name:target:colour"] = "UNIT_NAME_UPDATE UNIT_TARGET",
 
+    ["reactioncolour"] = "UNIT_FACTION UNIT_NAME_UPDATE",
 }
 
 for i = 1, 25 do
@@ -440,6 +441,16 @@ oUF.Tags.Methods["resetcolor"] = function(unit)
     return "|r"
 end
 
+oUF.Tags.Methods["reactioncolour"] = function(unit)
+    local unitReaction = UnitReaction(unit, "player")
+    local reactionColour = unitReaction and UUF.db.profile.General.Colours.Reaction[unitReaction]
+    if reactionColour then
+        local reactionColourR, reactionColourG, reactionColourB = unpack(reactionColour)
+        return string.format("|cff%02x%02x%02x", reactionColourR * 255, reactionColourG * 255, reactionColourB * 255)
+    end
+    return "|cFFFFFFFF"
+end
+
 local function ShortenUnitName(unit, maxChars)
     if not unit or not UnitExists(unit) then return "" end
     local unitName = UnitName(unit) or ""
@@ -689,6 +700,7 @@ local MiscTags = {
         ["level"] = "Unit Level",
         ["powercolor"] = "Unit Power Colour - Prefix",
         ["raidcolor"] = "Unit Class Colour - Prefix",
+        ["reactioncolour"] = "Unit Reaction Colour - Prefix",
         ["class"] = "Unit Class",
         ["resetcolor"] = "Resets Colour Prefix",
     },
@@ -700,6 +712,7 @@ local MiscTags = {
         "level",
         "powercolor",
         "raidcolor",
+        "reactioncolour",
         "class",
         "resetcolor",
     }

@@ -1,4 +1,6 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/">
+	<Script file="auras.lua"/>
 	<Script file="classificationindicator.lua"/>
+	<Script file="customauras.lua"/>
 	<Script file="questindicator.lua"/>
 </Ui>
