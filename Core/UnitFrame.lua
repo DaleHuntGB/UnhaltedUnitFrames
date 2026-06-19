@@ -1,5 +1,8 @@
 local _, UUF = ...
 local oUF = UUF.oUF
+local partyUpdateEventFrame = CreateFrame("Frame")
+partyUpdateEventFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
+partyUpdateEventFrame:SetScript("OnEvent", function() if UUF.PARTY_UPDATE_PENDING then UUF:UpdatePartyFrames() end end)
 
 local function ApplyScripts(unitFrame)
     unitFrame:RegisterForClicks("AnyUp")
@@ -16,18 +19,20 @@ function UUF:CreateUnitFrame(unitFrame, unit)
     local isFocus = unit == "focus"
     local isTargetTarget = unit == "targettarget"
     local isFocusTarget = unit == "focustarget"
+    local isParty = UUF:GetNormalizedUnit(unit) == "party"
 
     UUF:CreateUnitContainer(unitFrame, unit)
-    if not isTargetTarget and not isFocusTarget then UUF:CreateUnitCastBar(unitFrame, unit) end
+    if not isTargetTarget and not isFocusTarget and not isParty then UUF:CreateUnitCastBar(unitFrame, unit) end
     UUF:CreateUnitHealthBar(unitFrame, unit)
-    if isPlayer or isTarget or isFocus then UUF:CreateUnitDispelHighlight(unitFrame, unit) end
+    if isPlayer or isTarget or isFocus or isParty then UUF:CreateUnitDispelHighlight(unitFrame, unit) end
     UUF:CreateUnitHealPrediction(unitFrame, unit)
-    if not isTargetTarget and not isFocusTarget then UUF:CreateUnitPortrait(unitFrame, unit) end
+    if not isTargetTarget and not isFocusTarget and not isParty then UUF:CreateUnitPortrait(unitFrame, unit) end
     UUF:CreateUnitPowerBar(unitFrame, unit)
     if isPlayer then UUF:CreateUnitAlternativePowerBar(unitFrame, unit) end
     if isPlayer then UUF:CreateUnitSecondaryPowerBar(unitFrame, unit) end
     UUF:CreateUnitRaidTargetMarker(unitFrame, unit)
-    if isPlayer or isTarget then UUF:CreateUnitLeaderAssistantIndicator(unitFrame, unit) end
+    if isPlayer or isTarget or isParty then UUF:CreateUnitLeaderAssistantIndicator(unitFrame, unit) end
+    if isParty then UUF:CreateUnitRoleIndicator(unitFrame, unit) end
     if isPlayer or isTarget then UUF:CreateUnitCombatIndicator(unitFrame, unit) end
     if isPlayer then UUF:CreateUnitRestingIndicator(unitFrame, unit) end
     if isPlayer then UUF:CreateUnitPvPIndicator(unitFrame, unit) end
@@ -67,10 +72,43 @@ function UUF:SpawnUnitFrame(unit)
     end
     local FrameDB = UnitDB.Frame
 
-    oUF:RegisterStyle(UUF:FetchFrameName(unit), function(unitFrame) UUF:CreateUnitFrame(unitFrame, unit) end)
+    if unit == "party" then
+        oUF:RegisterStyle(UUF:FetchFrameName(unit), function(unitFrame)
+            local partyIndex = tonumber(unitFrame:GetName():match("UnitButton(%d+)$")) or #UUF.PARTY_FRAMES + 1
+            local partyUnit = "party" .. partyIndex
+            UUF:CreateUnitFrame(unitFrame, partyUnit)
+            UUF.PARTY_FRAMES[partyIndex] = unitFrame
+            unitFrame:SetFrameStrata(FrameDB.FrameStrata)
+            UUF:RegisterDispelHighlightEvents(unitFrame, partyUnit)
+            UUF:RegisterTargetGlowIndicatorFrame(unitFrame, partyUnit)
+            UUF:RegisterRangeFrame(unitFrame, partyUnit)
+        end)
+    else
+        oUF:RegisterStyle(UUF:FetchFrameName(unit), function(unitFrame) UUF:CreateUnitFrame(unitFrame, unit) end)
+    end
     oUF:SetActiveStyle(UUF:FetchFrameName(unit))
 
-    if unit == "boss" then
+    if unit == "party" then
+        local point = FrameDB.GrowthDirection == "UP" and "BOTTOM" or "TOP"
+        local offset = FrameDB.GrowthDirection == "UP" and FrameDB.Layout[5] or -FrameDB.Layout[5]
+        local headerAttributes = {
+            showParty = true,
+            showPlayer = FrameDB.ShowPlayer,
+            showSolo = false,
+            sortMethod = "INDEX",
+            point = point,
+            xOffset = 0,
+            yOffset = offset,
+            ["oUF-initialConfigFunction"] = ("self:SetWidth(%s); self:SetHeight(%s)"):format(FrameDB.Width, FrameDB.Height),
+        }
+        if FrameDB.SortBy == "ROLE" then
+            headerAttributes.groupBy = "ASSIGNEDROLE"
+            headerAttributes.groupingOrder = table.concat(FrameDB.RoleOrder, ",") .. ",NONE"
+        end
+        UUF.PARTY = oUF:SpawnHeader(UUF:FetchFrameName(unit), nil, headerAttributes)
+        UUF.PARTY:SetPoint(FrameDB.Layout[1], UIParent, FrameDB.Layout[2], FrameDB.Layout[3], FrameDB.Layout[4])
+        UUF.PARTY:SetVisibility("party")
+    elseif unit == "boss" then
         for i = 1, UUF.MAX_BOSS_FRAMES do
             UUF[unit:upper() .. i] = oUF:Spawn(unit .. i, UUF:FetchFrameName(unit .. i))
             UUF[unit:upper() .. i]:SetSize(FrameDB.Width, FrameDB.Height)
@@ -96,12 +134,14 @@ function UUF:SpawnUnitFrame(unit)
         UUF[unit:upper()]:SetPoint(FrameDB.Layout[1], parentFrame, FrameDB.Layout[2], FrameDB.Layout[3], FrameDB.Layout[4])
         UUF[unit:upper()]:SetSize(FrameDB.Width, FrameDB.Height)
     end
-    if unit ~= "player" then UUF:RegisterRangeFrame(UUF:FetchFrameName(unit), unit) end
+    if unit ~= "player" and unit ~= "party" then UUF:RegisterRangeFrame(UUF:FetchFrameName(unit), unit) end
 	UUF:CreateMover(unit)
 
     if UnitDB.Enabled then
-        RegisterUnitWatch(UUF[unit:upper()])
-        if unit == "boss" then
+        if unit ~= "party" then RegisterUnitWatch(UUF[unit:upper()]) end
+        if unit == "party" then
+            UUF.PARTY:Show()
+        elseif unit == "boss" then
             for i = 1, UUF.MAX_BOSS_FRAMES do
                 UUF[unit:upper() .. i]:Show()
             end
@@ -109,8 +149,10 @@ function UUF:SpawnUnitFrame(unit)
             UUF[unit:upper()]:Show()
         end
     else
-        UnregisterUnitWatch(UUF[unit:upper()])
-        if unit == "boss" then
+        if unit ~= "party" then UnregisterUnitWatch(UUF[unit:upper()]) end
+        if unit == "party" then
+            UUF.PARTY:Hide()
+        elseif unit == "boss" then
             for i = 1, UUF.MAX_BOSS_FRAMES do
                 UUF[unit:upper() .. i]:Hide()
             end
@@ -128,16 +170,18 @@ function UUF:UpdateUnitFrame(unitFrame, unit)
     local isTarget = unit == "target"
     local isTargetTarget = unit == "targettarget"
     local isFocusTarget = unit == "focustarget"
+    local isParty = UUF:GetNormalizedUnit(unit) == "party"
 
-    if not isTargetTarget and not isFocusTarget then UUF:UpdateUnitCastBar(unitFrame, unit) end
+    if not isTargetTarget and not isFocusTarget and not isParty then UUF:UpdateUnitCastBar(unitFrame, unit) end
     UUF:UpdateUnitHealthBar(unitFrame, unit)
     UUF:UpdateUnitHealPrediction(unitFrame, unit)
-    if not isTargetTarget and not isFocusTarget then UUF:UpdateUnitPortrait(unitFrame, unit) end
+    if not isTargetTarget and not isFocusTarget and not isParty then UUF:UpdateUnitPortrait(unitFrame, unit) end
     UUF:UpdateUnitPowerBar(unitFrame, unit)
     if isPlayer then UUF:UpdateUnitAlternativePowerBar(unitFrame, unit) end
     if isPlayer then UUF:UpdateUnitSecondaryPowerBar(unitFrame, unit) end
     UUF:UpdateUnitRaidTargetMarker(unitFrame, unit)
-    if isPlayer or isTarget then UUF:UpdateUnitLeaderAssistantIndicator(unitFrame, unit) end
+    if isPlayer or isTarget or isParty then UUF:UpdateUnitLeaderAssistantIndicator(unitFrame, unit) end
+    if isParty then UUF:UpdateUnitRoleIndicator(unitFrame, unit) end
     if isPlayer or isTarget then UUF:UpdateUnitCombatIndicator(unitFrame, unit) end
     if isPlayer then UUF:UpdateUnitRestingIndicator(unitFrame, unit) end
     if isPlayer then UUF:UpdateUnitPvPIndicator(unitFrame, unit) end
@@ -159,9 +203,27 @@ function UUF:UpdateBossFrames()
     UUF:LayoutBossFrames()
 end
 
+function UUF:UpdatePartyFrames()
+	local FrameDB = UUF.db.profile.Units.party.Frame
+	if UUF.PARTY and InCombatLockdown() then UUF.PARTY_UPDATE_PENDING = true return end
+	if UUF.PARTY then
+		local point = FrameDB.GrowthDirection == "UP" and "BOTTOM" or "TOP"
+		UUF.PARTY:ClearAllPoints()
+		UUF.PARTY:SetPoint(FrameDB.Layout[1], UIParent, FrameDB.Layout[2], FrameDB.Layout[3], FrameDB.Layout[4])
+		UUF.PARTY:SetAttribute("point", point)
+		UUF.PARTY:SetAttribute("yOffset", FrameDB.GrowthDirection == "UP" and FrameDB.Layout[5] or -FrameDB.Layout[5])
+		UUF.PARTY:SetAttribute("showPlayer", FrameDB.ShowPlayer)
+		UUF.PARTY:SetAttribute("groupBy", FrameDB.SortBy == "ROLE" and "ASSIGNEDROLE" or nil)
+		UUF.PARTY:SetAttribute("groupingOrder", FrameDB.SortBy == "ROLE" and table.concat(FrameDB.RoleOrder, ",") .. ",NONE" or nil)
+		UUF.PARTY_UPDATE_PENDING = false
+	end
+	for partyIndex, partyFrame in pairs(UUF.PARTY_FRAMES) do UUF:UpdateUnitFrame(partyFrame, "party" .. partyIndex) end
+end
+
 function UUF:UpdateAllUnitFrames()
 	for _, unit in ipairs({"player", "target", "targettarget", "focus", "focustarget", "pet"}) do
 		if UUF[unit:upper()] then UUF:UpdateUnitFrame(UUF[unit:upper()], unit) end
 	end
 	UUF:UpdateBossFrames()
+	UUF:UpdatePartyFrames()
 end

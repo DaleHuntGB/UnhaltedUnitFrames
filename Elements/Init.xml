@@ -20,6 +20,7 @@
 	<Script file="Indicators/PvP.lua"/>
 	<Script file="Indicators/Quest.lua"/>
 	<Script file="Indicators/RaidTargetMarker.lua"/>
+	<Script file="Indicators/RoleIndicator.lua"/>
 	<Script file="Indicators/Resting.lua"/>
 	<Script file="Indicators/TargetGlow.lua"/>
 	<Script file="Indicators/Totems.lua"/>

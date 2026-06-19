@@ -64,6 +64,12 @@ function UUF:UpdateUnitTags()
                     end
                 end
             end
+        elseif unit == "party" then
+            for partyIndex, partyFrame in pairs(UUF.PARTY_FRAMES) do
+                for tagName in pairs(UnitDB.Tags) do
+                    UUF:UpdateUnitTag(partyFrame, "party" .. partyIndex, tagName)
+                end
+            end
         else
             local frame = UUF[unit:upper()]
             if frame then
@@ -74,5 +80,4 @@ function UUF:UpdateUnitTags()
         end
     end
 end
-
 

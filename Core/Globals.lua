@@ -5,6 +5,7 @@ UUF.AURA_TEST_MODE = false
 UUF.CASTBAR_TEST_MODE = false
 UUF.BOSS_TEST_MODE = false
 UUF.BOSS_FRAMES = {}
+UUF.PARTY_FRAMES = {}
 UUF.MAX_BOSS_FRAMES = 5
 local CooldownDurationFormatter = C_StringUtil.CreateNumericRuleFormatter()
 
@@ -104,9 +105,11 @@ function UUF:FetchFrameName(unit)
         ["focustarget"] = "UUF_FocusTarget",
         ["pet"] = "UUF_Pet",
         ["boss"] = "UUF_Boss",
+        ["party"] = "UUF_Party",
     }
     if not unit then return end
     if unit:match("^boss(%d+)$") then local unitID = unit:match("^boss(%d+)$") return "UUF_Boss" .. unitID end
+    if unit:match("^party(%d+)$") then local unitID = unit:match("^party(%d+)$") return "UUF_Party" .. unitID end
     return UnitToFrame[unit]
 end
 
@@ -350,7 +353,7 @@ function UUF:GetReactionColour(reaction)
 end
 
 function UUF:GetNormalizedUnit(unit)
-    local normalizedUnit = unit == "vehicle" and "player" or unit:match("^boss%d+$") and "boss" or unit
+    local normalizedUnit = unit == "vehicle" and "player" or unit:match("^boss%d+$") and "boss" or unit:match("^party%d*$") and "party" or unit
     return normalizedUnit
 end
 

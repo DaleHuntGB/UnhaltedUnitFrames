@@ -478,6 +478,15 @@ end
 function UUF:UpdateUnitAurasStrata(unit)
     if not unit then return end
     local normalizedUnit = UUF:GetNormalizedUnit(unit)
+    if unit == "party" then
+        local unitDB = UUF.db.profile.Units.party
+        for _, partyFrame in pairs(UUF.PARTY_FRAMES) do
+            if partyFrame.BuffContainer then partyFrame.BuffContainer:SetFrameStrata(unitDB.Auras.FrameStrata) end
+            if partyFrame.DebuffContainer then partyFrame.DebuffContainer:SetFrameStrata(unitDB.Auras.FrameStrata) end
+            if partyFrame.CustomAuraContainer then partyFrame.CustomAuraContainer:SetFrameStrata(unitDB.Auras.FrameStrata) end
+        end
+        return
+    end
     local unitFrame = UUF[unit:upper()]
     local unitDB = UUF.db.profile.Units[normalizedUnit]
     if not unitFrame or not unitDB or not unitDB.Auras then return end
