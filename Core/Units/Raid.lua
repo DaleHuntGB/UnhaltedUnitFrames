@@ -15,7 +15,7 @@ function UUF:GetRaidGroupFilter()
 	local groupFilter = #groupingOrder > 0 and table.concat(groupingOrder, ",") or "0"
 	for groupIndex = #groupingOrder + 1, UUF.MAX_RAID_GROUPS do groupingOrder[groupIndex] = 0 end
 	FrameDB.GroupingOrder = groupingOrder
-	return groupFilter
+	return groupFilter, groupingOrder, selectedGroups
 end
 
 function UUF:SpawnRaidFrames()
@@ -24,13 +24,13 @@ function UUF:SpawnRaidFrames()
 	if UnitDB.ForceHideBlizzard then oUF:DisableBlizzard("raid") end
 	local FrameDB = UnitDB.Frame
 	if FrameDB.GroupBy ~= "INDEX" and FrameDB.GroupBy ~= "GROUP" then FrameDB.GroupBy = "GROUP" end
-	local groupFilter = UUF:GetRaidGroupFilter()
 
+	local raidFrameIndex = 0
 	oUF:RegisterStyle(UUF:FetchFrameName("raid"), function(unitFrame)
-		local raidIndex = tonumber(unitFrame:GetName():match("UnitButton(%d+)$")) or #UUF.RAID_FRAMES + 1
-		local raidUnit = "raid" .. raidIndex
+		raidFrameIndex = raidFrameIndex + 1
+		local raidUnit = "raid" .. raidFrameIndex
 		UUF:CreateUnitFrame(unitFrame, raidUnit)
-		UUF.RAID_FRAMES[raidIndex] = unitFrame
+		UUF.RAID_FRAMES[raidFrameIndex] = unitFrame
 		unitFrame:SetFrameStrata(FrameDB.FrameStrata)
 		UUF:RegisterDispelHighlightEvents(unitFrame, raidUnit)
 		UUF:RegisterTargetGlowIndicatorFrame(unitFrame, raidUnit)
@@ -38,34 +38,28 @@ function UUF:SpawnRaidFrames()
 	end)
 	oUF:SetActiveStyle(UUF:FetchFrameName("raid"))
 
-	local headerAttributes = {
-		showRaid = true,
-		showParty = false,
-		showPlayer = true,
-		showSolo = false,
-		groupFilter = groupFilter,
-		strictFiltering = true,
-		sortMethod = "INDEX",
-		point = FrameDB.ColumnDirection == "UP" and "BOTTOM" or "TOP",
-		xOffset = 0,
-		yOffset = FrameDB.ColumnDirection == "UP" and FrameDB.Layout[5] or -FrameDB.Layout[5],
-		columnAnchorPoint = FrameDB.RowDirection == "LEFT" and "RIGHT" or "LEFT",
-		columnSpacing = FrameDB.Layout[5],
-		unitsPerColumn = FrameDB.UnitsPerColumn,
-		maxColumns = math.ceil(UUF.MAX_RAID_FRAMES / FrameDB.UnitsPerColumn),
-		["oUF-initialConfigFunction"] = ("self:SetWidth(%s); self:SetHeight(%s)"):format(FrameDB.Width, FrameDB.Height),
-	}
-	if FrameDB.GroupBy == "GROUP" then
-		headerAttributes.groupBy = "GROUP"
-		headerAttributes.groupingOrder = groupFilter
+	for groupIndex = 1, UUF.MAX_RAID_GROUPS do
+		local raidHeader = oUF:SpawnHeader(UUF:FetchFrameName("raid") .. "Group" .. groupIndex, nil, {
+			showRaid = true,
+			showParty = false,
+			showPlayer = true,
+			showSolo = false,
+			groupFilter = tostring(groupIndex),
+			sortMethod = "INDEX",
+			point = FrameDB.ColumnDirection == "UP" and "BOTTOM" or "TOP",
+			xOffset = 0,
+			yOffset = FrameDB.ColumnDirection == "UP" and FrameDB.Layout[5] or -FrameDB.Layout[5],
+			unitsPerColumn = UUF.RAID_GROUP_SIZE,
+			maxColumns = 1,
+			["oUF-initialConfigFunction"] = ("self:SetWidth(%s); self:SetHeight(%s)"):format(FrameDB.Width, FrameDB.Height),
+		})
+		raidHeader:SetAttribute("startingIndex", -(UUF.RAID_GROUP_SIZE - 1))
+		raidHeader:Show()
+		raidHeader:SetAttribute("startingIndex", 1)
+		UUF.RAID_HEADERS[groupIndex] = raidHeader
 	end
 
-	UUF.RAID = oUF:SpawnHeader(UUF:FetchFrameName("raid"), nil, headerAttributes)
-	UUF.RAID:SetPoint(FrameDB.Layout[1], UIParent, FrameDB.Layout[2], FrameDB.Layout[3], FrameDB.Layout[4])
-	UUF.RAID:SetAttribute("startingIndex", -(UUF.MAX_RAID_FRAMES - 1))
-	UUF.RAID:Show()
-	UUF.RAID:SetAttribute("startingIndex", 1)
-	UUF.RAID:SetVisibility(UnitDB.Enabled and "raid" or "custom hide")
+	UUF.RAID = UUF.RAID_CONTAINER
 	UUF:CreateMover("raid")
 
 	oUF:RegisterStyle(UUF:FetchFrameName("raid") .. "Test", function(unitFrame)
@@ -88,41 +82,57 @@ function UUF:SpawnRaidFrames()
 		UUF.RAID_TEST_FRAMES[raidIndex] = raidFrame
 	end
 	oUF.DisableBlizzard = DisableBlizzard
+	UUF:UpdateRaidFrames()
 	return UUF.RAID
 end
 
 function UUF:UpdateRaidFrames()
 	local UnitDB = UUF.db.profile.Units.raid
-	if not UnitDB or not UUF.RAID or InCombatLockdown() then return end
+	if not UnitDB or #UUF.RAID_HEADERS == 0 or InCombatLockdown() then return end
 	local FrameDB = UnitDB.Frame
 	if FrameDB.GroupBy ~= "INDEX" and FrameDB.GroupBy ~= "GROUP" then FrameDB.GroupBy = "GROUP" end
 	for raidIndex, raidFrame in pairs(UUF.RAID_FRAMES) do UUF:UpdateUnitFrame(raidFrame, raidFrame.unit or "raid" .. raidIndex) end
 
-	UUF.RAID:ClearAllPoints()
-	UUF.RAID:SetPoint(FrameDB.Layout[1], UIParent, FrameDB.Layout[2], FrameDB.Layout[3], FrameDB.Layout[4])
-	local groupFilter = UUF:GetRaidGroupFilter()
+	local _, groupingOrder, selectedGroups = UUF:GetRaidGroupFilter()
+	local displayedGroups = {}
+	if FrameDB.GroupBy == "GROUP" then
+		for _, groupIndex in ipairs(groupingOrder) do
+			if groupIndex ~= 0 then displayedGroups[#displayedGroups + 1] = groupIndex end
+		end
+	else
+		for groupIndex = 1, UUF.MAX_RAID_GROUPS do
+			if selectedGroups[groupIndex] then displayedGroups[#displayedGroups + 1] = groupIndex end
+		end
+	end
+
+	local containerWidth = #displayedGroups * FrameDB.Width + math.max(#displayedGroups - 1, 0) * FrameDB.Layout[5]
+	local containerHeight = UUF.RAID_GROUP_SIZE * FrameDB.Height + (UUF.RAID_GROUP_SIZE - 1) * FrameDB.Layout[5]
+	UUF.RAID_CONTAINER:ClearAllPoints()
+	UUF.RAID_CONTAINER:SetSize(math.max(containerWidth, 1), math.max(containerHeight, 1))
+	UUF.RAID_CONTAINER:SetPoint(FrameDB.Layout[1], UIParent, FrameDB.Layout[2], FrameDB.Layout[3], FrameDB.Layout[4])
+
 	local point = FrameDB.ColumnDirection == "UP" and "BOTTOM" or "TOP"
-	local columnAnchorPoint = FrameDB.RowDirection == "LEFT" and "RIGHT" or "LEFT"
 	local yOffset = FrameDB.ColumnDirection == "UP" and FrameDB.Layout[5] or -FrameDB.Layout[5]
 	local initialConfigFunction = ("self:SetWidth(%s); self:SetHeight(%s)"):format(FrameDB.Width, FrameDB.Height)
-	if UUF.RAID:GetAttribute("point") ~= point then UUF.RAID:SetAttribute("point", point) end
-	if UUF.RAID:GetAttribute("yOffset") ~= yOffset then UUF.RAID:SetAttribute("yOffset", yOffset) end
-	if UUF.RAID:GetAttribute("columnAnchorPoint") ~= columnAnchorPoint then UUF.RAID:SetAttribute("columnAnchorPoint", columnAnchorPoint) end
-	if UUF.RAID:GetAttribute("columnSpacing") ~= FrameDB.Layout[5] then UUF.RAID:SetAttribute("columnSpacing", FrameDB.Layout[5]) end
-	if UUF.RAID:GetAttribute("unitsPerColumn") ~= FrameDB.UnitsPerColumn then UUF.RAID:SetAttribute("unitsPerColumn", FrameDB.UnitsPerColumn) end
-	local maxColumns = math.ceil(UUF.MAX_RAID_FRAMES / FrameDB.UnitsPerColumn)
-	if UUF.RAID:GetAttribute("maxColumns") ~= maxColumns then UUF.RAID:SetAttribute("maxColumns", maxColumns) end
-	if UUF.RAID:GetAttribute("oUF-initialConfigFunction") ~= initialConfigFunction then UUF.RAID:SetAttribute("oUF-initialConfigFunction", initialConfigFunction) end
-	if UUF.RAID:GetAttribute("sortMethod") ~= "INDEX" then UUF.RAID:SetAttribute("sortMethod", "INDEX") end
-
-	if FrameDB.GroupBy == "GROUP" then
-		if UUF.RAID:GetAttribute("groupingOrder") ~= groupFilter then UUF.RAID:SetAttribute("groupingOrder", groupFilter) end
-		if UUF.RAID:GetAttribute("groupBy") ~= "GROUP" then UUF.RAID:SetAttribute("groupBy", "GROUP") end
-	else
-		if UUF.RAID:GetAttribute("groupBy") then UUF.RAID:SetAttribute("groupBy", nil) end
-		if UUF.RAID:GetAttribute("groupingOrder") then UUF.RAID:SetAttribute("groupingOrder", nil) end
+	local frameAnchor = FrameDB.ColumnDirection == "UP" and (FrameDB.RowDirection == "LEFT" and "BOTTOMRIGHT" or "BOTTOMLEFT") or FrameDB.RowDirection == "LEFT" and "TOPRIGHT" or "TOPLEFT"
+	for displayIndex, groupIndex in ipairs(displayedGroups) do
+		local raidHeader = UUF.RAID_HEADERS[groupIndex]
+		local offsetX = (displayIndex - 1) * (FrameDB.Width + FrameDB.Layout[5])
+		if FrameDB.RowDirection == "LEFT" then offsetX = -offsetX end
+		raidHeader:ClearAllPoints()
+		raidHeader:SetPoint(frameAnchor, UUF.RAID_CONTAINER, frameAnchor, offsetX, 0)
 	end
-	if UUF.RAID:GetAttribute("groupFilter") ~= groupFilter then UUF.RAID:SetAttribute("groupFilter", groupFilter) end
-	UUF.RAID:SetVisibility(UnitDB.Enabled and "raid" or "custom hide")
+
+	for groupIndex, raidHeader in ipairs(UUF.RAID_HEADERS) do
+		if raidHeader:GetAttribute("point") ~= point then raidHeader:SetAttribute("point", point) end
+		if raidHeader:GetAttribute("yOffset") ~= yOffset then raidHeader:SetAttribute("yOffset", yOffset) end
+		if raidHeader:GetAttribute("unitsPerColumn") ~= UUF.RAID_GROUP_SIZE then raidHeader:SetAttribute("unitsPerColumn", UUF.RAID_GROUP_SIZE) end
+		if raidHeader:GetAttribute("maxColumns") ~= 1 then raidHeader:SetAttribute("maxColumns", 1) end
+		if raidHeader:GetAttribute("oUF-initialConfigFunction") ~= initialConfigFunction then raidHeader:SetAttribute("oUF-initialConfigFunction", initialConfigFunction) end
+		if raidHeader:GetAttribute("sortMethod") ~= "INDEX" then raidHeader:SetAttribute("sortMethod", "INDEX") end
+		if raidHeader:GetAttribute("groupFilter") ~= tostring(groupIndex) then raidHeader:SetAttribute("groupFilter", tostring(groupIndex)) end
+		if raidHeader:GetAttribute("strictFiltering") then raidHeader:SetAttribute("strictFiltering", nil) end
+		raidHeader:SetVisibility(UnitDB.Enabled and selectedGroups[groupIndex] and "raid" or "custom hide")
+	end
 	UUF:CreateTestGroupFrames("raid")
 end

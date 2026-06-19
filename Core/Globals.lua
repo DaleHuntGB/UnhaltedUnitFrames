@@ -9,14 +9,17 @@ UUF.RAID_TEST_MODE = false
 UUF.BOSS_FRAMES = {}
 UUF.PARTY_FRAMES = {}
 UUF.RAID_FRAMES = {}
+UUF.RAID_HEADERS = {}
 UUF.PARTY_TEST_FRAMES = {}
 UUF.RAID_TEST_FRAMES = {}
 UUF.PARTY_TEST_CONTAINER = CreateFrame("Frame", "UUF_PartyTestContainer", UIParent)
+UUF.RAID_CONTAINER = CreateFrame("Frame", "UUF_RaidContainer", UIParent)
 UUF.RAID_TEST_CONTAINER = CreateFrame("Frame", "UUF_RaidTestContainer", UIParent)
 UUF.MAX_BOSS_FRAMES = 5
 UUF.MAX_PARTY_FRAMES = 5
 UUF.MAX_RAID_FRAMES = 40
 UUF.MAX_RAID_GROUPS = 8
+UUF.RAID_GROUP_SIZE = 5
 local CooldownDurationFormatter = C_StringUtil.CreateNumericRuleFormatter()
 
 UUF.LSM = LibStub("LibSharedMedia-3.0")

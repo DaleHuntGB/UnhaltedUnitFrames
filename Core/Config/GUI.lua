@@ -659,14 +659,6 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
 		ColumnDirectionDropdown:SetRelativeWidth(0.33)
 		ColumnDirectionDropdown:SetCallback("OnValueChanged", function(_, _, value) FrameDB.ColumnDirection = value updateCallback() end)
 		LayoutContainer:AddChild(ColumnDirectionDropdown)
-
-		local UnitsPerColumnSlider = AG:Create("Slider")
-		UnitsPerColumnSlider:SetLabel("Units Per Column")
-		UnitsPerColumnSlider:SetValue(FrameDB.UnitsPerColumn)
-		UnitsPerColumnSlider:SetSliderValues(1, UUF.MAX_RAID_FRAMES, 1)
-		UnitsPerColumnSlider:SetRelativeWidth(0.33)
-		UnitsPerColumnSlider:SetCallback("OnValueChanged", function(_, _, value) FrameDB.UnitsPerColumn = value updateCallback() end)
-		LayoutContainer:AddChild(UnitsPerColumnSlider)
 	end
 
     if unit == "party" or unit == "raid" then

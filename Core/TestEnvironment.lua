@@ -1,7 +1,6 @@
 local _, UUF = ...
 local EnvironmenTestData = {}
 local oUF = UUF.oUF
-local RAID_GROUP_SIZE = 5
 
 local GroupRoles = {"TANK", "HEALER", "DAMAGER", "DAMAGER", "DAMAGER"}
 
@@ -77,8 +76,7 @@ function UUF:CreateTestGroupFrames(unit)
 	local FrameDB = UnitDB.Frame
 	local testMode = isParty and UUF.PARTY_TEST_MODE or UUF.RAID_TEST_MODE
 	local testFrames = isParty and UUF.PARTY_TEST_FRAMES or UUF.RAID_TEST_FRAMES
-	local header = isParty and UUF.PARTY or UUF.RAID
-	if not header then return end
+	if (isParty and not UUF.PARTY) or (not isParty and #UUF.RAID_HEADERS == 0) then return end
 
 	if not testMode then
 		for unitIndex, unitFrame in ipairs(testFrames) do
@@ -87,11 +85,20 @@ function UUF:CreateTestGroupFrames(unit)
 			unitFrame:UnregisterAllEvents()
 			unitFrame:Hide()
 		end
-		header:SetVisibility(UnitDB.Enabled and unit or "custom hide")
+		if isParty then
+			UUF.PARTY:SetVisibility(UnitDB.Enabled and unit or "custom hide")
+		else
+			local _, _, selectedGroups = UUF:GetRaidGroupFilter()
+			for groupIndex, raidHeader in ipairs(UUF.RAID_HEADERS) do raidHeader:SetVisibility(UnitDB.Enabled and selectedGroups[groupIndex] and unit or "custom hide") end
+		end
 		return
 	end
 
-	header:SetVisibility("custom hide")
+	if isParty then
+		UUF.PARTY:SetVisibility("custom hide")
+	else
+		for _, raidHeader in ipairs(UUF.RAID_HEADERS) do raidHeader:SetVisibility("custom hide") end
+	end
 	local testIndices = {}
 	if isParty then
 		for unitIndex = 1, FrameDB.ShowPlayer and UUF.MAX_PARTY_FRAMES or UUF.MAX_PARTY_FRAMES - 1 do testIndices[#testIndices + 1] = unitIndex end
@@ -105,11 +112,11 @@ function UUF:CreateTestGroupFrames(unit)
 			for _, groupIndex in ipairs(FrameDB.GroupingOrder) do
 				groupIndex = tonumber(groupIndex)
 				if groupIndex and groupIndex >= 1 and groupIndex <= UUF.MAX_RAID_GROUPS then
-					for groupMemberIndex = 1, RAID_GROUP_SIZE do testIndices[#testIndices + 1] = (groupIndex - 1) * RAID_GROUP_SIZE + groupMemberIndex end
+					for groupMemberIndex = 1, UUF.RAID_GROUP_SIZE do testIndices[#testIndices + 1] = (groupIndex - 1) * UUF.RAID_GROUP_SIZE + groupMemberIndex end
 				end
 			end
 		else
-			for raidIndex = 1, UUF.MAX_RAID_FRAMES do if selectedGroups[math.ceil(raidIndex / RAID_GROUP_SIZE)] then testIndices[#testIndices + 1] = raidIndex end end
+			for raidIndex = 1, UUF.MAX_RAID_FRAMES do if selectedGroups[math.ceil(raidIndex / UUF.RAID_GROUP_SIZE)] then testIndices[#testIndices + 1] = raidIndex end end
 		end
 	end
 
@@ -117,14 +124,14 @@ function UUF:CreateTestGroupFrames(unit)
 		local roleOrder = {}
 		for roleIndex, role in ipairs(FrameDB.RoleOrder) do roleOrder[role] = roleIndex end
 		table.sort(testIndices, function(firstIndex, secondIndex)
-			local firstRole = GroupRoles[(firstIndex - 1) % RAID_GROUP_SIZE + 1]
-			local secondRole = GroupRoles[(secondIndex - 1) % RAID_GROUP_SIZE + 1]
+			local firstRole = GroupRoles[(firstIndex - 1) % UUF.RAID_GROUP_SIZE + 1]
+			local secondRole = GroupRoles[(secondIndex - 1) % UUF.RAID_GROUP_SIZE + 1]
 			return roleOrder[firstRole] == roleOrder[secondRole] and firstIndex < secondIndex or roleOrder[firstRole] < roleOrder[secondRole]
 		end)
 	end
 
 	local testContainer = isParty and UUF.PARTY_TEST_CONTAINER or UUF.RAID_TEST_CONTAINER
-	local unitsPerColumn = isParty and #testIndices or math.max(FrameDB.UnitsPerColumn, 1)
+	local unitsPerColumn = isParty and #testIndices or UUF.RAID_GROUP_SIZE
 	local columnCount = isParty and math.min(#testIndices, 1) or math.ceil(#testIndices / unitsPerColumn)
 	local rowCount = math.min(#testIndices, unitsPerColumn)
 	local containerWidth = columnCount * FrameDB.Width + math.max(columnCount - 1, 0) * FrameDB.Layout[5]
@@ -137,7 +144,7 @@ function UUF:CreateTestGroupFrames(unit)
 	for displayIndex, unitIndex in ipairs(testIndices) do
 		local unitFrame = testFrames[unitIndex]
 		local testData = EnvironmenTestData[(unitIndex - 1) % 10 + 1]
-		local role = GroupRoles[(unitIndex - 1) % RAID_GROUP_SIZE + 1]
+		local role = GroupRoles[(unitIndex - 1) % UUF.RAID_GROUP_SIZE + 1]
 		UUF:UpdateUnitFrame(unitFrame, unit .. "test" .. unitIndex)
 		UUF:CreateTestAuras(unitFrame, unit .. "test" .. unitIndex, true)
 		unitFrame:UnregisterAllEvents()
