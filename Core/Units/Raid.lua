@@ -1,5 +1,18 @@
 local _, UUF = ...
 local oUF = UUF.oUF
+local blizzardRaidFramesDisabled = false
+local blizzardRaidFrames = {}
+
+local function HideBlizzardRaidFrames()
+	for frame in pairs(blizzardRaidFrames) do
+		frame:SetAlpha(0)
+		frame:UnregisterAllEvents()
+		if not InCombatLockdown() then
+			frame:SetScale(0.001)
+			frame:Hide()
+		end
+	end
+end
 
 function UUF:GetRaidGroupFilter()
 	local FrameDB = UUF.db.profile.Units.raid.Frame
@@ -21,7 +34,16 @@ end
 function UUF:SpawnRaidFrames()
 	local UnitDB = UUF.db.profile.Units.raid
 	if not UnitDB then return end
-	if UnitDB.ForceHideBlizzard then oUF:DisableBlizzard("raid") end
+	if UnitDB.ForceHideBlizzard and not blizzardRaidFramesDisabled then
+		if not C_AddOns.IsAddOnLoaded("Blizzard_CompactRaidFrames") then C_AddOns.LoadAddOn("Blizzard_CompactRaidFrames") end
+		if CompactRaidFrameContainer then blizzardRaidFrames[CompactRaidFrameContainer] = true end
+		if CompactRaidFrameManager then blizzardRaidFrames[CompactRaidFrameManager] = true end
+		if CompactRaidFrameManager_UpdateShown then hooksecurefunc("CompactRaidFrameManager_UpdateShown", HideBlizzardRaidFrames) end
+		if CompactRaidFrameManager then CompactRaidFrameManager:HookScript("OnShow", HideBlizzardRaidFrames) end
+		if CompactRaidFrameContainer then CompactRaidFrameContainer:HookScript("OnShow", HideBlizzardRaidFrames) end
+		HideBlizzardRaidFrames()
+		blizzardRaidFramesDisabled = true
+	end
 	local FrameDB = UnitDB.Frame
 	if FrameDB.GroupBy ~= "INDEX" and FrameDB.GroupBy ~= "GROUP" then FrameDB.GroupBy = "GROUP" end
 
