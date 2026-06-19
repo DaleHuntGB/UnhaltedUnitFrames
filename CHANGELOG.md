@@ -8,6 +8,10 @@
 - Fixed the `HealPrediction` error.
 - Added 3D Portraits back (for now).
 - Added 2D Portrait as a fallback for 3D Portraits that are secret.
+- Added Sorting for Auras - `Blizzard`, `Blizzard Reversed`, `Duration` & `Duration Reversed`.
+- Added `Typed` Filter. This will show all debuffs that are `Magic`, `Poison`, `Curse`, `Bleed` or `Disease`.
+- Added `Custom` Aura Container. This allows you to create an additional container per unit which can be used as either `Buffs` or `Debuffs`.
+
 ## V12.0.22
 - Added `OUTLINE, SLUG` to the Font Selection.
 - Fixed the double creation of Absorbs & Heal Absorbs (Thanks Permok).
