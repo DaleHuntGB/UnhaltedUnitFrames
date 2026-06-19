@@ -611,7 +611,7 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
         GrowthDirectionDropdown:SetLabel("Growth Direction")
         GrowthDirectionDropdown:SetValue(FrameDB.GrowthDirection)
         GrowthDirectionDropdown:SetRelativeWidth(0.33)
-        GrowthDirectionDropdown:SetCallback("OnValueChanged", function(_, _, value) FrameDB.GrowthDirection = value updateCallback() end)
+        GrowthDirectionDropdown:SetCallback("OnValueChanged", function(_, _, value) FrameDB.GrowthDirection = value if unit == "party" then UUF:LayoutPartyFrames() else updateCallback() end end)
         LayoutContainer:AddChild(GrowthDirectionDropdown)
     end
 
@@ -625,7 +625,11 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
         SortByDropdown:SetLabel("Sort By")
         SortByDropdown:SetValue(FrameDB.SortBy)
         SortByDropdown:SetRelativeWidth(0.25)
-        SortByDropdown:SetCallback("OnValueChanged", function(_, _, value) FrameDB.SortBy = value GUIWidgets.DeepDisable(RoleOrderContainer, value ~= "ROLE") updateCallback() end)
+        SortByDropdown:SetCallback("OnValueChanged", function(_, _, value)
+			FrameDB.SortBy = value
+			for _, roleOrderDropdown in ipairs(roleOrderDropdowns) do roleOrderDropdown:SetDisabled(value ~= "ROLE") end
+			UUF:UpdatePartyFrames()
+		end)
         LayoutContainer:AddChild(SortByDropdown)
 
         local function CreateRoleOrderDropdown(roleIndex, label)
@@ -644,7 +648,7 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
                     end
                 end
                 FrameDB.RoleOrder[roleIndex] = value
-                updateCallback()
+                UUF:UpdatePartyFrames()
             end)
             roleOrderDropdowns[roleIndex] = RoleOrderDropdown
             LayoutContainer:AddChild(RoleOrderDropdown)
@@ -654,7 +658,7 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
         CreateRoleOrderDropdown(2, "Second Role")
         CreateRoleOrderDropdown(3, "Third Role")
 
-        GUIWidgets.DeepDisable(RoleOrderContainer, FrameDB.SortBy ~= "ROLE")
+        for _, roleOrderDropdown in ipairs(roleOrderDropdowns) do roleOrderDropdown:SetDisabled(FrameDB.SortBy ~= "ROLE") end
     end
 
     local XPosSlider = AG:Create("Slider")

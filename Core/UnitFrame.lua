@@ -1,8 +1,5 @@
 local _, UUF = ...
 local oUF = UUF.oUF
-local partyUpdateEventFrame = CreateFrame("Frame")
-partyUpdateEventFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
-partyUpdateEventFrame:SetScript("OnEvent", function() if UUF.PARTY_UPDATE_PENDING then UUF:UpdatePartyFrames() end end)
 
 local function ApplyScripts(unitFrame)
     unitFrame:RegisterForClicks("AnyUp")
@@ -64,6 +61,23 @@ function UUF:LayoutBossFrames()
     AnchorUtil.VerticalLayout(bossFrames, initialAnchor, Frame.Layout[5])
 end
 
+function UUF:LayoutPartyFrames()
+	local Frame = UUF.db.profile.Units.party.Frame
+	if InCombatLockdown() or #UUF.PARTY_FRAMES == 0 then return end
+	local partyFrames = UUF.PARTY_FRAMES
+	if Frame.GrowthDirection == "UP" then
+		partyFrames = {}
+		for i = #UUF.PARTY_FRAMES, 1, -1 do partyFrames[#partyFrames+1] = UUF.PARTY_FRAMES[i] end
+	end
+	local layoutConfig = UUF.LayoutConfig[Frame.Layout[1]]
+	local frameHeight = partyFrames[1]:GetHeight()
+	local containerHeight = (frameHeight + Frame.Layout[5]) * #partyFrames - Frame.Layout[5]
+	local offsetY = containerHeight * layoutConfig.offsetMultiplier
+	if layoutConfig.isCenter then offsetY = offsetY - (frameHeight / 2) end
+	local initialAnchor = AnchorUtil.CreateAnchor(layoutConfig.anchor, UIParent, Frame.Layout[2], Frame.Layout[3], Frame.Layout[4] + offsetY)
+	AnchorUtil.VerticalLayout(partyFrames, initialAnchor, Frame.Layout[5])
+end
+
 function UUF:SpawnUnitFrame(unit)
     local UnitDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)]
     if not UnitDB or not UnitDB.Enabled then
@@ -102,10 +116,10 @@ function UUF:SpawnUnitFrame(unit)
             ["oUF-initialConfigFunction"] = ("self:SetWidth(%s); self:SetHeight(%s)"):format(FrameDB.Width, FrameDB.Height),
         }
         if FrameDB.SortBy == "ROLE" then
-            headerAttributes.groupBy = "ASSIGNEDROLE"
             headerAttributes.groupingOrder = table.concat(FrameDB.RoleOrder, ",") .. ",NONE"
         end
         UUF.PARTY = oUF:SpawnHeader(UUF:FetchFrameName(unit), nil, headerAttributes)
+        if FrameDB.SortBy == "ROLE" then UUF.PARTY:SetAttribute("groupBy", "ASSIGNEDROLE") end
         UUF.PARTY:SetPoint(FrameDB.Layout[1], UIParent, FrameDB.Layout[2], FrameDB.Layout[3], FrameDB.Layout[4])
         UUF.PARTY:SetVisibility("party")
     elseif unit == "boss" then
@@ -141,6 +155,7 @@ function UUF:SpawnUnitFrame(unit)
         if unit ~= "party" then RegisterUnitWatch(UUF[unit:upper()]) end
         if unit == "party" then
             UUF.PARTY:Show()
+			UUF:LayoutPartyFrames()
         elseif unit == "boss" then
             for i = 1, UUF.MAX_BOSS_FRAMES do
                 UUF[unit:upper() .. i]:Show()
@@ -205,19 +220,25 @@ end
 
 function UUF:UpdatePartyFrames()
 	local FrameDB = UUF.db.profile.Units.party.Frame
-	if UUF.PARTY and InCombatLockdown() then UUF.PARTY_UPDATE_PENDING = true return end
+	if UUF.PARTY and InCombatLockdown() then return end
 	if UUF.PARTY then
-		local point = FrameDB.GrowthDirection == "UP" and "BOTTOM" or "TOP"
-		UUF.PARTY:ClearAllPoints()
-		UUF.PARTY:SetPoint(FrameDB.Layout[1], UIParent, FrameDB.Layout[2], FrameDB.Layout[3], FrameDB.Layout[4])
-		UUF.PARTY:SetAttribute("point", point)
-		UUF.PARTY:SetAttribute("yOffset", FrameDB.GrowthDirection == "UP" and FrameDB.Layout[5] or -FrameDB.Layout[5])
-		UUF.PARTY:SetAttribute("showPlayer", FrameDB.ShowPlayer)
-		UUF.PARTY:SetAttribute("groupBy", FrameDB.SortBy == "ROLE" and "ASSIGNEDROLE" or nil)
-		UUF.PARTY:SetAttribute("groupingOrder", FrameDB.SortBy == "ROLE" and table.concat(FrameDB.RoleOrder, ",") .. ",NONE" or nil)
-		UUF.PARTY_UPDATE_PENDING = false
+		if UUF.PARTY:GetAttribute("showPlayer") ~= FrameDB.ShowPlayer then UUF.PARTY:SetAttribute("showPlayer", FrameDB.ShowPlayer) end
+		if FrameDB.SortBy == "ROLE" then
+			local groupingOrder = table.concat(FrameDB.RoleOrder, ",") .. ",NONE"
+			if UUF.PARTY:GetAttribute("groupingOrder") ~= groupingOrder then UUF.PARTY:SetAttribute("groupingOrder", groupingOrder) end
+			if UUF.PARTY:GetAttribute("groupBy") ~= "ASSIGNEDROLE" then UUF.PARTY:SetAttribute("groupBy", "ASSIGNEDROLE") end
+		else
+			if UUF.PARTY:GetAttribute("groupBy") then UUF.PARTY:SetAttribute("groupBy", nil) end
+			if UUF.PARTY:GetAttribute("groupingOrder") then UUF.PARTY:SetAttribute("groupingOrder", nil) end
+		end
 	end
+	UUF:LayoutPartyFrames()
+end
+
+function UUF:UpdatePartyFrames()
+	if UUF.PARTY and InCombatLockdown() then return end
 	for partyIndex, partyFrame in pairs(UUF.PARTY_FRAMES) do UUF:UpdateUnitFrame(partyFrame, "party" .. partyIndex) end
+	UUF:UpdatePartyFrames()
 end
 
 function UUF:UpdateAllUnitFrames()
