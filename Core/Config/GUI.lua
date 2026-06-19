@@ -621,12 +621,20 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
         local roleList = {TANK = "Tank", HEALER = "Healer", DAMAGER = "Damage"}
         local roleListOrder = {"TANK", "HEALER", "DAMAGER"}
 
+        local SortByDropdown = AG:Create("Dropdown")
+        SortByDropdown:SetList({INDEX = "Group Index", ROLE = "Assigned Role"}, {"INDEX", "ROLE"})
+        SortByDropdown:SetLabel("Sort By")
+        SortByDropdown:SetValue(FrameDB.SortBy)
+        SortByDropdown:SetRelativeWidth(0.25)
+        SortByDropdown:SetCallback("OnValueChanged", function(_, _, value) FrameDB.SortBy = value GUIWidgets.DeepDisable(RoleOrderContainer, value ~= "ROLE") updateCallback() end)
+        LayoutContainer:AddChild(SortByDropdown)
+
         local function CreateRoleOrderDropdown(roleIndex, label)
             local RoleOrderDropdown = AG:Create("Dropdown")
             RoleOrderDropdown:SetList(roleList, roleListOrder)
             RoleOrderDropdown:SetLabel(label)
             RoleOrderDropdown:SetValue(FrameDB.RoleOrder[roleIndex])
-            RoleOrderDropdown:SetRelativeWidth(0.33)
+            RoleOrderDropdown:SetRelativeWidth(0.25)
             RoleOrderDropdown:SetCallback("OnValueChanged", function(_, _, value)
                 local previousRole = FrameDB.RoleOrder[roleIndex]
                 for existingIndex, existingRole in ipairs(FrameDB.RoleOrder) do
@@ -640,27 +648,12 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
                 updateCallback()
             end)
             roleOrderDropdowns[roleIndex] = RoleOrderDropdown
-            RoleOrderContainer:AddChild(RoleOrderDropdown)
+            LayoutContainer:AddChild(RoleOrderDropdown)
         end
 
         CreateRoleOrderDropdown(1, "First Role")
         CreateRoleOrderDropdown(2, "Second Role")
         CreateRoleOrderDropdown(3, "Third Role")
-
-        local SortByDropdown = AG:Create("Dropdown")
-        SortByDropdown:SetList({INDEX = "Group Index", ROLE = "Assigned Role"}, {"INDEX", "ROLE"})
-        SortByDropdown:SetLabel("Sort By")
-        SortByDropdown:SetValue(FrameDB.SortBy)
-        SortByDropdown:SetRelativeWidth(0.5)
-        SortByDropdown:SetCallback("OnValueChanged", function(_, _, value) FrameDB.SortBy = value GUIWidgets.DeepDisable(RoleOrderContainer, value ~= "ROLE") updateCallback() end)
-        LayoutContainer:AddChild(SortByDropdown)
-
-        local ShowPlayerToggle = AG:Create("CheckBox")
-        ShowPlayerToggle:SetLabel("Show Player")
-        ShowPlayerToggle:SetValue(FrameDB.ShowPlayer)
-        ShowPlayerToggle:SetRelativeWidth(0.5)
-        ShowPlayerToggle:SetCallback("OnValueChanged", function(_, _, value) FrameDB.ShowPlayer = value updateCallback() end)
-        LayoutContainer:AddChild(ShowPlayerToggle)
 
         GUIWidgets.DeepDisable(RoleOrderContainer, FrameDB.SortBy ~= "ROLE")
     end
@@ -705,22 +698,31 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
     SmoothUpdatesToggle:SetLabel("Smooth Updates")
     SmoothUpdatesToggle:SetValue(HealthBarDB.Smooth ~= false)
     SmoothUpdatesToggle:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.Smooth = value updateCallback() end)
-    SmoothUpdatesToggle:SetRelativeWidth((unit == "player" or unit == "target") and 0.25 or 0.33)
+    SmoothUpdatesToggle:SetRelativeWidth((unit == "player" or unit == "target" or unit == "party") and 0.25 or 0.33)
     ColourContainer:AddChild(SmoothUpdatesToggle)
 
     local ColourWhenTappedToggle = AG:Create("CheckBox")
     ColourWhenTappedToggle:SetLabel("Colour When Tapped")
     ColourWhenTappedToggle:SetValue(HealthBarDB.ColourWhenTapped)
     ColourWhenTappedToggle:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.ColourWhenTapped = value updateCallback() end)
-    ColourWhenTappedToggle:SetRelativeWidth((unit == "player" or unit == "target") and 0.25 or 0.33)
+    ColourWhenTappedToggle:SetRelativeWidth((unit == "player" or unit == "target" or unit == "party") and 0.25 or 0.33)
     ColourContainer:AddChild(ColourWhenTappedToggle)
 
     local InverseGrowthDirectionToggle = AG:Create("CheckBox")
     InverseGrowthDirectionToggle:SetLabel("Inverse Growth Direction")
     InverseGrowthDirectionToggle:SetValue(HealthBarDB.Inverse)
     InverseGrowthDirectionToggle:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.Inverse = value updateCallback() end)
-    InverseGrowthDirectionToggle:SetRelativeWidth((unit == "player" or unit == "target") and 0.25 or 0.33)
+    InverseGrowthDirectionToggle:SetRelativeWidth((unit == "player" or unit == "target" or unit == "party") and 0.25 or 0.33)
     ColourContainer:AddChild(InverseGrowthDirectionToggle)
+
+    if unit == "party" then
+        local ShowPlayerToggle = AG:Create("CheckBox")
+        ShowPlayerToggle:SetLabel("Show Player")
+        ShowPlayerToggle:SetValue(FrameDB.ShowPlayer)
+        ShowPlayerToggle:SetRelativeWidth(0.25)
+        ShowPlayerToggle:SetCallback("OnValueChanged", function(_, _, value) FrameDB.ShowPlayer = value updateCallback() end)
+        ColourContainer:AddChild(ShowPlayerToggle)
+    end
 
     if unit == "player" or unit == "target" then
         local AnchorToCooldownViewerToggle = AG:Create("CheckBox")
