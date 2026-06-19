@@ -65,7 +65,7 @@ function UUF:SpawnRaidFrames()
 	UUF.RAID:SetAttribute("startingIndex", -(UUF.MAX_RAID_FRAMES - 1))
 	UUF.RAID:Show()
 	UUF.RAID:SetAttribute("startingIndex", 1)
-	UUF.RAID:SetVisibility(UnitDB.Enabled and groupFilter ~= "0" and "raid" or "custom hide")
+	UUF.RAID:SetVisibility(UnitDB.Enabled and "raid" or "custom hide")
 	UUF:CreateMover("raid")
 
 	oUF:RegisterStyle(UUF:FetchFrameName("raid") .. "Test", function(unitFrame)
@@ -123,6 +123,6 @@ function UUF:UpdateRaidFrames()
 		if UUF.RAID:GetAttribute("groupingOrder") then UUF.RAID:SetAttribute("groupingOrder", nil) end
 	end
 	if UUF.RAID:GetAttribute("groupFilter") ~= groupFilter then UUF.RAID:SetAttribute("groupFilter", groupFilter) end
-	UUF.RAID:SetVisibility(UnitDB.Enabled and groupFilter ~= "0" and "raid" or "custom hide")
+	UUF.RAID:SetVisibility(UnitDB.Enabled and "raid" or "custom hide")
 	UUF:CreateTestGroupFrames("raid")
 end

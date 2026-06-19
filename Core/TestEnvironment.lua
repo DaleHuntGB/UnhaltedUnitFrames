@@ -87,8 +87,7 @@ function UUF:CreateTestGroupFrames(unit)
 			unitFrame:UnregisterAllEvents()
 			unitFrame:Hide()
 		end
-		local shouldShowHeader = UnitDB.Enabled and (isParty or UUF:GetRaidGroupFilter() ~= "0")
-		header:SetVisibility(shouldShowHeader and unit or "custom hide")
+		header:SetVisibility(UnitDB.Enabled and unit or "custom hide")
 		return
 	end
 

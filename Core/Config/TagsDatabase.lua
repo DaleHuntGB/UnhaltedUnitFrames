@@ -331,17 +331,16 @@ end
 
 oUF.Tags.Methods["curpp:manapercent:healer"] = function(unit)
 	if not unit or not UnitExists(unit) or UnitGroupRolesAssigned(unit) ~= "HEALER" then return "" end
-	if UnitPowerMax(unit, Enum.PowerType.Mana) == 0 then return "" end
 	return string.format("%.f", UnitPowerPercent(unit, Enum.PowerType.Mana, true, CurveConstants.ScaleTo100))
 end
 
 oUF.Tags.Methods["curpp:manapercent:healer:colour"] = function(unit)
-	local manaPercent = oUF.Tags.Methods["curpp:manapercent:healer"](unit)
-	if manaPercent == "" then return "" end
+    if not unit or not UnitExists(unit) or UnitGroupRolesAssigned(unit) ~= "HEALER" then return "" end
+	local manaPercent = UnitPowerPercent(unit, Enum.PowerType.Mana, true, CurveConstants.ScaleTo100)
 	local manaColour = oUF.colors.power.MANA or oUF.colors.power[Enum.PowerType.Mana]
 	if not manaColour then return manaPercent end
 	local manaColourR, manaColourG, manaColourB = manaColour:GetRGB()
-	return string.format("|cff%02x%02x%02x%s|r", manaColourR * 255, manaColourG * 255, manaColourB * 255, manaPercent)
+	return string.format("|cFF%02x%02x%02x%s|r", manaColourR * 255, manaColourG * 255, manaColourB * 255, manaPercent)
 end
 
 oUF.Tags.Methods["curpp:manapercent-with-sign"] = function(unit)
