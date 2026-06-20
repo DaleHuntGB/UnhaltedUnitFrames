@@ -1,3 +1,7 @@
+## V12.0.24
+- Fixed `Classification` Textures not appearing.
+- File Restructure.
+- Added support for `Coolinator` as an anchor point.
 ## V12.0.23
 - Added `Interrupt Success` Colour for Cast Bars.
 - Added `Smooth Updates` for Health Bars.
