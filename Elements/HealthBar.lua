@@ -26,7 +26,8 @@ function UUF:CreateUnitHealthBar(unitFrame, unit)
         HealthBar.colorClass = HealthBarDB.ColourByClass
         HealthBar.colorReaction = HealthBarDB.ColourByClass
         HealthBar.colorTapped = HealthBarDB.ColourWhenTapped
-		HealthBar.colorDisconnected = HealthBarDB.ColourWhenDisconnected
+		HealthBar.colourWhenDisconnected = HealthBarDB.ColourWhenDisconnected
+		HealthBar.colorDisconnected = HealthBar.colourWhenDisconnected and UnitIsPlayer(unit)
         HealthBar.smoothing = HealthBarDB.Smooth ~= false and StatusBarInterpolation.ExponentialEaseOut or StatusBarInterpolation.Immediate
 
         if unit == "pet" and HealthBarDB.ColourByClass then
@@ -41,6 +42,18 @@ function UUF:CreateUnitHealthBar(unitFrame, unit)
         end
 
         unitFrame.Health = HealthBar
+
+		unitFrame.Health.PreUpdate = function(element, healthUnit)
+			element.colorDisconnected = element.colourWhenDisconnected and UnitIsPlayer(healthUnit)
+		end
+		if normalizedUnit == "party" or normalizedUnit == "raid" then
+			unitFrame.PostUpdate = function(_, event)
+				if event ~= "GROUP_ROSTER_UPDATE" then return end
+				C_Timer.After(0.1, function()
+					if unitFrame.Health and UnitExists(unitFrame.unit) then unitFrame.Health:ForceUpdate() end
+				end)
+			end
+		end
 
         unitFrame.Health.PostUpdate = function(_, _, curHP, maxHP)
             local unitHP = unitFrame.HealthBackground
@@ -92,7 +105,8 @@ function UUF:UpdateUnitHealthBar(unitFrame, unit)
         unitFrame.Health.colorClass = HealthBarDB.ColourByClass
         unitFrame.Health.colorReaction = HealthBarDB.ColourByClass
         unitFrame.Health.colorTapped = HealthBarDB.ColourWhenTapped
-		unitFrame.Health.colorDisconnected = HealthBarDB.ColourWhenDisconnected
+		unitFrame.Health.colourWhenDisconnected = HealthBarDB.ColourWhenDisconnected
+		unitFrame.Health.colorDisconnected = unitFrame.Health.colourWhenDisconnected and UnitIsPlayer(unitFrame.unit)
         unitFrame.Health.smoothing = HealthBarDB.Smooth ~= false and StatusBarInterpolation.ExponentialEaseOut or StatusBarInterpolation.Immediate
         unitFrame.Health:SetStatusBarTexture(UUF.Media.Foreground)
         if unit == "pet" and HealthBarDB.ColourByClass then
