@@ -5,6 +5,7 @@
 	<Script file="CastBar.lua"/>
 	<Script file="HealPrediction.lua"/>
 	<Script file="HealthBar.lua"/>
+	<Script file="Movers.lua"/>
 	<Script file="Portrait.lua"/>
 	<Script file="Positioner.lua"/>
 	<Script file="PowerBar.lua"/>
