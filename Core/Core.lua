@@ -49,5 +49,13 @@ function UnhaltedUnitFrames:OnEnable()
     UUF:SpawnUnitFrame("pet")
     UUF:SpawnUnitFrame("boss")
     UUF:UpdateOutOfCombatFade()
-    
+
+    local fadeEventFrame = CreateFrame("Frame")
+    fadeEventFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
+    fadeEventFrame:RegisterEvent("PLAYER_REGEN_DISABLED")
+    fadeEventFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
+    fadeEventFrame:RegisterEvent("PLAYER_FOCUS_CHANGED")
+    fadeEventFrame:SetScript("OnEvent", function()
+        UUF:UpdateOutOfCombatFade()
+    end)
 end

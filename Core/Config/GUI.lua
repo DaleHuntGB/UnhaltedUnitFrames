@@ -639,6 +639,7 @@ end
 local function CreateFrameSettings(containerParent, unit, unitHasParent, updateCallback)
     local FrameDB = UUF.db.profile.Units[unit].Frame
     local HealthBarDB = UUF.db.profile.Units[unit].HealthBar
+    local CastBarDB = UUF.db.profile.Units[unit].CastBar
 
     local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
 
