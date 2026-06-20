@@ -4,20 +4,13 @@ UUFG = UUFG or {}
 UUF.AURA_TEST_MODE = false
 UUF.CASTBAR_TEST_MODE = false
 UUF.BOSS_TEST_MODE = false
-UUF.PARTY_TEST_MODE = false
-UUF.RAID_TEST_MODE = false
 UUF.BOSS_FRAMES = {}
 UUF.PARTY_FRAMES = {}
 UUF.RAID_FRAMES = {}
 UUF.RAID_HEADERS = {}
-UUF.PARTY_TEST_FRAMES = {}
-UUF.RAID_TEST_FRAMES = {}
-UUF.PARTY_TEST_CONTAINER = CreateFrame("Frame", "UUF_PartyTestContainer", UIParent)
 UUF.RAID_CONTAINER = CreateFrame("Frame", "UUF_RaidContainer", UIParent)
-UUF.RAID_TEST_CONTAINER = CreateFrame("Frame", "UUF_RaidTestContainer", UIParent)
 UUF.MAX_BOSS_FRAMES = 5
 UUF.MAX_PARTY_FRAMES = 5
-UUF.MAX_RAID_FRAMES = 40
 UUF.MAX_RAID_GROUPS = 8
 UUF.RAID_GROUP_SIZE = 5
 local CooldownDurationFormatter = C_StringUtil.CreateNumericRuleFormatter()
@@ -124,9 +117,7 @@ local UnitToFrame = {
 local IndexedUnitToFrame = {
 	boss = "UUF_Boss",
 	party = "UUF_Party",
-	partytest = "UUF_PartyTest",
 	raid = "UUF_Raid",
-	raidtest = "UUF_RaidTest",
 }
 
 function UUF:FetchFrameName(unit)
@@ -279,6 +270,9 @@ function UUF:LoadCustomColours()
         oUF.colors.reaction[reaction] = oUF:CreateColor(color[1], color[2], color[3])
     end
 
+	local disconnectedColour = General.Colours.Disconnected
+	oUF.colors.disconnected = oUF:CreateColor(disconnectedColour[1], disconnectedColour[2], disconnectedColour[3])
+
     if General.Colours.Dispel then
         local dispelMap = {
             Magic = oUF.Enum.DispelType.Magic,
@@ -378,8 +372,8 @@ end
 function UUF:GetNormalizedUnit(unit)
 	if unit == "vehicle" then return "player" end
 	if unit:match("^boss%d+$") then return "boss" end
-	if unit:match("^party%d*$") or unit:match("^partytest%d+$") then return "party" end
-	if unit:match("^raid%d*$") or unit:match("^raidtest%d+$") then return "raid" end
+	if unit:match("^party%d*$") then return "party" end
+	if unit:match("^raid%d*$") then return "raid" end
 	return unit
 end
 

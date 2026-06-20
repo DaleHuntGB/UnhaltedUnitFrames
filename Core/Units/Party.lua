@@ -42,27 +42,6 @@ function UUF:SpawnPartyFrames()
 	UUF.PARTY:SetAttribute("startingIndex", 1)
 	UUF.PARTY:SetVisibility(UnitDB.Enabled and "party" or "custom hide")
 	UUF:CreateMover("party")
-
-	oUF:RegisterStyle(UUF:FetchFrameName("party") .. "Test", function(unitFrame)
-		local partyIndex = tonumber(unitFrame:GetName():match("Test(%d+)$"))
-		UUF:CreateUnitFrame(unitFrame, "partytest" .. partyIndex)
-	end)
-	oUF:SetActiveStyle(UUF:FetchFrameName("party") .. "Test")
-	local DisableBlizzard = oUF.DisableBlizzard
-	oUF.DisableBlizzard = function() end
-	for partyIndex = 1, UUF.MAX_PARTY_FRAMES do
-		local partyFrame = oUF:Spawn("party" .. partyIndex, UUF:FetchFrameName("party") .. "Test" .. partyIndex)
-		UnregisterUnitWatch(partyFrame)
-		partyFrame:SetAttribute("unit", nil)
-		partyFrame:SetScript("OnShow", nil)
-		partyFrame:EnableMouse(false)
-		UUF:CreateTestAuras(partyFrame, "partytest" .. partyIndex, false)
-		UUF:DisableTestGroupFrameTags(partyFrame)
-		partyFrame:UnregisterAllEvents()
-		partyFrame:Hide()
-		UUF.PARTY_TEST_FRAMES[partyIndex] = partyFrame
-	end
-	oUF.DisableBlizzard = DisableBlizzard
 	return UUF.PARTY
 end
 
@@ -88,5 +67,4 @@ function UUF:UpdatePartyFrames()
 		if UUF.PARTY:GetAttribute("groupingOrder") then UUF.PARTY:SetAttribute("groupingOrder", nil) end
 	end
 	UUF.PARTY:SetVisibility(UnitDB.Enabled and "party" or "custom hide")
-	UUF:CreateTestGroupFrames("party")
 end

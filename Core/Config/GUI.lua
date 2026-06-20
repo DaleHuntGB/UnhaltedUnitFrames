@@ -162,27 +162,18 @@ local function DisableBossFramesTestMode()
     UUF:CreateTestBossFrames()
 end
 
-local function SetGroupFramesTestMode(unit, enabled)
-	if unit == "party" then UUF.PARTY_TEST_MODE = enabled else UUF.RAID_TEST_MODE = enabled end
-	UUF:CreateTestGroupFrames(unit)
-end
-
 local function DisableAllTestModes()
     UUF.AURA_TEST_MODE = false
     UUF.CASTBAR_TEST_MODE = false
     UUF.BOSS_TEST_MODE = false
-	UUF.PARTY_TEST_MODE = false
-	UUF.RAID_TEST_MODE = false
     UUF.MOVERS_UNLOCKED = false
-    for unit, _ in pairs(UUF.db.profile.Units) do
+    for unit in pairs(UUF.db.profile.Units) do
         if unit ~= "party" and unit ~= "raid" and UUF[unit:upper()] then
             UUF:CreateTestAuras(UUF[unit:upper()], unit)
             UUF:CreateTestCastBar(UUF[unit:upper()], unit)
         end
     end
     UUF:CreateTestBossFrames()
-	UUF:CreateTestGroupFrames("party")
-	UUF:CreateTestGroupFrames("raid")
     for _, frameMover in pairs(UUF.MOVERS or {}) do frameMover:Hide() end
 end
 
@@ -504,6 +495,16 @@ local function CreateColourSettings(containerParent)
     ResetDispelColoursButton:SetRelativeWidth(0.25)
     Container:AddChild(ResetDispelColoursButton)
 
+	GUIWidgets.CreateHeader(Container, "Status")
+
+	local DisconnectedColourPicker = AG:Create("ColorPicker")
+	DisconnectedColourPicker:SetLabel("Offline / Disconnected")
+	DisconnectedColourPicker:SetColor(unpack(UUF.db.profile.General.Colours.Disconnected))
+	DisconnectedColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) UUF.db.profile.General.Colours.Disconnected = {r, g, b} UUF:LoadCustomColours() UUF:UpdateAllUnitFrames() end)
+	DisconnectedColourPicker:SetHasAlpha(false)
+	DisconnectedColourPicker:SetRelativeWidth(0.25)
+	Container:AddChild(DisconnectedColourPicker)
+
     GUIWidgets.CreateHeader(Container, "Power")
 
     local PowerOrder = {0, 1, 2, 3, 6, 8, 11, 13, 17, 18}
@@ -784,28 +785,35 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
     SmoothUpdatesToggle:SetLabel("Smooth Updates")
     SmoothUpdatesToggle:SetValue(HealthBarDB.Smooth ~= false)
     SmoothUpdatesToggle:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.Smooth = value updateCallback() end)
-    SmoothUpdatesToggle:SetRelativeWidth((unit == "player" or unit == "target" or unit == "party") and 0.25 or 0.33)
+    SmoothUpdatesToggle:SetRelativeWidth(unit == "party" and 0.33 or 0.5)
     ColourContainer:AddChild(SmoothUpdatesToggle)
 
     local ColourWhenTappedToggle = AG:Create("CheckBox")
     ColourWhenTappedToggle:SetLabel("Colour When Tapped")
     ColourWhenTappedToggle:SetValue(HealthBarDB.ColourWhenTapped)
     ColourWhenTappedToggle:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.ColourWhenTapped = value updateCallback() end)
-    ColourWhenTappedToggle:SetRelativeWidth((unit == "player" or unit == "target" or unit == "party") and 0.25 or 0.33)
+    ColourWhenTappedToggle:SetRelativeWidth(unit == "party" and 0.33 or 0.5)
     ColourContainer:AddChild(ColourWhenTappedToggle)
+
+	local ColourWhenDisconnectedToggle = AG:Create("CheckBox")
+	ColourWhenDisconnectedToggle:SetLabel("Colour When Disconnected")
+	ColourWhenDisconnectedToggle:SetValue(HealthBarDB.ColourWhenDisconnected)
+	ColourWhenDisconnectedToggle:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.ColourWhenDisconnected = value updateCallback() end)
+	ColourWhenDisconnectedToggle:SetRelativeWidth(unit == "party" and 0.33 or 0.5)
+	ColourContainer:AddChild(ColourWhenDisconnectedToggle)
 
     local InverseGrowthDirectionToggle = AG:Create("CheckBox")
     InverseGrowthDirectionToggle:SetLabel("Inverse Growth Direction")
     InverseGrowthDirectionToggle:SetValue(HealthBarDB.Inverse)
     InverseGrowthDirectionToggle:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.Inverse = value updateCallback() end)
-    InverseGrowthDirectionToggle:SetRelativeWidth((unit == "player" or unit == "target" or unit == "party") and 0.25 or 0.33)
+    InverseGrowthDirectionToggle:SetRelativeWidth(0.5)
     ColourContainer:AddChild(InverseGrowthDirectionToggle)
 
     if unit == "party" then
         local ShowPlayerToggle = AG:Create("CheckBox")
         ShowPlayerToggle:SetLabel("Show Player")
         ShowPlayerToggle:SetValue(FrameDB.ShowPlayer)
-        ShowPlayerToggle:SetRelativeWidth(0.25)
+        ShowPlayerToggle:SetRelativeWidth(0.5)
         ShowPlayerToggle:SetCallback("OnValueChanged", function(_, _, value) FrameDB.ShowPlayer = value updateCallback() end)
         ColourContainer:AddChild(ShowPlayerToggle)
     end
@@ -851,7 +859,7 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
         end)
         AnchorToCooldownViewerToggle:SetCallback("OnEnter", function() GameTooltip:SetOwner(AnchorToCooldownViewerToggle.frame, "ANCHOR_CURSOR") GameTooltip:AddLine("Anchor To |cFF8080FFEssential|r Cooldown Viewer. Toggling this will overwrite existing |cFF8080FFLayout|r Settings.", 1, 1, 1, false) GameTooltip:Show() end)
         AnchorToCooldownViewerToggle:SetCallback("OnLeave", function() GameTooltip:Hide() end)
-        AnchorToCooldownViewerToggle:SetRelativeWidth(0.25)
+        AnchorToCooldownViewerToggle:SetRelativeWidth(0.5)
         ColourContainer:AddChild(AnchorToCooldownViewerToggle)
     end
 
@@ -3454,6 +3462,7 @@ local function CreateGlobalSettings(containerParent)
         for _, unitDB in pairs(UUF.db.profile.Units) do
             unitDB.HealthBar.ColourByClass = true
             unitDB.HealthBar.ColourWhenTapped = true
+			unitDB.HealthBar.ColourWhenDisconnected = true
             unitDB.HealthBar.ColourBackgroundByClass = false
         end
         UUF:UpdateAllUnitFrames()
@@ -3467,6 +3476,7 @@ local function CreateGlobalSettings(containerParent)
         for _, unitDB in pairs(UUF.db.profile.Units) do
             unitDB.HealthBar.ColourByClass = false
             unitDB.HealthBar.ColourWhenTapped = false
+			unitDB.HealthBar.ColourWhenDisconnected = false
             unitDB.HealthBar.ColourBackgroundByClass = false
         end
         UUF:UpdateAllUnitFrames()
@@ -4107,8 +4117,6 @@ function UUF:CreateGUI()
             ScrollFrame:DoLayout()
         end
 		if MainTab == "Boss" then EnableBossFramesTestMode() else DisableBossFramesTestMode() end
-		SetGroupFramesTestMode("party", MainTab == "Party")
-		SetGroupFramesTestMode("raid", MainTab == "Raid")
         GenerateSupportText(Container)
     end
 

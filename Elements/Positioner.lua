@@ -6,19 +6,13 @@ local function RefreshMover(frameMover)
 	if not unitFrame then return end
 	frameMover:ClearAllPoints()
 	if unit == "party" or unit == "raid" then
-		if unit == "raid" and not UUF.RAID_TEST_MODE then
+		if unit == "raid" then
 			frameMover:SetPoint("TOPLEFT", UUF.RAID_CONTAINER, "TOPLEFT")
 			frameMover:SetPoint("BOTTOMRIGHT", UUF.RAID_CONTAINER, "BOTTOMRIGHT")
 			return
 		end
 		local topFrame, bottomFrame, leftFrame, rightFrame
-		local unitFrames
-		if unit == "party" then
-			unitFrames = UUF.PARTY_TEST_MODE and UUF.PARTY_TEST_FRAMES or UUF.PARTY_FRAMES
-		else
-			unitFrames = UUF.RAID_TEST_MODE and UUF.RAID_TEST_FRAMES or UUF.RAID_FRAMES
-		end
-		for _, groupFrame in pairs(unitFrames) do
+		for _, groupFrame in pairs(UUF.PARTY_FRAMES) do
 			if groupFrame:IsShown() then
 				if not topFrame or groupFrame:GetTop() > topFrame:GetTop() then topFrame = groupFrame end
 				if not bottomFrame or groupFrame:GetBottom() < bottomFrame:GetBottom() then bottomFrame = groupFrame end

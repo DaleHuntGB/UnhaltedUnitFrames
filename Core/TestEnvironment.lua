@@ -1,8 +1,6 @@
 local _, UUF = ...
-local EnvironmenTestData = {}
+local EnvironmentTestData = {}
 local oUF = UUF.oUF
-
-local GroupRoles = {"TANK", "HEALER", "DAMAGER", "DAMAGER", "DAMAGER"}
 
 local Classes = {
     [1] = "WARRIOR",
@@ -34,7 +32,7 @@ local PowerTypes = {
 }
 
 for i = 1, 10 do
-    EnvironmenTestData[i] = {
+    EnvironmentTestData[i] = {
         name      = "Boss " .. i,
         class     = Classes[i],
         reaction  = i % 2 == 0 and 2 or 5,
@@ -52,158 +50,17 @@ end
 local function GetTestUnitColour(id, defaultColour, colourByClass, opacity)
     if colourByClass then
         if id <= 5 then
-            local temporaryClass = EnvironmenTestData[id].class
+            local temporaryClass = EnvironmentTestData[id].class
             local classColour = RAID_CLASS_COLORS[temporaryClass]
             return classColour.r, classColour.g, classColour.b, opacity
         else
-            local temporaryReaction = EnvironmenTestData[id].reaction
+            local temporaryReaction = EnvironmentTestData[id].reaction
             local reactionColour = oUF.colors.reaction[temporaryReaction]
             return reactionColour.r, reactionColour.g, reactionColour.b, opacity
         end
     else
         return defaultColour[1], defaultColour[2], defaultColour[3], opacity
     end
-end
-
-function UUF:DisableTestGroupFrameTags(unitFrame)
-	for _, fontString in pairs(unitFrame.Tags) do unitFrame:Untag(fontString) end
-end
-
-function UUF:CreateTestGroupFrames(unit)
-	if unit ~= "party" and unit ~= "raid" then return end
-	local isParty = unit == "party"
-	local UnitDB = UUF.db.profile.Units[unit]
-	local FrameDB = UnitDB.Frame
-	local testMode = isParty and UUF.PARTY_TEST_MODE or UUF.RAID_TEST_MODE
-	local testFrames = isParty and UUF.PARTY_TEST_FRAMES or UUF.RAID_TEST_FRAMES
-	if (isParty and not UUF.PARTY) or (not isParty and #UUF.RAID_HEADERS == 0) then return end
-
-	if not testMode then
-		for unitIndex, unitFrame in ipairs(testFrames) do
-			UUF:CreateTestAuras(unitFrame, unit .. "test" .. unitIndex, false)
-			UUF:DisableTestGroupFrameTags(unitFrame)
-			unitFrame:UnregisterAllEvents()
-			unitFrame:Hide()
-		end
-		if isParty then
-			UUF.PARTY:SetVisibility(UnitDB.Enabled and unit or "custom hide")
-		else
-			local _, _, selectedGroups = UUF:GetRaidGroupFilter()
-			for groupIndex, raidHeader in ipairs(UUF.RAID_HEADERS) do raidHeader:SetVisibility(UnitDB.Enabled and selectedGroups[groupIndex] and unit or "custom hide") end
-		end
-		return
-	end
-
-	if isParty then
-		UUF.PARTY:SetVisibility("custom hide")
-	else
-		for _, raidHeader in ipairs(UUF.RAID_HEADERS) do raidHeader:SetVisibility("custom hide") end
-	end
-	local testIndices = {}
-	if isParty then
-		for unitIndex = 1, FrameDB.ShowPlayer and UUF.MAX_PARTY_FRAMES or UUF.MAX_PARTY_FRAMES - 1 do testIndices[#testIndices + 1] = unitIndex end
-	else
-		local selectedGroups = {}
-		for _, groupIndex in ipairs(FrameDB.GroupingOrder) do
-			groupIndex = tonumber(groupIndex)
-			if groupIndex and groupIndex >= 1 and groupIndex <= UUF.MAX_RAID_GROUPS then selectedGroups[groupIndex] = true end
-		end
-		if FrameDB.GroupBy == "GROUP" then
-			for _, groupIndex in ipairs(FrameDB.GroupingOrder) do
-				groupIndex = tonumber(groupIndex)
-				if groupIndex and groupIndex >= 1 and groupIndex <= UUF.MAX_RAID_GROUPS then
-					for groupMemberIndex = 1, UUF.RAID_GROUP_SIZE do testIndices[#testIndices + 1] = (groupIndex - 1) * UUF.RAID_GROUP_SIZE + groupMemberIndex end
-				end
-			end
-		else
-			for raidIndex = 1, UUF.MAX_RAID_FRAMES do if selectedGroups[math.ceil(raidIndex / UUF.RAID_GROUP_SIZE)] then testIndices[#testIndices + 1] = raidIndex end end
-		end
-	end
-
-	if isParty and FrameDB.SortBy == "ROLE" then
-		local roleOrder = {}
-		for roleIndex, role in ipairs(FrameDB.RoleOrder) do roleOrder[role] = roleIndex end
-		table.sort(testIndices, function(firstIndex, secondIndex)
-			local firstRole = GroupRoles[(firstIndex - 1) % UUF.RAID_GROUP_SIZE + 1]
-			local secondRole = GroupRoles[(secondIndex - 1) % UUF.RAID_GROUP_SIZE + 1]
-			return roleOrder[firstRole] == roleOrder[secondRole] and firstIndex < secondIndex or roleOrder[firstRole] < roleOrder[secondRole]
-		end)
-	end
-
-	local testContainer = isParty and UUF.PARTY_TEST_CONTAINER or UUF.RAID_TEST_CONTAINER
-	local unitsPerColumn = isParty and #testIndices or UUF.RAID_GROUP_SIZE
-	local columnCount = isParty and math.min(#testIndices, 1) or math.ceil(#testIndices / unitsPerColumn)
-	local rowCount = math.min(#testIndices, unitsPerColumn)
-	local containerWidth = columnCount * FrameDB.Width + math.max(columnCount - 1, 0) * FrameDB.Layout[5]
-	local containerHeight = rowCount * FrameDB.Height + math.max(rowCount - 1, 0) * FrameDB.Layout[5]
-	testContainer:ClearAllPoints()
-	testContainer:SetSize(math.max(containerWidth, 1), math.max(containerHeight, 1))
-	testContainer:SetPoint(FrameDB.Layout[1], UIParent, FrameDB.Layout[2], FrameDB.Layout[3], FrameDB.Layout[4])
-
-	for _, unitFrame in ipairs(testFrames) do unitFrame:Hide() end
-	for displayIndex, unitIndex in ipairs(testIndices) do
-		local unitFrame = testFrames[unitIndex]
-		local testData = EnvironmenTestData[(unitIndex - 1) % 10 + 1]
-		local role = GroupRoles[(unitIndex - 1) % UUF.RAID_GROUP_SIZE + 1]
-		UUF:UpdateUnitFrame(unitFrame, unit .. "test" .. unitIndex)
-		UUF:CreateTestAuras(unitFrame, unit .. "test" .. unitIndex, true)
-		unitFrame:UnregisterAllEvents()
-		unitFrame:ClearAllPoints()
-		if not isParty then
-			local columnIndex = math.floor((displayIndex - 1) / unitsPerColumn)
-			local rowIndex = (displayIndex - 1) % unitsPerColumn
-			local offsetX = columnIndex * (FrameDB.Width + FrameDB.Layout[5])
-			local offsetY = rowIndex * (FrameDB.Height + FrameDB.Layout[5])
-			if FrameDB.RowDirection == "LEFT" then offsetX = -offsetX end
-			if FrameDB.ColumnDirection == "DOWN" then offsetY = -offsetY end
-			local frameAnchor = FrameDB.ColumnDirection == "UP" and (FrameDB.RowDirection == "LEFT" and "BOTTOMRIGHT" or "BOTTOMLEFT") or FrameDB.RowDirection == "LEFT" and "TOPRIGHT" or "TOPLEFT"
-			unitFrame:SetPoint(frameAnchor, testContainer, frameAnchor, offsetX, offsetY)
-		else
-			local rowIndex = displayIndex - 1
-			local offsetY = rowIndex * (FrameDB.Height + FrameDB.Layout[5])
-			local frameAnchor = FrameDB.GrowthDirection == "UP" and "BOTTOMLEFT" or "TOPLEFT"
-			if FrameDB.GrowthDirection == "DOWN" then offsetY = -offsetY end
-			unitFrame:SetPoint(frameAnchor, testContainer, frameAnchor, 0, offsetY)
-		end
-
-		if unitFrame.Health then
-			local HealthBarDB = UnitDB.HealthBar
-			unitFrame.Health:SetMinMaxValues(0, testData.maxHealth)
-			unitFrame.Health:SetValue(testData.health)
-			unitFrame.HealthBackground:SetMinMaxValues(0, testData.maxHealth)
-			unitFrame.HealthBackground:SetValue(testData.missingHealth)
-			unitFrame.Health:SetStatusBarColor(GetTestUnitColour((unitIndex - 1) % 10 + 1, HealthBarDB.Foreground, HealthBarDB.ColourByClass, HealthBarDB.ForegroundOpacity))
-			unitFrame.HealthBackground:SetStatusBarColor(GetTestUnitColour((unitIndex - 1) % 10 + 1, HealthBarDB.Background, HealthBarDB.ColourBackgroundByClass, HealthBarDB.BackgroundOpacity))
-		end
-		if unitFrame.Power then
-			unitFrame.Power:SetMinMaxValues(0, testData.maxPower)
-			unitFrame.Power:SetValue(testData.power)
-		end
-		if unitFrame.GroupRoleIndicator then
-			local roleAtlas = role == "TANK" and "UI-LFG-RoleIcon-Tank-Micro-Raid" or role == "HEALER" and "UI-LFG-RoleIcon-Healer-Micro-Raid" or "UI-LFG-RoleIcon-DPS-Micro-Raid"
-			unitFrame.GroupRoleIndicator:SetAtlas(roleAtlas)
-			unitFrame.GroupRoleIndicator:SetShown(UnitDB.Indicators.Role.Enabled)
-		end
-		if unitFrame.LeaderIndicator then unitFrame.LeaderIndicator:SetShown(UnitDB.Indicators.LeaderAssistantIndicator.Enabled and displayIndex == 1) end
-		if unitFrame.AssistantIndicator then unitFrame.AssistantIndicator:SetShown(UnitDB.Indicators.LeaderAssistantIndicator.Enabled and displayIndex == 2) end
-		if unitFrame.RaidTargetIndicator then
-			local markerIndex = (displayIndex - 1) % 8
-			local markerX = (markerIndex % 4) * 0.25
-			local markerY = math.floor(markerIndex / 4) * 0.25
-			unitFrame.RaidTargetIndicator:SetTexture("Interface\\TargetingFrame\\UI-RaidTargetingIcons")
-			unitFrame.RaidTargetIndicator:SetTexCoord(markerX, markerX + 0.25, markerY, markerY + 0.25)
-			unitFrame.RaidTargetIndicator:SetShown(UnitDB.Indicators.RaidTargetMarker.Enabled)
-		end
-		if unitFrame.TargetIndicator then unitFrame.TargetIndicator:SetAlphaFromBoolean(displayIndex % 2 == 1 and UnitDB.Indicators.Target.Enabled, 1, 0) end
-		if unitFrame.DispelHighlight then unitFrame.DispelHighlight:Hide() end
-		if unitFrame.Tags.TagOne then unitFrame.Tags.TagOne:SetText((isParty and "Party " or "Raid ") .. unitIndex) end
-		if unitFrame.Tags.TagTwo then unitFrame.Tags.TagTwo:SetText(string.format("%.1f%%", testData.percent)) end
-		if unitFrame.Tags.TagThree then unitFrame.Tags.TagThree:SetText(testData.power) end
-		if unitFrame.Tags.TagFour then unitFrame.Tags.TagFour:SetText("") end
-		if unitFrame.Tags.TagFive then unitFrame.Tags.TagFive:SetText("") end
-		UUF:DisableTestGroupFrameTags(unitFrame)
-		unitFrame:SetShown(UnitDB.Enabled)
-	end
 end
 
 function UUF:CreateTestBossFrames()
@@ -226,10 +83,10 @@ function UUF:CreateTestBossFrames()
 
             if BossFrame.Health then
                 local HealthBarDB = UUF.db.profile.Units.boss.HealthBar
-                BossFrame.Health:SetMinMaxValues(0, EnvironmenTestData[i].maxHealth)
-                BossFrame.Health:SetValue(EnvironmenTestData[i].health)
-                BossFrame.HealthBackground:SetMinMaxValues(0, EnvironmenTestData[i].maxHealth)
-                BossFrame.HealthBackground:SetValue(EnvironmenTestData[i].missingHealth)
+                BossFrame.Health:SetMinMaxValues(0, EnvironmentTestData[i].maxHealth)
+                BossFrame.Health:SetValue(EnvironmentTestData[i].health)
+                BossFrame.HealthBackground:SetMinMaxValues(0, EnvironmentTestData[i].maxHealth)
+                BossFrame.HealthBackground:SetValue(EnvironmentTestData[i].missingHealth)
                 BossFrame.HealthBackground:SetStatusBarColor(GetTestUnitColour(i, HealthBarDB.Background, HealthBarDB.ColourBackgroundByClass, HealthBarDB.BackgroundOpacity))
                 BossFrame.Health:SetStatusBarColor(GetTestUnitColour(i, HealthBarDB.Foreground, HealthBarDB.ColourByClass, HealthBarDB.ForegroundOpacity))
             end
@@ -256,8 +113,8 @@ function UUF:CreateTestBossFrames()
             end
 
             if BossFrame.Power then
-                BossFrame.Power:SetMinMaxValues(0, EnvironmenTestData[i].maxPower)
-                BossFrame.Power:SetValue(EnvironmenTestData[i].power)
+                BossFrame.Power:SetMinMaxValues(0, EnvironmentTestData[i].maxPower)
+                BossFrame.Power:SetValue(EnvironmentTestData[i].power)
             end
 
             local raidTargetMarkerCoords={{0,0.25,0,0.25},{0.25,0.5,0,0.25},{0.5,0.75,0,0.25},{0.75,1,0,0.25},{0,0.25,0.25,0.5},{0.25,0.5,0.25,0.5},{0.5,0.75,0.25,0.5},{0.75,1,0.25,0.5},{0,0.25,0,0.25},{0.25,0.5,0,0.25}}
@@ -450,7 +307,7 @@ function UUF:CreateTestBossFrames()
                     BossFrame.Tags.TagOne:SetShadowOffset(0, 0)
                 end
                 BossFrame.Tags.TagOne:SetTextColor(unpack(TagOneDB.Colour))
-                BossFrame.Tags.TagOne:SetText(EnvironmenTestData[i].name)
+                BossFrame.Tags.TagOne:SetText(EnvironmentTestData[i].name)
             end
 
             if BossFrame.Tags.TagTwo then
@@ -466,7 +323,7 @@ function UUF:CreateTestBossFrames()
                     BossFrame.Tags.TagTwo:SetShadowOffset(0, 0)
                 end
                 BossFrame.Tags.TagTwo:SetTextColor(unpack(TagTwoDB.Colour))
-                BossFrame.Tags.TagTwo:SetText(string.format("%.1f%%", EnvironmenTestData[i].percent))
+                BossFrame.Tags.TagTwo:SetText(string.format("%.1f%%", EnvironmentTestData[i].percent))
             end
 
             if BossFrame.Tags.TagThree then
@@ -482,7 +339,7 @@ function UUF:CreateTestBossFrames()
                     BossFrame.Tags.TagThree:SetShadowOffset(0, 0)
                 end
                 BossFrame.Tags.TagThree:SetTextColor(unpack(TagThreeDB.Colour))
-                BossFrame.Tags.TagThree:SetText(EnvironmenTestData[i].power)
+                BossFrame.Tags.TagThree:SetText(EnvironmentTestData[i].power)
             end
         end
     else

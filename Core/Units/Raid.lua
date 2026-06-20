@@ -83,27 +83,6 @@ function UUF:SpawnRaidFrames()
 
 	UUF.RAID = UUF.RAID_CONTAINER
 	UUF:CreateMover("raid")
-
-	oUF:RegisterStyle(UUF:FetchFrameName("raid") .. "Test", function(unitFrame)
-		local raidIndex = tonumber(unitFrame:GetName():match("Test(%d+)$"))
-		UUF:CreateUnitFrame(unitFrame, "raidtest" .. raidIndex)
-	end)
-	oUF:SetActiveStyle(UUF:FetchFrameName("raid") .. "Test")
-	local DisableBlizzard = oUF.DisableBlizzard
-	oUF.DisableBlizzard = function() end
-	for raidIndex = 1, UUF.MAX_RAID_FRAMES do
-		local raidFrame = oUF:Spawn("raid" .. raidIndex, UUF:FetchFrameName("raid") .. "Test" .. raidIndex)
-		UnregisterUnitWatch(raidFrame)
-		raidFrame:SetAttribute("unit", nil)
-		raidFrame:SetScript("OnShow", nil)
-		raidFrame:EnableMouse(false)
-		UUF:CreateTestAuras(raidFrame, "raidtest" .. raidIndex, false)
-		UUF:DisableTestGroupFrameTags(raidFrame)
-		raidFrame:UnregisterAllEvents()
-		raidFrame:Hide()
-		UUF.RAID_TEST_FRAMES[raidIndex] = raidFrame
-	end
-	oUF.DisableBlizzard = DisableBlizzard
 	UUF:UpdateRaidFrames()
 	return UUF.RAID
 end
@@ -156,5 +135,4 @@ function UUF:UpdateRaidFrames()
 		if raidHeader:GetAttribute("strictFiltering") then raidHeader:SetAttribute("strictFiltering", nil) end
 		raidHeader:SetVisibility(UnitDB.Enabled and selectedGroups[groupIndex] and "raid" or "custom hide")
 	end
-	UUF:CreateTestGroupFrames("raid")
 end
