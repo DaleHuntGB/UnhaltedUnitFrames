@@ -30,7 +30,10 @@ function UUF:CreateUnitFrame(unitFrame, unit)
     if isPlayer or isTarget then UUF:CreateUnitLeaderAssistantIndicator(unitFrame, unit) end
     if isPlayer or isTarget then UUF:CreateUnitCombatIndicator(unitFrame, unit) end
     if isPlayer then UUF:CreateUnitRestingIndicator(unitFrame, unit) end
-    -- if isPlayer then UUF:CreateUnitTotems(unitFrame, unit) end
+    if isPlayer then UUF:CreateUnitPvPIndicator(unitFrame, unit) end
+    if isPlayer then UUF:CreateUnitTotems(unitFrame, unit) end
+    if isTarget then UUF:CreateUnitClassificationIndicator(unitFrame, unit) end
+    if isTarget then UUF:CreateUnitQuestIndicator(unitFrame, unit) end
     UUF:CreateUnitMouseoverIndicator(unitFrame, unit)
     UUF:CreateUnitTargetGlowIndicator(unitFrame, unit)
     UUF:CreateUnitAuras(unitFrame, unit)
@@ -94,6 +97,7 @@ function UUF:SpawnUnitFrame(unit)
         UUF[unit:upper()]:SetSize(FrameDB.Width, FrameDB.Height)
     end
     if unit ~= "player" then UUF:RegisterRangeFrame(UUF:FetchFrameName(unit), unit) end
+	UUF:CreateMover(unit)
 
     if UnitDB.Enabled then
         RegisterUnitWatch(UUF[unit:upper()])
@@ -136,7 +140,10 @@ function UUF:UpdateUnitFrame(unitFrame, unit)
     if isPlayer or isTarget then UUF:UpdateUnitLeaderAssistantIndicator(unitFrame, unit) end
     if isPlayer or isTarget then UUF:UpdateUnitCombatIndicator(unitFrame, unit) end
     if isPlayer then UUF:UpdateUnitRestingIndicator(unitFrame, unit) end
-    -- if isPlayer then UUF:UpdateUnitTotems(unitFrame, unit) end
+    if isPlayer then UUF:UpdateUnitPvPIndicator(unitFrame, unit) end
+    if isPlayer then UUF:UpdateUnitTotems(unitFrame, unit) end
+    if isTarget then UUF:UpdateUnitClassificationIndicator(unitFrame, unit) end
+    if isTarget then UUF:UpdateUnitQuestIndicator(unitFrame, unit) end
     UUF:UpdateUnitMouseoverIndicator(unitFrame, unit)
     UUF:UpdateUnitTargetGlowIndicator(unitFrame, unit)
     UUF:UpdateUnitAuras(unitFrame, unit)
@@ -152,40 +159,9 @@ function UUF:UpdateBossFrames()
     UUF:LayoutBossFrames()
 end
 
-
 function UUF:UpdateAllUnitFrames()
-    for unit, _ in pairs(UUF.db.profile.Units) do
-        if UUF[unit:upper()] then
-            UUF:UpdateUnitFrame(UUF[unit:upper()], unit)
-        end
-    end
-end
-
-function UUF:ToggleUnitFrameVisibility(unit)
-    if not unit then return end
-    local UnitKey = unit:upper()
-    local UnitDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)]
-    if not UnitDB then return end
-    if UnitDB.Enabled then
-        if unit == "boss" then
-            if not UUF["BOSS1"] then UUF:SpawnUnitFrame(unit) end
-        elseif not UUF[UnitKey] then
-            UUF:SpawnUnitFrame(unit)
-        end
-    elseif UnitDB.ForceHideBlizzard then
-        oUF:DisableBlizzard(unit)
-    end
-
-    if unit == "boss" then
-        for i = 1, UUF.MAX_BOSS_FRAMES do
-            local unitFrame = UUF["BOSS"..i]
-            if unitFrame then (UnitDB.Enabled and RegisterUnitWatch or UnregisterUnitWatch)(unitFrame) unitFrame:SetShown(UnitDB.Enabled) end
-        end
-        return
-    end
-
-    local unitFrame = UUF[UnitKey]
-    if not unitFrame then return end
-    (UnitDB.Enabled and RegisterUnitWatch or UnregisterUnitWatch)(unitFrame)
-    unitFrame:SetShown(UnitDB.Enabled)
+	for _, unit in ipairs({"player", "target", "targettarget", "focus", "focustarget", "pet"}) do
+		if UUF[unit:upper()] then UUF:UpdateUnitFrame(UUF[unit:upper()], unit) end
+	end
+	UUF:UpdateBossFrames()
 end

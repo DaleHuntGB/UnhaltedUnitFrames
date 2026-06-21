@@ -65,9 +65,9 @@ end
 
 function UUF:CreateTestBossFrames()
     local General = UUF.db.profile.General
-    local AuraDurationDB = UUF.db.profile.Units.boss.Auras.AuraDuration
     local BuffsDB = UUF.db.profile.Units.boss.Auras.Buffs
     local DebuffsDB = UUF.db.profile.Units.boss.Auras.Debuffs
+    local CustomDB = UUF.db.profile.Units.boss.Auras.Custom
     local TagsDB = UUF.db.profile.Units.boss.Tags
     UUF:ResolveLSM()
     local BossDB = UUF.db.profile.Units.boss
@@ -75,6 +75,8 @@ function UUF:CreateTestBossFrames()
         for i, BossFrame in ipairs(UUF.BOSS_FRAMES) do
             BossFrame:SetAttribute("unit", nil)
             UnregisterUnitWatch(BossFrame)
+            if BossFrame:IsElementEnabled("Auras") then BossFrame:DisableElement("Auras") end
+            if BossFrame:IsElementEnabled("CustomAuras") then BossFrame:DisableElement("CustomAuras") end
             if BossDB.Enabled then BossFrame:Show() else BossFrame:Hide() end
 
             BossFrame:SetFrameStrata(BossDB.Frame.FrameStrata)
@@ -102,7 +104,12 @@ function UUF:CreateTestBossFrames()
                     [9] = "achievement_character_orc_male",
                     [10]= "achievement_character_orc_female"
                 }
-                BossFrame.Portrait:SetTexture("Interface\\ICONS\\" .. PortraitOptions[i])
+                if BossFrame.Portrait:IsObjectType("PlayerModel") then
+                    BossFrame.Portrait:ClearModel()
+                    BossFrame.Portrait:SetUnit("player")
+                else
+                    BossFrame.Portrait:SetTexture("Interface\\ICONS\\" .. PortraitOptions[i])
+                end
             end
 
             if BossFrame.Power then
@@ -125,10 +132,11 @@ function UUF:CreateTestBossFrames()
                     CastBarContainer:Show()
                     BossFrame.Castbar:Show()
                     BossFrame.Castbar.Background:Show()
-                    BossFrame.Castbar.Text:SetText("Ethereal Portal")
+                    BossFrame.Castbar.Text:SetText(CastBarDB.ShowTarget and "Ethereal Portal » Target" or "Ethereal Portal")
                     BossFrame.Castbar.Time:SetText("0.0")
                     BossFrame.Castbar:SetMinMaxValues(0, 1000)
-                    BossFrame.Castbar:SetScript("OnUpdate", function() local currentValue = BossFrame.Castbar:GetValue() currentValue = currentValue + 1 if currentValue >= 1000 then currentValue = 0 end BossFrame.Castbar:SetValue(currentValue) BossFrame.Castbar.Time:SetText(string.format("%.1f", (currentValue / 1000) * 5)) end)
+                    BossFrame.Castbar.testValue = 0
+                    BossFrame.Castbar:SetScript("OnUpdate", function(self, elapsed) self.testValue = ((self.testValue or 0) + elapsed) % 5 self:SetValue((self.testValue / 5) * 1000) self.Time:SetText(string.format("%.1f", self.testValue)) end)
                     local castBarColour = (false and CastBarDB.NotInterruptibleColour) or (CastBarDB.ColourByClass and UUF:GetClassColour(BossFrame)) or CastBarDB.Foreground
                     BossFrame.Castbar:SetStatusBarColor(castBarColour[1], castBarColour[2], castBarColour[3], castBarColour[4])
                     if CastBarDB.Icon.Enabled and BossFrame.Castbar.Icon then BossFrame.Castbar.Icon:SetTexture("Interface\\Icons\\ability_mage_netherwindpresence") BossFrame.Castbar.Icon:Show() end
@@ -143,6 +151,9 @@ function UUF:CreateTestBossFrames()
                     BossFrame.BuffContainer:ClearAllPoints()
                     BossFrame.BuffContainer:SetPoint(BuffsDB.Layout[1], BossFrame, BuffsDB.Layout[2], BuffsDB.Layout[3], BuffsDB.Layout[4])
                     BossFrame.BuffContainer:Show()
+                    for _, button in ipairs(BossFrame.BuffContainer) do
+                        if button then button:Hide() end
+                    end
 
                     for j = 1, BuffsDB.Num do
                         local button = BossFrame.BuffContainer["fake" .. j]
@@ -189,23 +200,7 @@ function UUF:CreateTestBossFrames()
                         button.Icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
                         button.Count:SetText(j)
                         button.Duration = button.Duration or button:CreateFontString(nil, "OVERLAY")
-                        button.Duration:ClearAllPoints()
-                        button.Duration:SetPoint(AuraDurationDB.Layout[1], button, AuraDurationDB.Layout[2], AuraDurationDB.Layout[3], AuraDurationDB.Layout[4])
-                        if AuraDurationDB.ScaleByIconSize then
-                            local iconWidth = button:GetWidth()
-                            local scaleFactor = iconWidth / 36
-                            button.Duration:SetFont(UUF.Media.Font, AuraDurationDB.FontSize * scaleFactor, General.Fonts.FontFlag)
-                        else
-                            button.Duration:SetFont(UUF.Media.Font, AuraDurationDB.FontSize, General.Fonts.FontFlag)
-                        end
-                        if General.Fonts.Shadow.Enabled then
-                            button.Duration:SetShadowColor(unpack(General.Fonts.Shadow.Colour))
-                            button.Duration:SetShadowOffset(General.Fonts.Shadow.XPos, General.Fonts.Shadow.YPos)
-                        else
-                            button.Duration:SetShadowColor(0, 0, 0, 0)
-                            button.Duration:SetShadowOffset(0, 0)
-                        end
-                        button.Duration:SetTextColor(AuraDurationDB.Colour[1], AuraDurationDB.Colour[2], AuraDurationDB.Colour[3], 1)
+                        UUF:ApplyCooldownText(button, button.Duration, "boss")
                         button.Duration:SetText("10m")
                         button:Show()
                     end
@@ -226,6 +221,9 @@ function UUF:CreateTestBossFrames()
                     BossFrame.DebuffContainer:ClearAllPoints()
                     BossFrame.DebuffContainer:SetPoint(DebuffsDB.Layout[1], BossFrame, DebuffsDB.Layout[2], DebuffsDB.Layout[3], DebuffsDB.Layout[4])
                     BossFrame.DebuffContainer:Show()
+                    for _, button in ipairs(BossFrame.DebuffContainer) do
+                        if button then button:Hide() end
+                    end
 
                     for j = 1, DebuffsDB.Num do
                         local button = BossFrame.DebuffContainer["fake" .. j]
@@ -271,23 +269,7 @@ function UUF:CreateTestBossFrames()
                         button.Icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
                         button.Count:SetText(j)
                         button.Duration = button.Duration or button:CreateFontString(nil, "OVERLAY")
-                        button.Duration:ClearAllPoints()
-                        button.Duration:SetPoint(AuraDurationDB.Layout[1], button, AuraDurationDB.Layout[2], AuraDurationDB.Layout[3], AuraDurationDB.Layout[4])
-                        if AuraDurationDB.ScaleByIconSize then
-                            local iconWidth = button:GetWidth()
-                            local scaleFactor = iconWidth / 36
-                            button.Duration:SetFont(UUF.Media.Font, AuraDurationDB.FontSize * scaleFactor, General.Fonts.FontFlag)
-                        else
-                            button.Duration:SetFont(UUF.Media.Font, AuraDurationDB.FontSize, General.Fonts.FontFlag)
-                        end
-                        if General.Fonts.Shadow.Enabled then
-                            button.Duration:SetShadowColor(unpack(General.Fonts.Shadow.Colour))
-                            button.Duration:SetShadowOffset(General.Fonts.Shadow.XPos, General.Fonts.Shadow.YPos)
-                        else
-                            button.Duration:SetShadowColor(0, 0, 0, 0)
-                            button.Duration:SetShadowOffset(0, 0)
-                        end
-                        button.Duration:SetTextColor(AuraDurationDB.Colour[1], AuraDurationDB.Colour[2], AuraDurationDB.Colour[3], 1)
+                        UUF:ApplyCooldownText(button, button.Duration, "boss")
                         button.Duration:SetText("10m")
                         button:Show()
                     end
@@ -364,6 +346,15 @@ function UUF:CreateTestBossFrames()
         for i, BossFrame in ipairs(UUF.BOSS_FRAMES) do
             BossFrame:SetAttribute("unit", "boss" .. i)
             RegisterUnitWatch(BossFrame)
+            if BossFrame.Castbar then
+                BossFrame.Castbar:SetScript("OnUpdate", nil)
+                BossFrame.Castbar:Hide()
+                BossFrame.Castbar:GetParent():Hide()
+                if UUF.db.profile.Units.boss.CastBar.Enabled then
+                    if BossFrame:IsElementEnabled("Castbar") then BossFrame:DisableElement("Castbar") end
+                    BossFrame:EnableElement("Castbar")
+                end
+            end
             for j = 1, (BossFrame.BuffContainer and BossFrame.BuffContainer.maxFake or 0) do
                 local button = BossFrame.BuffContainer["fake" .. j]
                 if button then button:Hide() end
@@ -371,6 +362,20 @@ function UUF:CreateTestBossFrames()
             for j = 1, (BossFrame.DebuffContainer and BossFrame.DebuffContainer.maxFake or 0) do
                 local button = BossFrame.DebuffContainer["fake" .. j]
                 if button then button:Hide() end
+            end
+            for j = 1, (BossFrame.CustomAuraContainer and BossFrame.CustomAuraContainer.maxFake or 0) do
+                local button = BossFrame.CustomAuraContainer["fake" .. j]
+                if button then button:Hide() end
+            end
+            if BuffsDB.Enabled or DebuffsDB.Enabled then
+                if not BossFrame:IsElementEnabled("Auras") then BossFrame:EnableElement("Auras") end
+                if BossFrame.BuffContainer and BossFrame.BuffContainer.ForceUpdate then BossFrame.BuffContainer:ForceUpdate() end
+                if BossFrame.DebuffContainer and BossFrame.DebuffContainer.ForceUpdate then BossFrame.DebuffContainer:ForceUpdate() end
+            end
+            if CustomDB and CustomDB.Enabled then
+                BossFrame.CustomAuras = BossFrame.CustomAuraContainer
+                if not BossFrame:IsElementEnabled("CustomAuras") then BossFrame:EnableElement("CustomAuras") end
+                if BossFrame.CustomAuraContainer and BossFrame.CustomAuraContainer.ForceUpdate then BossFrame.CustomAuraContainer:ForceUpdate() end
             end
             BossFrame:Hide()
         end

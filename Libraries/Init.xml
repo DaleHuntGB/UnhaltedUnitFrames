@@ -15,5 +15,6 @@
 	<Include file="LibDispel-1.0/LibDispel.lua"/>
 
     <Include file="oUF/oUF.xml"/>
+	<Include file="oUF_Elements/Init.xml"/>
 	<Include file="TaintLess/TaintLess.xml"/>
 </Ui>

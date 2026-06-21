@@ -18,7 +18,7 @@ function UUF:CreateUnitRestingIndicator(unitFrame, unit)
             Resting:SetTexture([[Interface\CharacterFrame\UI-StateIcon]])
             Resting:SetTexCoord(0, 0.5, 0, 0.421875)
         else
-            Resting:SetTexture(SetRestingTexture(RestingDB.Texture))
+            Resting:SetTexture(UUF.StatusTextures["Resting"][RestingDB.Texture])
             Resting:SetTexCoord(0, 1, 0, 1)
         end
         if IsResting() then Resting:Show() end
@@ -43,7 +43,7 @@ function UUF:UpdateUnitRestingIndicator(unitFrame, unit)
                 unitFrame.RestingIndicator:SetTexture([[Interface\CharacterFrame\UI-StateIcon]])
                 unitFrame.RestingIndicator:SetTexCoord(0, 0.5, 0, 0.421875)
             else
-                unitFrame.RestingIndicator:SetTexture(SetRestingTexture(RestingDB.Texture))
+                unitFrame.RestingIndicator:SetTexture(UUF.StatusTextures["Resting"][RestingDB.Texture])
                 unitFrame.RestingIndicator:SetTexCoord(0, 1, 0, 1)
             end
             if IsResting() then

@@ -6,6 +6,7 @@ UUF.CASTBAR_TEST_MODE = false
 UUF.BOSS_TEST_MODE = false
 UUF.BOSS_FRAMES = {}
 UUF.MAX_BOSS_FRAMES = 5
+local CooldownDurationFormatter = C_StringUtil.CreateNumericRuleFormatter()
 
 UUF.LSM = LibStub("LibSharedMedia-3.0")
 UUF.LDS = LibStub("LibDualSpec-1.0")
@@ -59,6 +60,39 @@ UUF.StatusTextures = {
     },
 }
 
+UUF.ClassificationTextures = {
+    ["CLASSIFICATION0"] = {
+        ["elite"] = "nameplates-icon-elite-gold",
+        ["rare"] = "nameplates-icon-elite-silver",
+        ["rareelite"] = "nameplates-icon-elite-silver",
+        ["worldboss"] = "nameplates-icon-elite-gold",
+    },
+    ["CLASSIFICATION1"] = {
+        ["elite"] = "VignetteEvent-SuperTracked",
+        ["rare"] = "VignetteEvent",
+        ["rareelite"] = "VignetteKillElite-SuperTracked",
+        ["worldboss"] = "vignettekillboss",
+    },
+    ["CLASSIFICATION2"] = {
+        ["elite"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Classification\\Classic\\Elite.png",
+        ["rare"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Classification\\Classic\\Rare.png",
+        ["rareelite"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Classification\\Classic\\RareElite.png",
+        ["worldboss"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Classification\\Classic\\WorldBoss.png",
+    },
+    ["CLASSIFICATION3"] = {
+        ["elite"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Classification\\Minimalist\\Elite.png",
+        ["rare"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Classification\\Minimalist\\Rare.png",
+        ["rareelite"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Classification\\Minimalist\\RareElite.png",
+        ["worldboss"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Classification\\Minimalist\\WorldBoss.png",
+    },
+}
+
+UUF.QuestTextures = {
+    DEFAULT = "Interface\\TargetingFrame\\PortraitQuestBadge",
+    QUEST0 = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Quest\\Quest01.png",
+    QUEST1 = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Quest\\Quest02.png",
+}
+
 function UUF:PrettyPrint(MSG) print(UUF.ADDON_NAME .. ":|r " .. MSG) end
 
 function UUF:FetchFrameName(unit)
@@ -85,8 +119,66 @@ function UUF:ResolveLSM()
     UUF.Media.Background = LSM:Fetch("statusbar", General.Textures.Background) or "Interface\\Buttons\\WHITE8X8"
 end
 
+function UUF:GetCooldownDurationComponents(displayStyle, minValue)
+    if displayStyle == "clock" then
+        if minValue >= 86400 then
+            return {{div = 86400}, {div = 3600, mod = 24}}
+        elseif minValue >= 3600 then
+            return {{div = 3600}, {div = 60, mod = 60}}
+        end
+        return {{div = 60}, {mod = 60}}
+    elseif displayStyle == "minutes" then
+        return {{div = 60}}
+    elseif displayStyle == "hours" then
+        return {{div = 3600}}
+    elseif displayStyle == "days" then
+        return {{div = 86400}}
+    end
+end
+
+function UUF:ApplyCooldownText(icon, textRegion, unit)
+    if not icon then return end
+    local CooldownTextDB = UUF.db.profile.General.CooldownText
+    if icon.SetCountdownFormatter then
+        CooldownDurationFormatter:SetBreakpoints(CooldownTextDB.CooldownBreakpoints)
+        icon:SetCountdownFormatter(CooldownDurationFormatter)
+    end
+    if CooldownTextDB.Advanced and unit then CooldownTextDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Auras.AuraDuration end
+    if not textRegion then
+        C_Timer.After(0.01, function()
+            for _, region in ipairs({icon:GetRegions()}) do
+                if region:GetObjectType() == "FontString" then
+                    UUF:ApplyCooldownText(icon, region, unit)
+                    return
+                end
+            end
+        end)
+        return
+    end
+
+    local FontsDB = UUF.db.profile.General.Fonts
+    if CooldownTextDB.ScaleByIconSize then
+        local iconWidth = icon:GetWidth()
+        local scaleFactor = iconWidth > 0 and iconWidth / 36 or 1
+        local fontSize = CooldownTextDB.FontSize * scaleFactor
+        if fontSize < 1 then fontSize = 12 end
+        textRegion:SetFont(UUF.Media.Font, fontSize, FontsDB.FontFlag)
+    else
+        textRegion:SetFont(UUF.Media.Font, CooldownTextDB.FontSize, FontsDB.FontFlag)
+    end
+    textRegion:ClearAllPoints()
+    textRegion:SetPoint(CooldownTextDB.Layout[1], icon, CooldownTextDB.Layout[2], CooldownTextDB.Layout[3], CooldownTextDB.Layout[4])
+    if FontsDB.Shadow.Enabled then
+        textRegion:SetShadowColor(FontsDB.Shadow.Colour[1], FontsDB.Shadow.Colour[2], FontsDB.Shadow.Colour[3], FontsDB.Shadow.Colour[4])
+        textRegion:SetShadowOffset(FontsDB.Shadow.XPos, FontsDB.Shadow.YPos)
+    else
+        textRegion:SetShadowColor(0, 0, 0, 0)
+        textRegion:SetShadowOffset(0, 0)
+    end
+end
+
 function UUF:Capitalize(STR)
-    return "|cFFFFCC00" .. (STR:gsub("^%l", string.upper)) .. "|r"
+    return "|cFF8080FF" .. (STR:gsub("^%l", string.upper)) .. "|r"
 end
 
 function UUF:GetPixelPerfectScale()
@@ -100,7 +192,7 @@ local function SetupSlashCommands()
     SLASH_UUF2 = "/unhaltedunitframes"
     SLASH_UUF3 = "/uf"
     SlashCmdList["UUF"] = function() UUF:CreateGUI() end
-    UUF:PrettyPrint("'|cFF8080FF/uuf|r' for in-game configuration.")
+    if UUF.db.global.DisplayLoginMessage then UUF:PrettyPrint("'|cFF8080FF/uuf|r' for in-game configuration.") end
 
     -- RL command
     SLASH_UUFRELOAD1 = "/rl"
@@ -187,6 +279,7 @@ end
 
 local function AddAnchorsToBCDM()
     if not C_AddOns.IsAddOnLoaded("BetterCooldownManager") then return end
+    if select(4, GetBuildInfo()) >= 121000 then return end
     local UUF_Anchors = {
         ["UUF_Player"] = "|cFF8080FFUnhalted|rUnitFrames: Player Frame",
         ["UUF_Target"] = "|cFF8080FFUnhalted|rUnitFrames: Target Frame",
@@ -257,7 +350,7 @@ function UUF:GetReactionColour(reaction)
 end
 
 function UUF:GetNormalizedUnit(unit)
-    local normalizedUnit = unit:match("^boss%d+$") and "boss" or unit
+    local normalizedUnit = unit == "vehicle" and "player" or unit:match("^boss%d+$") and "boss" or unit
     return normalizedUnit
 end
 
@@ -467,7 +560,7 @@ function UUF:CleanTruncateUTF8String(text)
 end
 
 function UUF:IsSecretValue(value)
-    return value ~= nil and type(issecretvalue) == "function" and issecretvalue(value)
+    return issecretvalue and issecretvalue(value)
 end
 
 function UUF:GetSecondaryPowerType()
@@ -587,28 +680,81 @@ end
 
 UUF.AURA_FILTERS = {
     Buffs = {
-        Modifiers = {
-            ["PLAYER"] = {Title = "Player", Desc = "Buffs Applied by Player."},
-            ["RAID"] = {Title = "Raid", Desc = "Buffs that appear on Raid Frames."},
-            ["CANCELABLE"] = {Title = "Cancelable", Desc = "Cancelable Buffs."},
-            ["NOT_CANCELABLE"] = {Title = "Not Cancelable", Desc = "Un-cancelable Buffs.."},
-        },
-        Exclusive = {
-            ["EXTERNAL_DEFENSIVE"] = {Title = "External Defensives", Desc = "External Defensive - |cFF00B0F7Blizzard|r."},
-            ["BIG_DEFENSIVE"] = {Title = "Big Defensives", Desc = "Major Defensive Buffs - |cFF00B0F7Blizzard|r."},
-            ["IMPORTANT"] = {Title = "Important", Desc = "Important Buffs - |cFF00B0F7Blizzard|r."},
-        },
+        {Key = "RaidPlayerDispellable", Group = "General", Title = "Player Dispellable", Desc = "Show buffs marked as dispellable by the |cFF8080FFplayer|r."},
+        {Key = "Player", Group = "Player (You)", Title = "All", Desc = "Show every buff applied by the |cFF8080FFplayer|r or their vehicle."},
+        {Key = "CrowdControlPlayer", Group = "Player (You)", Title = "Crowd Control", Desc = "Show crowd-control buffs applied by the |cFF8080FFplayer|r."},
+        {Key = "BigDefensivePlayer", Group = "Player (You)", Title = "Big Defensive", Desc = "Show major defensive buffs applied by the |cFF8080FFplayer|r."},
+        {Key = "ExternalDefensivePlayer", Group = "Player (You)", Title = "External Defensive", Desc = "Show external defensive buffs applied by the |cFF8080FFplayer|r."},
+        {Key = "RaidInCombatPlayer", Group = "Player (You)", Title = "Raid in Combat", Desc = "Show |cFF8080FFplayer|r-cast buffs marked for raid frames while in combat."},
+        {Key = "CancelablePlayer", Group = "Player (You)", Title = "Cancelable", Desc = "Show cancelable buffs applied by the player."},
+        {Key = "NotCancelablePlayer", Group = "Player (You)", Title = "Not Cancelable", Desc = "Show non-cancelable buffs applied by the player."},
+        {Key = "RaidPlayer", Group = "Player (You)", Title = "Raid", Desc = "Show player-cast buffs marked for raid frames."},
+        {Key = "CrowdControl", Group = "Others (Not You)", Title = "Crowd Control", Desc = "Show crowd-control buffs applied by |cFF8080FFother|r units."},
+        {Key = "BigDefensive", Group = "Others (Not You)", Title = "Big Defensive", Desc = "Show major defensive buffs applied by |cFF8080FFother|r units."},
+        {Key = "ExternalDefensive", Group = "Others (Not You)", Title = "External Defensive", Desc = "Show external defensive buffs applied by |cFF8080FFother|r units."},
+        {Key = "RaidInCombat", Group = "Others (Not You)", Title = "Raid in Combat", Desc = "Show |cFF8080FFother|r-cast buffs marked for raid frames while in combat."},
+        {Key = "Cancelable", Group = "Others (Not You)", Title = "Cancelable", Desc = "Show cancelable buffs applied by |cFF8080FFother|r units."},
+        {Key = "NotCancelable", Group = "Others (Not You)", Title = "Not Cancelable", Desc = "Show non-cancelable buffs applied by |cFF8080FFother|r units."},
+        {Key = "Raid", Group = "Others (Not You)", Title = "Raid", Desc = "Show |cFF8080FFother|r-cast buffs marked for raid frames."},
     },
     Debuffs = {
-        Modifiers = {
-            ["PLAYER"] = {Title = "Player", Desc = "Debuffs Applied by Player."},
-            ["RAID"] = {Title = "Raid", Desc = "Debuffs that appear on Raid Frames."},
-            ["INCLUDE_NAME_PLATE_ONLY"] = {Title = "Nameplate Only", Desc = "Nameplate Debuffs."},
-        },
-        Exclusive = {
-            ["CROWD_CONTROL"] = {Title = "Crowd Control", Desc = "Crowd Control Debuffs."},
-            ["RAID_PLAYER_DISPELLABLE"] = {Title = "Player Dispellable", Desc = "Debuffs Dispellable by Player."},
-            ["IMPORTANT"] = {Title = "Important", Desc = "Important Debuffs - |cFF00B0F7Blizzard|r."},
-        },
+        {Key = "Typed", Group = "General", Title = "Typed", Desc = "Show debuffs with a debuff type, such as |cFF3296FFMagic|r, |cFF9600FFCurse|r, |cFF966400Disease|r, |cFF009600Poison|r, or |cFFC80000Bleed|r."},
+        {Key = "RaidPlayerDispellable", Group = "General", Title = "Player Dispellable", Desc = "Show debuffs marked as dispellable by the |cFF8080FFplayer|r."},
+        {Key = "Player", Group = "Player (You)", Title = "All", Desc = "Show every debuff applied by the |cFF8080FFplayer|r or their vehicle."},
+        {Key = "CrowdControlPlayer", Group = "Player (You)", Title = "Crowd Control", Desc = "Show crowd-control debuffs applied by the |cFF8080FFplayer|r."},
+        {Key = "BigDefensivePlayer", Group = "Player (You)", Title = "Big Defensive", Desc = "Show major defensive debuffs applied by the |cFF8080FFplayer|r."},
+        {Key = "ExternalDefensivePlayer", Group = "Player (You)", Title = "External Defensive", Desc = "Show external defensive debuffs applied by the |cFF8080FFplayer|r."},
+        {Key = "RaidInCombatPlayer", Group = "Player (You)", Title = "Raid in Combat", Desc = "Show |cFF8080FFplayer|r-cast debuffs marked for raid frames while in combat."},
+        {Key = "CancelablePlayer", Group = "Player (You)", Title = "Cancelable", Desc = "Show cancelable debuffs applied by the |cFF8080FFplayer|r."},
+        {Key = "NotCancelablePlayer", Group = "Player (You)", Title = "Not Cancelable", Desc = "Show non-cancelable debuffs applied by the |cFF8080FFplayer|r."},
+        {Key = "RaidPlayer", Group = "Player (You)", Title = "Raid", Desc = "Show |cFF8080FFplayer|r-cast debuffs marked for raid frames."},
+        {Key = "CrowdControl", Group = "Others (Not You)", Title = "Crowd Control", Desc = "Show crowd-control debuffs applied by |cFF8080FFother|r units."},
+        {Key = "BigDefensive", Group = "Others (Not You)", Title = "Big Defensive", Desc = "Show major defensive debuffs applied by |cFF8080FFother|r units."},
+        {Key = "ExternalDefensive", Group = "Others (Not You)", Title = "External Defensive", Desc = "Show external defensive debuffs applied by |cFF8080FFother|r units."},
+        {Key = "RaidInCombat", Group = "Others (Not You)", Title = "Raid in Combat", Desc = "Show |cFF8080FFother|r-cast debuffs marked for raid frames while in combat."},
+        {Key = "Cancelable", Group = "Others (Not You)", Title = "Cancelable", Desc = "Show cancelable debuffs applied by |cFF8080FFother|r units."},
+        {Key = "NotCancelable", Group = "Others (Not You)", Title = "Not Cancelable", Desc = "Show non-cancelable debuffs applied by |cFF8080FFother|r units."},
+        {Key = "Raid", Group = "Others (Not You)", Title = "Raid", Desc = "Show |cFF8080FFother|r-cast debuffs marked for raid frames."},
     }
+}
+
+UUF.AURA_BLACKLIST = {
+    -- Rogue Poisons
+    [2823] = true,      -- Deadly Poison
+    [315584] = true,    -- Instant Poison
+    [3408] = true,      -- Crippling Poison
+    [381637] = true,    -- Atrophic Poison
+    [381664] = true,    -- Amplifying Poison
+    [8679] = true,      -- Wound Poison
+
+    -- Shaman Imbuements
+    [319773] = true,    -- Windfury Weapon
+    [319778] = true,    -- Flametongue Weapon
+    [382021] = true,    -- Earthliving Weapon
+    [382022] = true,    -- Earthliving Weapon
+    [457496] = true,    -- Tidecaller's Guard
+    [457481] = true,    -- Tidecaller's Guard
+    [462757] = true,    -- Thunderstrike Ward
+    [462742] = true,    -- Thunderstrike Ward
+
+    -- Skyriding
+    [404464] = true,    -- Flight Style: Skyriding
+    [404468] = true,    -- Flight Style: Steady
+    [427490] = true,    -- Ride Along
+    [447959] = true,    -- Ride Along - Enabled
+    [447960] = true,    -- Ride Along - Inactive
+
+    -- Other
+    [160455] = true,    -- Hunter Pet Fatigued
+    [26013] = true,     -- Deserter
+    [264689] = true,    -- Hunter Pet Fatigued
+    [377234] = true,    -- Thrill of the Skies
+    [390435] = true,    -- Exhaustion
+    [433568] = true,    -- Rite of Sanctification
+    [433583] = true,    -- Rite of Adjuration
+    [57723] = true,     -- Exhaustion
+    [57724] = true,     -- Sated
+    [71041] = true,     -- Dungeon Deserter
+    [80354] = true,     -- Temporal Displacement
+    [95809] = true,     -- Hunter Pet Insanity
 }

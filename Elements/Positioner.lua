@@ -5,6 +5,8 @@ function UUF:CreatePositionController()
 
     if C_AddOns.IsAddOnLoaded("SkironCooldownManager") then
         ECDM = _G["SCM_GroupAnchor_1"]
+	elseif C_AddOns.IsAddOnLoaded("Coolinator") then
+		ECDM = _G["CoolinatorPrimaryGroupAnchor"]
     else
         ECDM = _G["EssentialCooldownViewer"]
     end
@@ -14,18 +16,6 @@ function UUF:CreatePositionController()
         CDMAnchor:SetAllPoints(ECDM)
         CDMAnchor:SetSize(ECDM:GetWidth() or 300, ECDM:GetHeight() or 48)
     else
-        UUF:PrettyPrint("|cFFFFCC00Essential Cooldown Viewer|r was not found.")
+        UUF:PrettyPrint("|cFF8080FFAnchor Point|r was not found.")
     end
-end
-
-function UUF:IsCDMAnchorActive()
-    local ECDM = ""
-
-    if C_AddOns.IsAddOnLoaded("SkironCooldownManager") then
-        ECDM = _G["SCM_GroupAnchor_1"]
-    else
-        ECDM = _G["EssentialCooldownViewer"]
-    end
-    local CDMAnchor = _G["UUF_CDMAnchor"]
-    return  ECDM and ECDM:IsShown() and CDMAnchor and CDMAnchor:IsShown()
 end

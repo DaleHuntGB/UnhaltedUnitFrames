@@ -1,6 +1,42 @@
-# UnhaltedUnitFrames
+## V12.0.24
+- Fixed `Classification` Textures not appearing.
+- File Restructure.
+- Added support for `Coolinator` as an anchor point.
+## V12.0.23
+- Added `Interrupt Success` Colour for Cast Bars.
+- Added `Smooth Updates` for Health Bars.
+- Added `reactioncolour` tag.
+- Added Custom Aura Container for `Player`, `Target`, `Focus`, `Pet` and `Boss`.
+- Removed `IMPORTANT` filter flag.
+- Fixed Auras in the Test Environment.
+- Fixed the `HealPrediction` error.
+- Added 3D Portraits back (for now).
+- Added 2D Portrait as a fallback for 3D Portraits that are secret.
+- Added Sorting for Auras - `Blizzard`, `Blizzard Reversed`, `Duration` & `Duration Reversed`.
+- Added `Typed` Filter. This will show all debuffs that are `Magic`, `Poison`, `Curse`, `Bleed` or `Disease`.
+- Added `Custom` Aura Container. This allows you to create an additional container per unit which can be used as either `Buffs` or `Debuffs`.
 
-## [V12.0.13](https://github.com/DaleHuntGB/UnhaltedUnitFrames/tree/V12.0.13) (2026-01-27)
-[Full Changelog](https://github.com/DaleHuntGB/UnhaltedUnitFrames/commits/V12.0.13) 
-
-- more power tags  
+## V12.0.22
+- Added `OUTLINE, SLUG` to the Font Selection.
+- Fixed the double creation of Absorbs & Heal Absorbs (Thanks Permok).
+- Added Totems back.
+- Private Auras for Player.
+- Improved on the Filters for Auras. This includes blacklisting what Blizzard allows.
+- Added `Display Login Message` toggle (Thanks Femxiii).
+- Added `Colour By Class` for Player/Pet CastBars (Thanks Lichie567).
+- Added new tags for percent health. You can now specify `decimals` to show (Thanks Rodrigodias4).
+- 3D Portraits are removed as they are now secret inside instances.
+- Bumped Interface Version.
+- Added Incoming Heals for all frames.
+- Added `Movers` for all frames.
+- Added `Show Target` and `Hold Time` for CastBars.
+- Added PVP Badge / Indicator.
+- Tidied up code.
+- Fixed Test Environment errors.
+- Improved upon the `SecondaryPowerBar` logic & code.
+- Added Quest Indicator.
+- Added Classification Indicator (Rare/Rare Elite/Elite).
+- Added Custom Quest Texture.
+- Added Cooldown Break Points. This might reset some of your options with regards to the Cooldown Text.
+- GUI Rework with the new options.
+- Added `Show Over Absorb` toggle for Absorbs. This should now show you an absorb when at full health, this is only enabled when you select `Attach to Missing Health`.
