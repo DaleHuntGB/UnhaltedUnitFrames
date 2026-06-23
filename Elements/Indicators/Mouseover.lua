@@ -59,10 +59,10 @@ function UUF:UpdateUnitMouseoverIndicator(unitFrame, unit)
             unitFrame.MouseoverHighlight:SetBackdropBorderColor(0,0,0,0)
         end
 
+        if unitFrame:IsMouseOver() then unitFrame.MouseoverHighlight:Show() else unitFrame.MouseoverHighlight:Hide() end
     else
         if unitFrame.MouseoverHighlight then
             unitFrame.MouseoverHighlight:Hide()
-            unitFrame.MouseoverHighlight = nil
         end
     end
 end
