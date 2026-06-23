@@ -1698,7 +1698,7 @@ local Defaults = {
                     RaidTargetMarker = {
                         Enabled = true,
                         Size = 24,
-                        Layout = {"CENTER", "TOP", 0, 0},
+                        Layout = {"CENTER", "CENTER", 0, 0},
                     },
                     Mouseover = {
                         Enabled = true,
