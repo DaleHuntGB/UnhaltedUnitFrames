@@ -617,7 +617,7 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
             local roleOrder = FrameDB.RoleOrder[i]
             local RoleOrderDropdown = AG:Create("Dropdown")
             RoleOrderDropdown:SetList({["TANK"] = "Tank", ["HEALER"] = "Healer", ["DAMAGER"] = "DPS"}, {"TANK", "HEALER", "DAMAGER"})
-            RoleOrderDropdown:SetLabel("Role Order " .. i)
+            RoleOrderDropdown:SetLabel("Order " .. i)
             RoleOrderDropdown:SetValue(roleOrder)
             RoleOrderDropdown:SetRelativeWidth(0.33)
             RoleOrderDropdown:SetCallback("OnValueChanged", function(_, _, value) FrameDB.RoleOrder[i] = value updateCallback() end)
