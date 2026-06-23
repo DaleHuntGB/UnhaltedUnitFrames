@@ -610,7 +610,7 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
         SortByDropdown:SetLabel("Sort By")
         SortByDropdown:SetValue(FrameDB.SortBy)
         SortByDropdown:SetRelativeWidth(0.25)
-        SortByDropdown:SetCallback("OnValueChanged", function(_, _, value) FrameDB.SortBy = value updateCallback() end)
+        SortByDropdown:SetCallback("OnValueChanged", function(_, _, value) FrameDB.SortBy = value updateCallback() RefreshSortOrders() end)
         LayoutContainer:AddChild(SortByDropdown)
 
         for i = 1, 3 do
@@ -621,7 +621,15 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
             RoleOrderDropdown:SetValue(roleOrder)
             RoleOrderDropdown:SetRelativeWidth(0.33)
             RoleOrderDropdown:SetCallback("OnValueChanged", function(_, _, value) FrameDB.RoleOrder[i] = value updateCallback() end)
+            RoleOrderDropdown:SetDisabled(FrameDB.SortBy ~= "ROLE")
             LayoutContainer:AddChild(RoleOrderDropdown)
+        end
+    end
+
+    function RefreshSortOrders()
+        for i = 1, 3 do
+            local RoleOrderDropdown = LayoutContainer.children[7 + i]
+            RoleOrderDropdown:SetDisabled(FrameDB.SortBy ~= "ROLE")
         end
     end
 
