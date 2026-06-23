@@ -93,6 +93,7 @@ end
 function UUF:UpdateUnitDispelState(unitFrame, unit)
     if not unitFrame.DispelHighlight then return end
     if not UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].HealthBar.DispelHighlight.Enabled then return end
+    local unitToken = unit == "partyplayer" and "player" or unit
 
     local LibDispel = UUF.LD
     if not LibDispel then return end
@@ -101,7 +102,7 @@ function UUF:UpdateUnitDispelState(unitFrame, unit)
         UUF:UpdateDispelColorCurve(unitFrame)
     end
 
-    if not UnitIsUnit(unit, "player") and not UnitIsFriend("player", unit) then
+    if not UnitIsUnit(unitToken, "player") and not UnitIsFriend("player", unitToken) then
         unitFrame.DispelHighlight:Hide()
         return
     end
@@ -112,11 +113,11 @@ function UUF:UpdateUnitDispelState(unitFrame, unit)
         return
     end
 
-    local bestAura = C_UnitAuras.GetAuraDataByIndex(unit, 1, "HARMFUL|RAID")
+    local bestAura = C_UnitAuras.GetAuraDataByIndex(unitToken, 1, "HARMFUL|RAID")
     local bestAuraInstanceID = bestAura and bestAura.auraInstanceID or nil
 
     if bestAuraInstanceID then
-        local color = C_UnitAuras.GetAuraDispelTypeColor(unit, bestAuraInstanceID, unitFrame.dispelColorCurve)
+        local color = C_UnitAuras.GetAuraDispelTypeColor(unitToken, bestAuraInstanceID, unitFrame.dispelColorCurve)
 
         if color then
             unitFrame.DispelHighlight:SetVertexColor(color:GetRGBA())
@@ -132,13 +133,14 @@ end
 function UUF:RegisterDispelHighlightEvents(unitFrame, unit)
     if not unitFrame.DispelHighlight then return end
     if not UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].HealthBar.DispelHighlight.Enabled then return end
+    local unitToken = unit == "partyplayer" and "player" or unit
 
     if not unitFrame.DispelHighlightHandler then
         unitFrame.DispelHighlightHandler = CreateFrame("Frame")
         unitFrame.DispelHighlightHandler:SetScript("OnEvent", function(self, event, ...) UUF:UpdateUnitDispelState(unitFrame, unit) end)
     end
 
-    unitFrame.DispelHighlightHandler:RegisterUnitEvent("UNIT_AURA", unit)
+    unitFrame.DispelHighlightHandler:RegisterUnitEvent("UNIT_AURA", unitToken)
     unitFrame.DispelHighlightHandler:RegisterEvent("SPELLS_CHANGED")
     unitFrame.DispelHighlightHandler:RegisterEvent("PLAYER_TALENT_UPDATE")
     unitFrame.DispelHighlightHandler:RegisterEvent("PLAYER_TARGET_CHANGED")

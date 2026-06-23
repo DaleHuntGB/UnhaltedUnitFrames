@@ -14,7 +14,7 @@ unitIsTargetEvtFrame:SetScript("OnEvent", function()
 end)
 
 function UUF:CreateUnitTargetGlowIndicator(unitFrame, unit)
-    local TargetIndicatorDB = UUF.db.profile.Units[unit].Indicators.Target
+    local TargetIndicatorDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Indicators.Target
     if TargetIndicatorDB then
         unitFrame.TargetIndicator = CreateFrame("Frame", UUF:FetchFrameName(unit).."_TargetIndicator", unitFrame.Container, "BackdropTemplate")
         unitFrame.TargetIndicator:SetFrameLevel(unitFrame.Container:GetFrameLevel() + 3)
@@ -38,7 +38,7 @@ end
 function UUF:UpdateTargetGlowIndicator(unitFrame, unit)
     if unitFrame and unitFrame.TargetIndicator then
         if UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Indicators.Target.Enabled then
-            unitFrame.TargetIndicator:SetAlphaFromBoolean(UnitIsUnit("target", unit), 1, 0)
+            unitFrame.TargetIndicator:SetAlphaFromBoolean(UnitIsUnit("target", unit == "partyplayer" and "player" or unit), 1, 0)
         else
             unitFrame.TargetIndicator:SetAlpha(0)
         end

@@ -64,6 +64,20 @@ function UUF:UpdateUnitTags()
                     end
                 end
             end
+        elseif unit == "party" then
+            for i = 1, UUF.MAX_PARTY_FRAMES do
+                local partyFrame = UUF["PARTY"..i]
+                if partyFrame then
+                    for tagName in pairs(UnitDB.Tags) do
+                        UUF:UpdateUnitTag(partyFrame, "party"..i, tagName)
+                    end
+                end
+            end
+            if UUF.PARTYPLAYER then
+                for tagName in pairs(UnitDB.Tags) do
+                    UUF:UpdateUnitTag(UUF.PARTYPLAYER, "partyplayer", tagName)
+                end
+            end
         else
             local frame = UUF[unit:upper()]
             if frame then
@@ -74,5 +88,4 @@ function UUF:UpdateUnitTags()
         end
     end
 end
-
 
