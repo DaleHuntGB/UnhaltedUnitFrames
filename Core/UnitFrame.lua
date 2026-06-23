@@ -58,24 +58,22 @@ function UUF:CreatePartyContainer()
 	UUF.PARTY_CONTAINER:SetFrameStrata(Frame.FrameStrata)
 end
 
-local function GetPartyRoleOrder(role)
-	local Frame = UUF.db.profile.Units.party.Frame
-	for index, orderedRole in ipairs(Frame.RoleOrder or {}) do
-		if role == orderedRole then return index end
-	end
-	return 99
-end
-
-local function SortPartyFrames(leftFrame, rightFrame)
+local function SortPartyFrames(firstFrame, secondFrame)
 	local Frame = UUF.db.profile.Units.party.Frame
 	if Frame.SortBy == "NAME" then
-		return (UnitName(leftFrame.unit) or leftFrame.unit or "") < (UnitName(rightFrame.unit) or rightFrame.unit or "")
+		return (UnitName(firstFrame.unit) or firstFrame.unit or "") < (UnitName(secondFrame.unit) or secondFrame.unit or "")
 	elseif Frame.SortBy == "ROLE" then
-		local leftRole = GetPartyRoleOrder(UnitGroupRolesAssigned(leftFrame.unit))
-		local rightRole = GetPartyRoleOrder(UnitGroupRolesAssigned(rightFrame.unit))
-		if leftRole ~= rightRole then return leftRole < rightRole end
+		local firstRole = UnitGroupRolesAssigned(firstFrame.unit)
+		local secondRole = UnitGroupRolesAssigned(secondFrame.unit)
+		local firstRoleOrder = 99
+		local secondRoleOrder = 99
+		for index, orderedRole in ipairs(Frame.RoleOrder or {}) do
+			if firstRole == orderedRole then firstRoleOrder = index end
+			if secondRole == orderedRole then secondRoleOrder = index end
+		end
+		if firstRoleOrder ~= secondRoleOrder then return firstRoleOrder < secondRoleOrder end
 	end
-	return (leftFrame.partyIndex or 0) < (rightFrame.partyIndex or 0)
+	return (firstFrame.partyIndex or 0) < (secondFrame.partyIndex or 0)
 end
 
 function UUF:LayoutPartyFrames()
@@ -83,7 +81,7 @@ function UUF:LayoutPartyFrames()
 	if not UUF.PARTY_CONTAINER or #UUF.PARTY_FRAMES == 0 then return end
 	local partyFrames = {}
 	for _, partyFrame in ipairs(UUF.PARTY_FRAMES) do
-		if partyFrame ~= UUF.PARTYPLAYER or (Frame.ShowPlayer and IsInGroup() and not IsInRaid()) then partyFrames[#partyFrames + 1] = partyFrame end
+		partyFrames[#partyFrames + 1] = partyFrame
 	end
 	table.sort(partyFrames, SortPartyFrames)
 	local frameHeight = Frame.Height
@@ -100,7 +98,6 @@ function UUF:LayoutPartyFrames()
 			partyFrame:SetPoint("TOPLEFT", UUF.PARTY_CONTAINER, "TOPLEFT", 0, -((index - 1) * (frameHeight + spacing)))
 		end
 	end
-	if UUF.PARTYPLAYER and not InCombatLockdown() then UUF.PARTYPLAYER:SetShown(Frame.ShowPlayer and IsInGroup() and not IsInRaid()) end
 end
 
 function UUF:LayoutBossFrames()
@@ -154,16 +151,17 @@ function UUF:SpawnUnitFrame(unit)
             UUF:RegisterRangeFrame(UUF:FetchFrameName(unit .. i), unit .. i)
             UUF:RegisterDispelHighlightEvents(UUF[unit:upper() .. i], unit .. i)
         end
-        UUF.PARTYPLAYER = oUF:Spawn("player", UUF:FetchFrameName("partyplayer"))
-        UnregisterUnitWatch(UUF.PARTYPLAYER)
-        UUF.PARTYPLAYER.partyIndex = 1
-        UUF.PARTYPLAYER:SetParent(UUF.PARTY_CONTAINER)
-        UUF.PARTYPLAYER:SetSize(FrameDB.Width, FrameDB.Height)
-        UUF.PARTYPLAYER:SetFrameStrata(FrameDB.FrameStrata)
-        UUF.PARTY_FRAMES[#UUF.PARTY_FRAMES + 1] = UUF.PARTYPLAYER
-        UUF:RegisterTargetGlowIndicatorFrame(UUF.PARTYPLAYER, "partyplayer")
-        UUF:RegisterRangeFrame(UUF.PARTYPLAYER, "player")
-        UUF:RegisterDispelHighlightEvents(UUF.PARTYPLAYER, "player")
+        if FrameDB.ShowPlayer then
+            UUF.PARTYPLAYER = oUF:Spawn("player", UUF:FetchFrameName("partyplayer"))
+            UUF.PARTYPLAYER.partyIndex = 1
+            UUF.PARTYPLAYER:SetParent(UUF.PARTY_CONTAINER)
+            UUF.PARTYPLAYER:SetSize(FrameDB.Width, FrameDB.Height)
+            UUF.PARTYPLAYER:SetFrameStrata(FrameDB.FrameStrata)
+            UUF.PARTY_FRAMES[#UUF.PARTY_FRAMES + 1] = UUF.PARTYPLAYER
+            UUF:RegisterTargetGlowIndicatorFrame(UUF.PARTYPLAYER, "partyplayer")
+            UUF:RegisterRangeFrame(UUF.PARTYPLAYER, "player")
+            UUF:RegisterDispelHighlightEvents(UUF.PARTYPLAYER, "player")
+        end
         UUF:LayoutPartyFrames()
     else
         UUF[unit:upper()] = oUF:Spawn(unit, UUF:FetchFrameName(unit))

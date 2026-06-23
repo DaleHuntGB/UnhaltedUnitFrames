@@ -669,12 +669,27 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
 
     local ColourContainer = GUIWidgets.CreateInlineGroup(containerParent, "Colours & Toggles")
 
-    local ShowPlayerToggle = AG:Create("CheckBox")
-    ShowPlayerToggle:SetLabel("Show Player")
-    ShowPlayerToggle:SetValue(FrameDB.ShowPlayer)
-    ShowPlayerToggle:SetRelativeWidth(0.25)
-    ShowPlayerToggle:SetCallback("OnValueChanged", function(_, _, value) FrameDB.ShowPlayer = value updateCallback() end)
-    ColourContainer:AddChild(ShowPlayerToggle)
+    if unit == "party" then
+        local ShowPlayerToggle = AG:Create("CheckBox")
+        ShowPlayerToggle:SetLabel("Show Player")
+        ShowPlayerToggle:SetValue(FrameDB.ShowPlayer)
+        ShowPlayerToggle:SetRelativeWidth(0.25)
+        ShowPlayerToggle:SetCallback("OnValueChanged", function(_, _, value)
+            StaticPopupDialogs["UUF_RELOAD_UI"] = {
+                text = "You must reload to apply this change, do you want to reload now?",
+                button1 = "Reload Now",
+                button2 = "Later",
+                showAlert = true,
+                OnAccept = function() FrameDB.ShowPlayer = value C_UI.Reload() end,
+                OnCancel = function() ShowPlayerToggle:SetValue(FrameDB.ShowPlayer) containerParent:DoLayout() end,
+                timeout = 0,
+                whileDead = true,
+                hideOnEscape = true,
+            }
+            StaticPopup_Show("UUF_RELOAD_UI")
+        end)
+        ColourContainer:AddChild(ShowPlayerToggle)
+    end
 
     local SmoothUpdatesToggle = AG:Create("CheckBox")
     SmoothUpdatesToggle:SetLabel("Smooth Updates")
