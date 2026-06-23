@@ -217,11 +217,11 @@ oUF.Tags.Methods["curhp:abbr"] = function(unit)
     local unitHealth = UnitHealth(unit)
     local deadText = DEAD or "Dead"
     local offlineText = PLAYER_OFFLINE or "Offline"
-    local unitStatus = UnitIsDead(unit) == true and deadText or UnitIsGhost(unit) == true and "Ghost" or UnitIsConnected(unit) == false and offlineText
+    local unitStatus = UnitIsDead(unit) and deadText or UnitIsGhost(unit) and "Ghost" or not UnitIsConnected(unit) and offlineText
     if unitStatus then
         return unitStatus
     else
-        local statusSuffix = UnitIsAFK(unit) == true and (" ("..(AFK or "AFK")..")") or UnitIsDND(unit) == true and (" ("..(DND or "DND")..")") or ""
+        local statusSuffix = UnitIsAFK(unit) and (" ("..(AFK or "AFK")..")") or UnitIsDND(unit) and (" ("..(DND or "DND")..")") or ""
         return string.format("%s%s", AbbreviateValue(unitHealth), statusSuffix)
     end
 end
@@ -233,11 +233,11 @@ oUF.Tags.Methods["curhpperhp"] = function(unit)
     local unitHealthPercent = UnitHealthPercent(unit, false, CurveConstants.ScaleTo100)
     local deadText = DEAD or "Dead"
     local offlineText = PLAYER_OFFLINE or "Offline"
-    local unitStatus = UnitIsDead(unit) == true and deadText or UnitIsGhost(unit) == true and "Ghost" or UnitIsConnected(unit) == false and offlineText
+    local unitStatus = UnitIsDead(unit) and deadText or UnitIsGhost(unit) and "Ghost" or not UnitIsConnected(unit) and offlineText
     if unitStatus then
         return unitStatus
     else
-        local statusSuffix = UnitIsAFK(unit) == true and (" ("..(AFK or "AFK")..")") or UnitIsDND(unit) == true and (" ("..(DND or "DND")..")") or ""
+        local statusSuffix = UnitIsAFK(unit) and (" ("..(AFK or "AFK")..")") or UnitIsDND(unit) and (" ("..(DND or "DND")..")") or ""
         if UUF.SEPARATOR == "[]" then
             return string.format("%s [%.0f%%]%s", unitHealth, unitHealthPercent, statusSuffix)
         elseif UUF.SEPARATOR == "()" then
@@ -257,11 +257,11 @@ oUF.Tags.Methods["curhpperhp:abbr"] = function(unit)
     local unitHealthPercent = UnitHealthPercent(unit, false, CurveConstants.ScaleTo100)
     local deadText = DEAD or "Dead"
     local offlineText = PLAYER_OFFLINE or "Offline"
-    local unitStatus = UnitIsDead(unit) == true and deadText or UnitIsGhost(unit) == true and "Ghost" or UnitIsConnected(unit) == false and offlineText
+    local unitStatus = UnitIsDead(unit) and deadText or UnitIsGhost(unit) and "Ghost" or not UnitIsConnected(unit) and offlineText
     if unitStatus then
         return unitStatus
     else
-        local statusSuffix = UnitIsAFK(unit) == true and (" ("..(AFK or "AFK")..")") or UnitIsDND(unit) == true and (" ("..(DND or "DND")..")") or ""
+        local statusSuffix = UnitIsAFK(unit) and (" ("..(AFK or "AFK")..")") or UnitIsDND(unit) and (" ("..(DND or "DND")..")") or ""
         if UUF.SEPARATOR == "[]" then
             return string.format("%s [%.0f%%]%s", AbbreviateValue(unitHealth), unitHealthPercent, statusSuffix)
         elseif UUF.SEPARATOR == "()" then
