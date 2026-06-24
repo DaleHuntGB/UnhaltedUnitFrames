@@ -330,20 +330,27 @@ oUF.Tags.Methods["curpp:manapercent"] = function(unit)
 end
 
 oUF.Tags.Methods["curpp:manapercent:healer"] = function(unit)
-	if not unit or not UnitExists(unit) or UnitGroupRolesAssigned(unit) ~= "HEALER" then return "" end
-	local manaPercent = UnitPowerPercent(unit, Enum.PowerType.Mana, true, CurveConstants.ScaleTo100)
-	if issecretvalue and issecretvalue(manaPercent) then return manaPercent end
-	return string.format("%.f", manaPercent)
+    if not unit or not UnitExists(unit) then return "" end
+    if UnitGroupRolesAssigned(unit) ~= "HEALER" then return "" end
+    local unitPower = UnitPower(unit, Enum.PowerType.Mana)
+    if unitPower and unitPower ~= 0 then
+        local powerPercent = UnitPowerPercent(unit, Enum.PowerType.Mana, true, CurveConstants.ScaleTo100)
+        return string.format("%.f", powerPercent)
+    end
 end
 
 oUF.Tags.Methods["curpp:manapercent:healer:colour"] = function(unit)
-	if not unit or not UnitExists(unit) or UnitGroupRolesAssigned(unit) ~= "HEALER" then return "" end
-	local manaPercent = UnitPowerPercent(unit, Enum.PowerType.Mana, true, CurveConstants.ScaleTo100)
-	if issecretvalue and issecretvalue(manaPercent) then return manaPercent end
-	local manaColour = oUF.colors.power.MANA or oUF.colors.power[Enum.PowerType.Mana]
-	if not manaColour then return manaPercent end
-	local manaColourR, manaColourG, manaColourB = manaColour:GetRGB()
-	return string.format("|cFF%02x%02x%02x%s|r", manaColourR * 255, manaColourG * 255, manaColourB * 255, manaPercent)
+    if not unit then return end
+    if UnitGroupRolesAssigned(unit) ~= "HEALER" then return end
+    local unitPower = UnitPower(unit, Enum.PowerType.Mana)
+    if unitPower and unitPower ~= 0 then
+        local powerPercent = UnitPowerPercent(unit, Enum.PowerType.Mana, true, CurveConstants.ScaleTo100)
+        local manaColour = UUF.db.profile.General.Colours.Power[0]
+        if manaColour then
+            local manaColourR, manaColourG, manaColourB = unpack(manaColour)
+            return string.format("|cff%02x%02x%02x%.f|r", manaColourR * 255, manaColourG * 255, manaColourB * 255, powerPercent)
+        end
+    end
 end
 
 oUF.Tags.Methods["curpp:manapercent-with-sign"] = function(unit)
