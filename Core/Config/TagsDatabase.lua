@@ -42,7 +42,8 @@ local Tags = {
     ["curpp:abbr:colour"] = "UNIT_POWER_UPDATE UNIT_MAXPOWER",
 	["curpp:manapercent"] = "UNIT_POWER_UPDATE UNIT_MAXPOWER",
 	["curpp:manapercent:healer"] = "UNIT_POWER_UPDATE UNIT_MAXPOWER PLAYER_ROLES_ASSIGNED GROUP_ROSTER_UPDATE",
-	["curpp:manapercent:healer:colour"] = "UNIT_POWER_UPDATE UNIT_MAXPOWER PLAYER_ROLES_ASSIGNED GROUP_ROSTER_UPDATE",
+	["curpp:manapercent-with-sign:healer"] = "UNIT_POWER_UPDATE UNIT_MAXPOWER PLAYER_ROLES_ASSIGNED GROUP_ROSTER_UPDATE",
+	["curpp:manapercent-with-sign:healer:colour"] = "UNIT_POWER_UPDATE UNIT_MAXPOWER PLAYER_ROLES_ASSIGNED GROUP_ROSTER_UPDATE",
 	["curpp:manapercent:abbr"] = "UNIT_POWER_UPDATE UNIT_MAXPOWER",
     ["curpp:manapercent-with-sign"] = "UNIT_POWER_UPDATE UNIT_MAXPOWER",
     ["curpp:manapercent-with-sign:abbr"] = "UNIT_POWER_UPDATE UNIT_MAXPOWER",
@@ -353,6 +354,30 @@ oUF.Tags.Methods["curpp:manapercent:healer:colour"] = function(unit)
     end
 end
 
+oUF.Tags.Methods["curpp:manapercent-with-sign:healer"] = function(unit)
+    if not unit or not UnitExists(unit) then return "" end
+    if UnitGroupRolesAssigned(unit) ~= "HEALER" then return "" end
+    local unitPower = UnitPower(unit, Enum.PowerType.Mana)
+    if unitPower and unitPower ~= 0 then
+        local powerPercent = UnitPowerPercent(unit, Enum.PowerType.Mana, true, CurveConstants.ScaleTo100)
+        return string.format("%.f%%", powerPercent)
+    end
+end
+
+oUF.Tags.Methods["curpp:manapercent-with-sign:healer:colour"] = function(unit)
+    if not unit then return end
+    if UnitGroupRolesAssigned(unit) ~= "HEALER" then return end
+    local unitPower = UnitPower(unit, Enum.PowerType.Mana)
+    if unitPower and unitPower ~= 0 then
+        local powerPercent = UnitPowerPercent(unit, Enum.PowerType.Mana, true, CurveConstants.ScaleTo100)
+        local manaColour = UUF.db.profile.General.Colours.Power[0]
+        if manaColour then
+            local manaColourR, manaColourG, manaColourB = unpack(manaColour)
+            return string.format("|cff%02x%02x%02x%.f%%|r", manaColourR * 255, manaColourG * 255, manaColourB * 255, powerPercent)
+        end
+    end
+end
+
 oUF.Tags.Methods["curpp:manapercent-with-sign"] = function(unit)
     if not unit or not UnitExists(unit) then return "" end
     local unitPower = UnitPower(unit)
@@ -654,7 +679,8 @@ local PowerTags = {
         ["missingpp"] = "Missing Power",
 		["curpp:manapercent"] = "Current Power but Mana as Percentage",
 		["curpp:manapercent:healer"] = "Mana Percentage for Healers",
-		["curpp:manapercent:healer:colour"] = "Mana Percentage for Healers with Mana Colour",
+		["curpp:manapercent-with-sign:healer"] = "Mana Percentage for Healers with % Sign",
+		["curpp:manapercent-with-sign:healer:colour"] = "Mana Percentage for Healers with % Sign and Mana Colour",
 		["curpp:manapercent:abbr"] = "Current Power but Mana as Percentage with Abbreviation",
         ["curpp:manapercent-with-sign"] = "Current Power but Mana as Percentage with % Sign",
         ["curpp:manapercent-with-sign:abbr"] = "Current Power but Mana as Percentage with % Sign and Abbreviation",
