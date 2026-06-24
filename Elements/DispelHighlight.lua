@@ -134,12 +134,14 @@ end
 
 function UUF:RegisterDispelHighlightEvents(unitFrame, unit)
     if not unitFrame.DispelHighlight then return end
+    if unit == "raid" then return end
     if not UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].HealthBar.DispelHighlight.Enabled then return end
     local unitToken = unit == "partyplayer" and "player" or unit
 
+    unitFrame.DispelHighlightUnit = unit
     if not unitFrame.DispelHighlightHandler then
         unitFrame.DispelHighlightHandler = CreateFrame("Frame")
-        unitFrame.DispelHighlightHandler:SetScript("OnEvent", function(self, event, ...) UUF:UpdateUnitDispelState(unitFrame, unit) end)
+        unitFrame.DispelHighlightHandler:SetScript("OnEvent", function() UUF:UpdateUnitDispelState(unitFrame, unitFrame.DispelHighlightUnit) end)
     end
 
     unitFrame.DispelHighlightHandler:RegisterUnitEvent("UNIT_AURA", unitToken)
@@ -152,4 +154,5 @@ function UUF:UnregisterDispelHighlightEvents(unitFrame)
     if not unitFrame.DispelHighlightHandler then return end
 
     unitFrame.DispelHighlightHandler:UnregisterAllEvents()
+    unitFrame.DispelHighlightUnit = nil
 end

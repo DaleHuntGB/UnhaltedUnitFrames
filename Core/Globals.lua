@@ -8,6 +8,11 @@ UUF.BOSS_FRAMES = {}
 UUF.MAX_BOSS_FRAMES = 5
 UUF.PARTY_FRAMES = {}
 UUF.MAX_PARTY_FRAMES = 4
+UUF.RAID_FRAMES = {}
+UUF.RAID_HEADERS = {}
+UUF.MAX_RAID_FRAMES = 40
+UUF.MAX_RAID_GROUPS = 8
+UUF.MAX_RAID_FRAMES_PER_GROUP = 5
 local CooldownDurationFormatter = C_StringUtil.CreateNumericRuleFormatter()
 
 UUF.LSM = LibStub("LibSharedMedia-3.0")
@@ -108,10 +113,12 @@ function UUF:FetchFrameName(unit)
         ["boss"] = "UUF_Boss",
         ["party"] = "UUF_Party",
         ["partyplayer"] = "UUF_PartyPlayer",
+        ["raid"] = "UUF_Raid",
     }
     if not unit then return end
     if unit:match("^boss(%d+)$") then local unitID = unit:match("^boss(%d+)$") return "UUF_Boss" .. unitID end
     if unit:match("^party(%d+)$") then local unitID = unit:match("^party(%d+)$") return "UUF_Party" .. unitID end
+    if unit:match("^raid(%d+)$") then local unitID = unit:match("^raid(%d+)$") return "UUF_Raid" .. unitID end
     return UnitToFrame[unit]
 end
 
@@ -355,7 +362,7 @@ function UUF:GetReactionColour(reaction)
 end
 
 function UUF:GetNormalizedUnit(unit)
-    local normalizedUnit = unit == "vehicle" and "player" or unit == "partyplayer" and "party" or unit:match("^boss%d+$") and "boss" or unit:match("^party%d+$") and "party" or unit
+    local normalizedUnit = unit == "vehicle" and "player" or unit == "partyplayer" and "party" or unit:match("^boss%d+$") and "boss" or unit:match("^party%d+$") and "party" or unit:match("^raid%d+$") and "raid" or unit
     return normalizedUnit
 end
 

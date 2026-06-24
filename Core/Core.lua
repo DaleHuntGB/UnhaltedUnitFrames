@@ -35,6 +35,7 @@ function UnhaltedUnitFrames:OnEnable()
     UUF:SpawnUnitFrame("focus")
     UUF:SpawnUnitFrame("focustarget")
     UUF:SpawnUnitFrame("pet")
-    UUF:SpawnUnitFrame("party")
     UUF:SpawnUnitFrame("boss")
+    UUF:SpawnUnitFrame("party")
+    UUF:SpawnUnitFrame("raid")
 end
