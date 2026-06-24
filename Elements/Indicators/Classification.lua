@@ -3,7 +3,7 @@ local _, UUF = ...
 local function UpdateClassificationTexture(ClassificationIndicator, _, classification)
 	local ClassificationIndicatorDB = UUF.db.profile.Units.target.Indicators.Classification
 	local ClassificationTextures = UUF.ClassificationTextures[ClassificationIndicatorDB.Texture]
-	if ClassificationIndicatorDB.Texture == "DEFAULT" or ClassificationIndicatorDB.Texture == "RETAIL" then
+	if ClassificationIndicatorDB.Texture == "CLASSIFICATION0" or ClassificationIndicatorDB.Texture == "CLASSIFICATION1" then
 		if ClassificationTextures[classification] then
 			ClassificationIndicator:SetAtlas(ClassificationTextures[classification], false)
 		end
