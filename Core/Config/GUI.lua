@@ -146,13 +146,33 @@ local StatusTextures = {
 }
 
 local function EnableAurasTestMode(unit)
-    UUF.AURA_TEST_MODE = true
-    UUF:CreateTestAuras(UUF[unit:upper()], unit)
+	UUF.AURA_TEST_MODE = true
+	if unit == "party" then
+		for i = 1, UUF.MAX_PARTY_FRAMES do if UUF["PARTY" .. i] then UUF:CreateTestAuras(UUF["PARTY" .. i], "party" .. i) end end
+		if UUF.PARTYPLAYER then UUF:CreateTestAuras(UUF.PARTYPLAYER, "partyplayer") end
+	elseif unit == "raid" then
+		for _, raidFrame in ipairs(UUF.RAID_FRAMES) do
+			local raidUnit = raidFrame and (raidFrame.unit or raidFrame:GetAttribute("unit"))
+			if raidUnit then UUF:CreateTestAuras(raidFrame, raidUnit) end
+		end
+	else
+		UUF:CreateTestAuras(UUF[unit:upper()], unit)
+	end
 end
 
 local function DisableAurasTestMode(unit)
-    UUF.AURA_TEST_MODE = false
-    UUF:CreateTestAuras(UUF[unit:upper()], unit)
+	UUF.AURA_TEST_MODE = false
+	if unit == "party" then
+		for i = 1, UUF.MAX_PARTY_FRAMES do if UUF["PARTY" .. i] then UUF:CreateTestAuras(UUF["PARTY" .. i], "party" .. i) end end
+		if UUF.PARTYPLAYER then UUF:CreateTestAuras(UUF.PARTYPLAYER, "partyplayer") end
+	elseif unit == "raid" then
+		for _, raidFrame in ipairs(UUF.RAID_FRAMES) do
+			local raidUnit = raidFrame and (raidFrame.unit or raidFrame:GetAttribute("unit"))
+			if raidUnit then UUF:CreateTestAuras(raidFrame, raidUnit) end
+		end
+	else
+		UUF:CreateTestAuras(UUF[unit:upper()], unit)
+	end
 end
 
 local function EnableCastBarTestMode(unit)
@@ -181,11 +201,13 @@ local function DisableAllTestModes()
     UUF.BOSS_TEST_MODE = false
     UUF.MOVERS_UNLOCKED = false
     for unit, _ in pairs(UUF.db.profile.Units) do
-        if UUF[unit:upper()] then
-            UUF:CreateTestAuras(UUF[unit:upper()], unit)
-            UUF:CreateTestCastBar(UUF[unit:upper()], unit)
-        end
-    end
+		if unit == "party" or unit == "raid" then
+			DisableAurasTestMode(unit)
+		elseif UUF[unit:upper()] then
+			UUF:CreateTestAuras(UUF[unit:upper()], unit)
+			UUF:CreateTestCastBar(UUF[unit:upper()], unit)
+		end
+	end
     UUF:CreateTestBossFrames()
     for _, frameMover in pairs(UUF.MOVERS or {}) do frameMover:Hide() end
 end
@@ -3902,7 +3924,8 @@ function UUF:CreateGUI()
     Container:SetCallback("OnClose", function(widget) AG:Release(widget) isGUIOpen = false DisableAllTestModes() end)
 
     local function SelectTab(GUIContainer, _, MainTab)
-        GUIContainer:ReleaseChildren()
+		GUIContainer:ReleaseChildren()
+		for unit, _ in pairs(UUF.db.profile.Units) do DisableAurasTestMode(unit) end
 
         local Wrapper = AG:Create("SimpleGroup")
         Wrapper:SetFullWidth(true)
