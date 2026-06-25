@@ -1739,6 +1739,7 @@ local Defaults = {
                     },
                     Role = {
                         Enabled = true,
+                        Texture = "Default",
                         Size = 16,
                         Layout = {"LEFT", "TOPLEFT", 3, 0},
                     },
@@ -1955,6 +1956,7 @@ local Defaults = {
                     },
                     Role = {
                         Enabled = true,
+                        Texture = "Default",
                         Size = 12,
                         Layout = {"TOPRIGHT", "TOPRIGHT", -3, -30},
                     },

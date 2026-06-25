@@ -7,6 +7,13 @@ function UUF:CreateUnitRoleIndicator(unitFrame, unit)
 	local RoleIndicator = unitFrame.HighLevelContainer:CreateTexture(UUF:FetchFrameName(unit) .. "_RoleIndicator", "OVERLAY")
 	RoleIndicator:SetSize(RoleDB.Size, RoleDB.Size)
 	RoleIndicator:SetPoint(RoleDB.Layout[1], unitFrame.HighLevelContainer, RoleDB.Layout[2], RoleDB.Layout[3], RoleDB.Layout[4])
+	RoleIndicator.PostUpdate = function(textureElement, role)
+		local roleTexture = UUF.RoleTextures[RoleDB.Texture] and UUF.RoleTextures[RoleDB.Texture][role]
+		if roleTexture then
+			textureElement:SetTexture(roleTexture)
+			textureElement:SetTexCoord(0, 1, 0, 1)
+		end
+	end
 
 	if RoleDB.Enabled then
 		unitFrame.GroupRoleIndicator = RoleIndicator

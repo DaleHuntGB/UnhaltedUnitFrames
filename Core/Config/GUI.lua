@@ -158,6 +158,14 @@ local StatusTextures = {
     }
 }
 
+local RoleTextures = {
+    Default = "|A:UI-LFG-RoleIcon-Tank-Micro-Raid:18:18|a |A:UI-LFG-RoleIcon-Healer-Micro-Raid:18:18|a |A:UI-LFG-RoleIcon-DPS-Micro-Raid:18:18|a Default",
+    Blizzard = "|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\Blizzard\\Tank.tga:18:18|t |TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\Blizzard\\Healer.tga:18:18|t |TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\Blizzard\\DPS.tga:18:18|t Blizzard",
+    Colour = "|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\Colour\\Tank.tga:18:18|t |TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\Colour\\Healer.tga:18:18|t |TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\Colour\\DPS.tga:18:18|t Colour",
+    White = "|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\White\\Tank.tga:18:18|t |TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\White\\Healer.tga:18:18|t |TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\White\\DPS.tga:18:18|t White",
+    ElvUI = "|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\ElvUI\\Tank.tga:18:18|t |TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\ElvUI\\Healer.tga:18:18|t |TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\ElvUI\\DPS.tga:18:18|t ElvUI",
+}
+
 local function EnableAurasTestMode(unit)
 	UUF.AURA_TEST_MODE = true
 	if unit == "party" then
@@ -2128,7 +2136,13 @@ local function CreateLeaderAssistaintSettings(containerParent, unit, updateCallb
 end
 
 local function CreateRoleIndicatorSettings(containerParent, unit, updateCallback)
+    UUF.db.profile.Units[unit].Indicators.Role = UUF.db.profile.Units[unit].Indicators.Role or {}
+    local DefaultRoleDB = UUF:GetDefaultDB().profile.Units[unit].Indicators.Role
     local RoleDB = UUF.db.profile.Units[unit].Indicators.Role
+    if RoleDB.Enabled == nil then RoleDB.Enabled = DefaultRoleDB.Enabled end
+    RoleDB.Texture = RoleDB.Texture or DefaultRoleDB.Texture
+    RoleDB.Size = RoleDB.Size or DefaultRoleDB.Size
+    RoleDB.Layout = RoleDB.Layout or {unpack(DefaultRoleDB.Layout)}
 
     local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Role Indicator Settings")
 
@@ -2136,8 +2150,16 @@ local function CreateRoleIndicatorSettings(containerParent, unit, updateCallback
     Toggle:SetLabel("Enable |cFF8080FFRole|r Indicator")
     Toggle:SetValue(RoleDB.Enabled)
     Toggle:SetCallback("OnValueChanged", function(_, _, value) RoleDB.Enabled = value updateCallback() RefreshRoleGUI() end)
-    Toggle:SetRelativeWidth(1)
+    Toggle:SetRelativeWidth(0.5)
     ToggleContainer:AddChild(Toggle)
+
+    local TextureDropdown = AG:Create("Dropdown")
+    TextureDropdown:SetList(RoleTextures, {"Default", "Blizzard", "Colour", "White", "ElvUI"})
+    TextureDropdown:SetLabel("Role Texture")
+    TextureDropdown:SetValue(RoleDB.Texture)
+    TextureDropdown:SetRelativeWidth(0.5)
+    TextureDropdown:SetCallback("OnValueChanged", function(_, _, value) RoleDB.Texture = value updateCallback() end)
+    ToggleContainer:AddChild(TextureDropdown)
 
     local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
 
