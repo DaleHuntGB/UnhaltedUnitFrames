@@ -87,6 +87,11 @@ local Defaults = {
                     ["Disease"] = {0.6, 0.4, 0 },
                     ["Poison"] = {0, 0.6, 0 },
                     ["Bleed"] = {0.6, 0, 0.1 }
+                },
+                Status = {
+                    Tapped = {0.6, 0.6, 0.6},
+                    Disconnected = {0.6, 0.6, 0.6},
+                    DeadBackdrop = {0.2, 0.2, 0.2},
                 }
             }
         },
@@ -1644,6 +1649,7 @@ local Defaults = {
                     ColourByReaction = true,
                     ColourWhenTapped = true,
                     ColourWhenDisconnected = true,
+                    ColourBackdropWhenDead = true,
                     Inverse = false,
                     Smooth = false,
                     Foreground = {8/255, 8/255, 8/255},
@@ -1851,6 +1857,7 @@ local Defaults = {
                     ColourByReaction = true,
                     ColourWhenTapped = true,
                     ColourWhenDisconnected = true,
+                    ColourBackdropWhenDead = true,
                     Inverse = false,
                     Smooth = false,
                     Foreground = {8/255, 8/255, 8/255},

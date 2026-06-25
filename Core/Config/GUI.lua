@@ -117,6 +117,12 @@ local Reaction = {
     [8] = "Exalted",
 }
 
+local Status = {
+    Tapped = "Tapped",
+    Disconnected = "Disconnected",
+    DeadBackdrop = "Dead Backdrop",
+}
+
 local StatusTextures = {
     Combat = {
         ["DEFAULT"] = "|TInterface\\CharacterFrame\\UI-StateIcon:20:20:0:0:64:64:32:64:0:31|t",
@@ -497,6 +503,10 @@ end
 
 local function CreateColourSettings(containerParent)
     local Container = GUIWidgets.CreateInlineGroup(containerParent, "Colours")
+    UUF.db.profile.General.Colours.Status = UUF.db.profile.General.Colours.Status or {}
+    for statusType, color in pairs(UUF:GetDefaultDB().profile.General.Colours.Status) do
+        UUF.db.profile.General.Colours.Status[statusType] = UUF.db.profile.General.Colours.Status[statusType] or {color[1], color[2], color[3]}
+    end
 
     GUIWidgets.CreateInformationTag(Container,"Buttons below will reset the colours to their default values as defined by " .. UUF.PRETTY_ADDON_NAME .. ".")
 
@@ -509,26 +519,32 @@ local function CreateColourSettings(containerParent)
     local ResetPowerColoursButton = AG:Create("Button")
     ResetPowerColoursButton:SetText("Power Colours")
     ResetPowerColoursButton:SetCallback("OnClick", function() UUF:CopyTable(UUF:GetDefaultDB().profile.General.Colours.Power, UUF.db.profile.General.Colours.Power) Container:ReleaseChildren() CreateColourSettings(containerParent) Container:DoLayout() containerParent:DoLayout() end)
-    ResetPowerColoursButton:SetRelativeWidth(0.25)
+    ResetPowerColoursButton:SetRelativeWidth(0.2)
     Container:AddChild(ResetPowerColoursButton)
 
     local ResetSecondaryPowerColoursButton = AG:Create("Button")
     ResetSecondaryPowerColoursButton:SetText("Secondary Power Colours")
     ResetSecondaryPowerColoursButton:SetCallback("OnClick", function() UUF:CopyTable(UUF:GetDefaultDB().profile.General.Colours.SecondaryPower, UUF.db.profile.General.Colours.SecondaryPower) Container:ReleaseChildren() CreateColourSettings(containerParent) Container:DoLayout() containerParent:DoLayout() end)
-    ResetSecondaryPowerColoursButton:SetRelativeWidth(0.25)
+    ResetSecondaryPowerColoursButton:SetRelativeWidth(0.2)
     Container:AddChild(ResetSecondaryPowerColoursButton)
 
     local ResetReactionColoursButton = AG:Create("Button")
     ResetReactionColoursButton:SetText("Reaction Colours")
     ResetReactionColoursButton:SetCallback("OnClick", function() UUF:CopyTable(UUF:GetDefaultDB().profile.General.Colours.Reaction, UUF.db.profile.General.Colours.Reaction) Container:ReleaseChildren() CreateColourSettings(containerParent) Container:DoLayout() containerParent:DoLayout() end)
-    ResetReactionColoursButton:SetRelativeWidth(0.25)
+    ResetReactionColoursButton:SetRelativeWidth(0.2)
     Container:AddChild(ResetReactionColoursButton)
 
     local ResetDispelColoursButton = AG:Create("Button")
     ResetDispelColoursButton:SetText("Dispel Colours")
     ResetDispelColoursButton:SetCallback("OnClick", function() UUF:CopyTable(UUF:GetDefaultDB().profile.General.Colours.Dispel, UUF.db.profile.General.Colours.Dispel) Container:ReleaseChildren() CreateColourSettings(containerParent) Container:DoLayout() containerParent:DoLayout() end)
-    ResetDispelColoursButton:SetRelativeWidth(0.25)
+    ResetDispelColoursButton:SetRelativeWidth(0.2)
     Container:AddChild(ResetDispelColoursButton)
+
+    local ResetStatusColoursButton = AG:Create("Button")
+    ResetStatusColoursButton:SetText("Status Colours")
+    ResetStatusColoursButton:SetCallback("OnClick", function() UUF:CopyTable(UUF:GetDefaultDB().profile.General.Colours.Status, UUF.db.profile.General.Colours.Status) UUF:LoadCustomColours() UUF:UpdateAllUnitFrames() Container:ReleaseChildren() CreateColourSettings(containerParent) Container:DoLayout() containerParent:DoLayout() end)
+    ResetStatusColoursButton:SetRelativeWidth(0.2)
+    Container:AddChild(ResetStatusColoursButton)
 
     GUIWidgets.CreateHeader(Container, "Power")
 
@@ -577,6 +593,21 @@ local function CreateColourSettings(containerParent)
         ReactionColourPicker:SetHasAlpha(false)
         ReactionColourPicker:SetRelativeWidth(0.25)
         Container:AddChild(ReactionColourPicker)
+    end
+
+    GUIWidgets.CreateHeader(Container, "Status")
+
+    local StatusOrder = {"Tapped", "Disconnected", "DeadBackdrop"}
+
+    for _, statusType in ipairs(StatusOrder) do
+        local StatusColourPicker = AG:Create("ColorPicker")
+        StatusColourPicker:SetLabel(Status[statusType])
+        local R, G, B = unpack(UUF.db.profile.General.Colours.Status[statusType])
+        StatusColourPicker:SetColor(R, G, B)
+        StatusColourPicker:SetCallback("OnValueChanged", function(widget, _, r, g, b) UUF.db.profile.General.Colours.Status[statusType] = {r, g, b} UUF:LoadCustomColours() UUF:UpdateAllUnitFrames() end)
+        StatusColourPicker:SetHasAlpha(false)
+        StatusColourPicker:SetRelativeWidth(0.25)
+        Container:AddChild(StatusColourPicker)
     end
 
     GUIWidgets.CreateHeader(Container, "Dispel Types")
@@ -728,12 +759,15 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
     LayoutContainer:AddChild(FrameStrataDropdown)
 
     local ColourContainer = GUIWidgets.CreateInlineGroup(containerParent, "Colours & Toggles")
+    local healthToggleWidth = (unit == "player" or unit == "target") and 0.25 or 0.33
+    local primaryToggleWidth = (unit == "party" or unit == "raid") and 0.33 or healthToggleWidth
+    local secondaryToggleWidth = unit == "raid" and 0.33 or primaryToggleWidth
 
     if unit == "party" then
         local ShowPlayerToggle = AG:Create("CheckBox")
         ShowPlayerToggle:SetLabel("Show Player")
         ShowPlayerToggle:SetValue(FrameDB.ShowPlayer)
-        ShowPlayerToggle:SetRelativeWidth(0.25)
+        ShowPlayerToggle:SetRelativeWidth(primaryToggleWidth)
         ShowPlayerToggle:SetCallback("OnValueChanged", function(_, _, value)
             StaticPopupDialogs["UUF_RELOAD_UI"] = {
                 text = "You must reload to apply this change, do you want to reload now?",
@@ -755,21 +789,37 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
     SmoothUpdatesToggle:SetLabel("Smooth Updates")
     SmoothUpdatesToggle:SetValue(HealthBarDB.Smooth ~= false)
     SmoothUpdatesToggle:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.Smooth = value updateCallback() end)
-    SmoothUpdatesToggle:SetRelativeWidth((unit == "player" or unit == "target" or unit == "party") and 0.25 or 0.33)
+    SmoothUpdatesToggle:SetRelativeWidth(primaryToggleWidth)
     ColourContainer:AddChild(SmoothUpdatesToggle)
 
     local ColourWhenTappedToggle = AG:Create("CheckBox")
     ColourWhenTappedToggle:SetLabel("Colour When Tapped")
     ColourWhenTappedToggle:SetValue(HealthBarDB.ColourWhenTapped)
     ColourWhenTappedToggle:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.ColourWhenTapped = value updateCallback() end)
-    ColourWhenTappedToggle:SetRelativeWidth((unit == "player" or unit == "target" or unit == "party") and 0.25 or 0.33)
+    ColourWhenTappedToggle:SetRelativeWidth(primaryToggleWidth)
     ColourContainer:AddChild(ColourWhenTappedToggle)
+
+    if unit == "party" or unit == "raid" then
+        local ColourWhenDisconnectedToggle = AG:Create("CheckBox")
+        ColourWhenDisconnectedToggle:SetLabel("Colour When Disconnected")
+        ColourWhenDisconnectedToggle:SetValue(HealthBarDB.ColourWhenDisconnected)
+        ColourWhenDisconnectedToggle:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.ColourWhenDisconnected = value updateCallback() end)
+        ColourWhenDisconnectedToggle:SetRelativeWidth(secondaryToggleWidth)
+        ColourContainer:AddChild(ColourWhenDisconnectedToggle)
+
+        local ColourBackdropWhenDeadToggle = AG:Create("CheckBox")
+        ColourBackdropWhenDeadToggle:SetLabel("Colour Backdrop When Dead")
+        ColourBackdropWhenDeadToggle:SetValue(HealthBarDB.ColourBackdropWhenDead)
+        ColourBackdropWhenDeadToggle:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.ColourBackdropWhenDead = value updateCallback() end)
+        ColourBackdropWhenDeadToggle:SetRelativeWidth(secondaryToggleWidth)
+        ColourContainer:AddChild(ColourBackdropWhenDeadToggle)
+    end
 
     local InverseGrowthDirectionToggle = AG:Create("CheckBox")
     InverseGrowthDirectionToggle:SetLabel("Inverse Growth Direction")
     InverseGrowthDirectionToggle:SetValue(HealthBarDB.Inverse)
     InverseGrowthDirectionToggle:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.Inverse = value updateCallback() end)
-    InverseGrowthDirectionToggle:SetRelativeWidth((unit == "player" or unit == "target" or unit == "party") and 0.25 or 0.33)
+    InverseGrowthDirectionToggle:SetRelativeWidth(secondaryToggleWidth)
     ColourContainer:AddChild(InverseGrowthDirectionToggle)
 
     if unit == "player" or unit == "target" then

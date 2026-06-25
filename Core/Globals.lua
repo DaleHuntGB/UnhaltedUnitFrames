@@ -265,6 +265,15 @@ function UUF:LoadCustomColours()
         oUF.colors.reaction[reaction] = oUF:CreateColor(color[1], color[2], color[3])
     end
 
+    local DefaultStatusColours = UUF:GetDefaultDB().profile.General.Colours.Status
+    local StatusColours = General.Colours.Status or DefaultStatusColours
+    local tappedColor = StatusColours.Tapped or DefaultStatusColours.Tapped
+    local disconnectedColor = StatusColours.Disconnected or DefaultStatusColours.Disconnected
+    local deadBackdropColor = StatusColours.DeadBackdrop or DefaultStatusColours.DeadBackdrop
+    oUF.colors.tapped = oUF:CreateColor(tappedColor[1], tappedColor[2], tappedColor[3])
+    oUF.colors.disconnected = oUF:CreateColor(disconnectedColor[1], disconnectedColor[2], disconnectedColor[3])
+    oUF.colors.deadBackdrop = oUF:CreateColor(deadBackdropColor[1], deadBackdropColor[2], deadBackdropColor[3])
+
     if General.Colours.Dispel then
         local dispelMap = {
             Magic = oUF.Enum.DispelType.Magic,
