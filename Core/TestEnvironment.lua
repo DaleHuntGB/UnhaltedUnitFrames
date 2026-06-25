@@ -40,6 +40,8 @@ for i = 1, 10 do
         maxHealth = 8000000,
         missingHealth = i * 600000,
         absorb    = (i * 300000),
+        healAbsorb = (i * 150000),
+        incomingHeal = (i * 200000),
         percent  = (8000000 - (i * 600000)) / 8000000 * 100,
         maxPower  = 100,
         power     = 100 - (i * 7),
@@ -63,12 +65,41 @@ local function GetTestUnitColour(id, defaultColour, colourByClass, opacity)
     end
 end
 
+local function SetTestPredictionBar(bar, value, maxValue, enabled)
+	if not bar then return end
+	if not enabled then bar:Hide() return end
+	bar:SetMinMaxValues(0, maxValue)
+	bar:SetValue(value)
+	bar:Show()
+end
+
+local function ApplyTestTag(fontString, frame, tagDB, text)
+	if not fontString or not tagDB then return end
+	if tagDB.Tag == "" then fontString:Hide() return end
+
+	local General = UUF.db.profile.General
+	fontString:ClearAllPoints()
+	fontString:SetPoint(tagDB.Layout[1], frame, tagDB.Layout[2], tagDB.Layout[3], tagDB.Layout[4])
+	fontString:SetFont(UUF.Media.Font, tagDB.FontSize, General.Fonts.FontFlag)
+	if General.Fonts.Shadow.Enabled then
+		fontString:SetShadowColor(unpack(General.Fonts.Shadow.Colour))
+		fontString:SetShadowOffset(General.Fonts.Shadow.XPos, General.Fonts.Shadow.YPos)
+	else
+		fontString:SetShadowColor(0, 0, 0, 0)
+		fontString:SetShadowOffset(0, 0)
+	end
+	fontString:SetTextColor(unpack(tagDB.Colour))
+	fontString:SetText(text)
+	fontString:Show()
+end
+
 function UUF:CreateTestBossFrames()
     local General = UUF.db.profile.General
     local BuffsDB = UUF.db.profile.Units.boss.Auras.Buffs
     local DebuffsDB = UUF.db.profile.Units.boss.Auras.Debuffs
     local CustomDB = UUF.db.profile.Units.boss.Auras.Custom
     local TagsDB = UUF.db.profile.Units.boss.Tags
+    local HealPredictionDB = UUF.db.profile.Units.boss.HealPrediction
     UUF:ResolveLSM()
     local BossDB = UUF.db.profile.Units.boss
     if UUF.BOSS_TEST_MODE then
@@ -89,6 +120,21 @@ function UUF:CreateTestBossFrames()
                 BossFrame.HealthBackground:SetValue(EnvironmenTestData[i].missingHealth)
                 BossFrame.HealthBackground:SetStatusBarColor(GetTestUnitColour(i, HealthBarDB.Background, HealthBarDB.ColourBackgroundByClass, HealthBarDB.BackgroundOpacity))
                 BossFrame.Health:SetStatusBarColor(GetTestUnitColour(i, HealthBarDB.Foreground, HealthBarDB.ColourByClass, HealthBarDB.ForegroundOpacity))
+            end
+
+            if BossFrame.HealthPrediction then
+                UUF:UpdateUnitHealPrediction(BossFrame, "boss" .. i)
+                local maxHealth = EnvironmenTestData[i].maxHealth
+                SetTestPredictionBar(BossFrame.HealthPrediction.damageAbsorb, EnvironmenTestData[i].absorb, maxHealth, HealPredictionDB.Absorbs.Enabled)
+                SetTestPredictionBar(BossFrame.HealthPrediction.healAbsorb, EnvironmenTestData[i].healAbsorb, maxHealth, HealPredictionDB.HealAbsorbs.Enabled)
+                SetTestPredictionBar(BossFrame.HealthPrediction.healingPlayer, EnvironmenTestData[i].incomingHeal, maxHealth, HealPredictionDB.IncomingHeal.Enabled)
+                if BossFrame.HealthPrediction.overDamageAbsorb then
+                    local showOverAbsorb = HealPredictionDB.Absorbs.Enabled and HealPredictionDB.Absorbs.ShowOverAbsorb and HealPredictionDB.Absorbs.Position == "ATTACH"
+                    SetTestPredictionBar(BossFrame.HealthPrediction.overDamageAbsorb, EnvironmenTestData[i].absorb, maxHealth, showOverAbsorb)
+                    if BossFrame.HealthPrediction.overDamageAbsorb.Clip then
+                        if showOverAbsorb then BossFrame.HealthPrediction.overDamageAbsorb.Clip:Show() else BossFrame.HealthPrediction.overDamageAbsorb.Clip:Hide() end
+                    end
+                end
             end
 
             if BossFrame.Portrait then
@@ -294,53 +340,9 @@ function UUF:CreateTestBossFrames()
                 end
             end
 
-            if BossFrame.Tags.TagOne then
-                local TagOneDB = TagsDB.TagOne
-                BossFrame.Tags.TagOne:ClearAllPoints()
-                BossFrame.Tags.TagOne:SetPoint(TagOneDB.Layout[1], BossFrame, TagOneDB.Layout[2], TagOneDB.Layout[3], TagOneDB.Layout[4])
-                BossFrame.Tags.TagOne:SetFont(UUF.Media.Font, TagOneDB.FontSize, General.Fonts.FontFlag)
-                if General.Fonts.Shadow.Enabled then
-                    BossFrame.Tags.TagOne:SetShadowColor(unpack(General.Fonts.Shadow.Colour))
-                    BossFrame.Tags.TagOne:SetShadowOffset(General.Fonts.Shadow.XPos, General.Fonts.Shadow.YPos)
-                else
-                    BossFrame.Tags.TagOne:SetShadowColor(0, 0, 0, 0)
-                    BossFrame.Tags.TagOne:SetShadowOffset(0, 0)
-                end
-                BossFrame.Tags.TagOne:SetTextColor(unpack(TagOneDB.Colour))
-                BossFrame.Tags.TagOne:SetText(EnvironmenTestData[i].name)
-            end
-
-            if BossFrame.Tags.TagTwo then
-                local TagTwoDB = TagsDB.TagTwo
-                BossFrame.Tags.TagTwo:ClearAllPoints()
-                BossFrame.Tags.TagTwo:SetPoint(TagTwoDB.Layout[1], BossFrame, TagTwoDB.Layout[2], TagTwoDB.Layout[3], TagTwoDB.Layout[4])
-                BossFrame.Tags.TagTwo:SetFont(UUF.Media.Font, TagTwoDB.FontSize, General.Fonts.FontFlag)
-                if General.Fonts.Shadow.Enabled then
-                    BossFrame.Tags.TagTwo:SetShadowColor(unpack(General.Fonts.Shadow.Colour))
-                    BossFrame.Tags.TagTwo:SetShadowOffset(General.Fonts.Shadow.XPos, General.Fonts.Shadow.YPos)
-                else
-                    BossFrame.Tags.TagTwo:SetShadowColor(0, 0, 0, 0)
-                    BossFrame.Tags.TagTwo:SetShadowOffset(0, 0)
-                end
-                BossFrame.Tags.TagTwo:SetTextColor(unpack(TagTwoDB.Colour))
-                BossFrame.Tags.TagTwo:SetText(string.format("%.1f%%", EnvironmenTestData[i].percent))
-            end
-
-            if BossFrame.Tags.TagThree then
-                local TagThreeDB = TagsDB.TagThree
-                BossFrame.Tags.TagThree:ClearAllPoints()
-                BossFrame.Tags.TagThree:SetPoint(TagThreeDB.Layout[1], BossFrame, TagThreeDB.Layout[2], TagThreeDB.Layout[3], TagThreeDB.Layout[4])
-                BossFrame.Tags.TagThree:SetFont(UUF.Media.Font, TagThreeDB.FontSize, General.Fonts.FontFlag)
-                if General.Fonts.Shadow.Enabled then
-                    BossFrame.Tags.TagThree:SetShadowColor(unpack(General.Fonts.Shadow.Colour))
-                    BossFrame.Tags.TagThree:SetShadowOffset(General.Fonts.Shadow.XPos, General.Fonts.Shadow.YPos)
-                else
-                    BossFrame.Tags.TagThree:SetShadowColor(0, 0, 0, 0)
-                    BossFrame.Tags.TagThree:SetShadowOffset(0, 0)
-                end
-                BossFrame.Tags.TagThree:SetTextColor(unpack(TagThreeDB.Colour))
-                BossFrame.Tags.TagThree:SetText(EnvironmenTestData[i].power)
-            end
+            ApplyTestTag(BossFrame.Tags.TagOne, BossFrame, TagsDB.TagOne, "Tag 1")
+            ApplyTestTag(BossFrame.Tags.TagTwo, BossFrame, TagsDB.TagTwo, "Tag 2")
+            ApplyTestTag(BossFrame.Tags.TagThree, BossFrame, TagsDB.TagThree, "Tag 3")
         end
     else
         for i, BossFrame in ipairs(UUF.BOSS_FRAMES) do
