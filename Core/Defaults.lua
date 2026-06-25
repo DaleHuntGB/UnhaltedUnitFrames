@@ -1721,6 +1721,11 @@ local Defaults = {
                         Size = 16,
                         Layout = {"LEFT", "TOPLEFT", 3, 0},
                     },
+                    Phase = {
+                        Enabled = true,
+                        Size = 16,
+                        Layout = {"CENTER", "CENTER", 0, 0},
+                    },
                     LeaderAssistantIndicator = {
                         Enabled = true,
                         Size = 16,
@@ -1928,6 +1933,11 @@ local Defaults = {
                         Enabled = true,
                         Size = 12,
                         Layout = {"TOPRIGHT", "TOPRIGHT", -3, -30},
+                    },
+                    Phase = {
+                        Enabled = true,
+                        Size = 12,
+                        Layout = {"CENTER", "CENTER", 0, 0},
                     },
                     LeaderAssistantIndicator = {
                         Enabled = true,

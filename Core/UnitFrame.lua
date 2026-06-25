@@ -32,6 +32,7 @@ function UUF:CreateUnitFrame(unitFrame, unit)
     UUF:CreateUnitRaidTargetMarker(unitFrame, unit)
     if isPlayer or isTarget or isParty or isRaid then UUF:CreateUnitLeaderAssistantIndicator(unitFrame, unit) end
     if isParty or isRaid then UUF:CreateUnitRoleIndicator(unitFrame, unit) end
+    if isParty or isRaid then UUF:CreateUnitPhaseIndicator(unitFrame, unit) end
     if isPlayer or isTarget then UUF:CreateUnitCombatIndicator(unitFrame, unit) end
     if isPlayer then UUF:CreateUnitRestingIndicator(unitFrame, unit) end
     if isPlayer then UUF:CreateUnitPvPIndicator(unitFrame, unit) end
@@ -154,6 +155,7 @@ function UUF:UpdateUnitFrame(unitFrame, unit)
     UUF:UpdateUnitRaidTargetMarker(unitFrame, unit)
     if isPlayer or isTarget or isParty or isRaid then UUF:UpdateUnitLeaderAssistantIndicator(unitFrame, unit) end
     if isParty or isRaid then UUF:UpdateUnitRoleIndicator(unitFrame, unit) end
+    if isParty or isRaid then UUF:UpdateUnitPhaseIndicator(unitFrame, unit) end
     if isPlayer or isTarget then UUF:UpdateUnitCombatIndicator(unitFrame, unit) end
     if isPlayer then UUF:UpdateUnitRestingIndicator(unitFrame, unit) end
     if isPlayer then UUF:UpdateUnitPvPIndicator(unitFrame, unit) end
