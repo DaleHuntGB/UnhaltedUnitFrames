@@ -274,6 +274,13 @@ function UUF:LoadCustomColours()
     oUF.colors.disconnected = oUF:CreateColor(disconnectedColor[1], disconnectedColor[2], disconnectedColor[3])
     oUF.colors.deadBackdrop = oUF:CreateColor(deadBackdropColor[1], deadBackdropColor[2], deadBackdropColor[3])
 
+    local DefaultThreatColours = UUF:GetDefaultDB().profile.General.Colours.Threat
+    local ThreatColours = General.Colours.Threat or DefaultThreatColours
+    for threatStatus, defaultColor in pairs(DefaultThreatColours) do
+        local color = ThreatColours[threatStatus] or defaultColor
+        oUF.colors.threat[threatStatus] = oUF:CreateColor(color[1], color[2], color[3])
+    end
+
     if General.Colours.Dispel then
         local dispelMap = {
             Magic = oUF.Enum.DispelType.Magic,

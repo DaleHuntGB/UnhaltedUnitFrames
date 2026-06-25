@@ -92,6 +92,12 @@ local Defaults = {
                     Tapped = {0.6, 0.6, 0.6},
                     Disconnected = {0.6, 0.6, 0.6},
                     DeadBackdrop = {0.2, 0.2, 0.2},
+                },
+                Threat = {
+                    [0] = {0.69, 0.69, 0.69},
+                    [1] = {1, 1, 0.47},
+                    [2] = {1, 0.6, 0},
+                    [3] = {1, 0, 0},
                 }
             }
         },
@@ -257,6 +263,9 @@ local Defaults = {
                         Colour = {1, 1, 1},
                         HighlightOpacity = 0.75,
                         Style = "GRADIENT"
+                    },
+                    Threat = {
+                        Enabled = false,
                     },
                     Totems = {
                         Enabled = true,
@@ -513,6 +522,9 @@ local Defaults = {
                     Target = {
                         Enabled = false,
                         Colour = {1, 1, 1},
+                    },
+                    Threat = {
+                        Enabled = false,
                     },
                     Classification = {
                         Enabled = true,
@@ -921,6 +933,9 @@ local Defaults = {
                     Target = {
                         Enabled = false,
                         Colour = {1, 1, 1},
+                    },
+                    Threat = {
+                        Enabled = false,
                     }
                 },
                 Auras = {
@@ -1308,6 +1323,9 @@ local Defaults = {
                     Target = {
                         Enabled = false,
                         Colour = {1, 1, 1},
+                    },
+                    Threat = {
+                        Enabled = false,
                     }
                 },
                 Auras = {
@@ -1716,6 +1734,9 @@ local Defaults = {
                         Enabled = true,
                         Colour = {1, 1, 1},
                     },
+                    Threat = {
+                        Enabled = false,
+                    },
                     Role = {
                         Enabled = true,
                         Size = 16,
@@ -1928,6 +1949,9 @@ local Defaults = {
                     Target = {
                         Enabled = true,
                         Colour = {1, 1, 1},
+                    },
+                    Threat = {
+                        Enabled = false,
                     },
                     Role = {
                         Enabled = true,

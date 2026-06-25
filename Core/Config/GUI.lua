@@ -123,6 +123,13 @@ local Status = {
     DeadBackdrop = "Dead Backdrop",
 }
 
+local Threat = {
+    [0] = "No Threat",
+    [1] = "High Threat",
+    [2] = "Insecure Tanking",
+    [3] = "Secure Tanking",
+}
+
 local StatusTextures = {
     Combat = {
         ["DEFAULT"] = "|TInterface\\CharacterFrame\\UI-StateIcon:20:20:0:0:64:64:32:64:0:31|t",
@@ -507,12 +514,16 @@ local function CreateColourSettings(containerParent)
     for statusType, color in pairs(UUF:GetDefaultDB().profile.General.Colours.Status) do
         UUF.db.profile.General.Colours.Status[statusType] = UUF.db.profile.General.Colours.Status[statusType] or {color[1], color[2], color[3]}
     end
+    UUF.db.profile.General.Colours.Threat = UUF.db.profile.General.Colours.Threat or {}
+    for threatStatus, color in pairs(UUF:GetDefaultDB().profile.General.Colours.Threat) do
+        UUF.db.profile.General.Colours.Threat[threatStatus] = UUF.db.profile.General.Colours.Threat[threatStatus] or {color[1], color[2], color[3]}
+    end
 
     GUIWidgets.CreateInformationTag(Container,"Buttons below will reset the colours to their default values as defined by " .. UUF.PRETTY_ADDON_NAME .. ".")
 
     local ResetAllColoursButton = AG:Create("Button")
     ResetAllColoursButton:SetText("All Colours")
-    ResetAllColoursButton:SetCallback("OnClick", function() UUF:CopyTable(UUF:GetDefaultDB().profile.General.Colours, UUF.db.profile.General.Colours) Container:ReleaseChildren() CreateColourSettings(containerParent) Container:DoLayout() containerParent:DoLayout() end)
+    ResetAllColoursButton:SetCallback("OnClick", function() UUF:CopyTable(UUF:GetDefaultDB().profile.General.Colours, UUF.db.profile.General.Colours) UUF:LoadCustomColours() UUF:UpdateAllUnitFrames() Container:ReleaseChildren() CreateColourSettings(containerParent) Container:DoLayout() containerParent:DoLayout() end)
     ResetAllColoursButton:SetRelativeWidth(1)
     Container:AddChild(ResetAllColoursButton)
 
@@ -545,6 +556,12 @@ local function CreateColourSettings(containerParent)
     ResetStatusColoursButton:SetCallback("OnClick", function() UUF:CopyTable(UUF:GetDefaultDB().profile.General.Colours.Status, UUF.db.profile.General.Colours.Status) UUF:LoadCustomColours() UUF:UpdateAllUnitFrames() Container:ReleaseChildren() CreateColourSettings(containerParent) Container:DoLayout() containerParent:DoLayout() end)
     ResetStatusColoursButton:SetRelativeWidth(0.2)
     Container:AddChild(ResetStatusColoursButton)
+
+    local ResetThreatColoursButton = AG:Create("Button")
+    ResetThreatColoursButton:SetText("Threat Colours")
+    ResetThreatColoursButton:SetCallback("OnClick", function() UUF:CopyTable(UUF:GetDefaultDB().profile.General.Colours.Threat, UUF.db.profile.General.Colours.Threat) UUF:LoadCustomColours() UUF:UpdateAllUnitFrames() Container:ReleaseChildren() CreateColourSettings(containerParent) Container:DoLayout() containerParent:DoLayout() end)
+    ResetThreatColoursButton:SetRelativeWidth(0.2)
+    Container:AddChild(ResetThreatColoursButton)
 
     GUIWidgets.CreateHeader(Container, "Power")
 
@@ -608,6 +625,21 @@ local function CreateColourSettings(containerParent)
         StatusColourPicker:SetHasAlpha(false)
         StatusColourPicker:SetRelativeWidth(0.25)
         Container:AddChild(StatusColourPicker)
+    end
+
+    GUIWidgets.CreateHeader(Container, "Threat")
+
+    local ThreatOrder = {0, 1, 2, 3}
+
+    for _, threatStatus in ipairs(ThreatOrder) do
+        local ThreatColourPicker = AG:Create("ColorPicker")
+        ThreatColourPicker:SetLabel(Threat[threatStatus])
+        local R, G, B = unpack(UUF.db.profile.General.Colours.Threat[threatStatus])
+        ThreatColourPicker:SetColor(R, G, B)
+        ThreatColourPicker:SetCallback("OnValueChanged", function(widget, _, r, g, b) UUF.db.profile.General.Colours.Threat[threatStatus] = {r, g, b} UUF:LoadCustomColours() UUF:UpdateAllUnitFrames() end)
+        ThreatColourPicker:SetHasAlpha(false)
+        ThreatColourPicker:SetRelativeWidth(0.25)
+        Container:AddChild(ThreatColourPicker)
     end
 
     GUIWidgets.CreateHeader(Container, "Dispel Types")
@@ -2616,6 +2648,30 @@ local function CreateTargetIndicatorSettings(containerParent, unit, updateCallba
     RefreshTargetIndicatorGUI()
 end
 
+local function CreateThreatIndicatorSettings(containerParent, unit, updateCallback)
+    UUF.db.profile.Units[unit].Indicators.Threat = UUF.db.profile.Units[unit].Indicators.Threat or {}
+    local DefaultThreatDB = UUF:GetDefaultDB().profile.Units[unit].Indicators.Threat
+    for key, value in pairs(DefaultThreatDB) do
+        if UUF.db.profile.Units[unit].Indicators.Threat[key] == nil then UUF.db.profile.Units[unit].Indicators.Threat[key] = type(value) == "table" and {unpack(value)} or value end
+    end
+    local ThreatIndicatorDB = UUF.db.profile.Units[unit].Indicators.Threat
+
+    local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Threat Indicator Settings")
+
+    local Toggle = AG:Create("CheckBox")
+    Toggle:SetLabel("Enable |cFF8080FFThreat|r Indicator")
+    Toggle:SetValue(ThreatIndicatorDB.Enabled)
+    Toggle:SetCallback("OnValueChanged", function(_, _, value) ThreatIndicatorDB.Enabled = value updateCallback() RefreshThreatIndicatorGUI() end)
+    Toggle:SetRelativeWidth(1)
+    ToggleContainer:AddChild(Toggle)
+
+    function RefreshThreatIndicatorGUI()
+        GUIWidgets.DeepDisable(ToggleContainer, not ThreatIndicatorDB.Enabled, Toggle)
+    end
+
+    RefreshThreatIndicatorGUI()
+end
+
 local function CreateTotemsIndicatorSettings(containerParent, unit, updateCallback)
     local TotemsIndicatorDB = UUF.db.profile.Units[unit].Indicators.Totems
 
@@ -2720,6 +2776,8 @@ local function CreateIndicatorSettings(containerParent, unit)
             CreateMouseoverSettings(IndicatorContainer, unit, function() UpdateUnitSettings(unit, function() UUF:UpdateUnitMouseoverIndicator(UUF[unit:upper()], unit) end) end)
         elseif IndicatorTab == "TargetIndicator" then
             CreateTargetIndicatorSettings(IndicatorContainer, unit, function() UpdateUnitSettings(unit, function() UUF:UpdateUnitTargetGlowIndicator(UUF[unit:upper()], unit) end) end)
+        elseif IndicatorTab == "ThreatIndicator" then
+            CreateThreatIndicatorSettings(IndicatorContainer, unit, function() UpdateUnitSettings(unit, function() UUF:UpdateUnitThreatIndicator(UUF[unit:upper()], unit) end) end)
         elseif IndicatorTab == "Totems" then
             CreateTotemsIndicatorSettings(IndicatorContainer, unit, function() UUF:UpdateUnitTotems(UUF[unit:upper()], unit) end)
         elseif IndicatorTab == "Quest" and unit == "target" then
@@ -2740,6 +2798,7 @@ local function CreateIndicatorSettings(containerParent, unit)
             { text = "Combat", value = "Combat" },
             { text = "PvP", value = "PvP" },
             { text = "Mouseover", value = "Mouseover" },
+            { text = "Threat Indicator", value = "ThreatIndicator" },
             { text = "Totems", value = "Totems" },
         })
     elseif unit == "target" then
@@ -2749,6 +2808,7 @@ local function CreateIndicatorSettings(containerParent, unit)
             { text = "Combat", value = "Combat" },
             { text = "Mouseover", value = "Mouseover" },
             { text = "Target Indicator", value = "TargetIndicator" },
+            { text = "Threat Indicator", value = "ThreatIndicator" },
             { text = "Classification", value = "Classification" },
             { text = "Quest", value = "Quest" },
         })
@@ -2758,10 +2818,18 @@ local function CreateIndicatorSettings(containerParent, unit)
             { text = "Leader & Assistant", value = "LeaderAssistant" },
             { text = "Mouseover", value = "Mouseover" },
             { text = "Target Indicator", value = "TargetIndicator" },
+            { text = "Threat Indicator", value = "ThreatIndicator" },
             { text = "Role", value = "Role" },
             { text = "Phase", value = "Phase" },
         })
-    elseif unit == "targettarget" or unit == "focus" or unit == "focustarget" or unit == "pet" or unit == "boss" then
+    elseif unit == "focus" or unit == "pet" then
+        IndicatorContainerTabGroup:SetTabs({
+            { text = "Raid Target Marker", value = "RaidTargetMarker" },
+            { text = "Mouseover", value = "Mouseover" },
+            { text = "Target Indicator", value = "TargetIndicator" },
+            { text = "Threat Indicator", value = "ThreatIndicator" },
+        })
+    elseif unit == "targettarget" or unit == "focustarget" or unit == "boss" then
         IndicatorContainerTabGroup:SetTabs({
             { text = "Raid Target Marker", value = "RaidTargetMarker" },
             { text = "Mouseover", value = "Mouseover" },
