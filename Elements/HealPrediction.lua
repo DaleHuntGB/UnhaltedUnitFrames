@@ -147,12 +147,14 @@ local function CreateUnitHealAbsorbs(unitFrame, unit)
 
     if position == "ATTACH" then
         unitFrame.Health:SetClipsChildren(true)
+        HealAbsorbBar:SetPoint("TOP", unitFrame.Health, "TOP", 0, 0)
+        HealAbsorbBar:SetPoint("BOTTOM", unitFrame.Health, "BOTTOM", 0, 0)
         if unitFrame.Health:GetReverseFill() then
-            HealAbsorbBar:SetPoint("TOPRIGHT", unitFrame.Health:GetStatusBarTexture(), "TOPLEFT", 0, 0)
-            HealAbsorbBar:SetReverseFill(true)
-        else
-            HealAbsorbBar:SetPoint("TOPLEFT", unitFrame.Health:GetStatusBarTexture(), "TOPRIGHT", 0, 0)
+            HealAbsorbBar:SetPoint("LEFT", unitFrame.Health:GetStatusBarTexture(), "LEFT", 0, 0)
             HealAbsorbBar:SetReverseFill(false)
+        else
+            HealAbsorbBar:SetPoint("RIGHT", unitFrame.Health:GetStatusBarTexture(), "RIGHT", 0, 0)
+            HealAbsorbBar:SetReverseFill(true)
         end
     elseif position == "TOPLEFT" then
         HealAbsorbBar:SetPoint("TOPLEFT", unitFrame.Health, "TOPLEFT", 0, 0)
@@ -388,11 +390,11 @@ function UUF:UpdateUnitHealPrediction(unitFrame, unit)
                 unitFrame.HealthPrediction.healAbsorb:SetPoint("TOP", unitFrame.Health, "TOP", 0, 0)
                 unitFrame.HealthPrediction.healAbsorb:SetPoint("BOTTOM", unitFrame.Health, "BOTTOM", 0, 0)
                 if unitFrame.Health:GetReverseFill() then
-                    unitFrame.HealthPrediction.healAbsorb:SetPoint("RIGHT", unitFrame.Health:GetStatusBarTexture(), "LEFT", 0, 0)
-                    unitFrame.HealthPrediction.healAbsorb:SetReverseFill(true)
-                else
-                    unitFrame.HealthPrediction.healAbsorb:SetPoint("LEFT", unitFrame.Health:GetStatusBarTexture(), "RIGHT", 0, 0)
+                    unitFrame.HealthPrediction.healAbsorb:SetPoint("LEFT", unitFrame.Health:GetStatusBarTexture(), "LEFT", 0, 0)
                     unitFrame.HealthPrediction.healAbsorb:SetReverseFill(false)
+                else
+                    unitFrame.HealthPrediction.healAbsorb:SetPoint("RIGHT", unitFrame.Health:GetStatusBarTexture(), "RIGHT", 0, 0)
+                    unitFrame.HealthPrediction.healAbsorb:SetReverseFill(true)
                 end
             elseif position == "TOPLEFT" then
                 unitFrame.HealthPrediction.healAbsorb:SetPoint("TOPLEFT", unitFrame.Health, "TOPLEFT", 0, 0)
