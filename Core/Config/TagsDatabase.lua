@@ -334,7 +334,7 @@ oUF.Tags.Methods["curpp:manapercent:healer"] = function(unit)
     if not unit or not UnitExists(unit) then return "" end
     if UnitGroupRolesAssigned(unit) ~= "HEALER" then return "" end
     local unitPower = UnitPower(unit, Enum.PowerType.Mana)
-    if unitPower and unitPower ~= 0 then
+    if unitPower then
         local powerPercent = UnitPowerPercent(unit, Enum.PowerType.Mana, true, CurveConstants.ScaleTo100)
         return string.format("%.f", powerPercent)
     end
@@ -344,7 +344,7 @@ oUF.Tags.Methods["curpp:manapercent:healer:colour"] = function(unit)
     if not unit then return end
     if UnitGroupRolesAssigned(unit) ~= "HEALER" then return end
     local unitPower = UnitPower(unit, Enum.PowerType.Mana)
-    if unitPower and unitPower ~= 0 then
+    if unitPower then
         local powerPercent = UnitPowerPercent(unit, Enum.PowerType.Mana, true, CurveConstants.ScaleTo100)
         local manaColour = UUF.db.profile.General.Colours.Power[0]
         if manaColour then
@@ -358,7 +358,7 @@ oUF.Tags.Methods["curpp:manapercent-with-sign:healer"] = function(unit)
     if not unit or not UnitExists(unit) then return "" end
     if UnitGroupRolesAssigned(unit) ~= "HEALER" then return "" end
     local unitPower = UnitPower(unit, Enum.PowerType.Mana)
-    if unitPower and unitPower ~= 0 then
+    if unitPower then
         local powerPercent = UnitPowerPercent(unit, Enum.PowerType.Mana, true, CurveConstants.ScaleTo100)
         return string.format("%.f%%", powerPercent)
     end
@@ -368,7 +368,7 @@ oUF.Tags.Methods["curpp:manapercent-with-sign:healer:colour"] = function(unit)
     if not unit then return end
     if UnitGroupRolesAssigned(unit) ~= "HEALER" then return end
     local unitPower = UnitPower(unit, Enum.PowerType.Mana)
-    if unitPower and unitPower ~= 0 then
+    if unitPower then
         local powerPercent = UnitPowerPercent(unit, Enum.PowerType.Mana, true, CurveConstants.ScaleTo100)
         local manaColour = UUF.db.profile.General.Colours.Power[0]
         if manaColour then
