@@ -1876,6 +1876,7 @@ local Defaults = {
                     Layout = {"TOPLEFT", "TOPLEFT", 1.1, -1.1, 1}, -- AnchorFrom, AnchorTo, XOffset, YOffset, Spacing
                     GrowthDirection = "RIGHT_DOWN", -- Groups sort from Right -> Left. So, Raid1 -> Raid5. Then next row down. Raid6 -> Raid10, etc.
                     SortBy = "GROUP", -- Group, Index
+                    Groups = {[1] = true, [2] = true, [3] = true, [4] = true, [5] = false, [6] = false, [7] = false, [8] = false},
                     FrameStrata = "LOW",
                 },
                 HealthBar = {

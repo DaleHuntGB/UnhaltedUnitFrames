@@ -35,12 +35,17 @@ function UUF:CreateRaidContainer()
 	UUF.RAID_CONTAINER:ClearAllPoints()
 	UUF.RAID_CONTAINER:SetPoint(Frame.Layout[1], UIParent, Frame.Layout[2], Frame.Layout[3], Frame.Layout[4])
 	UUF.RAID_CONTAINER:SetFrameStrata(Frame.FrameStrata)
-	RegisterStateDriver(UUF.RAID_CONTAINER, "visibility", "[group:raid] show; hide")
+	RegisterStateDriver(UUF.RAID_CONTAINER, "visibility", "show")
 end
 
-function UUF:LayoutRaidFrames()
+function UUF:LayoutRaidFrames(skipDelayedUpdate)
 	local Frame = UUF.db.profile.Units.raid.Frame
 	if not UUF.RAID_CONTAINER then return end
+
+	local shownGroups = 0
+	for groupIndex = 1, UUF.MAX_RAID_GROUPS do
+		if not Frame.Groups or Frame.Groups[groupIndex] then shownGroups = shownGroups + 1 end
+	end
 
 	local unitGrowth, groupGrowth = (Frame.GrowthDirection or "RIGHT_DOWN"):match("^(%a+)_(%a+)$")
 	unitGrowth = unitGrowth or "RIGHT"
@@ -48,15 +53,24 @@ function UUF:LayoutRaidFrames()
 	local spacing = Frame.Layout[5] or 0
 	local headerWidth = (unitGrowth == "UP" or unitGrowth == "DOWN") and Frame.Width or (Frame.Width + spacing) * UUF.MAX_RAID_FRAMES_PER_GROUP - spacing
 	local headerHeight = (unitGrowth == "UP" or unitGrowth == "DOWN") and (Frame.Height + spacing) * UUF.MAX_RAID_FRAMES_PER_GROUP - spacing or Frame.Height
-	local containerWidth = (groupGrowth == "LEFT" or groupGrowth == "RIGHT") and (headerWidth + spacing) * UUF.MAX_RAID_GROUPS - spacing or headerWidth
-	local containerHeight = (groupGrowth == "UP" or groupGrowth == "DOWN") and (headerHeight + spacing) * UUF.MAX_RAID_GROUPS - spacing or headerHeight
+	local containerWidth = (groupGrowth == "LEFT" or groupGrowth == "RIGHT") and (headerWidth + spacing) * shownGroups - spacing or headerWidth
+	local containerHeight = (groupGrowth == "UP" or groupGrowth == "DOWN") and (headerHeight + spacing) * shownGroups - spacing or headerHeight
 	local point = unitGrowth == "RIGHT" and "RIGHT" or unitGrowth == "UP" and "TOP" or unitGrowth == "DOWN" and "BOTTOM" or "LEFT"
 	local unitXOffset = unitGrowth == "RIGHT" and -spacing or unitGrowth == "LEFT" and spacing or 0
 	local unitYOffset = unitGrowth == "UP" and -spacing or unitGrowth == "DOWN" and spacing or 0
 
 	UUF.RAID_CONTAINER:SetSize(math.max(containerWidth, Frame.Width), math.max(containerHeight, Frame.Height))
 
+	local shownGroupIndex = 0
 	for groupIndex, header in ipairs(UUF.RAID_HEADERS) do
+		local showGroup = not Frame.Groups or Frame.Groups[groupIndex]
+		header:SetAttribute("groupFilter", showGroup and tostring(groupIndex) or "0")
+		if showGroup then
+			shownGroupIndex = shownGroupIndex + 1
+			header:Show()
+		else
+			header:Hide()
+		end
 		header:SetAttribute("initial-width", Frame.Width)
 		header:SetAttribute("initial-height", Frame.Height)
 		header:SetAttribute("point", point)
@@ -68,8 +82,8 @@ function UUF:LayoutRaidFrames()
 		header:SetFrameStrata(Frame.FrameStrata)
 		header:SetSize(headerWidth, headerHeight)
 		header:ClearAllPoints()
-		local horizontalOffset = (groupIndex - 1) * (headerWidth + spacing)
-		local verticalOffset = (groupIndex - 1) * (headerHeight + spacing)
+		local horizontalOffset = (shownGroupIndex - 1) * (headerWidth + spacing)
+		local verticalOffset = (shownGroupIndex - 1) * (headerHeight + spacing)
 		local horizontalAnchor = groupGrowth == "LEFT" and "RIGHT" or groupGrowth == "RIGHT" and "LEFT" or unitGrowth == "RIGHT" and "RIGHT" or "LEFT"
 		local verticalAnchor = groupGrowth == "UP" and "BOTTOM" or groupGrowth == "DOWN" and "TOP" or unitGrowth == "DOWN" and "BOTTOM" or "TOP"
 		local anchor = verticalAnchor .. horizontalAnchor
@@ -77,6 +91,15 @@ function UUF:LayoutRaidFrames()
 		local yOffset = groupGrowth == "UP" and verticalOffset or groupGrowth == "DOWN" and -verticalOffset or 0
 
 		header:SetPoint(anchor, UUF.RAID_CONTAINER, anchor, xOffset, yOffset)
+	end
+
+	if not skipDelayedUpdate and not UUF.RaidUpdatePending then
+		UUF.RaidUpdatePending = true
+		C_Timer.After(0.1, function()
+			UUF.RaidUpdatePending = nil
+			if InCombatLockdown() or not UUF.db then return end
+			UUF:UpdateRaidFrames(true)
+		end)
 	end
 end
 
@@ -168,19 +191,36 @@ function UUF:SpawnGroupFrame(unit, FrameDB)
 		UUF:LayoutPartyFrames()
 	elseif unit == "raid" then
 		UUF:CreateRaidContainer()
+		local unitGrowth = (FrameDB.GrowthDirection or "RIGHT_DOWN"):match("^(%a+)_")
+		local spacing = FrameDB.Layout[5] or 0
+		local point = unitGrowth == "RIGHT" and "RIGHT" or unitGrowth == "UP" and "TOP" or unitGrowth == "DOWN" and "BOTTOM" or "LEFT"
+		local unitXOffset = unitGrowth == "RIGHT" and -spacing or unitGrowth == "LEFT" and spacing or 0
+		local unitYOffset = unitGrowth == "UP" and -spacing or unitGrowth == "DOWN" and spacing or 0
+
 		for groupIndex = 1, UUF.MAX_RAID_GROUPS do
 			local headerName = "UUF_RaidHeader" .. groupIndex
 			local header = oUF:SpawnHeader(headerName, nil,
 				"showRaid", true,
 				"showParty", false,
 				"showPlayer", true,
-				"groupFilter", tostring(groupIndex),
-				"groupBy", "GROUP",
-				"groupingOrder", tostring(groupIndex),
-				"strictFiltering", true
+				"showSolo", false,
+				"groupFilter", (not FrameDB.Groups or FrameDB.Groups[groupIndex]) and tostring(groupIndex) or "0",
+				"initial-width", FrameDB.Width,
+				"initial-height", FrameDB.Height,
+				"oUF-initialConfigFunction", ("self:SetWidth(%s); self:SetHeight(%s)"):format(FrameDB.Width, FrameDB.Height),
+				"point", point,
+				"xOffset", unitXOffset,
+				"yOffset", unitYOffset,
+				"unitsPerColumn", UUF.MAX_RAID_FRAMES_PER_GROUP,
+				"maxColumns", 1,
+				"sortMethod", FrameDB.SortBy == "INDEX" and "INDEX" or nil
 			)
+			header:SetSize(FrameDB.Width, FrameDB.Height)
 			header:SetParent(UUF.RAID_CONTAINER)
 			header:SetVisibility("raid")
+			header:SetAttribute("startingIndex", -(UUF.MAX_RAID_FRAMES_PER_GROUP - 1))
+			header:Show()
+			header:SetAttribute("startingIndex", 1)
 			UUF.RAID_HEADERS[groupIndex] = header
 		end
 		UUF:LayoutRaidFrames()
@@ -205,35 +245,37 @@ function UUF:UpdatePartyFrames()
 	UUF:LayoutPartyFrames()
 end
 
-function UUF:UpdateRaidFrames()
+function UUF:UpdateRaidFrames(skipDelayedUpdate)
 	local UnitDB = UUF.db.profile.Units.raid
 	if not UnitDB or not UnitDB.Enabled then
 		if UUF.RAID_CONTAINER then UUF.RAID_CONTAINER:Hide() end
 		return
 	end
 	UUF:CreateRaidContainer()
+
 	for i = #(UUF.RangeEvtFrames or {}), 1, -1 do
 		if UUF.RangeEvtFrames[i].frame and UUF.RangeEvtFrames[i].frame.isUUFUnitFrame then tremove(UUF.RangeEvtFrames, i) end
 	end
+
 	for i = #(UUF.TargetHighlightEvtFrames or {}), 1, -1 do
 		if UUF.TargetHighlightEvtFrames[i].frame and UUF.TargetHighlightEvtFrames[i].frame.isUUFUnitFrame then tremove(UUF.TargetHighlightEvtFrames, i) end
 	end
+
 	for _, raidFrame in ipairs(UUF.RAID_FRAMES) do
 		local unit = raidFrame and (raidFrame.unit or raidFrame:GetAttribute("unit"))
 		if unit and unit ~= "raid" then
 			raidFrame:SetSize(UnitDB.Frame.Width, UnitDB.Frame.Height)
 			raidFrame:SetFrameStrata(UnitDB.Frame.FrameStrata)
-			if raidFrame.uufDispelUnit and raidFrame.uufDispelUnit ~= unit then UUF:UnregisterDispelHighlightEvents(raidFrame) end
+			if raidFrame.DispelHighlightUnit and raidFrame.DispelHighlightUnit ~= unit then UUF:UnregisterDispelHighlightEvents(raidFrame) end
 			UUF:UpdateUnitFrame(raidFrame, unit)
 			UUF:RegisterRangeFrame(raidFrame, unit)
 			UUF:RegisterTargetGlowIndicatorFrame(raidFrame, unit)
-			raidFrame.uufDispelUnit = unit
-		elseif raidFrame.uufDispelUnit then
+		elseif raidFrame and raidFrame.DispelHighlightUnit then
 			UUF:UnregisterDispelHighlightEvents(raidFrame)
-			raidFrame.uufDispelUnit = nil
 		end
 	end
-	UUF:LayoutRaidFrames()
+
+	UUF:LayoutRaidFrames(skipDelayedUpdate)
 end
 
 local PartyRosterEventFrame = CreateFrame("Frame")

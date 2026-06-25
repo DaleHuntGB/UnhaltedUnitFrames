@@ -507,9 +507,10 @@ function UUF:CreateTestAuras(unitFrame, unit)
         if unitFrame:IsElementEnabled("Auras") then unitFrame:DisableElement("Auras") end
         if unitFrame:IsElementEnabled("CustomAuras") then unitFrame:DisableElement("CustomAuras") end
 
+		local showPrivateAuras = UUF.PRIVATE_AURA_TEST_MODE and UUF.PRIVATE_AURA_TEST_MODE[UUF:GetNormalizedUnit(unit)]
 		if unitFrame.PrivateAuraContainer and AurasDB.PrivateAuras then
 			local PrivateAurasDB = AurasDB.PrivateAuras
-			if PrivateAurasDB.Enabled then
+			if PrivateAurasDB.Enabled and showPrivateAuras then
 				unitFrame.PrivateAuraContainer:Show()
 
 				for j = 1, PrivateAurasDB.Num do
@@ -802,7 +803,7 @@ function UUF:CreateTestAuras(unitFrame, unit)
             if not unitFrame:IsElementEnabled("CustomAuras") then unitFrame:EnableElement("CustomAuras") end
             if unitFrame.CustomAuraContainer and unitFrame.CustomAuraContainer.ForceUpdate then unitFrame.CustomAuraContainer:ForceUpdate() end
         end
-		if unit == "player" and unitFrame.PrivateAuraContainer then
+		if unitFrame.PrivateAuraContainer then
 			for j = 1, (unitFrame.PrivateAuraContainer.maxFake or 0) do
 				local button = unitFrame.PrivateAuraContainer["fake" .. j]
 				if button then button:Hide() end

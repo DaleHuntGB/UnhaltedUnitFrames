@@ -85,6 +85,7 @@ local RaidGrowthDirectionList = {
     },
     {"RIGHT_DOWN", "RIGHT_UP", "LEFT_DOWN", "LEFT_UP", "UP_RIGHT", "UP_LEFT", "DOWN_RIGHT", "DOWN_LEFT"},
 }
+local RaidGroupsList = {{[1] = "Group 1", [2] = "Group 2", [3] = "Group 3", [4] = "Group 4", [5] = "Group 5", [6] = "Group 6", [7] = "Group 7", [8] = "Group 8"}, {1, 2, 3, 4, 5, 6, 7, 8}}
 
 local Power = {
     [0] = "Mana",
@@ -692,7 +693,7 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
     AnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
     AnchorFromDropdown:SetLabel("Anchor From")
     AnchorFromDropdown:SetValue(FrameDB.Layout[1])
-    AnchorFromDropdown:SetRelativeWidth((unitHasParent or unit == "boss") and 0.33 or ((unit == "party" or unit == "raid") and 0.25 or 0.5))
+    AnchorFromDropdown:SetRelativeWidth(unit == "raid" and 0.5 or ((unitHasParent or unit == "boss") and 0.33 or (unit == "party" and 0.25 or 0.5)))
     AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) FrameDB.Layout[1] = value updateCallback() end)
     LayoutContainer:AddChild(AnchorFromDropdown)
 
@@ -710,7 +711,7 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
     AnchorToDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
     AnchorToDropdown:SetLabel("Anchor To")
     AnchorToDropdown:SetValue(FrameDB.Layout[2])
-    AnchorToDropdown:SetRelativeWidth((unitHasParent or unit == "boss") and 0.33 or ((unit == "party" or unit == "raid") and 0.25 or 0.5))
+    AnchorToDropdown:SetRelativeWidth(unit == "raid" and 0.5 or ((unitHasParent or unit == "boss") and 0.33 or (unit == "party" and 0.25 or 0.5)))
     AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) FrameDB.Layout[2] = value updateCallback() end)
     LayoutContainer:AddChild(AnchorToDropdown)
 
@@ -723,7 +724,7 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
         end
         GrowthDirectionDropdown:SetLabel("Growth Direction")
         GrowthDirectionDropdown:SetValue(FrameDB.GrowthDirection)
-        GrowthDirectionDropdown:SetRelativeWidth((unit == "party" or unit == "raid") and 0.25 or 0.33)
+        GrowthDirectionDropdown:SetRelativeWidth(unit == "raid" and 0.33 or (unit == "party" and 0.25 or 0.33))
         GrowthDirectionDropdown:SetCallback("OnValueChanged", function(_, _, value) FrameDB.GrowthDirection = value updateCallback() end)
         LayoutContainer:AddChild(GrowthDirectionDropdown)
     end
@@ -737,9 +738,21 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
         end
         SortByDropdown:SetLabel("Sort By")
         SortByDropdown:SetValue(FrameDB.SortBy)
-        SortByDropdown:SetRelativeWidth(0.25)
+        SortByDropdown:SetRelativeWidth(unit == "raid" and 0.33 or 0.25)
         SortByDropdown:SetCallback("OnValueChanged", function(_, _, value) FrameDB.SortBy = value updateCallback() RefreshSortOrders() end)
         LayoutContainer:AddChild(SortByDropdown)
+    end
+
+    if unit == "raid" then
+        FrameDB.Groups = FrameDB.Groups or {}
+        local GroupsDropdown = AG:Create("Dropdown")
+        GroupsDropdown:SetLabel("Groups To Show")
+        GroupsDropdown:SetMultiselect(true)
+        GroupsDropdown:SetList(RaidGroupsList[1], RaidGroupsList[2])
+        GroupsDropdown:SetRelativeWidth(0.33)
+        for groupIndex = 1, UUF.MAX_RAID_GROUPS do GroupsDropdown:SetItemValue(groupIndex, FrameDB.Groups[groupIndex]) end
+        GroupsDropdown:SetCallback("OnValueChanged", function(_, _, groupIndex, value) FrameDB.Groups[tonumber(groupIndex)] = value updateCallback() end)
+        LayoutContainer:AddChild(GroupsDropdown)
     end
 
     if unit == "party" then
@@ -3435,6 +3448,9 @@ local function CreateAuraSettings(containerParent, unit)
 
     local function SelectAuraTab(AuraContainer, _, AuraTab)
         SaveSubTab(unit, "Auras", AuraTab)
+        UUF.PRIVATE_AURA_TEST_MODE = UUF.PRIVATE_AURA_TEST_MODE or {}
+        UUF.PRIVATE_AURA_TEST_MODE[unit] = AuraTab == "PrivateAuras"
+        if UUF.AURA_TEST_MODE then EnableAurasTestMode(unit) end
         AuraContainer:ReleaseChildren()
         if AuraTab == "Buffs" then
             CreateSpecificAuraSettings(AuraContainer, unit, "Buffs")

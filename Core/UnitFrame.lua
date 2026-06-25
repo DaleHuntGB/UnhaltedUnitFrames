@@ -77,7 +77,15 @@ function UUF:SpawnUnitFrame(unit)
     local FrameDB = UnitDB.Frame
     if unit == "raid" and UnitDB.ForceHideBlizzard then UUF:HideBlizzardRaidFrames() end
 
-    oUF:RegisterStyle(UUF:FetchFrameName(unit), function(unitFrame) UUF:CreateUnitFrame(unitFrame, unit) end)
+    if unit == "raid" then
+        local raidFrameIndex = 0
+        oUF:RegisterStyle(UUF:FetchFrameName(unit), function(unitFrame)
+            raidFrameIndex = raidFrameIndex + 1
+            UUF:CreateUnitFrame(unitFrame, "raid" .. raidFrameIndex)
+        end)
+    else
+        oUF:RegisterStyle(UUF:FetchFrameName(unit), function(unitFrame) UUF:CreateUnitFrame(unitFrame, unit) end)
+    end
     oUF:SetActiveStyle(UUF:FetchFrameName(unit))
 	if unit == "party" or unit == "raid" then return UUF:SpawnGroupFrame(unit, FrameDB) end
 
