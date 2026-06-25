@@ -30,8 +30,8 @@ end
 function UUF:UpdateUnitTargetGlowIndicator(unitFrame, unit)
     local TargetIndicatorDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Indicators.Target
     if unitFrame and unitFrame.TargetIndicator and TargetIndicatorDB then
-        if TargetIndicatorDB.Enabled then unitFrame.TargetIndicator:SetAlpha(1) else unitFrame.TargetIndicator:SetAlpha(0) end
         unitFrame.TargetIndicator:SetBackdropBorderColor(TargetIndicatorDB.Colour[1], TargetIndicatorDB.Colour[2], TargetIndicatorDB.Colour[3], TargetIndicatorDB.Colour[4])
+        UUF:UpdateTargetGlowIndicator(unitFrame, unit)
     end
 end
 
