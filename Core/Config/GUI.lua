@@ -217,10 +217,32 @@ local function DisableBossFramesTestMode()
     UUF:CreateTestBossFrames()
 end
 
+local function EnablePartyFramesTestMode()
+	UUF.PARTY_TEST_MODE = true
+	UUF:CreateTestGroupFrames("party")
+end
+
+local function DisablePartyFramesTestMode()
+	UUF.PARTY_TEST_MODE = false
+	UUF:RestoreTestGroupFrames("party")
+end
+
+local function EnableRaidFramesTestMode()
+	UUF.RAID_TEST_MODE = true
+	UUF:CreateTestGroupFrames("raid")
+end
+
+local function DisableRaidFramesTestMode()
+	UUF.RAID_TEST_MODE = false
+	UUF:RestoreTestGroupFrames("raid")
+end
+
 local function DisableAllTestModes()
     UUF.AURA_TEST_MODE = false
     UUF.CASTBAR_TEST_MODE = false
     UUF.BOSS_TEST_MODE = false
+    UUF.PARTY_TEST_MODE = false
+    UUF.RAID_TEST_MODE = false
     UUF.MOVERS_UNLOCKED = false
     for unit, _ in pairs(UUF.db.profile.Units) do
 		if unit == "party" or unit == "raid" then
@@ -231,6 +253,8 @@ local function DisableAllTestModes()
 		end
 	end
     UUF:CreateTestBossFrames()
+    UUF:RestoreTestGroupFrames("party")
+    UUF:RestoreTestGroupFrames("raid")
     for _, frameMover in pairs(UUF.MOVERS or {}) do frameMover:Hide() end
 end
 
@@ -3826,6 +3850,7 @@ local function CreateUnitSettings(containerParent, unit)
         end
         if UnitTab == "Auras" then EnableAurasTestMode(unit) else DisableAurasTestMode(unit) end
         if UnitTab == "CastBar" then EnableCastBarTestMode(unit) else DisableCastBarTestMode(unit) end
+        if (unit == "party" and UUF.PARTY_TEST_MODE) or (unit == "raid" and UUF.RAID_TEST_MODE) then UUF:CreateTestGroupFrames(unit) end
         containerParent:DoLayout()
     end
 
@@ -4316,6 +4341,8 @@ function UUF:CreateGUI()
 
             ScrollFrame:DoLayout()
         end
+        if MainTab == "Party" then EnablePartyFramesTestMode() else DisablePartyFramesTestMode() end
+        if MainTab == "Raid" then EnableRaidFramesTestMode() else DisableRaidFramesTestMode() end
         if MainTab == "Boss" then EnableBossFramesTestMode() else DisableBossFramesTestMode() end
         GenerateSupportText(Container)
     end

@@ -243,6 +243,7 @@ function UUF:UpdatePartyFrames()
 	end
 	if UUF.PARTYPLAYER then UUF:UpdateUnitFrame(UUF.PARTYPLAYER, "partyplayer") end
 	UUF:LayoutPartyFrames()
+	if UUF.PARTY_TEST_MODE then UUF:CreateTestGroupFrames("party") end
 end
 
 function UUF:UpdateRaidFrames(skipDelayedUpdate)
@@ -262,6 +263,7 @@ function UUF:UpdateRaidFrames(skipDelayedUpdate)
 	end
 
 	for _, raidFrame in ipairs(UUF.RAID_FRAMES) do
+		if raidFrame and raidFrame.isUUFTestFrame and not UUF.RAID_TEST_MODE then raidFrame = nil end
 		local unit = raidFrame and (raidFrame.unit or raidFrame:GetAttribute("unit"))
 		if unit and unit ~= "raid" then
 			raidFrame:SetSize(UnitDB.Frame.Width, UnitDB.Frame.Height)
@@ -276,6 +278,7 @@ function UUF:UpdateRaidFrames(skipDelayedUpdate)
 	end
 
 	UUF:LayoutRaidFrames(skipDelayedUpdate)
+	if UUF.RAID_TEST_MODE then UUF:CreateTestGroupFrames("raid") end
 end
 
 local PartyRosterEventFrame = CreateFrame("Frame")

@@ -31,35 +31,49 @@ local PowerTypes = {
     [10] = 18
 }
 
-for i = 1, 10 do
+for i = 1, UUF.MAX_RAID_FRAMES do
     EnvironmenTestData[i] = {
-        name      = "Boss " .. i,
-        class     = Classes[i],
+        name      = "Unit " .. i,
+        class     = Classes[((i - 1) % #Classes) + 1],
         reaction  = i % 2 == 0 and 2 or 5,
-        health    = 8000000 - (i * 600000),
+        health    = 8000000 - (((i - 1) % 10 + 1) * 600000),
         maxHealth = 8000000,
-        missingHealth = i * 600000,
-        absorb    = (i * 300000),
-        healAbsorb = (i * 150000),
-        incomingHeal = (i * 200000),
-        percent  = (8000000 - (i * 600000)) / 8000000 * 100,
+        missingHealth = ((i - 1) % 10 + 1) * 600000,
+        absorb    = (((i - 1) % 10 + 1) * 300000),
+        healAbsorb = (((i - 1) % 10 + 1) * 150000),
+        incomingHeal = (((i - 1) % 10 + 1) * 200000),
+        percent  = (8000000 - (((i - 1) % 10 + 1) * 600000)) / 8000000 * 100,
         maxPower  = 100,
-        power     = 100 - (i * 7),
-        powerType = PowerTypes[i],
+        power     = 100 - (((i - 1) % 10 + 1) * 7),
+        powerType = PowerTypes[((i - 1) % #PowerTypes) + 1],
     }
 end
 
+for i = 1, UUF.MAX_BOSS_FRAMES do EnvironmenTestData[i].name = "Boss " .. i end
+
+local TestRoles = {"TANK", "HEALER", "DAMAGER", "DAMAGER", "DAMAGER"}
+local TestTagOrder = {"TagOne", "TagTwo", "TagThree"}
+local TestRoleAtlas = {
+	TANK = "UI-LFG-RoleIcon-Tank-Micro-Raid",
+	HEALER = "UI-LFG-RoleIcon-Healer-Micro-Raid",
+	DAMAGER = "UI-LFG-RoleIcon-DPS-Micro-Raid",
+}
+local TestRaidTargetCoords = {
+	{0, 0.25, 0, 0.25},
+	{0.25, 0.5, 0, 0.25},
+	{0.5, 0.75, 0, 0.25},
+	{0.75, 1, 0, 0.25},
+	{0, 0.25, 0.25, 0.5},
+	{0.25, 0.5, 0.25, 0.5},
+	{0.5, 0.75, 0.25, 0.5},
+	{0.75, 1, 0.25, 0.5},
+}
+
 local function GetTestUnitColour(id, defaultColour, colourByClass, opacity)
     if colourByClass then
-        if id <= 5 then
-            local temporaryClass = EnvironmenTestData[id].class
-            local classColour = RAID_CLASS_COLORS[temporaryClass]
-            return classColour.r, classColour.g, classColour.b, opacity
-        else
-            local temporaryReaction = EnvironmenTestData[id].reaction
-            local reactionColour = oUF.colors.reaction[temporaryReaction]
-            return reactionColour.r, reactionColour.g, reactionColour.b, opacity
-        end
+        local temporaryClass = EnvironmenTestData[id].class
+        local classColour = RAID_CLASS_COLORS[temporaryClass]
+        return classColour.r, classColour.g, classColour.b, opacity
     else
         return defaultColour[1], defaultColour[2], defaultColour[3], opacity
     end
@@ -91,6 +105,238 @@ local function ApplyTestTag(fontString, frame, tagDB, text)
 	fontString:SetTextColor(unpack(tagDB.Colour))
 	fontString:SetText(text)
 	fontString:Show()
+end
+
+local function SetTestTexture(texture, enabled, texturePath, ...)
+	if not texture then return end
+	if not enabled then texture:Hide() return end
+	texture:SetTexture(texturePath)
+	if select("#", ...) > 0 then texture:SetTexCoord(...) else texture:SetTexCoord(0, 1, 0, 1) end
+	texture:Show()
+end
+
+local function ApplyGroupTestFrame(unitFrame, unit, index)
+	if not unitFrame or not unit then return end
+	local normalizedUnit = UUF:GetNormalizedUnit(unit)
+	local UnitDB = UUF.db.profile.Units[normalizedUnit]
+	local FrameDB = UnitDB.Frame
+	local HealthBarDB = UnitDB.HealthBar
+	local HealPredictionDB = UnitDB.HealPrediction
+	local PowerBarDB = UnitDB.PowerBar
+	local IndicatorDB = UnitDB.Indicators
+	local TagsDB = UnitDB.Tags
+	local testData = EnvironmenTestData[index]
+	local role = TestRoles[((index - 1) % #TestRoles) + 1]
+
+	unitFrame:SetAttribute("unit", nil)
+	unitFrame:SetSize(FrameDB.Width, FrameDB.Height)
+	unitFrame:SetFrameStrata(FrameDB.FrameStrata)
+	UnregisterUnitWatch(unitFrame)
+	if unitFrame:IsElementEnabled("Auras") then unitFrame:DisableElement("Auras") end
+	if unitFrame:IsElementEnabled("CustomAuras") then unitFrame:DisableElement("CustomAuras") end
+	unitFrame:Show()
+
+	if unitFrame.Health then
+		unitFrame.Health:SetMinMaxValues(0, testData.maxHealth)
+		unitFrame.Health:SetValue(testData.health)
+		unitFrame.Health:SetStatusBarColor(GetTestUnitColour(index, HealthBarDB.Foreground, HealthBarDB.ColourByClass, HealthBarDB.ForegroundOpacity))
+		if unitFrame.HealthBackground then
+			unitFrame.HealthBackground:SetMinMaxValues(0, testData.maxHealth)
+			unitFrame.HealthBackground:SetValue(testData.missingHealth)
+			unitFrame.HealthBackground:SetStatusBarColor(GetTestUnitColour(index, HealthBarDB.Background, HealthBarDB.ColourBackgroundByClass, HealthBarDB.BackgroundOpacity))
+		end
+	end
+
+	if unitFrame.HealthPrediction then
+		UUF:UpdateUnitHealPrediction(unitFrame, unit)
+		SetTestPredictionBar(unitFrame.HealthPrediction.damageAbsorb, testData.absorb, testData.maxHealth, HealPredictionDB.Absorbs.Enabled)
+		SetTestPredictionBar(unitFrame.HealthPrediction.healAbsorb, testData.healAbsorb, testData.maxHealth, HealPredictionDB.HealAbsorbs.Enabled)
+		SetTestPredictionBar(unitFrame.HealthPrediction.healingPlayer, testData.incomingHeal, testData.maxHealth, HealPredictionDB.IncomingHeal.Enabled)
+		if unitFrame.HealthPrediction.overDamageAbsorb then
+			local showOverAbsorb = HealPredictionDB.Absorbs.Enabled and HealPredictionDB.Absorbs.ShowOverAbsorb and HealPredictionDB.Absorbs.Position == "ATTACH"
+			SetTestPredictionBar(unitFrame.HealthPrediction.overDamageAbsorb, testData.absorb, testData.maxHealth, showOverAbsorb)
+			if unitFrame.HealthPrediction.overDamageAbsorb.Clip then
+				if showOverAbsorb then unitFrame.HealthPrediction.overDamageAbsorb.Clip:Show() else unitFrame.HealthPrediction.overDamageAbsorb.Clip:Hide() end
+			end
+		end
+	end
+
+	if unitFrame.Power then
+		unitFrame.Power:SetMinMaxValues(0, testData.maxPower)
+		unitFrame.Power:SetValue(testData.power)
+		if PowerBarDB.ColourByType and oUF.colors.power[testData.powerType] then
+			local colour = oUF.colors.power[testData.powerType]
+			unitFrame.Power:SetStatusBarColor(colour.r, colour.g, colour.b)
+		else
+			unitFrame.Power:SetStatusBarColor(unpack(PowerBarDB.Foreground))
+		end
+	end
+
+	if unitFrame.GroupRoleIndicator and IndicatorDB.Role then
+		local roleTexture = UUF.RoleTextures[IndicatorDB.Role.Texture] and UUF.RoleTextures[IndicatorDB.Role.Texture][role]
+		if IndicatorDB.Role.Enabled and IndicatorDB.Role.Texture == "Default" and TestRoleAtlas[role] then
+			unitFrame.GroupRoleIndicator:SetAtlas(TestRoleAtlas[role])
+			unitFrame.GroupRoleIndicator:SetTexCoord(0, 1, 0, 1)
+			unitFrame.GroupRoleIndicator:Show()
+		else
+			SetTestTexture(unitFrame.GroupRoleIndicator, IndicatorDB.Role.Enabled and roleTexture, roleTexture)
+		end
+	end
+
+	if unitFrame.LeaderIndicator and IndicatorDB.LeaderAssistantIndicator then SetTestTexture(unitFrame.LeaderIndicator, IndicatorDB.LeaderAssistantIndicator.Enabled and index == 1, "Interface\\GroupFrame\\UI-Group-LeaderIcon") end
+	if unitFrame.AssistantIndicator and IndicatorDB.LeaderAssistantIndicator then SetTestTexture(unitFrame.AssistantIndicator, IndicatorDB.LeaderAssistantIndicator.Enabled and index == 2, "Interface\\GroupFrame\\UI-Group-AssistantIcon") end
+
+	if unitFrame.PhaseIndicator and IndicatorDB.Phase then
+		if IndicatorDB.Phase.Enabled and index % 7 == 0 then
+			unitFrame.PhaseIndicator.Icon:SetAtlas("groupfinder-icon-phased")
+			unitFrame.PhaseIndicator:Show()
+		else
+			unitFrame.PhaseIndicator:Hide()
+		end
+	end
+
+	if unitFrame.RaidTargetIndicator and IndicatorDB.RaidTargetMarker and TestRaidTargetCoords[((index - 1) % #TestRaidTargetCoords) + 1] then
+		local coords = TestRaidTargetCoords[((index - 1) % #TestRaidTargetCoords) + 1]
+		SetTestTexture(unitFrame.RaidTargetIndicator, IndicatorDB.RaidTargetMarker.Enabled and index <= #TestRaidTargetCoords, "Interface\\TargetingFrame\\UI-RaidTargetingIcons", unpack(coords))
+	end
+
+	if unitFrame.TargetIndicator and IndicatorDB.Target then unitFrame.TargetIndicator:SetAlpha(IndicatorDB.Target.Enabled and index == 1 and 1 or 0) end
+	if unitFrame.ThreatIndicator and IndicatorDB.Threat then
+		local threatColour = UUF.db.profile.General.Colours.Threat[((index - 1) % 3) + 1]
+		if IndicatorDB.Threat.Enabled and index % 5 == 0 then
+			unitFrame.ThreatIndicator:SetBackdropBorderColor(threatColour[1], threatColour[2], threatColour[3], threatColour[4] or 1)
+			unitFrame.ThreatIndicator:SetAlpha(1)
+			unitFrame.ThreatIndicator:Show()
+		else
+			unitFrame.ThreatIndicator:SetAlpha(0)
+			unitFrame.ThreatIndicator:Hide()
+		end
+	end
+
+	local auraTestMode = UUF.AURA_TEST_MODE
+	UUF.AURA_TEST_MODE = true
+	UUF:CreateTestAuras(unitFrame, unit)
+	UUF.AURA_TEST_MODE = auraTestMode
+	for tagIndex, tagName in ipairs(TestTagOrder) do
+		ApplyTestTag(unitFrame.Tags and unitFrame.Tags[tagName], unitFrame, TagsDB[tagName], "Tag " .. tagIndex)
+	end
+end
+
+local function RestoreGroupFrame(unitFrame, unit)
+	if not unitFrame or not unit then return end
+	unitFrame:SetAttribute("unit", unit == "partyplayer" and "player" or unit)
+	RegisterUnitWatch(unitFrame)
+	local auraTestMode = UUF.AURA_TEST_MODE
+	UUF.AURA_TEST_MODE = false
+	UUF:CreateTestAuras(unitFrame, unit)
+	UUF.AURA_TEST_MODE = auraTestMode
+	UUF:UpdateUnitFrame(unitFrame, unit)
+end
+
+function UUF:CreateRaidTestFrames()
+	if #UUF.RAID_TEST_FRAMES == UUF.MAX_RAID_FRAMES then return end
+	local activeStyle = oUF:GetActiveStyle()
+	oUF:SetActiveStyle(UUF:FetchFrameName("raid"))
+	for i = 1, UUF.MAX_RAID_FRAMES do
+		if not UUF.RAID_TEST_FRAMES[i] then
+			local raidFrame = oUF:Spawn("raid" .. i, "UUF_RaidTest" .. i)
+			raidFrame.isUUFTestFrame = true
+			raidFrame.testIndex = i
+			raidFrame:SetParent(UUF.RAID_CONTAINER)
+			UUF.RAID_TEST_FRAMES[i] = raidFrame
+		end
+	end
+	if activeStyle then oUF:SetActiveStyle(activeStyle) end
+end
+
+function UUF:LayoutRaidTestFrames()
+	local Frame = UUF.db.profile.Units.raid.Frame
+	if not UUF.RAID_CONTAINER then return end
+
+	local unitGrowth, groupGrowth = (Frame.GrowthDirection or "RIGHT_DOWN"):match("^(%a+)_(%a+)$")
+	unitGrowth = unitGrowth or "RIGHT"
+	groupGrowth = groupGrowth or "DOWN"
+	local spacing = Frame.Layout[5] or 0
+	local headerWidth = (unitGrowth == "UP" or unitGrowth == "DOWN") and Frame.Width or (Frame.Width + spacing) * UUF.MAX_RAID_FRAMES_PER_GROUP - spacing
+	local headerHeight = (unitGrowth == "UP" or unitGrowth == "DOWN") and (Frame.Height + spacing) * UUF.MAX_RAID_FRAMES_PER_GROUP - spacing or Frame.Height
+	local shownGroups = 0
+	for groupIndex = 1, UUF.MAX_RAID_GROUPS do if not Frame.Groups or Frame.Groups[groupIndex] then shownGroups = shownGroups + 1 end end
+	local containerWidth = (groupGrowth == "LEFT" or groupGrowth == "RIGHT") and (headerWidth + spacing) * shownGroups - spacing or headerWidth
+	local containerHeight = (groupGrowth == "UP" or groupGrowth == "DOWN") and (headerHeight + spacing) * shownGroups - spacing or headerHeight
+	UUF.RAID_CONTAINER:SetSize(math.max(containerWidth, Frame.Width), math.max(containerHeight, Frame.Height))
+
+	local shownGroupIndex = 0
+	for groupIndex = 1, UUF.MAX_RAID_GROUPS do
+		local showGroup = not Frame.Groups or Frame.Groups[groupIndex]
+		if showGroup then shownGroupIndex = shownGroupIndex + 1 end
+		local horizontalOffset = (shownGroupIndex - 1) * (headerWidth + spacing)
+		local verticalOffset = (shownGroupIndex - 1) * (headerHeight + spacing)
+		local headerXOffset = groupGrowth == "RIGHT" and horizontalOffset or groupGrowth == "LEFT" and -horizontalOffset or 0
+		local headerYOffset = groupGrowth == "UP" and verticalOffset or groupGrowth == "DOWN" and -verticalOffset or 0
+
+		for unitIndex = 1, UUF.MAX_RAID_FRAMES_PER_GROUP do
+			local raidIndex = ((groupIndex - 1) * UUF.MAX_RAID_FRAMES_PER_GROUP) + unitIndex
+			local raidFrame = UUF.RAID_TEST_FRAMES[raidIndex]
+			if raidFrame then
+				raidFrame:ClearAllPoints()
+				raidFrame:SetSize(Frame.Width, Frame.Height)
+				if showGroup then
+					local unitOffset = (unitIndex - 1) * (Frame[(unitGrowth == "UP" or unitGrowth == "DOWN") and "Height" or "Width"] + spacing)
+					local xOffset = headerXOffset + (unitGrowth == "RIGHT" and unitOffset or unitGrowth == "LEFT" and -unitOffset or 0)
+					local yOffset = headerYOffset + (unitGrowth == "UP" and unitOffset or unitGrowth == "DOWN" and -unitOffset or 0)
+					local point = (groupGrowth == "UP" or unitGrowth == "UP") and "BOTTOMLEFT" or "TOPLEFT"
+					raidFrame:SetPoint(point, UUF.RAID_CONTAINER, point, xOffset, yOffset)
+					raidFrame:Show()
+				else
+					raidFrame:Hide()
+				end
+			end
+		end
+	end
+end
+
+function UUF:CreateTestGroupFrames(unit)
+	if unit == "party" then
+		local UnitDB = UUF.db.profile.Units.party
+		if not UnitDB or not UnitDB.Enabled then if UUF.PARTY_CONTAINER then UUF.PARTY_CONTAINER:Hide() end return end
+		UUF:CreatePartyContainer()
+		UnregisterStateDriver(UUF.PARTY_CONTAINER, "visibility")
+		UUF.PARTY_CONTAINER:Show()
+		for i = 1, UUF.MAX_PARTY_FRAMES do
+			if UUF["PARTY" .. i] then ApplyGroupTestFrame(UUF["PARTY" .. i], "party" .. i, i + (UnitDB.Frame.ShowPlayer and 1 or 0)) end
+		end
+		if UUF.PARTYPLAYER then ApplyGroupTestFrame(UUF.PARTYPLAYER, "partyplayer", 1) end
+		UUF:LayoutPartyFrames()
+	elseif unit == "raid" then
+		local UnitDB = UUF.db.profile.Units.raid
+		if not UnitDB or not UnitDB.Enabled then if UUF.RAID_CONTAINER then UUF.RAID_CONTAINER:Hide() end return end
+		UUF:CreateRaidContainer()
+		UUF:CreateRaidTestFrames()
+		for _, header in ipairs(UUF.RAID_HEADERS) do header:Hide() end
+		for i, raidFrame in ipairs(UUF.RAID_TEST_FRAMES) do ApplyGroupTestFrame(raidFrame, "raid" .. i, i) end
+		UUF:LayoutRaidTestFrames()
+		UUF.RAID_CONTAINER:Show()
+	end
+end
+
+function UUF:RestoreTestGroupFrames(unit)
+	if unit == "party" then
+		for i = 1, UUF.MAX_PARTY_FRAMES do if UUF["PARTY" .. i] then RestoreGroupFrame(UUF["PARTY" .. i], "party" .. i) end end
+		if UUF.PARTYPLAYER then RestoreGroupFrame(UUF.PARTYPLAYER, "partyplayer") end
+		UUF:UpdatePartyFrames()
+	elseif unit == "raid" then
+		for i, raidFrame in ipairs(UUF.RAID_TEST_FRAMES) do
+			raidFrame:SetAttribute("unit", "raid" .. i)
+			UnregisterUnitWatch(raidFrame)
+			local auraTestMode = UUF.AURA_TEST_MODE
+			UUF.AURA_TEST_MODE = false
+			UUF:CreateTestAuras(raidFrame, "raid" .. i)
+			UUF.AURA_TEST_MODE = auraTestMode
+			raidFrame:Hide()
+		end
+		for _, header in ipairs(UUF.RAID_HEADERS) do header:Show() end
+		UUF:UpdateRaidFrames()
+	end
 end
 
 function UUF:CreateTestBossFrames()
