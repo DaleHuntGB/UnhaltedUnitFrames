@@ -238,13 +238,13 @@ local function DisableRaidFramesTestMode()
 end
 
 local function DisableAllTestModes()
-    UUF.AURA_TEST_MODE = false
-    UUF.CASTBAR_TEST_MODE = false
-    UUF.BOSS_TEST_MODE = false
-    UUF.PARTY_TEST_MODE = false
-    UUF.RAID_TEST_MODE = false
-    UUF.MOVERS_UNLOCKED = false
-    for unit, _ in pairs(UUF.db.profile.Units) do
+	UUF.AURA_TEST_MODE = false
+	UUF.CASTBAR_TEST_MODE = false
+	UUF.BOSS_TEST_MODE = false
+	UUF.PARTY_TEST_MODE = false
+	UUF.RAID_TEST_MODE = false
+	UUF.MOVERS_UNLOCKED = false
+	for unit, _ in pairs(UUF.db.profile.Units) do
 		if unit == "party" or unit == "raid" then
 			DisableAurasTestMode(unit)
 		elseif UUF[unit:upper()] then
@@ -252,10 +252,10 @@ local function DisableAllTestModes()
 			UUF:CreateTestCastBar(UUF[unit:upper()], unit)
 		end
 	end
-    UUF:CreateTestBossFrames()
-    UUF:RestoreTestGroupFrames("party")
-    UUF:RestoreTestGroupFrames("raid")
-    for _, frameMover in pairs(UUF.MOVERS or {}) do frameMover:Hide() end
+	UUF:CreateTestBossFrames()
+	UUF:RestoreTestGroupFrames("party")
+	UUF:RestoreTestGroupFrames("raid")
+	for _, frameMover in pairs(UUF.MOVERS or {}) do frameMover:Hide() end
 end
 
 local function GenerateSupportText(parentFrame)

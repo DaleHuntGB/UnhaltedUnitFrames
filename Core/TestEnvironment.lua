@@ -1,58 +1,58 @@
 local _, UUF = ...
-local EnvironmenTestData = {}
+local EnvironmentTestData = {}
 local oUF = UUF.oUF
 
 local Classes = {
-    [1] = "WARRIOR",
-    [2] = "PALADIN",
-    [3] = "HUNTER",
-    [4] = "ROGUE",
-    [5] = "PRIEST",
-    [6] = "DEATHKNIGHT",
-    [7] = "SHAMAN",
-    [8] = "MAGE",
-    [9] = "WARLOCK",
-    [10]= "MONK",
-    [11]= "DRUID",
-    [12]= "DEMONHUNTER",
-    [13]= "EVOKER",
+	[1] = "WARRIOR",
+	[2] = "PALADIN",
+	[3] = "HUNTER",
+	[4] = "ROGUE",
+	[5] = "PRIEST",
+	[6] = "DEATHKNIGHT",
+	[7] = "SHAMAN",
+	[8] = "MAGE",
+	[9] = "WARLOCK",
+	[10]= "MONK",
+	[11]= "DRUID",
+	[12]= "DEMONHUNTER",
+	[13]= "EVOKER",
 }
 
 local PowerTypes = {
-    [1] = 0,
-    [2] = 1,
-    [3] = 2,
-    [4] = 3,
-    [5] = 6,
-    [6] = 8,
-    [7] = 11,
-    [8] = 13,
-    [9] = 17,
-    [10] = 18
+	[1] = 0,
+	[2] = 1,
+	[3] = 2,
+	[4] = 3,
+	[5] = 6,
+	[6] = 8,
+	[7] = 11,
+	[8] = 13,
+	[9] = 17,
+	[10] = 18
 }
 
 for i = 1, UUF.MAX_RAID_FRAMES do
-    EnvironmenTestData[i] = {
-        name      = "Unit " .. i,
-        class     = Classes[((i - 1) % #Classes) + 1],
-        reaction  = i % 2 == 0 and 2 or 5,
-        health    = 8000000 - (((i - 1) % 10 + 1) * 600000),
-        maxHealth = 8000000,
-        missingHealth = ((i - 1) % 10 + 1) * 600000,
-        absorb    = (((i - 1) % 10 + 1) * 300000),
-        healAbsorb = (((i - 1) % 10 + 1) * 150000),
-        incomingHeal = (((i - 1) % 10 + 1) * 200000),
-        percent  = (8000000 - (((i - 1) % 10 + 1) * 600000)) / 8000000 * 100,
-        maxPower  = 100,
-        power     = 100 - (((i - 1) % 10 + 1) * 7),
-        powerType = PowerTypes[((i - 1) % #PowerTypes) + 1],
-    }
+	EnvironmentTestData[i] = {
+		name      = "Unit " .. i,
+		class     = Classes[((i - 1) % #Classes) + 1],
+		reaction  = i % 2 == 0 and 2 or 5,
+		health    = 8000000 - (((i - 1) % 10 + 1) * 600000),
+		maxHealth = 8000000,
+		missingHealth = ((i - 1) % 10 + 1) * 600000,
+		absorb    = (((i - 1) % 10 + 1) * 300000),
+		healAbsorb = (((i - 1) % 10 + 1) * 150000),
+		incomingHeal = (((i - 1) % 10 + 1) * 200000),
+		percent  = (8000000 - (((i - 1) % 10 + 1) * 600000)) / 8000000 * 100,
+		maxPower  = 100,
+		power     = 100 - (((i - 1) % 10 + 1) * 7),
+		powerType = PowerTypes[((i - 1) % #PowerTypes) + 1],
+	}
 end
 
-for i = 1, UUF.MAX_BOSS_FRAMES do EnvironmenTestData[i].name = "Boss " .. i end
+for i = 1, UUF.MAX_BOSS_FRAMES do EnvironmentTestData[i].name = "Boss " .. i end
 
 local TestRoles = {"TANK", "HEALER", "DAMAGER", "DAMAGER", "DAMAGER"}
-local TestTagOrder = {"TagOne", "TagTwo", "TagThree"}
+local TestTagOrder = {"TagOne", "TagTwo", "TagThree", "TagFour", "TagFive"}
 local TestRoleAtlas = {
 	TANK = "UI-LFG-RoleIcon-Tank-Micro-Raid",
 	HEALER = "UI-LFG-RoleIcon-Healer-Micro-Raid",
@@ -70,13 +70,13 @@ local TestRaidTargetCoords = {
 }
 
 local function GetTestUnitColour(id, defaultColour, colourByClass, opacity)
-    if colourByClass then
-        local temporaryClass = EnvironmenTestData[id].class
-        local classColour = RAID_CLASS_COLORS[temporaryClass]
-        return classColour.r, classColour.g, classColour.b, opacity
-    else
-        return defaultColour[1], defaultColour[2], defaultColour[3], opacity
-    end
+	if colourByClass then
+		local temporaryClass = EnvironmentTestData[id].class
+		local classColour = RAID_CLASS_COLORS[temporaryClass]
+		return classColour.r, classColour.g, classColour.b, opacity
+	else
+		return defaultColour[1], defaultColour[2], defaultColour[3], opacity
+	end
 end
 
 local function SetTestPredictionBar(bar, value, maxValue, enabled)
@@ -117,6 +117,7 @@ end
 
 local function ApplyGroupTestFrame(unitFrame, unit, index, displayName)
 	if not unitFrame or not unit then return end
+	if InCombatLockdown() then return end
 	local normalizedUnit = UUF:GetNormalizedUnit(unit)
 	local UnitDB = UUF.db.profile.Units[normalizedUnit]
 	local FrameDB = UnitDB.Frame
@@ -125,7 +126,7 @@ local function ApplyGroupTestFrame(unitFrame, unit, index, displayName)
 	local PowerBarDB = UnitDB.PowerBar
 	local IndicatorDB = UnitDB.Indicators
 	local TagsDB = UnitDB.Tags
-	local testData = EnvironmenTestData[index]
+	local testData = EnvironmentTestData[index]
 	local role = TestRoles[((index - 1) % #TestRoles) + 1]
 
 	unitFrame:SetAttribute("unit", nil)
@@ -232,6 +233,7 @@ end
 
 local function RestoreGroupFrame(unitFrame, unit)
 	if not unitFrame or not unit then return end
+	if InCombatLockdown() then return end
 	unitFrame:SetAttribute("unit", unit == "partyplayer" and "player" or unit)
 	RegisterUnitWatch(unitFrame)
 	local auraTestMode = UUF.AURA_TEST_MODE
@@ -304,6 +306,7 @@ function UUF:LayoutRaidTestFrames()
 end
 
 function UUF:CreateTestGroupFrames(unit)
+	if InCombatLockdown() then return end
 	if unit == "party" then
 		local UnitDB = UUF.db.profile.Units.party
 		if not UnitDB or not UnitDB.Enabled then if UUF.PARTY_CONTAINER then UUF.PARTY_CONTAINER:Hide() end return end
@@ -328,6 +331,7 @@ function UUF:CreateTestGroupFrames(unit)
 end
 
 function UUF:RestoreTestGroupFrames(unit)
+	if InCombatLockdown() then return end
 	if unit == "party" then
 		for i = 1, UUF.MAX_PARTY_FRAMES do if UUF["PARTY" .. i] then RestoreGroupFrame(UUF["PARTY" .. i], "party" .. i) end end
 		if UUF.PARTYPLAYER then RestoreGroupFrame(UUF.PARTYPLAYER, "partyplayer") end
@@ -348,292 +352,293 @@ function UUF:RestoreTestGroupFrames(unit)
 end
 
 function UUF:CreateTestBossFrames()
-    local General = UUF.db.profile.General
-    local BuffsDB = UUF.db.profile.Units.boss.Auras.Buffs
-    local DebuffsDB = UUF.db.profile.Units.boss.Auras.Debuffs
-    local CustomDB = UUF.db.profile.Units.boss.Auras.Custom
-    local TagsDB = UUF.db.profile.Units.boss.Tags
-    local HealPredictionDB = UUF.db.profile.Units.boss.HealPrediction
-    UUF:ResolveLSM()
-    local BossDB = UUF.db.profile.Units.boss
-    if UUF.BOSS_TEST_MODE then
-        for i, BossFrame in ipairs(UUF.BOSS_FRAMES) do
-            BossFrame:SetAttribute("unit", nil)
-            UnregisterUnitWatch(BossFrame)
-            if BossFrame:IsElementEnabled("Auras") then BossFrame:DisableElement("Auras") end
-            if BossFrame:IsElementEnabled("CustomAuras") then BossFrame:DisableElement("CustomAuras") end
-            if BossDB.Enabled then BossFrame:Show() else BossFrame:Hide() end
+	if InCombatLockdown() then return end
+	local General = UUF.db.profile.General
+	local BuffsDB = UUF.db.profile.Units.boss.Auras.Buffs
+	local DebuffsDB = UUF.db.profile.Units.boss.Auras.Debuffs
+	local CustomDB = UUF.db.profile.Units.boss.Auras.Custom
+	local TagsDB = UUF.db.profile.Units.boss.Tags
+	local HealPredictionDB = UUF.db.profile.Units.boss.HealPrediction
+	UUF:ResolveLSM()
+	local BossDB = UUF.db.profile.Units.boss
+	if UUF.BOSS_TEST_MODE then
+		for i, BossFrame in ipairs(UUF.BOSS_FRAMES) do
+			BossFrame:SetAttribute("unit", nil)
+			UnregisterUnitWatch(BossFrame)
+			if BossFrame:IsElementEnabled("Auras") then BossFrame:DisableElement("Auras") end
+			if BossFrame:IsElementEnabled("CustomAuras") then BossFrame:DisableElement("CustomAuras") end
+			if BossDB.Enabled then BossFrame:Show() else BossFrame:Hide() end
 
-            BossFrame:SetFrameStrata(BossDB.Frame.FrameStrata)
+			BossFrame:SetFrameStrata(BossDB.Frame.FrameStrata)
 
-            if BossFrame.Health then
-                local HealthBarDB = UUF.db.profile.Units.boss.HealthBar
-                BossFrame.Health:SetMinMaxValues(0, EnvironmenTestData[i].maxHealth)
-                BossFrame.Health:SetValue(EnvironmenTestData[i].health)
-                BossFrame.HealthBackground:SetMinMaxValues(0, EnvironmenTestData[i].maxHealth)
-                BossFrame.HealthBackground:SetValue(EnvironmenTestData[i].missingHealth)
-                BossFrame.HealthBackground:SetStatusBarColor(GetTestUnitColour(i, HealthBarDB.Background, HealthBarDB.ColourBackgroundByClass, HealthBarDB.BackgroundOpacity))
-                BossFrame.Health:SetStatusBarColor(GetTestUnitColour(i, HealthBarDB.Foreground, HealthBarDB.ColourByClass, HealthBarDB.ForegroundOpacity))
-            end
+			if BossFrame.Health then
+				local HealthBarDB = UUF.db.profile.Units.boss.HealthBar
+				BossFrame.Health:SetMinMaxValues(0, EnvironmentTestData[i].maxHealth)
+				BossFrame.Health:SetValue(EnvironmentTestData[i].health)
+				BossFrame.HealthBackground:SetMinMaxValues(0, EnvironmentTestData[i].maxHealth)
+				BossFrame.HealthBackground:SetValue(EnvironmentTestData[i].missingHealth)
+				BossFrame.HealthBackground:SetStatusBarColor(GetTestUnitColour(i, HealthBarDB.Background, HealthBarDB.ColourBackgroundByClass, HealthBarDB.BackgroundOpacity))
+				BossFrame.Health:SetStatusBarColor(GetTestUnitColour(i, HealthBarDB.Foreground, HealthBarDB.ColourByClass, HealthBarDB.ForegroundOpacity))
+			end
 
-            if BossFrame.HealthPrediction then
-                UUF:UpdateUnitHealPrediction(BossFrame, "boss" .. i)
-                local maxHealth = EnvironmenTestData[i].maxHealth
-                SetTestPredictionBar(BossFrame.HealthPrediction.damageAbsorb, EnvironmenTestData[i].absorb, maxHealth, HealPredictionDB.Absorbs.Enabled)
-                SetTestPredictionBar(BossFrame.HealthPrediction.healAbsorb, EnvironmenTestData[i].healAbsorb, maxHealth, HealPredictionDB.HealAbsorbs.Enabled)
-                SetTestPredictionBar(BossFrame.HealthPrediction.healingPlayer, EnvironmenTestData[i].incomingHeal, maxHealth, HealPredictionDB.IncomingHeal.Enabled)
-                if BossFrame.HealthPrediction.overDamageAbsorb then
-                    local showOverAbsorb = HealPredictionDB.Absorbs.Enabled and HealPredictionDB.Absorbs.ShowOverAbsorb and HealPredictionDB.Absorbs.Position == "ATTACH"
-                    SetTestPredictionBar(BossFrame.HealthPrediction.overDamageAbsorb, EnvironmenTestData[i].absorb, maxHealth, showOverAbsorb)
-                    if BossFrame.HealthPrediction.overDamageAbsorb.Clip then
-                        if showOverAbsorb then BossFrame.HealthPrediction.overDamageAbsorb.Clip:Show() else BossFrame.HealthPrediction.overDamageAbsorb.Clip:Hide() end
-                    end
-                end
-            end
+			if BossFrame.HealthPrediction then
+				UUF:UpdateUnitHealPrediction(BossFrame, "boss" .. i)
+				local maxHealth = EnvironmentTestData[i].maxHealth
+				SetTestPredictionBar(BossFrame.HealthPrediction.damageAbsorb, EnvironmentTestData[i].absorb, maxHealth, HealPredictionDB.Absorbs.Enabled)
+				SetTestPredictionBar(BossFrame.HealthPrediction.healAbsorb, EnvironmentTestData[i].healAbsorb, maxHealth, HealPredictionDB.HealAbsorbs.Enabled)
+				SetTestPredictionBar(BossFrame.HealthPrediction.healingPlayer, EnvironmentTestData[i].incomingHeal, maxHealth, HealPredictionDB.IncomingHeal.Enabled)
+				if BossFrame.HealthPrediction.overDamageAbsorb then
+					local showOverAbsorb = HealPredictionDB.Absorbs.Enabled and HealPredictionDB.Absorbs.ShowOverAbsorb and HealPredictionDB.Absorbs.Position == "ATTACH"
+					SetTestPredictionBar(BossFrame.HealthPrediction.overDamageAbsorb, EnvironmentTestData[i].absorb, maxHealth, showOverAbsorb)
+					if BossFrame.HealthPrediction.overDamageAbsorb.Clip then
+						if showOverAbsorb then BossFrame.HealthPrediction.overDamageAbsorb.Clip:Show() else BossFrame.HealthPrediction.overDamageAbsorb.Clip:Hide() end
+					end
+				end
+			end
 
-            if BossFrame.Portrait then
-                local PortraitOptions = {
-                    [1] = "achievement_character_human_female",
-                    [2] = "achievement_character_human_male",
-                    [3] = "achievement_character_dwarf_male",
-                    [4] = "achievement_character_dwarf_female",
-                    [5] = "achievement_character_nightelf_female",
-                    [6] = "achievement_character_nightelf_male",
-                    [7] = "achievement_character_undead_male",
-                    [8] = "achievement_character_undead_female",
-                    [9] = "achievement_character_orc_male",
-                    [10]= "achievement_character_orc_female"
-                }
-                if BossFrame.Portrait:IsObjectType("PlayerModel") then
-                    BossFrame.Portrait:ClearModel()
-                    BossFrame.Portrait:SetUnit("player")
-                else
-                    BossFrame.Portrait:SetTexture("Interface\\ICONS\\" .. PortraitOptions[i])
-                end
-            end
+			if BossFrame.Portrait then
+				local PortraitOptions = {
+					[1] = "achievement_character_human_female",
+					[2] = "achievement_character_human_male",
+					[3] = "achievement_character_dwarf_male",
+					[4] = "achievement_character_dwarf_female",
+					[5] = "achievement_character_nightelf_female",
+					[6] = "achievement_character_nightelf_male",
+					[7] = "achievement_character_undead_male",
+					[8] = "achievement_character_undead_female",
+					[9] = "achievement_character_orc_male",
+					[10]= "achievement_character_orc_female"
+				}
+				if BossFrame.Portrait:IsObjectType("PlayerModel") then
+					BossFrame.Portrait:ClearModel()
+					BossFrame.Portrait:SetUnit("player")
+				else
+					BossFrame.Portrait:SetTexture("Interface\\ICONS\\" .. PortraitOptions[i])
+				end
+			end
 
-            if BossFrame.Power then
-                BossFrame.Power:SetMinMaxValues(0, EnvironmenTestData[i].maxPower)
-                BossFrame.Power:SetValue(EnvironmenTestData[i].power)
-            end
+			if BossFrame.Power then
+				BossFrame.Power:SetMinMaxValues(0, EnvironmentTestData[i].maxPower)
+				BossFrame.Power:SetValue(EnvironmentTestData[i].power)
+			end
 
-            local raidTargetMarkerCoords={{0,0.25,0,0.25},{0.25,0.5,0,0.25},{0.5,0.75,0,0.25},{0.75,1,0,0.25},{0,0.25,0.25,0.5},{0.25,0.5,0.25,0.5},{0.5,0.75,0.25,0.5},{0.75,1,0.25,0.5},{0,0.25,0,0.25},{0.25,0.5,0,0.25}}
-            if BossFrame.RaidTargetIndicator and i and raidTargetMarkerCoords[i] then
-                BossFrame.RaidTargetIndicator:SetTexture("Interface\\TargetingFrame\\UI-RaidTargetingIcons")
-                BossFrame.RaidTargetIndicator:SetTexCoord(unpack(raidTargetMarkerCoords[i]))
-                BossFrame.RaidTargetIndicator:Show()
-            end
+			if BossFrame.RaidTargetIndicator and i and TestRaidTargetCoords[((i - 1) % #TestRaidTargetCoords) + 1] then
+				local coords = TestRaidTargetCoords[((i - 1) % #TestRaidTargetCoords) + 1]
+				BossFrame.RaidTargetIndicator:SetTexture("Interface\\TargetingFrame\\UI-RaidTargetingIcons")
+				BossFrame.RaidTargetIndicator:SetTexCoord(unpack(coords))
+				BossFrame.RaidTargetIndicator:Show()
+			end
 
-            if BossFrame.Castbar then
-                local CastBarDB = UUF.db.profile.Units.boss.CastBar
-                local CastBarContainer = BossFrame.Castbar and BossFrame.Castbar:GetParent()
-                if BossFrame.Castbar and CastBarDB.Enabled then
-                    BossFrame:DisableElement("Castbar")
-                    CastBarContainer:Show()
-                    BossFrame.Castbar:Show()
-                    BossFrame.Castbar.Background:Show()
-                    BossFrame.Castbar.Text:SetText(CastBarDB.ShowTarget and "Ethereal Portal » Target" or "Ethereal Portal")
-                    BossFrame.Castbar.Time:SetText("0.0")
-                    BossFrame.Castbar:SetMinMaxValues(0, 1000)
-                    BossFrame.Castbar.testValue = 0
-                    BossFrame.Castbar:SetScript("OnUpdate", function(self, elapsed) self.testValue = ((self.testValue or 0) + elapsed) % 5 self:SetValue((self.testValue / 5) * 1000) self.Time:SetText(string.format("%.1f", self.testValue)) end)
-                    local castBarColour = (false and CastBarDB.NotInterruptibleColour) or (CastBarDB.ColourByClass and UUF:GetClassColour(BossFrame)) or CastBarDB.Foreground
-                    BossFrame.Castbar:SetStatusBarColor(castBarColour[1], castBarColour[2], castBarColour[3], castBarColour[4])
-                    if CastBarDB.Icon.Enabled and BossFrame.Castbar.Icon then BossFrame.Castbar.Icon:SetTexture("Interface\\Icons\\ability_mage_netherwindpresence") BossFrame.Castbar.Icon:Show() end
-                else
-                    if CastBarContainer then CastBarContainer:Hide() end
-                    if BossFrame.Castbar and BossFrame.Castbar.Icon then BossFrame.Castbar.Icon:Hide() end
-                end
-            end
+			if BossFrame.Castbar then
+				local CastBarDB = UUF.db.profile.Units.boss.CastBar
+				local CastBarContainer = BossFrame.Castbar and BossFrame.Castbar:GetParent()
+				if BossFrame.Castbar and CastBarDB.Enabled then
+					BossFrame:DisableElement("Castbar")
+					CastBarContainer:Show()
+					BossFrame.Castbar:Show()
+					BossFrame.Castbar.Background:Show()
+					BossFrame.Castbar.Text:SetText(CastBarDB.ShowTarget and "Ethereal Portal » Target" or "Ethereal Portal")
+					BossFrame.Castbar.Time:SetText("0.0")
+					BossFrame.Castbar:SetMinMaxValues(0, 1000)
+					BossFrame.Castbar.testValue = 0
+					BossFrame.Castbar:SetScript("OnUpdate", function(self, elapsed) self.testValue = ((self.testValue or 0) + elapsed) % 5 self:SetValue((self.testValue / 5) * 1000) self.Time:SetText(string.format("%.1f", self.testValue)) end)
+					local castBarColour = (false and CastBarDB.NotInterruptibleColour) or (CastBarDB.ColourByClass and UUF:GetClassColour(BossFrame)) or CastBarDB.Foreground
+					BossFrame.Castbar:SetStatusBarColor(castBarColour[1], castBarColour[2], castBarColour[3], castBarColour[4])
+					if CastBarDB.Icon.Enabled and BossFrame.Castbar.Icon then BossFrame.Castbar.Icon:SetTexture("Interface\\Icons\\ability_mage_netherwindpresence") BossFrame.Castbar.Icon:Show() end
+				else
+					if CastBarContainer then CastBarContainer:Hide() end
+					if BossFrame.Castbar and BossFrame.Castbar.Icon then BossFrame.Castbar.Icon:Hide() end
+				end
+			end
 
-            if BossFrame.BuffContainer then
-                if BuffsDB.Enabled then
-                    BossFrame.BuffContainer:ClearAllPoints()
-                    BossFrame.BuffContainer:SetPoint(BuffsDB.Layout[1], BossFrame, BuffsDB.Layout[2], BuffsDB.Layout[3], BuffsDB.Layout[4])
-                    BossFrame.BuffContainer:Show()
-                    for _, button in ipairs(BossFrame.BuffContainer) do
-                        if button then button:Hide() end
-                    end
+			if BossFrame.BuffContainer then
+				if BuffsDB.Enabled then
+					BossFrame.BuffContainer:ClearAllPoints()
+					BossFrame.BuffContainer:SetPoint(BuffsDB.Layout[1], BossFrame, BuffsDB.Layout[2], BuffsDB.Layout[3], BuffsDB.Layout[4])
+					BossFrame.BuffContainer:Show()
+					for _, button in ipairs(BossFrame.BuffContainer) do
+						if button then button:Hide() end
+					end
 
-                    for j = 1, BuffsDB.Num do
-                        local button = BossFrame.BuffContainer["fake" .. j]
-                        if not button then
-                            button = CreateFrame("Button", nil, BossFrame.BuffContainer, "BackdropTemplate")
-                            button:SetBackdrop(UUF.BACKDROP)
-                            button:SetBackdropColor(0, 0, 0, 0)
-                            button:SetBackdropBorderColor(0, 0, 0, 1)
-                            button:SetFrameStrata("MEDIUM")
+					for j = 1, BuffsDB.Num do
+						local button = BossFrame.BuffContainer["fake" .. j]
+						if not button then
+							button = CreateFrame("Button", nil, BossFrame.BuffContainer, "BackdropTemplate")
+							button:SetBackdrop(UUF.BACKDROP)
+							button:SetBackdropColor(0, 0, 0, 0)
+							button:SetBackdropBorderColor(0, 0, 0, 1)
+							button:SetFrameStrata("MEDIUM")
 
-                            button.Icon = button:CreateTexture(nil, "BORDER")
-                            button.Icon:SetAllPoints()
+							button.Icon = button:CreateTexture(nil, "BORDER")
+							button.Icon:SetAllPoints()
 
-                            button.Count = button:CreateFontString(nil, "OVERLAY")
-                            BossFrame.BuffContainer["fake" .. j] = button
-                        end
+							button.Count = button:CreateFontString(nil, "OVERLAY")
+							BossFrame.BuffContainer["fake" .. j] = button
+						end
 
-                        button:SetSize(BuffsDB.Size, BuffsDB.Size)
-                        button.Count:ClearAllPoints()
-                        button.Count:SetPoint(BuffsDB.Count.Layout[1], button, BuffsDB.Count.Layout[2], BuffsDB.Count.Layout[3], BuffsDB.Count.Layout[4])
-                        button.Count:SetFont(UUF.Media.Font, BuffsDB.Count.FontSize, General.Fonts.FontFlag)
-                        if General.Fonts.Shadow.Enabled then
-                            button.Count:SetShadowColor(unpack(General.Fonts.Shadow.Colour))
-                            button.Count:SetShadowOffset(General.Fonts.Shadow.XPos, General.Fonts.Shadow.YPos)
-                        else
-                            button.Count:SetShadowColor(0, 0, 0, 0)
-                            button.Count:SetShadowOffset(0, 0)
-                        end
-                        button.Count:SetTextColor(unpack(BuffsDB.Count.Colour))
+						button:SetSize(BuffsDB.Size, BuffsDB.Size)
+						button.Count:ClearAllPoints()
+						button.Count:SetPoint(BuffsDB.Count.Layout[1], button, BuffsDB.Count.Layout[2], BuffsDB.Count.Layout[3], BuffsDB.Count.Layout[4])
+						button.Count:SetFont(UUF.Media.Font, BuffsDB.Count.FontSize, General.Fonts.FontFlag)
+						if General.Fonts.Shadow.Enabled then
+							button.Count:SetShadowColor(unpack(General.Fonts.Shadow.Colour))
+							button.Count:SetShadowOffset(General.Fonts.Shadow.XPos, General.Fonts.Shadow.YPos)
+						else
+							button.Count:SetShadowColor(0, 0, 0, 0)
+							button.Count:SetShadowOffset(0, 0)
+						end
+						button.Count:SetTextColor(unpack(BuffsDB.Count.Colour))
 
-                        local row = math.floor((j - 1) / BuffsDB.Wrap)
-                        local col = (j - 1) % BuffsDB.Wrap
-                        local x = col * (BuffsDB.Size + BuffsDB.Layout[5])
-                        local y = row * (BuffsDB.Size + BuffsDB.Layout[5])
-                        if BuffsDB.GrowthDirection == "LEFT" then x = -x end
-                        if BuffsDB.WrapDirection == "DOWN" then y = -y end
+						local row = math.floor((j - 1) / BuffsDB.Wrap)
+						local col = (j - 1) % BuffsDB.Wrap
+						local x = col * (BuffsDB.Size + BuffsDB.Layout[5])
+						local y = row * (BuffsDB.Size + BuffsDB.Layout[5])
+						if BuffsDB.GrowthDirection == "LEFT" then x = -x end
+						if BuffsDB.WrapDirection == "DOWN" then y = -y end
 
-                        button:ClearAllPoints()
-                        button:SetPoint(BuffsDB.Layout[1], BossFrame.BuffContainer, BuffsDB.Layout[1], x, y)
+						button:ClearAllPoints()
+						button:SetPoint(BuffsDB.Layout[1], BossFrame.BuffContainer, BuffsDB.Layout[1], x, y)
 
-                        button.Icon:SetTexture(135769)
-                        button.Icon:SetPoint("TOPLEFT", button, "TOPLEFT", 1, -1)
-                        button.Icon:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", -1, 1)
-                        button.Icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
-                        button.Count:SetText(j)
-                        button.Duration = button.Duration or button:CreateFontString(nil, "OVERLAY")
-                        UUF:ApplyCooldownText(button, button.Duration, "boss")
-                        button.Duration:SetText("10m")
-                        button:Show()
-                    end
+						button.Icon:SetTexture(135769)
+						button.Icon:SetPoint("TOPLEFT", button, "TOPLEFT", 1, -1)
+						button.Icon:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", -1, 1)
+						button.Icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
+						button.Count:SetText(j)
+						button.Duration = button.Duration or button:CreateFontString(nil, "OVERLAY")
+						UUF:ApplyCooldownText(button, button.Duration, "boss")
+						button.Duration:SetText("10m")
+						button:Show()
+					end
 
-                    local maxFake = BuffsDB.Num
-                    for j = maxFake + 1, (BossFrame.BuffContainer.maxFake or maxFake) do
-                        local button = BossFrame.BuffContainer["fake" .. j]
-                        if button then button:Hide() end
-                    end
-                    BossFrame.BuffContainer.maxFake = BuffsDB.Num
-                else
-                    BossFrame.BuffContainer:Hide()
-                end
-            end
+					local maxFake = BuffsDB.Num
+					for j = maxFake + 1, (BossFrame.BuffContainer.maxFake or maxFake) do
+						local button = BossFrame.BuffContainer["fake" .. j]
+						if button then button:Hide() end
+					end
+					BossFrame.BuffContainer.maxFake = BuffsDB.Num
+				else
+					BossFrame.BuffContainer:Hide()
+				end
+			end
 
-            if BossFrame.DebuffContainer then
-                if DebuffsDB.Enabled then
-                    BossFrame.DebuffContainer:ClearAllPoints()
-                    BossFrame.DebuffContainer:SetPoint(DebuffsDB.Layout[1], BossFrame, DebuffsDB.Layout[2], DebuffsDB.Layout[3], DebuffsDB.Layout[4])
-                    BossFrame.DebuffContainer:Show()
-                    for _, button in ipairs(BossFrame.DebuffContainer) do
-                        if button then button:Hide() end
-                    end
+			if BossFrame.DebuffContainer then
+				if DebuffsDB.Enabled then
+					BossFrame.DebuffContainer:ClearAllPoints()
+					BossFrame.DebuffContainer:SetPoint(DebuffsDB.Layout[1], BossFrame, DebuffsDB.Layout[2], DebuffsDB.Layout[3], DebuffsDB.Layout[4])
+					BossFrame.DebuffContainer:Show()
+					for _, button in ipairs(BossFrame.DebuffContainer) do
+						if button then button:Hide() end
+					end
 
-                    for j = 1, DebuffsDB.Num do
-                        local button = BossFrame.DebuffContainer["fake" .. j]
-                        if not button then
-                            button = CreateFrame("Button", nil, BossFrame.DebuffContainer, "BackdropTemplate")
-                            button:SetBackdrop(UUF.BACKDROP)
-                            button:SetBackdropColor(0, 0, 0, 0)
-                            button:SetBackdropBorderColor(0, 0, 0, 1)
-                            button:SetFrameStrata("MEDIUM")
+					for j = 1, DebuffsDB.Num do
+						local button = BossFrame.DebuffContainer["fake" .. j]
+						if not button then
+							button = CreateFrame("Button", nil, BossFrame.DebuffContainer, "BackdropTemplate")
+							button:SetBackdrop(UUF.BACKDROP)
+							button:SetBackdropColor(0, 0, 0, 0)
+							button:SetBackdropBorderColor(0, 0, 0, 1)
+							button:SetFrameStrata("MEDIUM")
 
-                            button.Icon = button:CreateTexture(nil, "BORDER")
-                            button.Icon:SetAllPoints()
+							button.Icon = button:CreateTexture(nil, "BORDER")
+							button.Icon:SetAllPoints()
 
-                            button.Count = button:CreateFontString(nil, "OVERLAY")
-                            BossFrame.DebuffContainer["fake" .. j] = button
-                        end
+							button.Count = button:CreateFontString(nil, "OVERLAY")
+							BossFrame.DebuffContainer["fake" .. j] = button
+						end
 
-                        button:SetSize(DebuffsDB.Size, DebuffsDB.Size)
-                        button.Count:ClearAllPoints()
-                        button.Count:SetPoint(DebuffsDB.Count.Layout[1], button, DebuffsDB.Count.Layout[2], DebuffsDB.Count.Layout[3], DebuffsDB.Count.Layout[4])
-                        button.Count:SetFont(UUF.Media.Font, DebuffsDB.Count.FontSize, General.Fonts.FontFlag)
-                        if General.Fonts.Shadow.Enabled then
-                            button.Count:SetShadowColor(unpack(General.Fonts.Shadow.Colour))
-                            button.Count:SetShadowOffset(General.Fonts.Shadow.XPos, General.Fonts.Shadow.YPos)
-                        else
-                            button.Count:SetShadowColor(0, 0, 0, 0)
-                            button.Count:SetShadowOffset(0, 0)
-                        end
-                        button.Count:SetTextColor(unpack(DebuffsDB.Count.Colour))
+						button:SetSize(DebuffsDB.Size, DebuffsDB.Size)
+						button.Count:ClearAllPoints()
+						button.Count:SetPoint(DebuffsDB.Count.Layout[1], button, DebuffsDB.Count.Layout[2], DebuffsDB.Count.Layout[3], DebuffsDB.Count.Layout[4])
+						button.Count:SetFont(UUF.Media.Font, DebuffsDB.Count.FontSize, General.Fonts.FontFlag)
+						if General.Fonts.Shadow.Enabled then
+							button.Count:SetShadowColor(unpack(General.Fonts.Shadow.Colour))
+							button.Count:SetShadowOffset(General.Fonts.Shadow.XPos, General.Fonts.Shadow.YPos)
+						else
+							button.Count:SetShadowColor(0, 0, 0, 0)
+							button.Count:SetShadowOffset(0, 0)
+						end
+						button.Count:SetTextColor(unpack(DebuffsDB.Count.Colour))
 
-                        local row = math.floor((j - 1) / DebuffsDB.Wrap)
-                        local col = (j - 1) % DebuffsDB.Wrap
-                        local x = col * (DebuffsDB.Size + DebuffsDB.Layout[5])
-                        local y = row * (DebuffsDB.Size + DebuffsDB.Layout[5])
-                        if DebuffsDB.GrowthDirection == "LEFT" then x = -x end
-                        if DebuffsDB.WrapDirection == "DOWN" then y = -y end
+						local row = math.floor((j - 1) / DebuffsDB.Wrap)
+						local col = (j - 1) % DebuffsDB.Wrap
+						local x = col * (DebuffsDB.Size + DebuffsDB.Layout[5])
+						local y = row * (DebuffsDB.Size + DebuffsDB.Layout[5])
+						if DebuffsDB.GrowthDirection == "LEFT" then x = -x end
+						if DebuffsDB.WrapDirection == "DOWN" then y = -y end
 
-                        button:ClearAllPoints()
-                        button:SetPoint(DebuffsDB.Layout[1], BossFrame.DebuffContainer, DebuffsDB.Layout[1], x, y)
-                        button.Icon:SetTexture(135768)
-                        button.Icon:SetPoint("TOPLEFT", button, "TOPLEFT", 1, -1)
-                        button.Icon:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", -1, 1)
-                        button.Icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
-                        button.Count:SetText(j)
-                        button.Duration = button.Duration or button:CreateFontString(nil, "OVERLAY")
-                        UUF:ApplyCooldownText(button, button.Duration, "boss")
-                        button.Duration:SetText("10m")
-                        button:Show()
-                    end
+						button:ClearAllPoints()
+						button:SetPoint(DebuffsDB.Layout[1], BossFrame.DebuffContainer, DebuffsDB.Layout[1], x, y)
+						button.Icon:SetTexture(135768)
+						button.Icon:SetPoint("TOPLEFT", button, "TOPLEFT", 1, -1)
+						button.Icon:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", -1, 1)
+						button.Icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
+						button.Count:SetText(j)
+						button.Duration = button.Duration or button:CreateFontString(nil, "OVERLAY")
+						UUF:ApplyCooldownText(button, button.Duration, "boss")
+						button.Duration:SetText("10m")
+						button:Show()
+					end
 
-                    local maxFake = DebuffsDB.Num
-                    for j = maxFake + 1, (BossFrame.DebuffContainer.maxFake or maxFake) do
-                        local button = BossFrame.DebuffContainer["fake" .. j]
-                        if button then button:Hide() end
-                    end
-                    BossFrame.DebuffContainer.maxFake = DebuffsDB.Num
-                else
-                    BossFrame.DebuffContainer:Hide()
-                end
-            end
+					local maxFake = DebuffsDB.Num
+					for j = maxFake + 1, (BossFrame.DebuffContainer.maxFake or maxFake) do
+						local button = BossFrame.DebuffContainer["fake" .. j]
+						if button then button:Hide() end
+					end
+					BossFrame.DebuffContainer.maxFake = DebuffsDB.Num
+				else
+					BossFrame.DebuffContainer:Hide()
+				end
+			end
 
-            if BossFrame.TargetIndicator then
-                local TargetIndicatorDB = UUF.db.profile.Units.boss.Indicators.Target
-                if TargetIndicatorDB.Enabled and i % 2 == 1 then
-                    BossFrame.TargetIndicator:Show()
-                else
-                    BossFrame.TargetIndicator:Hide()
-                end
-            end
+			if BossFrame.TargetIndicator then
+				local TargetIndicatorDB = UUF.db.profile.Units.boss.Indicators.Target
+				if TargetIndicatorDB.Enabled and i % 2 == 1 then
+					BossFrame.TargetIndicator:Show()
+				else
+					BossFrame.TargetIndicator:Hide()
+				end
+			end
 
-            ApplyTestTag(BossFrame.Tags.TagOne, BossFrame, TagsDB.TagOne, "Boss" .. i)
-            ApplyTestTag(BossFrame.Tags.TagTwo, BossFrame, TagsDB.TagTwo, "Tag 2")
-            ApplyTestTag(BossFrame.Tags.TagThree, BossFrame, TagsDB.TagThree, "Tag 3")
-        end
-    else
-        for i, BossFrame in ipairs(UUF.BOSS_FRAMES) do
-            BossFrame:SetAttribute("unit", "boss" .. i)
-            RegisterUnitWatch(BossFrame)
-            if BossFrame.Castbar then
-                BossFrame.Castbar:SetScript("OnUpdate", nil)
-                BossFrame.Castbar:Hide()
-                BossFrame.Castbar:GetParent():Hide()
-                if UUF.db.profile.Units.boss.CastBar.Enabled then
-                    if BossFrame:IsElementEnabled("Castbar") then BossFrame:DisableElement("Castbar") end
-                    BossFrame:EnableElement("Castbar")
-                end
-            end
-            for j = 1, (BossFrame.BuffContainer and BossFrame.BuffContainer.maxFake or 0) do
-                local button = BossFrame.BuffContainer["fake" .. j]
-                if button then button:Hide() end
-            end
-            for j = 1, (BossFrame.DebuffContainer and BossFrame.DebuffContainer.maxFake or 0) do
-                local button = BossFrame.DebuffContainer["fake" .. j]
-                if button then button:Hide() end
-            end
-            for j = 1, (BossFrame.CustomAuraContainer and BossFrame.CustomAuraContainer.maxFake or 0) do
-                local button = BossFrame.CustomAuraContainer["fake" .. j]
-                if button then button:Hide() end
-            end
-            if BuffsDB.Enabled or DebuffsDB.Enabled then
-                if not BossFrame:IsElementEnabled("Auras") then BossFrame:EnableElement("Auras") end
-                if BossFrame.BuffContainer and BossFrame.BuffContainer.ForceUpdate then BossFrame.BuffContainer:ForceUpdate() end
-                if BossFrame.DebuffContainer and BossFrame.DebuffContainer.ForceUpdate then BossFrame.DebuffContainer:ForceUpdate() end
-            end
-            if CustomDB and CustomDB.Enabled then
-                BossFrame.CustomAuras = BossFrame.CustomAuraContainer
-                if not BossFrame:IsElementEnabled("CustomAuras") then BossFrame:EnableElement("CustomAuras") end
-                if BossFrame.CustomAuraContainer and BossFrame.CustomAuraContainer.ForceUpdate then BossFrame.CustomAuraContainer:ForceUpdate() end
-            end
-            BossFrame:Hide()
-        end
-    end
+			for tagIndex, tagName in ipairs(TestTagOrder) do
+				ApplyTestTag(BossFrame.Tags[tagName], BossFrame, TagsDB[tagName], tagIndex == 1 and "Boss" .. i or "Tag " .. tagIndex)
+			end
+		end
+	else
+		for i, BossFrame in ipairs(UUF.BOSS_FRAMES) do
+			BossFrame:SetAttribute("unit", "boss" .. i)
+			RegisterUnitWatch(BossFrame)
+			if BossFrame.Castbar then
+				BossFrame.Castbar:SetScript("OnUpdate", nil)
+				BossFrame.Castbar:Hide()
+				BossFrame.Castbar:GetParent():Hide()
+				if UUF.db.profile.Units.boss.CastBar.Enabled then
+					if BossFrame:IsElementEnabled("Castbar") then BossFrame:DisableElement("Castbar") end
+					BossFrame:EnableElement("Castbar")
+				end
+			end
+			for j = 1, (BossFrame.BuffContainer and BossFrame.BuffContainer.maxFake or 0) do
+				local button = BossFrame.BuffContainer["fake" .. j]
+				if button then button:Hide() end
+			end
+			for j = 1, (BossFrame.DebuffContainer and BossFrame.DebuffContainer.maxFake or 0) do
+				local button = BossFrame.DebuffContainer["fake" .. j]
+				if button then button:Hide() end
+			end
+			for j = 1, (BossFrame.CustomAuraContainer and BossFrame.CustomAuraContainer.maxFake or 0) do
+				local button = BossFrame.CustomAuraContainer["fake" .. j]
+				if button then button:Hide() end
+			end
+			if BuffsDB.Enabled or DebuffsDB.Enabled then
+				if not BossFrame:IsElementEnabled("Auras") then BossFrame:EnableElement("Auras") end
+				if BossFrame.BuffContainer and BossFrame.BuffContainer.ForceUpdate then BossFrame.BuffContainer:ForceUpdate() end
+				if BossFrame.DebuffContainer and BossFrame.DebuffContainer.ForceUpdate then BossFrame.DebuffContainer:ForceUpdate() end
+			end
+			if CustomDB and CustomDB.Enabled then
+				BossFrame.CustomAuras = BossFrame.CustomAuraContainer
+				if not BossFrame:IsElementEnabled("CustomAuras") then BossFrame:EnableElement("CustomAuras") end
+				if BossFrame.CustomAuraContainer and BossFrame.CustomAuraContainer.ForceUpdate then BossFrame.CustomAuraContainer:ForceUpdate() end
+			end
+			BossFrame:Hide()
+		end
+	end
 end
