@@ -1,5 +1,14 @@
 local _, UUF = ...
 
+local function ShouldShowUnitPowerBar(unitFrame, unit, PowerBarDB)
+	if not PowerBarDB.Enabled then return false end
+	if not PowerBarDB.OnlyShowHealers then return true end
+	local normalizedUnit = UUF:GetNormalizedUnit(unit)
+	if normalizedUnit ~= "party" and normalizedUnit ~= "raid" then return true end
+	local unitToken = unit == "partyplayer" and "player" or unitFrame.unit or unitFrame:GetAttribute("unit") or unit
+	return UnitGroupRolesAssigned(unitToken) == "HEALER"
+end
+
 local function CreatePowerBarPostUpdateColor(unitFrame, unit)
     local PowerBarDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].PowerBar
     return function(element, _, color, altR, altG, altB)
@@ -93,7 +102,7 @@ function UUF:CreateUnitPowerBar(unitFrame, unit)
         PowerBar.PowerBarBorder:SetPoint("TOPRIGHT", PowerBar, "TOPRIGHT", 0, 1)
     end
 
-    if PowerBarDB.Enabled then
+    if ShouldShowUnitPowerBar(unitFrame, unit, PowerBarDB) then
         unitFrame.Power = PowerBar
         PowerBar:Show()
         if unitFrame.PowerBackground then unitFrame.PowerBackground:Show() end
@@ -115,7 +124,7 @@ function UUF:UpdateUnitPowerBar(unitFrame, unit)
     local FrameDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Frame
     local PowerBarDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].PowerBar
 
-    if PowerBarDB.Enabled then
+    if ShouldShowUnitPowerBar(unitFrame, unit, PowerBarDB) then
         unitFrame.Power = unitFrame.Power or UUF:CreateUnitPowerBar(unitFrame, unit)
 
         if not unitFrame:IsElementEnabled("Power") then unitFrame:EnableElement("Power") end
@@ -143,10 +152,13 @@ function UUF:UpdateUnitPowerBar(unitFrame, unit)
         unitFrame.Power:Show()
         unitFrame.Power:ForceUpdate()
     else
-        if not unitFrame.Power then return end
-        if unitFrame:IsElementEnabled("Power") then unitFrame:DisableElement("Power") end
-        unitFrame.Power:Hide()
-        unitFrame.Power = nil
+        if unitFrame.Power then
+            if unitFrame:IsElementEnabled("Power") then unitFrame:DisableElement("Power") end
+            unitFrame.Power:Hide()
+            unitFrame.Power = nil
+        end
+        UUF:UpdateHealthBarLayout(unitFrame, unit)
+        return
     end
 
     UUF:UpdateHealthBarLayout(unitFrame, unit)

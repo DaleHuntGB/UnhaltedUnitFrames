@@ -163,13 +163,20 @@ local function ApplyGroupTestFrame(unitFrame, unit, index, displayName)
 	end
 
 	if unitFrame.Power then
-		unitFrame.Power:SetMinMaxValues(0, testData.maxPower)
-		unitFrame.Power:SetValue(testData.power)
-		if PowerBarDB.ColourByType and oUF.colors.power[testData.powerType] then
-			local colour = oUF.colors.power[testData.powerType]
-			unitFrame.Power:SetStatusBarColor(colour.r, colour.g, colour.b)
+		if PowerBarDB.OnlyShowHealers and role ~= "HEALER" then
+			unitFrame.Power:Hide()
+			if unitFrame.Power.Background then unitFrame.Power.Background:Hide() end
 		else
-			unitFrame.Power:SetStatusBarColor(unpack(PowerBarDB.Foreground))
+			unitFrame.Power:SetMinMaxValues(0, testData.maxPower)
+			unitFrame.Power:SetValue(testData.power)
+			if PowerBarDB.ColourByType and oUF.colors.power[testData.powerType] then
+				local colour = oUF.colors.power[testData.powerType]
+				unitFrame.Power:SetStatusBarColor(colour.r, colour.g, colour.b)
+			else
+				unitFrame.Power:SetStatusBarColor(unpack(PowerBarDB.Foreground))
+			end
+			unitFrame.Power:Show()
+			if unitFrame.Power.Background then unitFrame.Power.Background:Show() end
 		end
 	end
 
@@ -504,6 +511,7 @@ function UUF:CreateTestBossFrames()
 						button.Icon:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", -1, 1)
 						button.Icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
 						button.Count:SetText(j)
+						if BuffsDB.Count.HideStacks then button.Count:Hide() else button.Count:Show() end
 						button.Duration = button.Duration or button:CreateFontString(nil, "OVERLAY")
 						UUF:ApplyCooldownText(button, button.Duration, "boss")
 						button.Duration:SetText("10m")
@@ -573,6 +581,7 @@ function UUF:CreateTestBossFrames()
 						button.Icon:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", -1, 1)
 						button.Icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
 						button.Count:SetText(j)
+						if DebuffsDB.Count.HideStacks then button.Count:Hide() else button.Count:Show() end
 						button.Duration = button.Duration or button:CreateFontString(nil, "OVERLAY")
 						UUF:ApplyCooldownText(button, button.Duration, "boss")
 						button.Duration:SetText("10m")

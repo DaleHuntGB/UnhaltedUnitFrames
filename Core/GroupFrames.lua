@@ -297,5 +297,6 @@ PartyRosterEventFrame:SetScript("OnEvent", function(_, event, addonName)
 		UUF:UpdateRaidFrames()
 	elseif event == "PLAYER_ROLES_ASSIGNED" then
 		UUF:UpdatePartyFrames()
+		UUF:UpdateRaidFrames()
 	end
 end)
