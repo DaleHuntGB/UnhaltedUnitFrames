@@ -1619,6 +1619,8 @@ end
 local function CreatePowerBarSettings(containerParent, unit, updateCallback)
     local FrameDB = UUF.db.profile.Units[unit].Frame
     local PowerBarDB = UUF.db.profile.Units[unit].PowerBar
+    local isGroupPowerBar = unit == "party" or unit == "raid"
+    local toggleRelativeWidth = isGroupPowerBar and 0.5 or 0.25
 
     local function UpdatePowerBarSettings()
         updateCallback()
@@ -1633,14 +1635,14 @@ local function CreatePowerBarSettings(containerParent, unit, updateCallback)
     Toggle:SetLabel("Enable |cFF8080FFPower Bar|r")
     Toggle:SetValue(PowerBarDB.Enabled)
     Toggle:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.Enabled = value UpdatePowerBarSettings() RefreshPowerBarGUI() end)
-    Toggle:SetRelativeWidth(0.25)
+    Toggle:SetRelativeWidth(toggleRelativeWidth)
     LayoutContainer:AddChild(Toggle)
 
     local InverseGrowthDirectionToggle = AG:Create("CheckBox")
     InverseGrowthDirectionToggle:SetLabel("Inverse Growth Direction")
     InverseGrowthDirectionToggle:SetValue(PowerBarDB.Inverse)
     InverseGrowthDirectionToggle:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.Inverse = value UpdatePowerBarSettings() end)
-    InverseGrowthDirectionToggle:SetRelativeWidth(0.25)
+    InverseGrowthDirectionToggle:SetRelativeWidth(toggleRelativeWidth)
     LayoutContainer:AddChild(InverseGrowthDirectionToggle)
 
     local PositionDropdown = AG:Create("Dropdown")
@@ -1665,30 +1667,45 @@ local function CreatePowerBarSettings(containerParent, unit, updateCallback)
     SmoothUpdatesToggle:SetLabel("Smooth Updates")
     SmoothUpdatesToggle:SetValue(PowerBarDB.Smooth)
     SmoothUpdatesToggle:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.Smooth = value UpdatePowerBarSettings() end)
-    SmoothUpdatesToggle:SetRelativeWidth(0.25)
+    SmoothUpdatesToggle:SetRelativeWidth(toggleRelativeWidth)
     ColourContainer:AddChild(SmoothUpdatesToggle)
 
     local ColourByTypeToggle = AG:Create("CheckBox")
     ColourByTypeToggle:SetLabel("Colour By Type")
     ColourByTypeToggle:SetValue(PowerBarDB.ColourByType)
     ColourByTypeToggle:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.ColourByType = value UpdatePowerBarSettings() RefreshPowerBarGUI() end)
-    ColourByTypeToggle:SetRelativeWidth(0.25)
+    ColourByTypeToggle:SetRelativeWidth(toggleRelativeWidth)
     ColourContainer:AddChild(ColourByTypeToggle)
 
     local ColourByClassToggle = AG:Create("CheckBox")
     ColourByClassToggle:SetLabel("Colour By Class")
     ColourByClassToggle:SetValue(PowerBarDB.ColourByClass)
     ColourByClassToggle:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.ColourByClass = value UpdatePowerBarSettings() RefreshPowerBarGUI() end)
-    ColourByClassToggle:SetRelativeWidth(0.25)
+    ColourByClassToggle:SetRelativeWidth(toggleRelativeWidth)
     ColourContainer:AddChild(ColourByClassToggle)
 
     local ColourBackgroundByTypeToggle = AG:Create("CheckBox")
     ColourBackgroundByTypeToggle:SetLabel("Colour Background By Power Type")
     ColourBackgroundByTypeToggle:SetValue(PowerBarDB.ColourBackgroundByType)
     ColourBackgroundByTypeToggle:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.ColourBackgroundByType = value UpdatePowerBarSettings() RefreshPowerBarGUI() end)
-    ColourBackgroundByTypeToggle:SetRelativeWidth(0.25)
+    ColourBackgroundByTypeToggle:SetRelativeWidth(toggleRelativeWidth)
     ColourBackgroundByTypeToggle:SetDisabled(true)
     ColourContainer:AddChild(ColourBackgroundByTypeToggle)
+
+    local OnlyShowHealersToggle
+    if isGroupPowerBar then
+        OnlyShowHealersToggle = AG:Create("CheckBox")
+        OnlyShowHealersToggle:SetLabel("Only Show Healer Mana")
+        OnlyShowHealersToggle:SetValue(PowerBarDB.OnlyShowHealers or false)
+        OnlyShowHealersToggle:SetCallback("OnValueChanged", function(_, _, value) PowerBarDB.OnlyShowHealers = value UpdatePowerBarSettings() end)
+        OnlyShowHealersToggle:SetRelativeWidth(toggleRelativeWidth)
+        ColourContainer:AddChild(OnlyShowHealersToggle)
+
+        local ColourRowBreak = AG:Create("Label")
+        ColourRowBreak:SetText("")
+        ColourRowBreak:SetFullWidth(true)
+        ColourContainer:AddChild(ColourRowBreak)
+    end
 
     local ForegroundColourPicker = AG:Create("ColorPicker")
     ForegroundColourPicker:SetLabel("Foreground Colour")
@@ -1731,6 +1748,7 @@ local function CreatePowerBarSettings(containerParent, unit, updateCallback)
             end
             BackgroundColourPicker:SetDisabled(PowerBarDB.ColourBackgroundByType)
             BackgroundMultiplierSlider:SetDisabled(not PowerBarDB.ColourBackgroundByType)
+            if OnlyShowHealersToggle then OnlyShowHealersToggle:SetDisabled(false) end
         else
             GUIWidgets.DeepDisable(LayoutContainer, true, Toggle)
             GUIWidgets.DeepDisable(ColourContainer, true, Toggle)
@@ -3250,6 +3268,21 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
 
     local CountContainer = GUIWidgets.CreateInlineGroup(containerParent, "Count Settings")
 
+    local ColourPicker = AG:Create("ColorPicker")
+    ColourPicker:SetLabel("Colour")
+    ColourPicker:SetColor(AuraDB.Count.Colour[1], AuraDB.Count.Colour[2], AuraDB.Count.Colour[3], 1)
+    ColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) AuraDB.Count.Colour = {r, g, b} UpdateAuras() end)
+    ColourPicker:SetHasAlpha(false)
+    ColourPicker:SetRelativeWidth(0.5)
+    CountContainer:AddChild(ColourPicker)
+
+    local HideStacksToggle = AG:Create("CheckBox")
+    HideStacksToggle:SetLabel("Hide Stacks")
+    HideStacksToggle:SetValue(AuraDB.Count.HideStacks or false)
+    HideStacksToggle:SetRelativeWidth(0.5)
+    HideStacksToggle:SetCallback("OnValueChanged", function(_, _, value) AuraDB.Count.HideStacks = value UpdateAuras() RefreshAuraGUI() end)
+    CountContainer:AddChild(HideStacksToggle)
+
     local CountAnchorFromDropdown = AG:Create("Dropdown")
     CountAnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
     CountAnchorFromDropdown:SetLabel("Anchor From")
@@ -3270,7 +3303,7 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
     CountXPosSlider:SetLabel("X Position")
     CountXPosSlider:SetValue(AuraDB.Count.Layout[3])
     CountXPosSlider:SetSliderValues(-3000, 3000, 0.1)
-    CountXPosSlider:SetRelativeWidth(0.25)
+    CountXPosSlider:SetRelativeWidth(0.33)
     CountXPosSlider:SetCallback("OnValueChanged", function(_, _, value) AuraDB.Count.Layout[3] = value UpdateAuras() end)
     CountContainer:AddChild(CountXPosSlider)
 
@@ -3278,7 +3311,7 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
     CountYPosSlider:SetLabel("Y Position")
     CountYPosSlider:SetValue(AuraDB.Count.Layout[4])
     CountYPosSlider:SetSliderValues(-3000, 3000, 0.1)
-    CountYPosSlider:SetRelativeWidth(0.25)
+    CountYPosSlider:SetRelativeWidth(0.33)
     CountYPosSlider:SetCallback("OnValueChanged", function(_, _, value) AuraDB.Count.Layout[4] = value UpdateAuras() end)
     CountContainer:AddChild(CountYPosSlider)
 
@@ -3286,17 +3319,9 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
     FontSizeSlider:SetLabel("Font Size")
     FontSizeSlider:SetValue(AuraDB.Count.FontSize)
     FontSizeSlider:SetSliderValues(8, 64, 1)
-    FontSizeSlider:SetRelativeWidth(0.25)
+    FontSizeSlider:SetRelativeWidth(0.33)
     FontSizeSlider:SetCallback("OnValueChanged", function(_, _, value) AuraDB.Count.FontSize = value UpdateAuras() end)
     CountContainer:AddChild(FontSizeSlider)
-
-    local ColourPicker = AG:Create("ColorPicker")
-    ColourPicker:SetLabel("Colour")
-    ColourPicker:SetColor(AuraDB.Count.Colour[1], AuraDB.Count.Colour[2], AuraDB.Count.Colour[3], 1)
-    ColourPicker:SetCallback("OnValueChanged", function(_, _, r, g, b) AuraDB.Count.Colour = {r, g, b} UpdateAuras() end)
-    ColourPicker:SetHasAlpha(false)
-    ColourPicker:SetRelativeWidth(0.25)
-    CountContainer:AddChild(ColourPicker)
 
     function RefreshAuraGUI()
         if AuraDB.Enabled then
@@ -3304,7 +3329,7 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
             GUIWidgets.DeepDisable(FilterContainer, AuraDB.OnlyShowPlayer, BlacklistToggle)
             for _, FilterDropdown in ipairs(FilterDropdowns) do FilterDropdown:SetDisabled(AuraDB.OnlyShowPlayer or (filterAuraDB == "Debuffs" and AuraDB.Filters.Typed)) end
             GUIWidgets.DeepDisable(LayoutContainer, false, Toggle)
-            GUIWidgets.DeepDisable(CountContainer, false, Toggle)
+            GUIWidgets.DeepDisable(CountContainer, AuraDB.Count.HideStacks, HideStacksToggle)
         else
             GUIWidgets.DeepDisable(AuraContainer, true, Toggle)
             GUIWidgets.DeepDisable(FilterContainer, true, Toggle)
