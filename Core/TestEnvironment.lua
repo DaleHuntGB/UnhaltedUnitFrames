@@ -115,7 +115,7 @@ local function SetTestTexture(texture, enabled, texturePath, ...)
 	texture:Show()
 end
 
-local function ApplyGroupTestFrame(unitFrame, unit, index)
+local function ApplyGroupTestFrame(unitFrame, unit, index, displayName)
 	if not unitFrame or not unit then return end
 	local normalizedUnit = UUF:GetNormalizedUnit(unit)
 	local UnitDB = UUF.db.profile.Units[normalizedUnit]
@@ -183,11 +183,19 @@ local function ApplyGroupTestFrame(unitFrame, unit, index)
 		end
 	end
 
-	if unitFrame.LeaderIndicator and IndicatorDB.LeaderAssistantIndicator then SetTestTexture(unitFrame.LeaderIndicator, IndicatorDB.LeaderAssistantIndicator.Enabled and index == 1, "Interface\\GroupFrame\\UI-Group-LeaderIcon") end
+	if unitFrame.LeaderIndicator and IndicatorDB.LeaderAssistantIndicator then
+		if IndicatorDB.LeaderAssistantIndicator.Enabled then
+			unitFrame.LeaderIndicator:SetAtlas("UI-HUD-UnitFrame-Player-Group-LeaderIcon")
+			unitFrame.LeaderIndicator:SetTexCoord(0, 1, 0, 1)
+			unitFrame.LeaderIndicator:Show()
+		else
+			unitFrame.LeaderIndicator:Hide()
+		end
+	end
 	if unitFrame.AssistantIndicator and IndicatorDB.LeaderAssistantIndicator then SetTestTexture(unitFrame.AssistantIndicator, IndicatorDB.LeaderAssistantIndicator.Enabled and index == 2, "Interface\\GroupFrame\\UI-Group-AssistantIcon") end
 
 	if unitFrame.PhaseIndicator and IndicatorDB.Phase then
-		if IndicatorDB.Phase.Enabled and index % 7 == 0 then
+		if IndicatorDB.Phase.Enabled then
 			unitFrame.PhaseIndicator.Icon:SetAtlas("groupfinder-icon-phased")
 			unitFrame.PhaseIndicator:Show()
 		else
@@ -197,7 +205,7 @@ local function ApplyGroupTestFrame(unitFrame, unit, index)
 
 	if unitFrame.RaidTargetIndicator and IndicatorDB.RaidTargetMarker and TestRaidTargetCoords[((index - 1) % #TestRaidTargetCoords) + 1] then
 		local coords = TestRaidTargetCoords[((index - 1) % #TestRaidTargetCoords) + 1]
-		SetTestTexture(unitFrame.RaidTargetIndicator, IndicatorDB.RaidTargetMarker.Enabled and index <= #TestRaidTargetCoords, "Interface\\TargetingFrame\\UI-RaidTargetingIcons", unpack(coords))
+		SetTestTexture(unitFrame.RaidTargetIndicator, IndicatorDB.RaidTargetMarker.Enabled, "Interface\\TargetingFrame\\UI-RaidTargetingIcons", unpack(coords))
 	end
 
 	if unitFrame.TargetIndicator and IndicatorDB.Target then unitFrame.TargetIndicator:SetAlpha(IndicatorDB.Target.Enabled and index == 1 and 1 or 0) end
@@ -218,7 +226,7 @@ local function ApplyGroupTestFrame(unitFrame, unit, index)
 	UUF:CreateTestAuras(unitFrame, unit)
 	UUF.AURA_TEST_MODE = auraTestMode
 	for tagIndex, tagName in ipairs(TestTagOrder) do
-		ApplyTestTag(unitFrame.Tags and unitFrame.Tags[tagName], unitFrame, TagsDB[tagName], "Tag " .. tagIndex)
+		ApplyTestTag(unitFrame.Tags and unitFrame.Tags[tagName], unitFrame, TagsDB[tagName], tagIndex == 1 and displayName or "Tag " .. tagIndex)
 	end
 end
 
@@ -303,9 +311,9 @@ function UUF:CreateTestGroupFrames(unit)
 		UnregisterStateDriver(UUF.PARTY_CONTAINER, "visibility")
 		UUF.PARTY_CONTAINER:Show()
 		for i = 1, UUF.MAX_PARTY_FRAMES do
-			if UUF["PARTY" .. i] then ApplyGroupTestFrame(UUF["PARTY" .. i], "party" .. i, i + (UnitDB.Frame.ShowPlayer and 1 or 0)) end
+			if UUF["PARTY" .. i] then ApplyGroupTestFrame(UUF["PARTY" .. i], "party" .. i, i + (UnitDB.Frame.ShowPlayer and 1 or 0), "Party" .. (i + (UnitDB.Frame.ShowPlayer and 1 or 0))) end
 		end
-		if UUF.PARTYPLAYER then ApplyGroupTestFrame(UUF.PARTYPLAYER, "partyplayer", 1) end
+		if UUF.PARTYPLAYER then ApplyGroupTestFrame(UUF.PARTYPLAYER, "partyplayer", 1, "Party1") end
 		UUF:LayoutPartyFrames()
 	elseif unit == "raid" then
 		local UnitDB = UUF.db.profile.Units.raid
@@ -313,7 +321,7 @@ function UUF:CreateTestGroupFrames(unit)
 		UUF:CreateRaidContainer()
 		UUF:CreateRaidTestFrames()
 		for _, header in ipairs(UUF.RAID_HEADERS) do header:Hide() end
-		for i, raidFrame in ipairs(UUF.RAID_TEST_FRAMES) do ApplyGroupTestFrame(raidFrame, "raid" .. i, i) end
+		for i, raidFrame in ipairs(UUF.RAID_TEST_FRAMES) do ApplyGroupTestFrame(raidFrame, "raid" .. i, i, "Raid " .. i) end
 		UUF:LayoutRaidTestFrames()
 		UUF.RAID_CONTAINER:Show()
 	end
@@ -586,7 +594,7 @@ function UUF:CreateTestBossFrames()
                 end
             end
 
-            ApplyTestTag(BossFrame.Tags.TagOne, BossFrame, TagsDB.TagOne, "Tag 1")
+            ApplyTestTag(BossFrame.Tags.TagOne, BossFrame, TagsDB.TagOne, "Boss" .. i)
             ApplyTestTag(BossFrame.Tags.TagTwo, BossFrame, TagsDB.TagTwo, "Tag 2")
             ApplyTestTag(BossFrame.Tags.TagThree, BossFrame, TagsDB.TagThree, "Tag 3")
         end
