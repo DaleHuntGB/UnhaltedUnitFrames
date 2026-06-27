@@ -33,6 +33,10 @@ local function UpdateUnitSettings(unit, updateCallback)
     end
 end
 
+local function UpdateAllUnitTags()
+	for unit in pairs(UUF.db.profile.Units) do UUF:UpdateUnitTags(unit) end
+end
+
 local UnitDBToUnitPrettyName = {
     player = "Player",
     target = "Target",
@@ -351,7 +355,7 @@ local function CreateFontSettings(containerParent)
     FontDropdown:SetLabel("Font")
     FontDropdown:SetValue(UUF.db.profile.General.Fonts.Font)
     FontDropdown:SetRelativeWidth(0.5)
-    FontDropdown:SetCallback("OnValueChanged", function(widget, _, value) widget:SetValue(value) UUF.db.profile.General.Fonts.Font = value UUF:ResolveLSM() UUF:UpdateAllUnitFrames() end)
+	FontDropdown:SetCallback("OnValueChanged", function(widget, _, value) widget:SetValue(value) UUF.db.profile.General.Fonts.Font = value UUF:ResolveLSM() UUF:UpdateAllUnitFrames() UpdateAllUnitTags() end)
     Container:AddChild(FontDropdown)
 
     local FontFlagDropdown = AG:Create("Dropdown")
@@ -359,7 +363,7 @@ local function CreateFontSettings(containerParent)
     FontFlagDropdown:SetLabel("Font Flag")
     FontFlagDropdown:SetValue(UUF.db.profile.General.Fonts.FontFlag)
     FontFlagDropdown:SetRelativeWidth(0.5)
-    FontFlagDropdown:SetCallback("OnValueChanged", function(widget, _, value) widget:SetValue(value) UUF.db.profile.General.Fonts.FontFlag = value UUF:ResolveLSM() UUF:UpdateAllUnitFrames() end)
+	FontFlagDropdown:SetCallback("OnValueChanged", function(widget, _, value) widget:SetValue(value) UUF.db.profile.General.Fonts.FontFlag = value UUF:ResolveLSM() UUF:UpdateAllUnitFrames() UpdateAllUnitTags() end)
     Container:AddChild(FontFlagDropdown)
 
     local SimpleGroup = AG:Create("SimpleGroup")
@@ -373,7 +377,7 @@ local function CreateFontSettings(containerParent)
     Toggle:SetLabel("Enable Font Shadows")
     Toggle:SetValue(UUF.db.profile.General.Fonts.Shadow.Enabled)
     Toggle:SetFullWidth(true)
-    Toggle:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.General.Fonts.Shadow.Enabled = value UUF:ResolveLSM() GUIWidgets.DeepDisable(SimpleGroup, not UUF.db.profile.General.Fonts.Shadow.Enabled, Toggle) UUF:UpdateAllUnitFrames() end)
+	Toggle:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.General.Fonts.Shadow.Enabled = value UUF:ResolveLSM() GUIWidgets.DeepDisable(SimpleGroup, not UUF.db.profile.General.Fonts.Shadow.Enabled, Toggle) UUF:UpdateAllUnitFrames() UpdateAllUnitTags() end)
     Toggle:SetRelativeWidth(0.5)
     SimpleGroup:AddChild(Toggle)
 
@@ -381,7 +385,7 @@ local function CreateFontSettings(containerParent)
     ColorPicker:SetLabel("Colour")
     ColorPicker:SetColor(unpack(UUF.db.profile.General.Fonts.Shadow.Colour))
     ColorPicker:SetFullWidth(true)
-    ColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) UUF.db.profile.General.Fonts.Shadow.Colour = {r, g, b, a} UUF:ResolveLSM() UUF:UpdateAllUnitFrames() end)
+	ColorPicker:SetCallback("OnValueChanged", function(_, _, r, g, b, a) UUF.db.profile.General.Fonts.Shadow.Colour = {r, g, b, a} UUF:ResolveLSM() UUF:UpdateAllUnitFrames() UpdateAllUnitTags() end)
     ColorPicker:SetRelativeWidth(0.5)
     SimpleGroup:AddChild(ColorPicker)
 
@@ -390,7 +394,7 @@ local function CreateFontSettings(containerParent)
     XSlider:SetValue(UUF.db.profile.General.Fonts.Shadow.XPos)
     XSlider:SetSliderValues(-5, 5, 1)
     XSlider:SetFullWidth(true)
-    XSlider:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.General.Fonts.Shadow.XPos = value UUF:ResolveLSM() UUF:UpdateAllUnitFrames() end)
+	XSlider:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.General.Fonts.Shadow.XPos = value UUF:ResolveLSM() UUF:UpdateAllUnitFrames() UpdateAllUnitTags() end)
     XSlider:SetRelativeWidth(0.5)
     SimpleGroup:AddChild(XSlider)
 
@@ -399,7 +403,7 @@ local function CreateFontSettings(containerParent)
     YSlider:SetValue(UUF.db.profile.General.Fonts.Shadow.YPos)
     YSlider:SetSliderValues(-5, 5, 1)
     YSlider:SetFullWidth(true)
-    YSlider:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.General.Fonts.Shadow.YPos = value UUF:ResolveLSM() UUF:UpdateAllUnitFrames() end)
+	YSlider:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.General.Fonts.Shadow.YPos = value UUF:ResolveLSM() UUF:UpdateAllUnitFrames() UpdateAllUnitTags() end)
     YSlider:SetRelativeWidth(0.5)
     SimpleGroup:AddChild(YSlider)
 
@@ -515,7 +519,7 @@ local function CreateRangeSettings(containerParent)
     Toggle:SetLabel("Enable Range Fading")
     Toggle:SetValue(RangeDB.Enabled)
     Toggle:SetFullWidth(true)
-    Toggle:SetCallback("OnValueChanged", function(_, _, value) RangeDB.Enabled = value UUF:UpdateAllUnitFrames() GUIWidgets.DeepDisable(Container, not value, Toggle) end)
+	Toggle:SetCallback("OnValueChanged", function(_, _, value) RangeDB.Enabled = value UUF:UpdateAllRangeFrames() GUIWidgets.DeepDisable(Container, not value, Toggle) end)
     Toggle:SetRelativeWidth(0.33)
     Container:AddChild(Toggle)
 
@@ -524,7 +528,7 @@ local function CreateRangeSettings(containerParent)
     InAlphaSlider:SetValue(RangeDB.InRange)
     InAlphaSlider:SetSliderValues(0.0, 1.0, 0.01)
     InAlphaSlider:SetFullWidth(true)
-    InAlphaSlider:SetCallback("OnValueChanged", function(_, _, value) RangeDB.InRange = value UUF:UpdateAllUnitFrames() end)
+	InAlphaSlider:SetCallback("OnValueChanged", function(_, _, value) RangeDB.InRange = value UUF:UpdateAllRangeFrames() end)
     InAlphaSlider:SetRelativeWidth(0.33)
     InAlphaSlider:SetIsPercent(true)
     Container:AddChild(InAlphaSlider)
@@ -534,7 +538,7 @@ local function CreateRangeSettings(containerParent)
     OutAlphaSlider:SetValue(RangeDB.OutOfRange)
     OutAlphaSlider:SetSliderValues(0.0, 1.0, 0.01)
     OutAlphaSlider:SetFullWidth(true)
-    OutAlphaSlider:SetCallback("OnValueChanged", function(_, _, value) RangeDB.OutOfRange = value UUF:UpdateAllUnitFrames() end)
+	OutAlphaSlider:SetCallback("OnValueChanged", function(_, _, value) RangeDB.OutOfRange = value UUF:UpdateAllRangeFrames() end)
     OutAlphaSlider:SetRelativeWidth(0.33)
     OutAlphaSlider:SetIsPercent(true)
     Container:AddChild(OutAlphaSlider)
@@ -2945,9 +2949,7 @@ end
 
 local function CreateTagSetting(containerParent, unit, tagDB)
     local TagDB = UUF.db.profile.Units[unit].Tags[tagDB]
-    local function UpdateTag()
-        UpdateUnitSettings(unit, function() UUF:UpdateUnitTag(UUF[unit:upper()], unit, tagDB) end)
-    end
+    local function UpdateTag() UUF:UpdateUnitTags(unit, tagDB) end
 
     local TagContainer = GUIWidgets.CreateInlineGroup(containerParent, "Tag Settings")
 
@@ -3774,7 +3776,7 @@ local function CreateGlobalSettings(containerParent)
     local UseCustomAbbreviationsCheckbox = AG:Create("CheckBox")
     UseCustomAbbreviationsCheckbox:SetLabel("Custom Abbreviations")
     UseCustomAbbreviationsCheckbox:SetValue(UUF.db.profile.General.UseCustomAbbreviations)
-    UseCustomAbbreviationsCheckbox:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.General.UseCustomAbbreviations = value UUF:UpdateUnitTags() end)
+    UseCustomAbbreviationsCheckbox:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.General.UseCustomAbbreviations = value UpdateAllUnitTags() end)
     UseCustomAbbreviationsCheckbox:SetRelativeWidth(0.25)
     TagContainer:AddChild(UseCustomAbbreviationsCheckbox)
 
@@ -3783,7 +3785,7 @@ local function CreateGlobalSettings(containerParent)
     TagIntervalSlider:SetValue(1 / UUF.db.profile.General.TagUpdateInterval)
     TagIntervalSlider:SetSliderValues(1, 10, 0.5)
     TagIntervalSlider:SetRelativeWidth(0.25)
-    TagIntervalSlider:SetCallback("OnValueChanged", function(_, _, value) UUF.TAG_UPDATE_INTERVAL = 1 / value UUF.db.profile.General.TagUpdateInterval = 1 / value UUF:SetTagUpdateInterval() UUF:UpdateUnitTags() end)
+    TagIntervalSlider:SetCallback("OnValueChanged", function(_, _, value) UUF.TAG_UPDATE_INTERVAL = 1 / value UUF.db.profile.General.TagUpdateInterval = 1 / value UUF:SetTagUpdateInterval() UpdateAllUnitTags() end)
     TagContainer:AddChild(TagIntervalSlider)
 
     local SeparatorDropdown = AG:Create("Dropdown")
@@ -3791,7 +3793,7 @@ local function CreateGlobalSettings(containerParent)
     SeparatorDropdown:SetLabel("Tag Separator")
     SeparatorDropdown:SetValue(UUF.db.profile.General.Separator)
     SeparatorDropdown:SetRelativeWidth(0.25)
-    SeparatorDropdown:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.General.Separator = value UUF:UpdateUnitTags() end)
+    SeparatorDropdown:SetCallback("OnValueChanged", function(_, _, value) UUF.db.profile.General.Separator = value UpdateAllUnitTags() end)
     SeparatorDropdown:SetCallback("OnEnter", function() GameTooltip:SetOwner(SeparatorDropdown.frame, "ANCHOR_BOTTOM") GameTooltip:AddLine("The separator chosen here is only applied to custom tags which are combined. Such as |cFF8080FF[curhpperhp]|r or |cFF8080FF[curhpperhp:abbr]|r", 1, 1, 1) GameTooltip:Show() end)
     SeparatorDropdown:SetCallback("OnLeave", function() GameTooltip:Hide() end)
     TagContainer:AddChild(SeparatorDropdown)
@@ -3804,7 +3806,7 @@ local function CreateGlobalSettings(containerParent)
     ToTSeparatorDropdown:SetCallback("OnValueChanged", function(_, _, value)
         UUF.db.profile.General.ToTSeparator = value
         UUF.TOT_SEPARATOR = value
-        UUF:UpdateUnitTags()
+        UpdateAllUnitTags()
     end)
     ToTSeparatorDropdown:SetCallback("OnEnter", function()
         GameTooltip:SetOwner(ToTSeparatorDropdown.frame, "ANCHOR_BOTTOM")

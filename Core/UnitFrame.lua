@@ -44,6 +44,11 @@ function UUF:CreateUnitFrame(unitFrame, unit)
     UUF:CreateUnitThreatIndicator(unitFrame, unit)
     UUF:CreateUnitAuras(unitFrame, unit)
     UUF:CreateUnitTags(unitFrame, unit)
+	if isRaid then
+		unitFrame:HookScript("OnAttributeChanged", function(frame, attribute, value)
+			if attribute == "unit" and value and UUF.RefreshGroupFrame then UUF:RefreshGroupFrame(frame, value) end
+		end)
+	end
     ApplyScripts(unitFrame)
     if isRaid then UUF:RegisterRaidFrame(unitFrame) end
     return unitFrame
@@ -155,7 +160,6 @@ function UUF:UpdateUnitFrame(unitFrame, unit)
 
     if UnitDB.CastBar and not isTargetTarget and not isFocusTarget then UUF:UpdateUnitCastBar(unitFrame, unit) end
     UUF:UpdateUnitHealthBar(unitFrame, unit)
-    if UnitDB.HealthBar.DispelHighlight and (isPlayer or isTarget or isFocus or isParty or isRaid) then UUF:UpdateUnitDispelHighlight(unitFrame, unit) end
     UUF:UpdateUnitHealPrediction(unitFrame, unit)
     if UnitDB.Portrait and not isTargetTarget and not isFocusTarget then UUF:UpdateUnitPortrait(unitFrame, unit) end
     UUF:UpdateUnitPowerBar(unitFrame, unit)
@@ -175,7 +179,8 @@ function UUF:UpdateUnitFrame(unitFrame, unit)
     UUF:UpdateUnitTargetGlowIndicator(unitFrame, unit)
     UUF:UpdateUnitThreatIndicator(unitFrame, unit)
     UUF:UpdateUnitAuras(unitFrame, unit)
-    UUF:UpdateUnitTags()
+	if unit ~= "player" then UUF:RegisterRangeFrame(unitFrame, unit == "partyplayer" and "player" or unit) end
+	UUF:RegisterTargetGlowIndicatorFrame(unitFrame, unit)
     unitFrame:SetFrameStrata(UnitDB.Frame.FrameStrata)
 end
 

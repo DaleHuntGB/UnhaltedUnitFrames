@@ -38,7 +38,7 @@ function UUF:CreateRaidContainer()
 	RegisterStateDriver(UUF.RAID_CONTAINER, "visibility", "show")
 end
 
-function UUF:LayoutRaidFrames(skipDelayedUpdate)
+function UUF:LayoutRaidFrames()
 	local Frame = UUF.db.profile.Units.raid.Frame
 	if not UUF.RAID_CONTAINER then return end
 
@@ -93,14 +93,6 @@ function UUF:LayoutRaidFrames(skipDelayedUpdate)
 		header:SetPoint(anchor, UUF.RAID_CONTAINER, anchor, xOffset, yOffset)
 	end
 
-	if not skipDelayedUpdate and not UUF.RaidUpdatePending then
-		UUF.RaidUpdatePending = true
-		C_Timer.After(0.1, function()
-			UUF.RaidUpdatePending = nil
-			if InCombatLockdown() or not UUF.db then return end
-			UUF:UpdateRaidFrames(true)
-		end)
-	end
 end
 
 function UUF:CreatePartyContainer()
@@ -246,7 +238,54 @@ function UUF:UpdatePartyFrames()
 	if UUF.PARTY_TEST_MODE then UUF:CreateTestGroupFrames("party") end
 end
 
-function UUF:UpdateRaidFrames(skipDelayedUpdate)
+function UUF:RefreshGroupFrame(unitFrame, unit)
+	if not unitFrame or not unit then return end
+	if unitFrame.DispelHighlightUnit and unitFrame.DispelHighlightUnit ~= unit then UUF:UnregisterDispelHighlightEvents(unitFrame) end
+	UUF:RegisterRangeFrame(unitFrame, unit == "partyplayer" and "player" or unit)
+	UUF:RegisterTargetGlowIndicatorFrame(unitFrame, unit)
+	if unitFrame.UUFGroupUnit ~= unit then
+		unitFrame.UUFGroupUnit = unit
+		if unitFrame.DispelHighlight then UUF:UpdateUnitDispelHighlight(unitFrame, unit) end
+	end
+	UUF:UpdateUnitPowerBar(unitFrame, unit)
+	UUF:UpdateUnitRoleIndicator(unitFrame, unit)
+end
+
+function UUF:RefreshPartyFrames()
+	if not UUF.db.profile.Units.party.Enabled then return end
+	for i = 1, UUF.MAX_PARTY_FRAMES do UUF:RefreshGroupFrame(UUF["PARTY" .. i], "party" .. i) end
+	if UUF.PARTYPLAYER then UUF:RefreshGroupFrame(UUF.PARTYPLAYER, "partyplayer") end
+	UUF:LayoutPartyFrames()
+end
+
+function UUF:RefreshRaidFrames()
+	if not UUF.db.profile.Units.raid.Enabled then return end
+	for _, raidFrame in ipairs(UUF.RAID_FRAMES) do
+		local useFrame = raidFrame and (not raidFrame.isTestFrame or UUF.RAID_TEST_MODE)
+		local unit = useFrame and raidFrame:GetAttribute("unit")
+		if unit and unit ~= "raid" then
+			UUF:RefreshGroupFrame(raidFrame, unit)
+		elseif raidFrame then
+			UUF:UnregisterRangeFrame(raidFrame)
+			UUF:UnregisterTargetGlowIndicatorFrame(raidFrame)
+			if raidFrame.DispelHighlightUnit then UUF:UnregisterDispelHighlightEvents(raidFrame) end
+			raidFrame.UUFGroupUnit = nil
+		end
+	end
+	UUF:LayoutRaidFrames()
+end
+
+function UUF:RefreshGroupRoles()
+	UUF:RefreshPartyFrames()
+	if UUF.db.profile.Units.raid.Enabled then
+		for _, raidFrame in ipairs(UUF.RAID_FRAMES) do
+			local unit = raidFrame and not raidFrame.isTestFrame and raidFrame:GetAttribute("unit")
+			if unit and unit ~= "raid" then UUF:RefreshGroupFrame(raidFrame, unit) end
+		end
+	end
+end
+
+function UUF:UpdateRaidFrames()
 	local UnitDB = UUF.db.profile.Units.raid
 	if not UnitDB or not UnitDB.Enabled then
 		if UUF.RAID_CONTAINER then UUF.RAID_CONTAINER:Hide() end
@@ -254,30 +293,24 @@ function UUF:UpdateRaidFrames(skipDelayedUpdate)
 	end
 	UUF:CreateRaidContainer()
 
-	for i = #(UUF.RangeEvtFrames or {}), 1, -1 do
-		if UUF.RangeEvtFrames[i].frame and UUF.RangeEvtFrames[i].frame.isUUFUnitFrame then tremove(UUF.RangeEvtFrames, i) end
-	end
-
-	for i = #(UUF.TargetHighlightEvtFrames or {}), 1, -1 do
-		if UUF.TargetHighlightEvtFrames[i].frame and UUF.TargetHighlightEvtFrames[i].frame.isUUFUnitFrame then tremove(UUF.TargetHighlightEvtFrames, i) end
-	end
-
 	for _, raidFrame in ipairs(UUF.RAID_FRAMES) do
-		if raidFrame and raidFrame.isUUFTestFrame and not UUF.RAID_TEST_MODE then raidFrame = nil end
-		local unit = raidFrame and (raidFrame.unit or raidFrame:GetAttribute("unit"))
+		local useFrame = raidFrame and (not raidFrame.isTestFrame or UUF.RAID_TEST_MODE)
+		local unit = useFrame and raidFrame:GetAttribute("unit")
 		if unit and unit ~= "raid" then
 			raidFrame:SetSize(UnitDB.Frame.Width, UnitDB.Frame.Height)
 			raidFrame:SetFrameStrata(UnitDB.Frame.FrameStrata)
 			if raidFrame.DispelHighlightUnit and raidFrame.DispelHighlightUnit ~= unit then UUF:UnregisterDispelHighlightEvents(raidFrame) end
 			UUF:UpdateUnitFrame(raidFrame, unit)
-			UUF:RegisterRangeFrame(raidFrame, unit)
-			UUF:RegisterTargetGlowIndicatorFrame(raidFrame, unit)
-		elseif raidFrame and raidFrame.DispelHighlightUnit then
-			UUF:UnregisterDispelHighlightEvents(raidFrame)
+			raidFrame.UUFGroupUnit = unit
+		elseif raidFrame then
+			UUF:UnregisterRangeFrame(raidFrame)
+			UUF:UnregisterTargetGlowIndicatorFrame(raidFrame)
+			if raidFrame.DispelHighlightUnit then UUF:UnregisterDispelHighlightEvents(raidFrame) end
+			raidFrame.UUFGroupUnit = nil
 		end
 	end
 
-	UUF:LayoutRaidFrames(skipDelayedUpdate)
+	UUF:LayoutRaidFrames()
 	if UUF.RAID_TEST_MODE then UUF:CreateTestGroupFrames("raid") end
 end
 
@@ -286,17 +319,22 @@ PartyRosterEventFrame:RegisterEvent("ADDON_LOADED")
 PartyRosterEventFrame:RegisterEvent("GROUP_ROSTER_UPDATE")
 PartyRosterEventFrame:RegisterEvent("PLAYER_ROLES_ASSIGNED")
 PartyRosterEventFrame:SetScript("OnEvent", function(_, event, addonName)
-	if InCombatLockdown() or not UUF.db then return end
+	if not UUF.db then return end
 	if event == "ADDON_LOADED" then
 		if addonName == "Blizzard_CompactRaidFrames" and UUF.db.profile.Units.raid and UUF.db.profile.Units.raid.ForceHideBlizzard then UUF:HideBlizzardRaidFrames() end
 		return
 	end
+	if InCombatLockdown() then PartyRosterEventFrame:RegisterEvent("PLAYER_REGEN_ENABLED") return end
+	if event == "PLAYER_REGEN_ENABLED" then PartyRosterEventFrame:UnregisterEvent("PLAYER_REGEN_ENABLED") end
 	if event == "GROUP_ROSTER_UPDATE" then
 		if UUF.db.profile.Units.raid and UUF.db.profile.Units.raid.ForceHideBlizzard then UUF:HideBlizzardRaidFrames() end
-		UUF:UpdatePartyFrames()
-		UUF:UpdateRaidFrames()
+		UUF:RefreshPartyFrames()
+		UUF:RefreshRaidFrames()
 	elseif event == "PLAYER_ROLES_ASSIGNED" then
-		UUF:UpdatePartyFrames()
-		UUF:UpdateRaidFrames()
+		UUF:RefreshGroupRoles()
+	elseif event == "PLAYER_REGEN_ENABLED" then
+		if UUF.db.profile.Units.raid and UUF.db.profile.Units.raid.ForceHideBlizzard then UUF:HideBlizzardRaidFrames() end
+		UUF:RefreshPartyFrames()
+		UUF:RefreshRaidFrames()
 	end
 end)

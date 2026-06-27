@@ -258,7 +258,7 @@ function UUF:CreateRaidTestFrames()
 	for i = 1, UUF.MAX_RAID_FRAMES do
 		if not UUF.RAID_TEST_FRAMES[i] then
 			local raidFrame = oUF:Spawn("raid" .. i, "UUF_RaidTest" .. i)
-			raidFrame.isUUFTestFrame = true
+			raidFrame.isTestFrame = true
 			raidFrame.testIndex = i
 			raidFrame:SetParent(UUF.RAID_CONTAINER)
 			UUF.RAID_TEST_FRAMES[i] = raidFrame

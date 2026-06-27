@@ -5,13 +5,13 @@ local function ShouldShowUnitPowerBar(unitFrame, unit, PowerBarDB)
 	if not PowerBarDB.OnlyShowHealers then return true end
 	local normalizedUnit = UUF:GetNormalizedUnit(unit)
 	if normalizedUnit ~= "party" and normalizedUnit ~= "raid" then return true end
-	local unitToken = unit == "partyplayer" and "player" or unitFrame.unit or unitFrame:GetAttribute("unit") or unit
+	local unitToken = unit == "partyplayer" and "player" or unit
 	return UnitGroupRolesAssigned(unitToken) == "HEALER"
 end
 
 local function CreatePowerBarPostUpdateColor(unitFrame, unit)
-    local PowerBarDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].PowerBar
     return function(element, _, color, altR, altG, altB)
+        local PowerBarDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].PowerBar
         if not PowerBarDB.ColourBackgroundByType then return end
         if not element.Background then return end
 
@@ -80,6 +80,7 @@ function UUF:CreateUnitPowerBar(unitFrame, unit)
     PowerBar.colorClass = PowerBarDB.ColourByClass
     PowerBar.frequentUpdates = PowerBarDB.Smooth
     PowerBar.PostUpdateColor = CreatePowerBarPostUpdateColor(unitFrame, unit)
+	unitFrame.PowerBar = PowerBar
 
     if PowerBarDB.Inverse then
         PowerBar:SetReverseFill(true)
@@ -125,7 +126,7 @@ function UUF:UpdateUnitPowerBar(unitFrame, unit)
     local PowerBarDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].PowerBar
 
     if ShouldShowUnitPowerBar(unitFrame, unit, PowerBarDB) then
-        unitFrame.Power = unitFrame.Power or UUF:CreateUnitPowerBar(unitFrame, unit)
+		unitFrame.Power = unitFrame.Power or unitFrame.PowerBar or UUF:CreateUnitPowerBar(unitFrame, unit)
 
         if not unitFrame:IsElementEnabled("Power") then unitFrame:EnableElement("Power") end
 
@@ -136,7 +137,6 @@ function UUF:UpdateUnitPowerBar(unitFrame, unit)
             unitFrame.Power.colorPower = PowerBarDB.ColourByType
             unitFrame.Power.colorClass = PowerBarDB.ColourByClass
             unitFrame.Power.frequentUpdates = PowerBarDB.Smooth
-            unitFrame.Power.PostUpdateColor = CreatePowerBarPostUpdateColor(unitFrame, unit)
             if PowerBarDB.Inverse then
                 unitFrame.Power:SetReverseFill(true)
             else
