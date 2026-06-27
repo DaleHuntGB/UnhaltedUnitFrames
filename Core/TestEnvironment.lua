@@ -282,6 +282,9 @@ function UUF:LayoutRaidTestFrames()
 	local containerWidth = (groupGrowth == "LEFT" or groupGrowth == "RIGHT") and (headerWidth + spacing) * shownGroups - spacing or headerWidth
 	local containerHeight = (groupGrowth == "UP" or groupGrowth == "DOWN") and (headerHeight + spacing) * shownGroups - spacing or headerHeight
 	UUF.RAID_CONTAINER:SetSize(math.max(containerWidth, Frame.Width), math.max(containerHeight, Frame.Height))
+	local horizontalAnchor = groupGrowth == "LEFT" and "RIGHT" or groupGrowth == "RIGHT" and "LEFT" or unitGrowth == "RIGHT" and "RIGHT" or "LEFT"
+	local verticalAnchor = groupGrowth == "UP" and "BOTTOM" or groupGrowth == "DOWN" and "TOP" or unitGrowth == "DOWN" and "BOTTOM" or "TOP"
+	local anchor = verticalAnchor .. horizontalAnchor
 
 	local shownGroupIndex = 0
 	for groupIndex = 1, UUF.MAX_RAID_GROUPS do
@@ -300,10 +303,9 @@ function UUF:LayoutRaidTestFrames()
 				raidFrame:SetSize(Frame.Width, Frame.Height)
 				if showGroup then
 					local unitOffset = (unitIndex - 1) * (Frame[(unitGrowth == "UP" or unitGrowth == "DOWN") and "Height" or "Width"] + spacing)
-					local xOffset = headerXOffset + (unitGrowth == "RIGHT" and unitOffset or unitGrowth == "LEFT" and -unitOffset or 0)
-					local yOffset = headerYOffset + (unitGrowth == "UP" and unitOffset or unitGrowth == "DOWN" and -unitOffset or 0)
-					local point = (groupGrowth == "UP" or unitGrowth == "UP") and "BOTTOMLEFT" or "TOPLEFT"
-					raidFrame:SetPoint(point, UUF.RAID_CONTAINER, point, xOffset, yOffset)
+					local xOffset = headerXOffset + (unitGrowth == "RIGHT" and -unitOffset or unitGrowth == "LEFT" and unitOffset or 0)
+					local yOffset = headerYOffset + (unitGrowth == "UP" and -unitOffset or unitGrowth == "DOWN" and unitOffset or 0)
+					raidFrame:SetPoint(anchor, UUF.RAID_CONTAINER, anchor, xOffset, yOffset)
 					raidFrame:Show()
 				else
 					raidFrame:Hide()
