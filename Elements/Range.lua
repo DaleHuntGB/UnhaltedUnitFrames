@@ -3,7 +3,6 @@ local isRetail = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
 
 UUF.RangeEvtFrames = {}
 
-local spellRangeFrames = {}
 local rangeTicker = false
 
 --[[
@@ -252,21 +251,6 @@ spellUpdateFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
 spellUpdateFrame:RegisterEvent("SPELLS_CHANGED")
 spellUpdateFrame:SetScript("OnEvent", UpdateActiveSpells)
 
-local function GetGroupUnit(unit)
-	if unit == "player" or unit:match("^party") or unit:match("^raid") then return unit end
-	local inParty = UnitInParty(unit)
-	local inRaid = UnitInRaid(unit)
-	if UUF:IsSecretValue(inParty) or UUF:IsSecretValue(inRaid) then return end
-	if not inParty and not inRaid then return end
-
-	local groupPrefix = inRaid and "raid" or "party"
-	for i = 1, GetNumGroupMembers() do
-		local groupUnit = groupPrefix .. i
-		local isGroupUnit = UnitIsUnit(unit, groupUnit)
-		if not UUF:IsSecretValue(isGroupUnit) and isGroupUnit then return groupUnit end
-	end
-end
-
 local function UnitSpellRange(unit, spells)
 	local isNotInRange = false
 	for spellID in pairs(spells) do
@@ -284,44 +268,48 @@ end
 
 local function UnitInSpellsRange(unit, category)
 	local spells = activeSpells[category]
-	if not next(spells) then
-		if not InCombatLockdown() then return CheckInteractDistance(unit, 4) end
-		return nil
-	end
-
-	local inRange = UnitSpellRange(unit, spells)
+	local inRange = not next(spells) and 1 or UnitSpellRange(unit, spells)
 	if UUF:IsSecretValue(inRange) then return inRange end
 
 	if (not inRange or inRange == 1) and not InCombatLockdown() then
-		local interactDistance = CheckInteractDistance(unit, 4)
-		if not UUF:IsSecretValue(interactDistance) then return interactDistance end
-		return nil
+		return CheckInteractDistance(unit, 4)
 	end
 	return (inRange == nil and 1) or inRange
 end
 
-local function FriendlyIsInRange(unit)
+local function FriendlyIsInRange(unit, frame)
 	if UnitIsPlayer(unit) then
 		if isRetail then
 			if UnitPhaseReason(unit) then return false end
 		end
 	end
 
-	if isRetail and (unit == "player" or unit:match("^party%d*$") or unit:match("^raid%d*$")) then return UnitInRange(unit) end
+	local inRange, wasChecked = UnitInRange(unit)
+	if UUF:IsSecretValue(wasChecked) then
+		if UnitInParty(unit) or UnitInRaid(unit) then
+			frame.RangeIsInRange = inRange
+			frame.RangeWasChecked = wasChecked
+			return
+		end
+	elseif wasChecked and not inRange then
+		return false
+	end
 
 	return UnitInSpellsRange(unit, "friendly")
 end
 
-local function UpdateSpellRangeFrames()
-	for spellFrame, spellUnit in pairs(spellRangeFrames) do
-		if spellFrame:IsVisible() then UUF:UpdateRangeAlpha(spellFrame, spellUnit) end
+local function UpdateRangeFrames()
+	for unit, unitFrames in pairs(UUF.RangeEvtFrames) do
+		for frame in pairs(unitFrames) do
+			if frame:IsVisible() then UUF:UpdateRangeAlpha(frame, unit) end
+		end
 	end
 end
 
 local function UpdateRangeTicker()
-	local shouldRun = UUF.db.profile.General.Range.Enabled and next(spellRangeFrames)
+	local shouldRun = UUF.db.profile.General.Range.Enabled and next(UUF.RangeEvtFrames)
 	if shouldRun and not rangeTicker then
-		rangeTicker = C_Timer.NewTicker(0.5, UpdateSpellRangeFrames)
+		rangeTicker = C_Timer.NewTicker(0.2, UpdateRangeFrames)
 	elseif not shouldRun and rangeTicker then
 		rangeTicker:Cancel()
 		rangeTicker = false
@@ -350,18 +338,6 @@ function UUF:RegisterRangeFrame(frameName, unit)
 	unitFrames[frame] = true
 	frame.UUFRangeUnit = unit
 
-	if unit ~= "player" and not unit:match("^party%d*$") and not unit:match("^raid%d*$") then
-		spellRangeFrames[frame] = unit
-	else
-		spellRangeFrames[frame] = nil
-	end
-
-	if UUF.db.profile.General.Range.Enabled then
-		frame.Range = UUF.db.profile.General.Range
-	else
-		frame.Range = nil
-	end
-
 	UpdateRangeTicker()
 	UUF:UpdateRangeAlpha(frame, unit)
 end
@@ -374,7 +350,6 @@ function UUF:UnregisterRangeFrame(frame)
 		unitFrames[frame] = nil
 		if not next(unitFrames) then UUF.RangeEvtFrames[unit] = nil end
 	end
-	spellRangeFrames[frame] = nil
 	frame.UUFRangeUnit = nil
 	UpdateRangeTicker()
 end
@@ -382,10 +357,8 @@ end
 function UUF:IsRangeFrameRegistered(unit) return UUF.RangeEvtFrames[unit] ~= nil end
 
 function UUF:UpdateAllRangeFrames()
-	local RangeDB = UUF.db.profile.General.Range
 	for unit, unitFrames in pairs(UUF.RangeEvtFrames) do
 		for frame in pairs(unitFrames) do
-			frame.Range = RangeDB.Enabled and RangeDB or nil
 			UUF:UpdateRangeAlpha(frame, unit)
 		end
 	end
@@ -395,42 +368,37 @@ end
 function UUF:UpdateRangeAlpha(frame, unit)
 	local RangeDB = UUF.db.profile.General.Range
 	if not RangeDB or not RangeDB.Enabled then frame:SetAlpha(1) return end
-	if not frame:IsVisible() or not unit or not UnitExists(unit) then return end
-	if unit == "player" then frame:SetAlpha(1) return end
+	frame.RangeIsInRange = nil
+	frame.RangeWasChecked = nil
+	if not unit or not UnitExists(unit) or unit == "player" then frame:SetAlpha(1) return end
 
 	local inAlpha = RangeDB.InRange or 1
 	local outAlpha = RangeDB.OutOfRange or 0.5
-	local inRange = true
-	local groupUnit = GetGroupUnit(unit)
+	local inRange = false
 
 	if UnitIsDeadOrGhost(unit) then
-		if isRetail and groupUnit then
-			inRange = UnitInRange(groupUnit)
-		else
-			inRange = UnitInSpellsRange(unit, "resurrect")
-		end
+		inRange = UnitInSpellsRange(unit, "resurrect")
 	elseif UnitCanAttack("player", unit) then
 		inRange = UnitInSpellsRange(unit, "enemy")
 	else
 		local isPet = UnitIsUnit(unit, "pet")
-		-- What a mess WoW API is.
 		if not UUF:IsSecretValue(isPet) and isPet then
 			inRange = UnitInSpellsRange(unit, "pet")
 		elseif UnitIsConnected(unit) then
-			inRange = FriendlyIsInRange(groupUnit or unit)
+			inRange = FriendlyIsInRange(unit, frame)
 		else
 			inRange = false
 		end
 	end
 
-	if UUF:IsSecretValue(inRange) then
+	if UUF:IsSecretValue(frame.RangeIsInRange) then
+		frame:SetAlphaFromBoolean(frame.RangeIsInRange, inAlpha, outAlpha)
+		return
+	elseif UUF:IsSecretValue(inRange) then
 		frame:SetAlphaFromBoolean(inRange, inAlpha, outAlpha)
 		return
-	elseif inRange == nil then
-		inRange = true
 	end
-
-	frame:SetAlphaFromBoolean(inRange, inAlpha, outAlpha)
+	frame:SetAlpha(inRange and inAlpha or outAlpha)
 end
 
 local RangeEventFrame = CreateFrame("Frame")

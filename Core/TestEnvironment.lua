@@ -346,6 +346,7 @@ function UUF:RestoreTestGroupFrames(unit)
 		for i = 1, UUF.MAX_PARTY_FRAMES do if UUF["PARTY" .. i] then RestoreGroupFrame(UUF["PARTY" .. i], "party" .. i) end end
 		if UUF.PARTYPLAYER then RestoreGroupFrame(UUF.PARTYPLAYER, "partyplayer") end
 		UUF:UpdatePartyFrames()
+		UUF:UpdateUnitTags("party")
 	elseif unit == "raid" then
 		for i, raidFrame in ipairs(UUF.RAID_TEST_FRAMES) do
 			raidFrame:SetAttribute("unit", "raid" .. i)
@@ -358,6 +359,7 @@ function UUF:RestoreTestGroupFrames(unit)
 		end
 		for _, header in ipairs(UUF.RAID_HEADERS) do header:Show() end
 		UUF:UpdateRaidFrames()
+		UUF:UpdateUnitTags("raid")
 	end
 end
 
