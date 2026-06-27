@@ -1771,6 +1771,16 @@ local Defaults = {
                         Size = 16,
                         Layout = {"CENTER", "CENTER", 0, 0},
                     },
+					ReadyCheckIndicator = {
+						Enabled = true,
+						Size = 16,
+						Layout = {"CENTER", "CENTER", 0, 0},
+					},
+					ResurrectIndicator = {
+						Enabled = true,
+						Size = 24,
+						Layout = {"CENTER", "CENTER", 0, 0},
+					},
                     LeaderAssistantIndicator = {
                         Enabled = true,
                         Size = 16,
@@ -1996,6 +2006,16 @@ local Defaults = {
                         Size = 12,
                         Layout = {"CENTER", "CENTER", 0, 0},
                     },
+					ReadyCheckIndicator = {
+						Enabled = true,
+						Size = 16,
+						Layout = {"CENTER", "CENTER", 0, 0},
+					},
+					ResurrectIndicator = {
+						Enabled = true,
+						Size = 18,
+						Layout = {"CENTER", "CENTER", 0, 0},
+					},
                     LeaderAssistantIndicator = {
                         Enabled = true,
                         Size = 16,
