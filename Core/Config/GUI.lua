@@ -165,6 +165,7 @@ local RoleTextures = {
     Colour = "|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\Colour\\Tank.tga:18:18|t |TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\Colour\\Healer.tga:18:18|t |TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\Colour\\DPS.tga:18:18|t Colour",
     White = "|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\White\\Tank.tga:18:18|t |TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\White\\Healer.tga:18:18|t |TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\White\\DPS.tga:18:18|t White",
     ElvUI = "|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\ElvUI\\Tank.tga:18:18|t |TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\ElvUI\\Healer.tga:18:18|t |TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\ElvUI\\DPS.tga:18:18|t ElvUI",
+	Square = "|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\Square\\Tank.png:18:18|t |TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\Square\\Healer.png:18:18|t |TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\Square\\DPS.png:18:18|t Square",
 }
 
 local function EnableAurasTestMode(unit)
@@ -2209,7 +2210,7 @@ local function CreateRoleIndicatorSettings(containerParent, unit, updateCallback
     ToggleContainer:AddChild(Toggle)
 
     local TextureDropdown = AG:Create("Dropdown")
-    TextureDropdown:SetList(RoleTextures, {"Default", "Blizzard", "Colour", "White", "ElvUI"})
+	TextureDropdown:SetList(RoleTextures, {"Default", "Blizzard", "Colour", "White", "ElvUI", "Square"})
     TextureDropdown:SetLabel("Role Texture")
     TextureDropdown:SetValue(RoleDB.Texture)
     TextureDropdown:SetRelativeWidth(0.5)
