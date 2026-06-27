@@ -211,6 +211,23 @@ local function ApplyGroupTestFrame(unitFrame, unit, index, displayName)
 			unitFrame.PhaseIndicator:Hide()
 		end
 	end
+	if unitFrame.ReadyCheckIndicator and IndicatorDB.ReadyCheckIndicator then
+		if IndicatorDB.ReadyCheckIndicator.Enabled and index % 2 == 1 then
+			local readyCheckAtlas = index % 3 == 0 and "UI-LFG-DeclineMark-Raid" or index % 3 == 1 and "UI-LFG-ReadyMark-Raid" or "UI-LFG-PendingMark-Raid"
+			unitFrame.ReadyCheckIndicator:SetAtlas(readyCheckAtlas)
+			unitFrame.ReadyCheckIndicator:Show()
+		else
+			unitFrame.ReadyCheckIndicator:Hide()
+		end
+	end
+	if unitFrame.ResurrectIndicator and IndicatorDB.ResurrectIndicator then
+		if IndicatorDB.ResurrectIndicator.Enabled and index % 2 == 0 then
+			unitFrame.ResurrectIndicator:SetAtlas("RaidFrame-Icon-Rez")
+			unitFrame.ResurrectIndicator:Show()
+		else
+			unitFrame.ResurrectIndicator:Hide()
+		end
+	end
 
 	if unitFrame.RaidTargetIndicator and IndicatorDB.RaidTargetMarker and TestRaidTargetCoords[((index - 1) % #TestRaidTargetCoords) + 1] then
 		local coords = TestRaidTargetCoords[((index - 1) % #TestRaidTargetCoords) + 1]
