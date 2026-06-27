@@ -2128,6 +2128,114 @@ local function CreateRaidTargetMarkerSettings(containerParent, unit, updateCallb
     RefreshStatusGUI()
 end
 
+local function CreateReadyCheckIndicatorSettings(containerParent, unit, updateCallback)
+	local ReadyCheckDB = UUF.db.profile.Units[unit].Indicators.ReadyCheckIndicator
+	local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Ready Check Indicator Settings")
+	local Toggle = AG:Create("CheckBox")
+	Toggle:SetLabel("Enable |cFF8080FFReady Check|r Indicator")
+	Toggle:SetValue(ReadyCheckDB.Enabled)
+	Toggle:SetRelativeWidth(1)
+	ToggleContainer:AddChild(Toggle)
+
+	local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
+	local AnchorFromDropdown = AG:Create("Dropdown")
+	AnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
+	AnchorFromDropdown:SetLabel("Anchor From")
+	AnchorFromDropdown:SetValue(ReadyCheckDB.Layout[1])
+	AnchorFromDropdown:SetRelativeWidth(0.5)
+	AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) ReadyCheckDB.Layout[1] = value updateCallback() end)
+	LayoutContainer:AddChild(AnchorFromDropdown)
+
+	local AnchorToDropdown = AG:Create("Dropdown")
+	AnchorToDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
+	AnchorToDropdown:SetLabel("Anchor To")
+	AnchorToDropdown:SetValue(ReadyCheckDB.Layout[2])
+	AnchorToDropdown:SetRelativeWidth(0.5)
+	AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) ReadyCheckDB.Layout[2] = value updateCallback() end)
+	LayoutContainer:AddChild(AnchorToDropdown)
+
+	local XPosSlider = AG:Create("Slider")
+	XPosSlider:SetLabel("X Position")
+	XPosSlider:SetValue(ReadyCheckDB.Layout[3])
+	XPosSlider:SetSliderValues(-3000, 3000, 0.1)
+	XPosSlider:SetRelativeWidth(0.33)
+	XPosSlider:SetCallback("OnValueChanged", function(_, _, value) ReadyCheckDB.Layout[3] = value updateCallback() end)
+	LayoutContainer:AddChild(XPosSlider)
+
+	local YPosSlider = AG:Create("Slider")
+	YPosSlider:SetLabel("Y Position")
+	YPosSlider:SetValue(ReadyCheckDB.Layout[4])
+	YPosSlider:SetSliderValues(-3000, 3000, 0.1)
+	YPosSlider:SetRelativeWidth(0.33)
+	YPosSlider:SetCallback("OnValueChanged", function(_, _, value) ReadyCheckDB.Layout[4] = value updateCallback() end)
+	LayoutContainer:AddChild(YPosSlider)
+
+	local SizeSlider = AG:Create("Slider")
+	SizeSlider:SetLabel("Size")
+	SizeSlider:SetValue(ReadyCheckDB.Size)
+	SizeSlider:SetSliderValues(8, 64, 1)
+	SizeSlider:SetRelativeWidth(0.33)
+	SizeSlider:SetCallback("OnValueChanged", function(_, _, value) ReadyCheckDB.Size = value updateCallback() end)
+	LayoutContainer:AddChild(SizeSlider)
+
+	Toggle:SetCallback("OnValueChanged", function(_, _, value) ReadyCheckDB.Enabled = value updateCallback() GUIWidgets.DeepDisable(LayoutContainer, not value) end)
+	GUIWidgets.DeepDisable(LayoutContainer, not ReadyCheckDB.Enabled)
+end
+
+local function CreateResurrectIndicatorSettings(containerParent, unit, updateCallback)
+	local ResurrectDB = UUF.db.profile.Units[unit].Indicators.ResurrectIndicator
+	local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Resurrect Indicator Settings")
+	local Toggle = AG:Create("CheckBox")
+	Toggle:SetLabel("Enable |cFF8080FFResurrect|r Indicator")
+	Toggle:SetValue(ResurrectDB.Enabled)
+	Toggle:SetRelativeWidth(1)
+	ToggleContainer:AddChild(Toggle)
+
+	local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
+	local AnchorFromDropdown = AG:Create("Dropdown")
+	AnchorFromDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
+	AnchorFromDropdown:SetLabel("Anchor From")
+	AnchorFromDropdown:SetValue(ResurrectDB.Layout[1])
+	AnchorFromDropdown:SetRelativeWidth(0.5)
+	AnchorFromDropdown:SetCallback("OnValueChanged", function(_, _, value) ResurrectDB.Layout[1] = value updateCallback() end)
+	LayoutContainer:AddChild(AnchorFromDropdown)
+
+	local AnchorToDropdown = AG:Create("Dropdown")
+	AnchorToDropdown:SetList(AnchorPoints[1], AnchorPoints[2])
+	AnchorToDropdown:SetLabel("Anchor To")
+	AnchorToDropdown:SetValue(ResurrectDB.Layout[2])
+	AnchorToDropdown:SetRelativeWidth(0.5)
+	AnchorToDropdown:SetCallback("OnValueChanged", function(_, _, value) ResurrectDB.Layout[2] = value updateCallback() end)
+	LayoutContainer:AddChild(AnchorToDropdown)
+
+	local XPosSlider = AG:Create("Slider")
+	XPosSlider:SetLabel("X Position")
+	XPosSlider:SetValue(ResurrectDB.Layout[3])
+	XPosSlider:SetSliderValues(-3000, 3000, 0.1)
+	XPosSlider:SetRelativeWidth(0.33)
+	XPosSlider:SetCallback("OnValueChanged", function(_, _, value) ResurrectDB.Layout[3] = value updateCallback() end)
+	LayoutContainer:AddChild(XPosSlider)
+
+	local YPosSlider = AG:Create("Slider")
+	YPosSlider:SetLabel("Y Position")
+	YPosSlider:SetValue(ResurrectDB.Layout[4])
+	YPosSlider:SetSliderValues(-3000, 3000, 0.1)
+	YPosSlider:SetRelativeWidth(0.33)
+	YPosSlider:SetCallback("OnValueChanged", function(_, _, value) ResurrectDB.Layout[4] = value updateCallback() end)
+	LayoutContainer:AddChild(YPosSlider)
+
+	local SizeSlider = AG:Create("Slider")
+	SizeSlider:SetLabel("Size")
+	SizeSlider:SetValue(ResurrectDB.Size)
+	SizeSlider:SetSliderValues(8, 64, 1)
+	SizeSlider:SetRelativeWidth(0.33)
+	SizeSlider:SetCallback("OnValueChanged", function(_, _, value) ResurrectDB.Size = value updateCallback() end)
+	LayoutContainer:AddChild(SizeSlider)
+
+	Toggle:SetCallback("OnValueChanged", function(_, _, value) ResurrectDB.Enabled = value updateCallback() GUIWidgets.DeepDisable(LayoutContainer, not value) end)
+	GUIWidgets.DeepDisable(LayoutContainer, not ResurrectDB.Enabled)
+end
+
 local function CreateLeaderAssistaintSettings(containerParent, unit, updateCallback)
     local LeaderAssistantDB = UUF.db.profile.Units[unit].Indicators.LeaderAssistantIndicator
 
@@ -2872,6 +2980,10 @@ local function CreateIndicatorSettings(containerParent, unit)
             CreateRoleIndicatorSettings(IndicatorContainer, unit, function() UpdateUnitSettings(unit) end)
         elseif IndicatorTab == "Phase" then
             CreatePhaseIndicatorSettings(IndicatorContainer, unit, function() UpdateUnitSettings(unit) end)
+		elseif IndicatorTab == "ReadyCheckIndicator" then
+			CreateReadyCheckIndicatorSettings(IndicatorContainer, unit, function() UpdateUnitSettings(unit) end)
+		elseif IndicatorTab == "ResurrectIndicator" then
+			CreateResurrectIndicatorSettings(IndicatorContainer, unit, function() UpdateUnitSettings(unit) end)
         elseif IndicatorTab == "Resting" then
             CreateStatusSettings(IndicatorContainer, unit, "Resting", function() UUF:UpdateUnitRestingIndicator(UUF[unit:upper()], unit) end)
         elseif IndicatorTab == "Combat" then
@@ -2927,6 +3039,8 @@ local function CreateIndicatorSettings(containerParent, unit)
             { text = "Threat Indicator", value = "ThreatIndicator" },
             { text = "Role", value = "Role" },
             { text = "Phase", value = "Phase" },
+			{ text = "Ready Check", value = "ReadyCheckIndicator" },
+			{ text = "Resurrect", value = "ResurrectIndicator" },
         })
     elseif unit == "focus" or unit == "pet" then
         IndicatorContainerTabGroup:SetTabs({
