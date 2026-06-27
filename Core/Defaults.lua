@@ -1759,6 +1759,9 @@ local Defaults = {
                     },
                     Role = {
                         Enabled = true,
+						ShowTank = true,
+						ShowHealer = true,
+						ShowDamager = true,
                         Texture = "Default",
                         Size = 16,
                         Layout = {"LEFT", "TOPLEFT", 3, 0},
@@ -1981,6 +1984,9 @@ local Defaults = {
                     },
                     Role = {
                         Enabled = true,
+						ShowTank = true,
+						ShowHealer = true,
+						ShowDamager = true,
                         Texture = "Default",
                         Size = 12,
                         Layout = {"TOPRIGHT", "TOPRIGHT", -3, -30},

@@ -2196,6 +2196,9 @@ local function CreateRoleIndicatorSettings(containerParent, unit, updateCallback
     local DefaultRoleDB = UUF:GetDefaultDB().profile.Units[unit].Indicators.Role
     local RoleDB = UUF.db.profile.Units[unit].Indicators.Role
     if RoleDB.Enabled == nil then RoleDB.Enabled = DefaultRoleDB.Enabled end
+	if RoleDB.ShowTank == nil then RoleDB.ShowTank = DefaultRoleDB.ShowTank end
+	if RoleDB.ShowHealer == nil then RoleDB.ShowHealer = DefaultRoleDB.ShowHealer end
+	if RoleDB.ShowDamager == nil then RoleDB.ShowDamager = DefaultRoleDB.ShowDamager end
     RoleDB.Texture = RoleDB.Texture or DefaultRoleDB.Texture
     RoleDB.Size = RoleDB.Size or DefaultRoleDB.Size
     RoleDB.Layout = RoleDB.Layout or {unpack(DefaultRoleDB.Layout)}
@@ -2216,6 +2219,27 @@ local function CreateRoleIndicatorSettings(containerParent, unit, updateCallback
     TextureDropdown:SetRelativeWidth(0.5)
     TextureDropdown:SetCallback("OnValueChanged", function(_, _, value) RoleDB.Texture = value updateCallback() end)
     ToggleContainer:AddChild(TextureDropdown)
+
+	local TankToggle = AG:Create("CheckBox")
+	TankToggle:SetLabel("Show Tank")
+	TankToggle:SetValue(RoleDB.ShowTank)
+	TankToggle:SetCallback("OnValueChanged", function(_, _, value) RoleDB.ShowTank = value updateCallback() end)
+	TankToggle:SetRelativeWidth(0.33)
+	ToggleContainer:AddChild(TankToggle)
+
+	local HealerToggle = AG:Create("CheckBox")
+	HealerToggle:SetLabel("Show Healer")
+	HealerToggle:SetValue(RoleDB.ShowHealer)
+	HealerToggle:SetCallback("OnValueChanged", function(_, _, value) RoleDB.ShowHealer = value updateCallback() end)
+	HealerToggle:SetRelativeWidth(0.33)
+	ToggleContainer:AddChild(HealerToggle)
+
+	local DamagerToggle = AG:Create("CheckBox")
+	DamagerToggle:SetLabel("Show DPS")
+	DamagerToggle:SetValue(RoleDB.ShowDamager)
+	DamagerToggle:SetCallback("OnValueChanged", function(_, _, value) RoleDB.ShowDamager = value updateCallback() end)
+	DamagerToggle:SetRelativeWidth(0.33)
+	ToggleContainer:AddChild(DamagerToggle)
 
     local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
 

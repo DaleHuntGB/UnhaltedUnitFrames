@@ -182,12 +182,13 @@ local function ApplyGroupTestFrame(unitFrame, unit, index, displayName)
 
 	if unitFrame.GroupRoleIndicator and IndicatorDB.Role then
 		local roleTexture = UUF.RoleTextures[IndicatorDB.Role.Texture] and UUF.RoleTextures[IndicatorDB.Role.Texture][role]
-		if IndicatorDB.Role.Enabled and IndicatorDB.Role.Texture == "Default" and TestRoleAtlas[role] then
+		local showRole = (role == "TANK" and IndicatorDB.Role.ShowTank ~= false) or (role == "HEALER" and IndicatorDB.Role.ShowHealer ~= false) or (role == "DAMAGER" and IndicatorDB.Role.ShowDamager ~= false)
+		if IndicatorDB.Role.Enabled and showRole and IndicatorDB.Role.Texture == "Default" and TestRoleAtlas[role] then
 			unitFrame.GroupRoleIndicator:SetAtlas(TestRoleAtlas[role])
 			unitFrame.GroupRoleIndicator:SetTexCoord(0, 1, 0, 1)
 			unitFrame.GroupRoleIndicator:Show()
 		else
-			SetTestTexture(unitFrame.GroupRoleIndicator, IndicatorDB.Role.Enabled and roleTexture, roleTexture)
+			SetTestTexture(unitFrame.GroupRoleIndicator, IndicatorDB.Role.Enabled and showRole and roleTexture, roleTexture)
 		end
 	end
 

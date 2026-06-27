@@ -8,11 +8,14 @@ function UUF:CreateUnitRoleIndicator(unitFrame, unit)
 	RoleIndicator:SetSize(RoleDB.Size, RoleDB.Size)
 	RoleIndicator:SetPoint(RoleDB.Layout[1], unitFrame.HighLevelContainer, RoleDB.Layout[2], RoleDB.Layout[3], RoleDB.Layout[4])
 	RoleIndicator.PostUpdate = function(textureElement, role)
+		local showRole = (role == "TANK" and RoleDB.ShowTank ~= false) or (role == "HEALER" and RoleDB.ShowHealer ~= false) or (role == "DAMAGER" and RoleDB.ShowDamager ~= false)
+		if not showRole then textureElement:Hide() return end
 		local roleTexture = UUF.RoleTextures[RoleDB.Texture] and UUF.RoleTextures[RoleDB.Texture][role]
 		if roleTexture then
 			textureElement:SetTexture(roleTexture)
 			textureElement:SetTexCoord(0, 1, 0, 1)
 		end
+		textureElement:Show()
 	end
 
 	if RoleDB.Enabled then
