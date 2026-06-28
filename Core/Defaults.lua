@@ -1773,6 +1773,7 @@ local Defaults = {
                     },
 					ReadyCheckIndicator = {
 						Enabled = true,
+						Texture = "Default",
 						Size = 16,
 						Layout = {"CENTER", "CENTER", 0, 0},
 					},
@@ -2008,6 +2009,7 @@ local Defaults = {
                     },
 					ReadyCheckIndicator = {
 						Enabled = true,
+						Texture = "Default",
 						Size = 16,
 						Layout = {"CENTER", "CENTER", 0, 0},
 					},

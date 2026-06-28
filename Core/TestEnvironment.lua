@@ -213,8 +213,13 @@ local function ApplyGroupTestFrame(unitFrame, unit, index, displayName)
 	end
 	if unitFrame.ReadyCheckIndicator and IndicatorDB.ReadyCheckIndicator then
 		if IndicatorDB.ReadyCheckIndicator.Enabled and index % 2 == 1 then
-			local readyCheckAtlas = index % 3 == 0 and "UI-LFG-DeclineMark-Raid" or index % 3 == 1 and "UI-LFG-ReadyMark-Raid" or "UI-LFG-PendingMark-Raid"
-			unitFrame.ReadyCheckIndicator:SetAtlas(readyCheckAtlas)
+			local readyCheckStatus = index % 3 == 0 and "NOTREADY" or index % 3 == 1 and "READY" or "WAITING"
+			local readyCheckTexture = UUF.ReadyCheckTextures[IndicatorDB.ReadyCheckIndicator.Texture] and UUF.ReadyCheckTextures[IndicatorDB.ReadyCheckIndicator.Texture][readyCheckStatus]
+			if readyCheckTexture then
+				unitFrame.ReadyCheckIndicator:SetTexture(readyCheckTexture)
+			else
+				unitFrame.ReadyCheckIndicator:SetAtlas(readyCheckStatus == "NOTREADY" and "UI-LFG-DeclineMark-Raid" or readyCheckStatus == "READY" and "UI-LFG-ReadyMark-Raid" or "UI-LFG-PendingMark-Raid")
+			end
 			unitFrame.ReadyCheckIndicator:Show()
 		else
 			unitFrame.ReadyCheckIndicator:Hide()

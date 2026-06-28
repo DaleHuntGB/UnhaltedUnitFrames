@@ -164,12 +164,12 @@ local StatusTextures = {
 }
 
 local RoleTextures = {
-    Default = "|A:UI-LFG-RoleIcon-Tank-Micro-Raid:18:18|a |A:UI-LFG-RoleIcon-Healer-Micro-Raid:18:18|a |A:UI-LFG-RoleIcon-DPS-Micro-Raid:18:18|a Default",
-    Blizzard = "|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\Blizzard\\Tank.tga:18:18|t |TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\Blizzard\\Healer.tga:18:18|t |TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\Blizzard\\DPS.tga:18:18|t Blizzard",
-    Colour = "|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\Colour\\Tank.tga:18:18|t |TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\Colour\\Healer.tga:18:18|t |TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\Colour\\DPS.tga:18:18|t Colour",
-    White = "|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\White\\Tank.tga:18:18|t |TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\White\\Healer.tga:18:18|t |TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\White\\DPS.tga:18:18|t White",
-    ElvUI = "|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\ElvUI\\Tank.tga:18:18|t |TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\ElvUI\\Healer.tga:18:18|t |TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\ElvUI\\DPS.tga:18:18|t ElvUI",
-	Square = "|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\Square\\Tank.png:18:18|t |TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\Square\\Healer.png:18:18|t |TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\Square\\DPS.png:18:18|t Square",
+	["Default"] = "|A:UI-LFG-RoleIcon-Tank-Micro-Raid:18:18|a |A:UI-LFG-RoleIcon-Healer-Micro-Raid:18:18|a |A:UI-LFG-RoleIcon-DPS-Micro-Raid:18:18|a",
+	["Blizzard"] = "|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\Blizzard\\Tank.tga:18:18|t |TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\Blizzard\\Healer.tga:18:18|t |TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\Blizzard\\DPS.tga:18:18|t",
+	["Colour"] = "|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\Colour\\Tank.tga:18:18|t |TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\Colour\\Healer.tga:18:18|t |TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\Colour\\DPS.tga:18:18|t",
+	["White"] = "|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\White\\Tank.tga:18:18|t |TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\White\\Healer.tga:18:18|t |TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\White\\DPS.tga:18:18|t",
+	["ElvUI"] = "|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\ElvUI\\Tank.tga:18:18|t |TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\ElvUI\\Healer.tga:18:18|t |TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\ElvUI\\DPS.tga:18:18|t",
+	["Square"] = "|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\Square\\Tank.png:18:18|t |TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\Square\\Healer.png:18:18|t |TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\Square\\DPS.png:18:18|t",
 }
 
 local function EnableAurasTestMode(unit)
@@ -2130,12 +2130,24 @@ end
 
 local function CreateReadyCheckIndicatorSettings(containerParent, unit, updateCallback)
 	local ReadyCheckDB = UUF.db.profile.Units[unit].Indicators.ReadyCheckIndicator
+	ReadyCheckDB.Texture = ReadyCheckDB.Texture or "Default"
 	local ToggleContainer = GUIWidgets.CreateInlineGroup(containerParent, "Ready Check Indicator Settings")
 	local Toggle = AG:Create("CheckBox")
 	Toggle:SetLabel("Enable |cFF8080FFReady Check|r Indicator")
 	Toggle:SetValue(ReadyCheckDB.Enabled)
-	Toggle:SetRelativeWidth(1)
+	Toggle:SetRelativeWidth(0.5)
 	ToggleContainer:AddChild(Toggle)
+
+	local TextureDropdown = AG:Create("Dropdown")
+	TextureDropdown:SetList({
+		["Default"] = "|A:UI-LFG-ReadyMark-Raid:18:18|a |A:UI-LFG-DeclineMark-Raid:18:18|a |A:UI-LFG-PendingMark-Raid:18:18|a",
+		["White"] = "|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\ReadyCheck\\White\\Ready.png:18:18|t |TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\ReadyCheck\\White\\NotReady.png:18:18|t |TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\ReadyCheck\\White\\Pending.png:18:18|t",
+	}, {"Default", "White"})
+	TextureDropdown:SetLabel("Ready Check Texture")
+	TextureDropdown:SetValue(ReadyCheckDB.Texture)
+	TextureDropdown:SetRelativeWidth(0.5)
+	TextureDropdown:SetCallback("OnValueChanged", function(_, _, value) ReadyCheckDB.Texture = value updateCallback() end)
+	ToggleContainer:AddChild(TextureDropdown)
 
 	local LayoutContainer = GUIWidgets.CreateInlineGroup(containerParent, "Layout & Positioning")
 	local AnchorFromDropdown = AG:Create("Dropdown")
@@ -2178,7 +2190,8 @@ local function CreateReadyCheckIndicatorSettings(containerParent, unit, updateCa
 	SizeSlider:SetCallback("OnValueChanged", function(_, _, value) ReadyCheckDB.Size = value updateCallback() end)
 	LayoutContainer:AddChild(SizeSlider)
 
-	Toggle:SetCallback("OnValueChanged", function(_, _, value) ReadyCheckDB.Enabled = value updateCallback() GUIWidgets.DeepDisable(LayoutContainer, not value) end)
+	Toggle:SetCallback("OnValueChanged", function(_, _, value) ReadyCheckDB.Enabled = value updateCallback() GUIWidgets.DeepDisable(ToggleContainer, not value, Toggle) GUIWidgets.DeepDisable(LayoutContainer, not value) end)
+	GUIWidgets.DeepDisable(ToggleContainer, not ReadyCheckDB.Enabled, Toggle)
 	GUIWidgets.DeepDisable(LayoutContainer, not ReadyCheckDB.Enabled)
 end
 
@@ -2563,9 +2576,9 @@ local function CreateQuestIndicatorSettings(containerParent, updateCallback)
 
     local TextureDropdown = AG:Create("Dropdown")
     TextureDropdown:SetList({
-        DEFAULT = "|TInterface\\TargetingFrame\\PortraitQuestBadge:20:20|t",
-        QUEST0 = "|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Quest\\Quest01.png:20:6|t",
-        QUEST1 = "|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Quest\\Quest02.png:20:20|t",
+        ["DEFAULT"] = "|TInterface\\TargetingFrame\\PortraitQuestBadge:20:20|t",
+        ["QUEST0"] = "|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Quest\\Quest01.png:20:6|t",
+        ["QUEST1"] = "|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Quest\\Quest02.png:20:20|t",
     }, {"DEFAULT", "QUEST0", "QUEST1"})
     TextureDropdown:SetLabel("Quest Texture")
     TextureDropdown:SetValue(QuestIndicatorDB.Texture or "DEFAULT")
@@ -2642,10 +2655,10 @@ local function CreateClassificationIndicatorSettings(containerParent, updateCall
 
     local TextureDropdown = AG:Create("Dropdown")
     TextureDropdown:SetList({
-        CLASSIFICATION0 = "|A:nameplates-icon-elite-gold:20:20|a |A:nameplates-icon-elite-silver:20:20|a |A:nameplates-icon-elite-silver:20:20|a |A:nameplates-icon-elite-gold:20:20|a",
-        CLASSIFICATION1 = "|A:VignetteEvent-SuperTracked:20:20|a |A:VignetteEvent:20:20|a |A:VignetteKillElite-SuperTracked:20:20|a |A:vignettekillboss:20:20|a",
-        CLASSIFICATION2 = "|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Classification\\Classic\\Elite.png:20:20|t |TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Classification\\Classic\\Rare.png:20:20|t |TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Classification\\Classic\\RareElite.png:20:20|t |TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Classification\\Classic\\WorldBoss.png:20:20|t",
-        CLASSIFICATION3 = "|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Classification\\Minimalist\\Elite.png:20:20|t |TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Classification\\Minimalist\\Rare.png:20:20|t |TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Classification\\Minimalist\\RareElite.png:20:20|t |TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Classification\\Minimalist\\WorldBoss.png:20:20|t",
+        ["CLASSIFICATION0"] = "|A:nameplates-icon-elite-gold:20:20|a |A:nameplates-icon-elite-silver:20:20|a |A:nameplates-icon-elite-silver:20:20|a |A:nameplates-icon-elite-gold:20:20|a",
+        ["CLASSIFICATION1"] = "|A:VignetteEvent-SuperTracked:20:20|a |A:VignetteEvent:20:20|a |A:VignetteKillElite-SuperTracked:20:20|a |A:vignettekillboss:20:20|a",
+        ["CLASSIFICATION2"] = "|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Classification\\Classic\\Elite.png:20:20|t |TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Classification\\Classic\\Rare.png:20:20|t |TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Classification\\Classic\\RareElite.png:20:20|t |TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Classification\\Classic\\WorldBoss.png:20:20|t",
+        ["CLASSIFICATION3"] = "|TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Classification\\Minimalist\\Elite.png:20:20|t |TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Classification\\Minimalist\\Rare.png:20:20|t |TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Classification\\Minimalist\\RareElite.png:20:20|t |TInterface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Classification\\Minimalist\\WorldBoss.png:20:20|t",
     }, {"CLASSIFICATION0", "CLASSIFICATION1", "CLASSIFICATION2", "CLASSIFICATION3"})
     TextureDropdown:SetLabel("Classification Texture")
     TextureDropdown:SetValue(ClassificationIndicatorDB.Texture or "DEFAULT")
