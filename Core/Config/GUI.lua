@@ -3077,8 +3077,11 @@ local function CreateIndicatorSettings(containerParent, unit)
 end
 
 local function CreateTagSetting(containerParent, unit, tagDB)
-    local TagDB = UUF.db.profile.Units[unit].Tags[tagDB]
-    local function UpdateTag() UUF:UpdateUnitTags(unit, tagDB) end
+	local TagDB = UUF.db.profile.Units[unit].Tags[tagDB]
+	local function UpdateTag()
+		UUF:UpdateUnitTags(unit, tagDB)
+		if unit == "party" and UUF.PARTY_TEST_MODE or unit == "raid" and UUF.RAID_TEST_MODE then UUF:CreateTestGroupFrames(unit) end
+	end
 
     local TagContainer = GUIWidgets.CreateInlineGroup(containerParent, "Tag Settings")
 
@@ -3648,7 +3651,7 @@ local function CreateAuraSettings(containerParent, unit)
     FrameStrataDropdown:SetLabel("Frame Strata")
     FrameStrataDropdown:SetValue(AurasDB.FrameStrata)
     FrameStrataDropdown:SetRelativeWidth(1)
-    FrameStrataDropdown:SetCallback("OnValueChanged", function(_, _, value) AurasDB.FrameStrata = value UUF:UpdateUnitAurasStrata(unit) end)
+    FrameStrataDropdown:SetCallback("OnValueChanged", function(_, _, value) AurasDB.FrameStrata = value UpdateUnitSettings(unit, function() UUF:UpdateUnitAurasStrata(unit) end) end)
     containerParent:AddChild(FrameStrataDropdown)
 
     local function SelectAuraTab(AuraContainer, _, AuraTab)

@@ -302,7 +302,7 @@ function UUF:UpdateRaidFrames()
 
 	for _, raidFrame in ipairs(UUF.RAID_FRAMES) do
 		local useFrame = raidFrame and (not raidFrame.isTestFrame or UUF.RAID_TEST_MODE)
-		local unit = useFrame and raidFrame:GetAttribute("unit")
+		local unit = useFrame and (raidFrame:GetAttribute("unit") or (raidFrame.isTestFrame and "raid" .. raidFrame.testIndex))
 		if unit and unit ~= "raid" then
 			raidFrame:SetSize(UnitDB.Frame.Width, UnitDB.Frame.Height)
 			raidFrame:SetFrameStrata(UnitDB.Frame.FrameStrata)
