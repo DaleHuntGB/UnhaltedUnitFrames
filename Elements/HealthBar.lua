@@ -38,12 +38,13 @@ function UUF:CreateUnitHealthBar(unitFrame, unit)
         HealthBar:SetFrameLevel(unitContainer:GetFrameLevel() + 2)
         HealthBar:SetStatusBarColor(HealthBarDB.Foreground[1], HealthBarDB.Foreground[2], HealthBarDB.Foreground[3], HealthBarDB.ForegroundOpacity)
         HealthBar.colorClass = HealthBarDB.ColourByClass
-        HealthBar.colorReaction = HealthBarDB.ColourByReaction
+        HealthBar.colorReaction = HealthBarDB.ColourByClass and HealthBarDB.ColourByReaction
+        HealthBar.colorHealth = not HealthBarDB.ColourByClass
         HealthBar.colorTapping = HealthBarDB.ColourWhenTapped
         HealthBar.colorDisconnected = HealthBarDB.ColourWhenDisconnected
         HealthBar.smoothing = HealthBarDB.Smooth ~= false and StatusBarInterpolation.ExponentialEaseOut or StatusBarInterpolation.Immediate
         HealthBar.UUFHealthBarDB = HealthBarDB
-        HealthBar.PostUpdateColor = function(healthBar, colourUnit, colour) if not UnitExists(colourUnit) or not colour then healthBar:SetStatusBarColor(healthBar.UUFHealthBarDB.Foreground[1], healthBar.UUFHealthBarDB.Foreground[2], healthBar.UUFHealthBarDB.Foreground[3], healthBar.UUFHealthBarDB.ForegroundOpacity) end end
+        HealthBar.PostUpdateColor = function(healthBar, _, colour) if not colour or colour == oUF.colors.health then healthBar:SetStatusBarColor(healthBar.UUFHealthBarDB.Foreground[1], healthBar.UUFHealthBarDB.Foreground[2], healthBar.UUFHealthBarDB.Foreground[3], healthBar.UUFHealthBarDB.ForegroundOpacity) end end
 
         if unit == "pet" and HealthBarDB.ColourByClass then
             HealthBar.colorClass = false
@@ -101,7 +102,8 @@ function UUF:UpdateUnitHealthBar(unitFrame, unit)
         unitFrame.Health:SetSize(FrameDB.Width - 2, FrameDB.Height - 2)
         unitFrame.Health:SetStatusBarColor(HealthBarDB.Foreground[1], HealthBarDB.Foreground[2], HealthBarDB.Foreground[3], HealthBarDB.ForegroundOpacity)
         unitFrame.Health.colorClass = HealthBarDB.ColourByClass
-        unitFrame.Health.colorReaction = HealthBarDB.ColourByReaction
+        unitFrame.Health.colorReaction = HealthBarDB.ColourByClass and HealthBarDB.ColourByReaction
+        unitFrame.Health.colorHealth = not HealthBarDB.ColourByClass
         unitFrame.Health.colorTapping = HealthBarDB.ColourWhenTapped
         unitFrame.Health.colorDisconnected = HealthBarDB.ColourWhenDisconnected
         unitFrame.Health.smoothing = HealthBarDB.Smooth ~= false and StatusBarInterpolation.ExponentialEaseOut or StatusBarInterpolation.Immediate
