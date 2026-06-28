@@ -41,6 +41,9 @@ end
 function UUF:LayoutRaidFrames()
 	local Frame = UUF.db.profile.Units.raid.Frame
 	if not UUF.RAID_CONTAINER then return end
+	UUF.RAID_CONTAINER:ClearAllPoints()
+	UUF.RAID_CONTAINER:SetPoint(Frame.Layout[1], UIParent, Frame.Layout[2], Frame.Layout[3], Frame.Layout[4])
+	UUF.RAID_CONTAINER:SetFrameStrata(Frame.FrameStrata)
 
 	local shownGroups = 0
 	for groupIndex = 1, UUF.MAX_RAID_GROUPS do
@@ -114,8 +117,8 @@ local function SortPartyFrames(firstFrame, secondFrame)
 	if Frame.SortBy == "NAME" then
 		return (UnitName(firstFrame.unit) or firstFrame.unit or "") < (UnitName(secondFrame.unit) or secondFrame.unit or "")
 	elseif Frame.SortBy == "ROLE" then
-		local firstRole = UnitGroupRolesAssigned(firstFrame.unit)
-		local secondRole = UnitGroupRolesAssigned(secondFrame.unit)
+		local firstRole = UUF.PARTY_TEST_MODE and firstFrame.testRole or UnitGroupRolesAssigned(firstFrame.unit)
+		local secondRole = UUF.PARTY_TEST_MODE and secondFrame.testRole or UnitGroupRolesAssigned(secondFrame.unit)
 		local firstRoleOrder = 99
 		local secondRoleOrder = 99
 		for index, orderedRole in ipairs(Frame.RoleOrder or {}) do
@@ -130,6 +133,9 @@ end
 function UUF:LayoutPartyFrames()
 	local Frame = UUF.db.profile.Units.party.Frame
 	if not UUF.PARTY_CONTAINER or #UUF.PARTY_FRAMES == 0 then return end
+	UUF.PARTY_CONTAINER:ClearAllPoints()
+	UUF.PARTY_CONTAINER:SetPoint(Frame.Layout[1], UIParent, Frame.Layout[2], Frame.Layout[3], Frame.Layout[4])
+	UUF.PARTY_CONTAINER:SetFrameStrata(Frame.FrameStrata)
 	local partyFrames = {}
 	for _, partyFrame in ipairs(UUF.PARTY_FRAMES) do
 		partyFrames[#partyFrames + 1] = partyFrame
@@ -242,7 +248,7 @@ function UUF:UpdatePartyFrames()
 	end
 	if UUF.PARTYPLAYER then UUF:UpdateUnitFrame(UUF.PARTYPLAYER, "partyplayer") end
 	UUF:LayoutPartyFrames()
-	if UUF.PARTY_TEST_MODE then UUF:CreateTestGroupFrames("party") end
+	if UUF.PARTY_TEST_MODE then UUF:UpdateTestEnvironment("party", "all") end
 end
 
 function UUF:RefreshGroupFrame(unitFrame, unit)
@@ -318,7 +324,7 @@ function UUF:UpdateRaidFrames()
 	end
 
 	UUF:LayoutRaidFrames()
-	if UUF.RAID_TEST_MODE then UUF:CreateTestGroupFrames("raid") end
+	if UUF.RAID_TEST_MODE then UUF:UpdateTestEnvironment("raid", "all") end
 end
 
 local PartyRosterEventFrame = CreateFrame("Frame")

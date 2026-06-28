@@ -192,7 +192,7 @@ function UUF:UpdateBossFrames()
     for i in pairs(UUF.BOSS_FRAMES) do
         UUF:UpdateUnitFrame(UUF["BOSS"..i], "boss"..i)
     end
-    UUF:CreateTestBossFrames()
+	UUF:UpdateTestEnvironment("boss", "all")
     UUF:LayoutBossFrames()
 end
 
