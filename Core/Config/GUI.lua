@@ -748,6 +748,8 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
         local GrowthDirectionDropdown = AG:Create("Dropdown")
         if unit == "raid" then
             GrowthDirectionDropdown:SetList(RaidGrowthDirectionList[1], RaidGrowthDirectionList[2])
+        elseif unit == "party" then
+            GrowthDirectionDropdown:SetList({["UP"] = "Up", ["DOWN"] = "Down", ["LEFT"] = "Left", ["RIGHT"] = "Right"}, {"UP", "DOWN", "LEFT", "RIGHT"})
         else
             GrowthDirectionDropdown:SetList({["UP"] = "Up", ["DOWN"] = "Down"})
         end

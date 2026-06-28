@@ -135,16 +135,23 @@ function UUF:LayoutPartyFrames()
 		partyFrames[#partyFrames + 1] = partyFrame
 	end
 	table.sort(partyFrames, SortPartyFrames)
+	local frameWidth = Frame.Width
 	local frameHeight = Frame.Height
 	local spacing = Frame.Layout[5] or 0
-	local containerHeight = (frameHeight + spacing) * #partyFrames - spacing
-	UUF.PARTY_CONTAINER:SetSize(Frame.Width, math.max(containerHeight, frameHeight))
+	local horizontal = Frame.GrowthDirection == "LEFT" or Frame.GrowthDirection == "RIGHT"
+	local containerWidth = horizontal and (frameWidth + spacing) * #partyFrames - spacing or frameWidth
+	local containerHeight = horizontal and frameHeight or (frameHeight + spacing) * #partyFrames - spacing
+	UUF.PARTY_CONTAINER:SetSize(math.max(containerWidth, frameWidth), math.max(containerHeight, frameHeight))
 	for index, partyFrame in ipairs(partyFrames) do
 		partyFrame:ClearAllPoints()
-		partyFrame:SetSize(Frame.Width, Frame.Height)
+		partyFrame:SetSize(frameWidth, frameHeight)
 		partyFrame:SetFrameStrata(Frame.FrameStrata)
 		if Frame.GrowthDirection == "UP" then
 			partyFrame:SetPoint("BOTTOMLEFT", UUF.PARTY_CONTAINER, "BOTTOMLEFT", 0, (index - 1) * (frameHeight + spacing))
+		elseif Frame.GrowthDirection == "LEFT" then
+			partyFrame:SetPoint("TOPRIGHT", UUF.PARTY_CONTAINER, "TOPRIGHT", -((index - 1) * (frameWidth + spacing)), 0)
+		elseif Frame.GrowthDirection == "RIGHT" then
+			partyFrame:SetPoint("TOPLEFT", UUF.PARTY_CONTAINER, "TOPLEFT", (index - 1) * (frameWidth + spacing), 0)
 		else
 			partyFrame:SetPoint("TOPLEFT", UUF.PARTY_CONTAINER, "TOPLEFT", 0, -((index - 1) * (frameHeight + spacing)))
 		end
