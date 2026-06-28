@@ -270,9 +270,8 @@ local function ApplyTestGroupFrame(unitFrame, unit, index, displayName, element)
 			UUF.AURA_TEST_MODE = false
 			UUF:UpdateUnitAuras(unitFrame, unit)
 		end
-		UUF.AURA_TEST_MODE = true
-		UUF:CreateTestAuras(unitFrame, unit)
 		UUF.AURA_TEST_MODE = auraTestMode
+		UUF:CreateTestAuras(unitFrame, unit)
 	end
 	if updateAll or element == "Tags" then
 		for tagIndex, tagName in ipairs(TestTagOrder) do ApplyTestTag(unitFrame.Tags and unitFrame.Tags[tagName], unitFrame, TagsDB[tagName], tagIndex == 1 and displayName or "Tag " .. tagIndex) end
@@ -522,9 +521,8 @@ local function UpdateBossTestEnvironment(element)
 					UUF.AURA_TEST_MODE = false
 					UUF:UpdateUnitAuras(BossFrame, "boss" .. i)
 				end
-				UUF.AURA_TEST_MODE = true
-				UUF:CreateTestAuras(BossFrame, "boss" .. i)
 				UUF.AURA_TEST_MODE = auraTestMode
+				UUF:CreateTestAuras(BossFrame, "boss" .. i)
 			end
 
 			if (updateAll or element == "Indicators") and BossFrame.TargetIndicator then

@@ -176,14 +176,8 @@ local RoleTextures = {
 
 local function EnableAurasTestMode(unit)
 	UUF.AURA_TEST_MODE = true
-	if unit == "party" then
-		for i = 1, UUF.MAX_PARTY_FRAMES do if UUF["PARTY" .. i] then UUF:CreateTestAuras(UUF["PARTY" .. i], "party" .. i) end end
-		if UUF.PARTYPLAYER then UUF:CreateTestAuras(UUF.PARTYPLAYER, "partyplayer") end
-	elseif unit == "raid" then
-		for _, raidFrame in ipairs(UUF.RAID_FRAMES) do
-			local raidUnit = raidFrame and (raidFrame.unit or raidFrame:GetAttribute("unit"))
-			if raidUnit then UUF:CreateTestAuras(raidFrame, raidUnit) end
-		end
+	if unit == "party" or unit == "raid" or unit == "boss" then
+		UUF:UpdateTestEnvironment(unit, "Auras")
 	else
 		UUF:CreateTestAuras(UUF[unit:upper()], unit)
 	end
@@ -191,14 +185,8 @@ end
 
 local function DisableAurasTestMode(unit)
 	UUF.AURA_TEST_MODE = false
-	if unit == "party" then
-		for i = 1, UUF.MAX_PARTY_FRAMES do if UUF["PARTY" .. i] then UUF:CreateTestAuras(UUF["PARTY" .. i], "party" .. i) end end
-		if UUF.PARTYPLAYER then UUF:CreateTestAuras(UUF.PARTYPLAYER, "partyplayer") end
-	elseif unit == "raid" then
-		for _, raidFrame in ipairs(UUF.RAID_FRAMES) do
-			local raidUnit = raidFrame and (raidFrame.unit or raidFrame:GetAttribute("unit"))
-			if raidUnit then UUF:CreateTestAuras(raidFrame, raidUnit) end
-		end
+	if unit == "party" or unit == "raid" or unit == "boss" then
+		UUF:UpdateTestEnvironment(unit, "Auras")
 	else
 		UUF:CreateTestAuras(UUF[unit:upper()], unit)
 	end
@@ -3658,19 +3646,26 @@ end
 
 local function CreateAuraSettings(containerParent, unit)
     local AurasDB = UUF.db.profile.Units[unit].Auras
+
+    local ShowAurasButton = AG:Create("Button")
+	ShowAurasButton:SetText(UUF.AURA_TEST_MODE and "Hide Auras" or "Show Auras")
+	ShowAurasButton:SetRelativeWidth(0.5)
+	ShowAurasButton:SetCallback("OnClick", function()
+		if UUF.AURA_TEST_MODE then DisableAurasTestMode(unit) else EnableAurasTestMode(unit) end
+		ShowAurasButton:SetText(UUF.AURA_TEST_MODE and "Hide Auras" or "Show Auras")
+	end)
+	containerParent:AddChild(ShowAurasButton)
+
     local FrameStrataDropdown = AG:Create("Dropdown")
     FrameStrataDropdown:SetList(FrameStrataList[1], FrameStrataList[2])
     FrameStrataDropdown:SetLabel("Frame Strata")
     FrameStrataDropdown:SetValue(AurasDB.FrameStrata)
-    FrameStrataDropdown:SetRelativeWidth(1)
+    FrameStrataDropdown:SetRelativeWidth(0.5)
     FrameStrataDropdown:SetCallback("OnValueChanged", function(_, _, value) AurasDB.FrameStrata = value UpdateUnitSettings(unit, function() UUF:UpdateUnitAurasStrata(unit) end, "Auras") end)
     containerParent:AddChild(FrameStrataDropdown)
 
     local function SelectAuraTab(AuraContainer, _, AuraTab)
         SaveSubTab(unit, "Auras", AuraTab)
-        UUF.PRIVATE_AURA_TEST_MODE = UUF.PRIVATE_AURA_TEST_MODE or {}
-        UUF.PRIVATE_AURA_TEST_MODE[unit] = AuraTab == "PrivateAuras"
-        if UUF.AURA_TEST_MODE then EnableAurasTestMode(unit) end
         AuraContainer:ReleaseChildren()
         if AuraTab == "Buffs" then
             CreateSpecificAuraSettings(AuraContainer, unit, "Buffs")
@@ -4045,7 +4040,6 @@ local function CreateUnitSettings(containerParent, unit)
         elseif UnitTab == "Tags" then
             CreateTagsSettings(SubContainer, unit)
         end
-        if UnitTab == "Auras" then EnableAurasTestMode(unit) else DisableAurasTestMode(unit) end
         if UnitTab == "CastBar" then EnableCastBarTestMode(unit) else DisableCastBarTestMode(unit) end
 		if unit == "party" and UUF.PARTY_TEST_MODE or unit == "raid" and UUF.RAID_TEST_MODE then UUF:UpdateTestEnvironment(unit, "all") end
         containerParent:DoLayout()

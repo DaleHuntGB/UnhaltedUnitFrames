@@ -311,14 +311,9 @@ function UUF:CreateTestCastBar(unitFrame, unit)
             if maxChars and maxChars > 0 then spellName = string.format("%." .. maxChars .. "s", spellName) end
             spellName = UUF:CleanTruncateUTF8String(spellName)
             if CastBarDB.ShowTarget then unitFrame.Castbar.Text:SetFormattedText("%s » %s", spellName, "Target") else unitFrame.Castbar.Text:SetText(spellName) end
-            unitFrame.Castbar.Time:SetText("0.0")
+            unitFrame.Castbar.Time:SetText("2.5")
             unitFrame.Castbar:SetMinMaxValues(0, 1000)
-            unitFrame.Castbar.testValue = 0
-            unitFrame.Castbar:SetScript("OnUpdate", function(self, elapsed)
-                self.testValue = ((self.testValue or 0) + elapsed) % 5
-                self:SetValue((self.testValue / 5) * 1000)
-                self.Time:SetText(string.format("%.1f", self.testValue))
-            end)
+            unitFrame.Castbar:SetValue(500)
             if CastBarDB.ColourByClass then
                 local unitForClass = unit == "pet" and "player" or unit
                 local unitClass = select(2, UnitClass(unitForClass))
@@ -339,7 +334,6 @@ function UUF:CreateTestCastBar(unitFrame, unit)
         end
     else
         if unitFrame.Castbar then
-            unitFrame.Castbar:SetScript("OnUpdate", nil)
             unitFrame.Castbar:Hide()
             if CastBarContainer then CastBarContainer:Hide() end
             if CastBarDB.Enabled then

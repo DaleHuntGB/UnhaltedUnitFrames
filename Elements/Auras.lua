@@ -518,10 +518,9 @@ function UUF:CreateTestAuras(unitFrame, unit)
         if unitFrame:IsElementEnabled("Auras") then unitFrame:DisableElement("Auras") end
         if unitFrame:IsElementEnabled("CustomAuras") then unitFrame:DisableElement("CustomAuras") end
 
-		local showPrivateAuras = UUF.PRIVATE_AURA_TEST_MODE and UUF.PRIVATE_AURA_TEST_MODE[UUF:GetNormalizedUnit(unit)]
 		if unitFrame.PrivateAuraContainer and AurasDB.PrivateAuras then
 			local PrivateAurasDB = AurasDB.PrivateAuras
-			if PrivateAurasDB.Enabled and showPrivateAuras then
+			if PrivateAurasDB.Enabled then
 				unitFrame.PrivateAuraContainer:Show()
 
 				for j = 1, PrivateAurasDB.Num do
