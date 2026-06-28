@@ -66,7 +66,7 @@ local CooldownBreakpointStyles = {
 local CooldownBreakpointSettings = {
     decimalSeconds = {step = 0.1, rounding = Enum.NumericRuleFormatRounding.Up, format = "%.1f"},
     seconds = {step = 1, rounding = Enum.NumericRuleFormatRounding.Up, format = "%ds"},
-    secondsOnly = {step = 1, rounding = Enum.NumericRuleFormatRounding.Up, format = "%d"},
+    secondsOnly = {step = 1, rounding = Enum.NumericRuleFormatRounding.Up, min = 1, format = "%d"},
     clock = {step = 1, rounding = Enum.NumericRuleFormatRounding.Up, format = "%d:%02d"},
     minutes = {step = 1, rounding = Enum.NumericRuleFormatRounding.Up, format = "%dm"},
     hours = {step = 1, rounding = Enum.NumericRuleFormatRounding.Up, format = "%dh"},
@@ -3825,6 +3825,7 @@ local function CreateCooldownTextSettings(containerParent)
             BreakpointDB.displayStyle = value
             BreakpointDB.step = DisplayStyleDB.step
             BreakpointDB.rounding = DisplayStyleDB.rounding
+            BreakpointDB.min = DisplayStyleDB.min
             BreakpointDB.format = CreateColor(unpack(BreakpointDB.color)):WrapTextInColorCode(DisplayStyleDB.format)
             BreakpointDB.components = UUF:GetCooldownDurationComponents(value, BreakpointDB.threshold or 0)
             UUF:UpdateAllUnitFrames()

@@ -33,7 +33,7 @@ local Defaults = {
                 ScaleByIconSize = false,
                 CooldownBreakpoints = {
                     {threshold = 0, displayStyle = "decimalSeconds", step = 0.1, rounding = Enum.NumericRuleFormatRounding.Up, format = "|cffffffff%.1f|r", color = {1, 1, 1, 1}},
-                    {threshold = 3, displayStyle = "secondsOnly", step = 1, rounding = Enum.NumericRuleFormatRounding.Up, format = "|cffffffff%d|r", color = {1, 1, 1, 1}},
+                    {threshold = 3, displayStyle = "secondsOnly", step = 1, rounding = Enum.NumericRuleFormatRounding.Up, min = 1, format = "|cffffffff%d|r", color = {1, 1, 1, 1}},
                     {threshold = 60, displayStyle = "clock", step = 1, rounding = Enum.NumericRuleFormatRounding.Up, format = "|cffffffff%d:%02d|r", color = {1, 1, 1, 1}, components = {{div = 60}, {mod = 60}}},
                     {threshold = 120, displayStyle = "minutes", step = 1, rounding = Enum.NumericRuleFormatRounding.Up, format = "|cffffffff%dm|r", color = {1, 1, 1, 1}, components = {{div = 60}}},
                     {threshold = 3600, displayStyle = "hours", step = 1, rounding = Enum.NumericRuleFormatRounding.Up, format = "|cffffffff%dh|r", color = {1, 1, 1, 1}, components = {{div = 3600}}},

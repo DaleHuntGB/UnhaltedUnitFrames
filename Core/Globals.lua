@@ -190,6 +190,9 @@ end
 function UUF:ApplyCooldownText(icon, textRegion, unit)
     if not icon then return end
     local CooldownTextDB = UUF.db.profile.General.CooldownText
+    for _, breakpoint in ipairs(CooldownTextDB.CooldownBreakpoints) do
+        if breakpoint.displayStyle == "secondsOnly" then breakpoint.min = 1 end
+    end
     if icon.SetCountdownFormatter then
         CooldownDurationFormatter:SetBreakpoints(CooldownTextDB.CooldownBreakpoints)
         icon:SetCountdownFormatter(CooldownDurationFormatter)
