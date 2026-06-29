@@ -1,3 +1,5 @@
+## V12.0.26
+- Hopefully fix Pet Frames not being Class Coloured.
 ## V12.0.25
 - Add Party / Raid Frames.
 - Indicators:
