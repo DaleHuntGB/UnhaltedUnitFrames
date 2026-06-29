@@ -91,8 +91,6 @@ local RaidGrowthDirectionList = {
     },
     {"RIGHT_DOWN", "RIGHT_UP", "LEFT_DOWN", "LEFT_UP", "UP_RIGHT", "UP_LEFT", "DOWN_RIGHT", "DOWN_LEFT"},
 }
-local RaidGroupsList = {{[1] = "Group 1", [2] = "Group 2", [3] = "Group 3", [4] = "Group 4", [5] = "Group 5", [6] = "Group 6", [7] = "Group 7", [8] = "Group 8"}, {1, 2, 3, 4, 5, 6, 7, 8}}
-
 local Power = {
     [0] = "Mana",
     [1] = "Rage",
@@ -772,14 +770,25 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
 
     if unit == "raid" then
         FrameDB.Groups = FrameDB.Groups or {}
-        local GroupsDropdown = AG:Create("Dropdown")
-        GroupsDropdown:SetLabel("Groups To Show")
-        GroupsDropdown:SetMultiselect(true)
-        GroupsDropdown:SetList(RaidGroupsList[1], RaidGroupsList[2])
-        GroupsDropdown:SetRelativeWidth(0.33)
-        for groupIndex = 1, UUF.MAX_RAID_GROUPS do GroupsDropdown:SetItemValue(groupIndex, FrameDB.Groups[groupIndex]) end
-        GroupsDropdown:SetCallback("OnValueChanged", function(_, _, groupIndex, value) FrameDB.Groups[tonumber(groupIndex)] = value updateCallback("Frame") end)
-        LayoutContainer:AddChild(GroupsDropdown)
+        local AutoAdjustGroupsToggle = AG:Create("CheckBox")
+        AutoAdjustGroupsToggle:SetLabel("Groups Per Difficulty")
+        AutoAdjustGroupsToggle:SetValue(FrameDB.AutoAdjustGroups)
+        AutoAdjustGroupsToggle:SetRelativeWidth(0.33)
+        AutoAdjustGroupsToggle:SetCallback("OnEnter", function() GameTooltip:SetOwner(AutoAdjustGroupsToggle.frame, "ANCHOR_CURSOR") GameTooltip:AddLine("Automatically adjusts visible raid groups for the current difficulty.\n\n|cFF8080FFNormal / Heroic:|r Groups 1 - 6\n|cFF8080FFMythic:|r Groups 1 - 4\n|cFF8080FFMythic Flex:|r Groups 1 - 5", 1, 1, 1, true) GameTooltip:Show() end)
+        AutoAdjustGroupsToggle:SetCallback("OnLeave", function() GameTooltip:Hide() end)
+        LayoutContainer:AddChild(AutoAdjustGroupsToggle)
+
+        local GroupsContainer = GUIWidgets.CreateInlineGroup(LayoutContainer, "Groups To Show")
+        for groupIndex = 1, UUF.MAX_RAID_GROUPS do
+            local GroupToggle = AG:Create("CheckBox")
+            GroupToggle:SetLabel("Group " .. groupIndex)
+            GroupToggle:SetValue(FrameDB.Groups[groupIndex])
+            GroupToggle:SetRelativeWidth(0.25)
+            GroupToggle:SetCallback("OnValueChanged", function(_, _, value) FrameDB.Groups[groupIndex] = value updateCallback("Frame") end)
+            GroupsContainer:AddChild(GroupToggle)
+        end
+        GUIWidgets.DeepDisable(GroupsContainer, FrameDB.AutoAdjustGroups)
+        AutoAdjustGroupsToggle:SetCallback("OnValueChanged", function(_, _, value) FrameDB.AutoAdjustGroups = value GUIWidgets.DeepDisable(GroupsContainer, value) updateCallback("Frame") end)
     end
 
     if unit == "party" then

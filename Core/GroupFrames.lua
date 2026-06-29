@@ -41,13 +41,15 @@ end
 function UUF:LayoutRaidFrames()
 	local Frame = UUF.db.profile.Units.raid.Frame
 	if not UUF.RAID_CONTAINER then return end
+	local _, _, difficultyID = GetInstanceInfo()
+	local autoGroupCount = Frame.AutoAdjustGroups and ((difficultyID == 14 or difficultyID == 15) and 6 or difficultyID == 16 and 4 or difficultyID == 233 and 5 or 8)
 	UUF.RAID_CONTAINER:ClearAllPoints()
 	UUF.RAID_CONTAINER:SetPoint(Frame.Layout[1], UIParent, Frame.Layout[2], Frame.Layout[3], Frame.Layout[4])
 	UUF.RAID_CONTAINER:SetFrameStrata(Frame.FrameStrata)
 
 	local shownGroups = 0
 	for groupIndex = 1, UUF.MAX_RAID_GROUPS do
-		if not Frame.Groups or Frame.Groups[groupIndex] then shownGroups = shownGroups + 1 end
+		if autoGroupCount and groupIndex <= autoGroupCount or not autoGroupCount and (not Frame.Groups or Frame.Groups[groupIndex]) then shownGroups = shownGroups + 1 end
 	end
 
 	local unitGrowth, groupGrowth = (Frame.GrowthDirection or "RIGHT_DOWN"):match("^(%a+)_(%a+)$")
@@ -66,7 +68,7 @@ function UUF:LayoutRaidFrames()
 
 	local shownGroupIndex = 0
 	for groupIndex, header in ipairs(UUF.RAID_HEADERS) do
-		local showGroup = not Frame.Groups or Frame.Groups[groupIndex]
+		local showGroup = autoGroupCount and groupIndex <= autoGroupCount or not autoGroupCount and (not Frame.Groups or Frame.Groups[groupIndex])
 		header:SetAttribute("groupFilter", showGroup and tostring(groupIndex) or "0")
 		if showGroup then
 			shownGroupIndex = shownGroupIndex + 1
@@ -331,6 +333,9 @@ local PartyRosterEventFrame = CreateFrame("Frame")
 PartyRosterEventFrame:RegisterEvent("ADDON_LOADED")
 PartyRosterEventFrame:RegisterEvent("GROUP_ROSTER_UPDATE")
 PartyRosterEventFrame:RegisterEvent("PLAYER_ROLES_ASSIGNED")
+PartyRosterEventFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
+PartyRosterEventFrame:RegisterEvent("PLAYER_DIFFICULTY_CHANGED")
+PartyRosterEventFrame:RegisterEvent("ZONE_CHANGED_NEW_AREA")
 PartyRosterEventFrame:SetScript("OnEvent", function(_, event, addonName)
 	if not UUF.db then return end
 	if event == "ADDON_LOADED" then
@@ -345,6 +350,8 @@ PartyRosterEventFrame:SetScript("OnEvent", function(_, event, addonName)
 		UUF:RefreshRaidFrames()
 	elseif event == "PLAYER_ROLES_ASSIGNED" then
 		UUF:RefreshGroupRoles()
+	elseif event == "PLAYER_ENTERING_WORLD" or event == "PLAYER_DIFFICULTY_CHANGED" or event == "ZONE_CHANGED_NEW_AREA" then
+		if UUF.db.profile.Units.raid.Frame.AutoAdjustGroups then UUF:LayoutRaidFrames() end
 	elseif event == "PLAYER_REGEN_ENABLED" then
 		if UUF.db.profile.Units.raid and UUF.db.profile.Units.raid.ForceHideBlizzard then UUF:HideBlizzardRaidFrames() end
 		UUF:RefreshPartyFrames()
