@@ -262,6 +262,8 @@ function UUF:RefreshGroupFrame(unitFrame, unit)
 		unitFrame.UUFGroupUnit = unit
 		if unitFrame.DispelHighlight then UUF:UpdateUnitDispelHighlight(unitFrame, unit) end
 	end
+	if unitFrame.Health then unitFrame.Health:ForceUpdate() end
+	if unitFrame.UpdateTags then unitFrame:UpdateTags() end
 	UUF:UpdateUnitPowerBar(unitFrame, unit)
 	UUF:UpdateUnitRoleIndicator(unitFrame, unit)
 end
