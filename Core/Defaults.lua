@@ -91,7 +91,7 @@ local Defaults = {
                 Status = {
                     Tapped = {0.6, 0.6, 0.6},
                     Disconnected = {0.6, 0.6, 0.6},
-                    DeadBackdrop = {0.2, 0.2, 0.2},
+                    DeadBackdrop = {1, 0.25, 0.25},
                 },
                 Threat = {
                     [0] = {0.69, 0.69, 0.69},
