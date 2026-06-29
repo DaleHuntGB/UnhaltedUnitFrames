@@ -109,6 +109,7 @@ local function CreatePip(element)
 end
 
 local function UpdatePips(element, stages)
+	if(not stages) then return end
 	local isHoriz = element:GetOrientation() == 'HORIZONTAL'
 	local elementSize = isHoriz and element:GetWidth() or element:GetHeight()
 
