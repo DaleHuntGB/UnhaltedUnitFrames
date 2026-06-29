@@ -44,17 +44,19 @@ function UUF:CreateUnitHealthBar(unitFrame, unit)
         HealthBar.colorDisconnected = HealthBarDB.ColourWhenDisconnected
         HealthBar.smoothing = HealthBarDB.Smooth ~= false and StatusBarInterpolation.ExponentialEaseOut or StatusBarInterpolation.Immediate
         HealthBar.UUFHealthBarDB = HealthBarDB
-        HealthBar.PostUpdateColor = function(healthBar, _, colour) if not colour or colour == oUF.colors.health then healthBar:SetStatusBarColor(healthBar.UUFHealthBarDB.Foreground[1], healthBar.UUFHealthBarDB.Foreground[2], healthBar.UUFHealthBarDB.Foreground[3], healthBar.UUFHealthBarDB.ForegroundOpacity) end end
+		HealthBar.PostUpdateColor = function(healthBar, colourUnit, colour)
+			if colour and colour ~= oUF.colors.health then return end
+			if colourUnit == "pet" and healthBar.UUFHealthBarDB.ColourByClass then
+				local unitColour = RAID_CLASS_COLORS[select(2, UnitClass("player"))]
+				if unitColour then healthBar:SetStatusBarColor(unitColour.r, unitColour.g, unitColour.b, healthBar.UUFHealthBarDB.ForegroundOpacity) return end
+			end
+			healthBar:SetStatusBarColor(healthBar.UUFHealthBarDB.Foreground[1], healthBar.UUFHealthBarDB.Foreground[2], healthBar.UUFHealthBarDB.Foreground[3], healthBar.UUFHealthBarDB.ForegroundOpacity)
+		end
 
         if unit == "pet" and HealthBarDB.ColourByClass then
             HealthBar.colorClass = false
             HealthBar.colorReaction = false
             HealthBar.colorHealth = false
-            local unitClass = select(2, UnitClass("player"))
-            local unitColor = RAID_CLASS_COLORS[unitClass]
-            if unitColor then
-                HealthBar:SetStatusBarColor(unitColor.r, unitColor.g, unitColor.b, HealthBarDB.ForegroundOpacity)
-            end
         end
 
         unitFrame.Health = HealthBar
@@ -113,11 +115,6 @@ function UUF:UpdateUnitHealthBar(unitFrame, unit)
             unitFrame.Health.colorClass = false
             unitFrame.Health.colorReaction = false
             unitFrame.Health.colorHealth = false
-            local unitClass = select(2, UnitClass("player"))
-            local unitColor = RAID_CLASS_COLORS[unitClass]
-            if unitColor then
-                unitFrame.Health:SetStatusBarColor(unitColor.r, unitColor.g, unitColor.b, HealthBarDB.ForegroundOpacity)
-            end
         end
     end
 
