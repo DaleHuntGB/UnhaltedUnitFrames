@@ -73,7 +73,7 @@ function UUF:UpdateUnitTags(unit, tagName)
 		UpdateFrameTags(UUF.PARTYPLAYER, "partyplayer")
 	elseif unit == "raid" then
 		for _, raidFrame in ipairs(UUF.RAID_FRAMES) do
-			local raidUnit = raidFrame and raidFrame:GetAttribute("unit")
+			local raidUnit = raidFrame and (raidFrame:GetAttribute("unit") or raidFrame.UUFConfiguredUnit)
 			if raidUnit then UpdateFrameTags(raidFrame, raidUnit) end
 		end
 	else

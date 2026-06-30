@@ -69,21 +69,26 @@ function UUF:LayoutRaidFrames()
 	local shownGroupIndex = 0
 	for groupIndex, header in ipairs(UUF.RAID_HEADERS) do
 		local showGroup = autoGroupCount and groupIndex <= autoGroupCount or not autoGroupCount and (not Frame.Groups or Frame.Groups[groupIndex])
+		if showGroup then shownGroupIndex = shownGroupIndex + 1 end
+		for childIndex = 1, UUF.MAX_RAID_FRAMES_PER_GROUP do
+			local child = header:GetAttribute("child" .. childIndex)
+			if child then child:ClearAllPoints() end
+		end
+		header:SetAttribute("point", point)
+		header:SetAttribute("xOffset", unitXOffset)
+		header:SetAttribute("yOffset", unitYOffset)
+		header:SetAttribute("initial-width", Frame.Width)
+		header:SetAttribute("initial-height", Frame.Height)
+		header:SetAttribute("oUF-initialConfigFunction", ("self:SetWidth(%s); self:SetHeight(%s)"):format(Frame.Width, Frame.Height))
+		header:SetAttribute("unitsPerColumn", UUF.MAX_RAID_FRAMES_PER_GROUP)
+		header:SetAttribute("maxColumns", 1)
+		header:SetAttribute("sortMethod", Frame.SortBy == "INDEX" and "INDEX" or nil)
 		header:SetAttribute("groupFilter", showGroup and tostring(groupIndex) or "0")
 		if showGroup then
-			shownGroupIndex = shownGroupIndex + 1
 			header:Show()
 		else
 			header:Hide()
 		end
-		header:SetAttribute("initial-width", Frame.Width)
-		header:SetAttribute("initial-height", Frame.Height)
-		header:SetAttribute("point", point)
-		header:SetAttribute("xOffset", unitXOffset)
-		header:SetAttribute("yOffset", unitYOffset)
-		header:SetAttribute("unitsPerColumn", UUF.MAX_RAID_FRAMES_PER_GROUP)
-		header:SetAttribute("maxColumns", 1)
-		header:SetAttribute("sortMethod", Frame.SortBy == "INDEX" and "INDEX" or nil)
 		header:SetFrameStrata(Frame.FrameStrata)
 		header:SetSize(headerWidth, headerHeight)
 		header:ClearAllPoints()
@@ -312,13 +317,21 @@ function UUF:UpdateRaidFrames()
 
 	for _, raidFrame in ipairs(UUF.RAID_FRAMES) do
 		local useFrame = raidFrame and (not raidFrame.isTestFrame or UUF.RAID_TEST_MODE)
-		local unit = useFrame and (raidFrame:GetAttribute("unit") or (raidFrame.isTestFrame and "raid" .. raidFrame.testIndex))
-		if unit and unit ~= "raid" then
+		local assignedUnit = useFrame and raidFrame:GetAttribute("unit")
+		local unit = assignedUnit or (useFrame and raidFrame.UUFConfiguredUnit) or (raidFrame.isTestFrame and "raid" .. raidFrame.testIndex)
+		if useFrame and unit and unit ~= "raid" then
 			raidFrame:SetSize(UnitDB.Frame.Width, UnitDB.Frame.Height)
 			raidFrame:SetFrameStrata(UnitDB.Frame.FrameStrata)
 			if raidFrame.DispelHighlightUnit and raidFrame.DispelHighlightUnit ~= unit then UUF:UnregisterDispelHighlightEvents(raidFrame) end
 			UUF:UpdateUnitFrame(raidFrame, unit)
-			raidFrame.UUFGroupUnit = unit
+			if assignedUnit then
+				raidFrame.UUFGroupUnit = assignedUnit
+			else
+				UUF:UnregisterRangeFrame(raidFrame)
+				UUF:UnregisterTargetGlowIndicatorFrame(raidFrame)
+				if raidFrame.DispelHighlightUnit then UUF:UnregisterDispelHighlightEvents(raidFrame) end
+				raidFrame.UUFGroupUnit = nil
+			end
 		elseif raidFrame then
 			UUF:UnregisterRangeFrame(raidFrame)
 			UUF:UnregisterTargetGlowIndicatorFrame(raidFrame)

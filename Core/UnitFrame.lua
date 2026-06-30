@@ -47,6 +47,7 @@ function UUF:CreateUnitFrame(unitFrame, unit)
     UUF:CreateUnitAuras(unitFrame, unit)
     UUF:CreateUnitTags(unitFrame, unit)
 	if isRaid then
+		unitFrame.UUFConfiguredUnit = unit
 		unitFrame:HookScript("OnAttributeChanged", function(frame, attribute, value)
 			if attribute == "unit" and value and UUF.RefreshGroupFrame then UUF:RefreshGroupFrame(frame, value) end
 		end)
