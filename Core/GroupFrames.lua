@@ -24,6 +24,16 @@ function UUF:RegisterRaidFrame(unitFrame)
 	UUF.RAID_FRAMES[#UUF.RAID_FRAMES + 1] = unitFrame
 end
 
+function UUF:ForEachRaidFrame(callback, includeInactive, includeTestFrames, ...)
+	for _, raidFrame in ipairs(UUF.RAID_FRAMES) do
+		if raidFrame and (not raidFrame.isTestFrame or includeTestFrames) then
+			local assignedUnit = raidFrame:GetAttribute("unit")
+			local unit = assignedUnit or includeInactive and (raidFrame.isTestFrame and "raid" .. raidFrame.testIndex or raidFrame.UUFConfiguredUnit)
+			callback(raidFrame, unit, assignedUnit, ...)
+		end
+	end
+end
+
 function UUF:CreateRaidContainer()
 	local Frame = UUF.db.profile.Units.raid.Frame
 	if not UUF.RAID_CONTAINER then
@@ -280,31 +290,35 @@ function UUF:RefreshPartyFrames()
 	UUF:LayoutPartyFrames()
 end
 
+local function ClearRaidFrameUnit(raidFrame)
+	UUF:UnregisterRangeFrame(raidFrame)
+	UUF:UnregisterTargetGlowIndicatorFrame(raidFrame)
+	if raidFrame.DispelHighlightUnit then UUF:UnregisterDispelHighlightEvents(raidFrame) end
+	raidFrame.UUFGroupUnit = nil
+end
+
+local function RefreshRaidFrame(raidFrame, unit, _, clearInactive)
+	if unit and unit ~= "raid" then UUF:RefreshGroupFrame(raidFrame, unit) elseif clearInactive then ClearRaidFrameUnit(raidFrame) end
+end
+
 function UUF:RefreshRaidFrames()
 	if not UUF.db.profile.Units.raid.Enabled then return end
-	for _, raidFrame in ipairs(UUF.RAID_FRAMES) do
-		local useFrame = raidFrame and (not raidFrame.isTestFrame or UUF.RAID_TEST_MODE)
-		local unit = useFrame and raidFrame:GetAttribute("unit")
-		if unit and unit ~= "raid" then
-			UUF:RefreshGroupFrame(raidFrame, unit)
-		elseif raidFrame then
-			UUF:UnregisterRangeFrame(raidFrame)
-			UUF:UnregisterTargetGlowIndicatorFrame(raidFrame)
-			if raidFrame.DispelHighlightUnit then UUF:UnregisterDispelHighlightEvents(raidFrame) end
-			raidFrame.UUFGroupUnit = nil
-		end
-	end
+	UUF:ForEachRaidFrame(RefreshRaidFrame, false, UUF.RAID_TEST_MODE, true)
 	UUF:LayoutRaidFrames()
 end
 
 function UUF:RefreshGroupRoles()
 	UUF:RefreshPartyFrames()
-	if UUF.db.profile.Units.raid.Enabled then
-		for _, raidFrame in ipairs(UUF.RAID_FRAMES) do
-			local unit = raidFrame and not raidFrame.isTestFrame and raidFrame:GetAttribute("unit")
-			if unit and unit ~= "raid" then UUF:RefreshGroupFrame(raidFrame, unit) end
-		end
-	end
+	if UUF.db.profile.Units.raid.Enabled then UUF:ForEachRaidFrame(RefreshRaidFrame, false, false, false) end
+end
+
+local function UpdateRaidFrame(raidFrame, unit, assignedUnit, UnitDB)
+	if not unit or unit == "raid" then ClearRaidFrameUnit(raidFrame) return end
+	raidFrame:SetSize(UnitDB.Frame.Width, UnitDB.Frame.Height)
+	raidFrame:SetFrameStrata(UnitDB.Frame.FrameStrata)
+	if raidFrame.DispelHighlightUnit and raidFrame.DispelHighlightUnit ~= unit then UUF:UnregisterDispelHighlightEvents(raidFrame) end
+	UUF:UpdateUnitFrame(raidFrame, unit)
+	if assignedUnit then raidFrame.UUFGroupUnit = assignedUnit else ClearRaidFrameUnit(raidFrame) end
 end
 
 function UUF:UpdateRaidFrames()
@@ -314,32 +328,7 @@ function UUF:UpdateRaidFrames()
 		return
 	end
 	UUF:CreateRaidContainer()
-
-	for _, raidFrame in ipairs(UUF.RAID_FRAMES) do
-		local useFrame = raidFrame and (not raidFrame.isTestFrame or UUF.RAID_TEST_MODE)
-		local assignedUnit = useFrame and raidFrame:GetAttribute("unit")
-		local unit = assignedUnit or (useFrame and raidFrame.UUFConfiguredUnit) or (raidFrame.isTestFrame and "raid" .. raidFrame.testIndex)
-		if useFrame and unit and unit ~= "raid" then
-			raidFrame:SetSize(UnitDB.Frame.Width, UnitDB.Frame.Height)
-			raidFrame:SetFrameStrata(UnitDB.Frame.FrameStrata)
-			if raidFrame.DispelHighlightUnit and raidFrame.DispelHighlightUnit ~= unit then UUF:UnregisterDispelHighlightEvents(raidFrame) end
-			UUF:UpdateUnitFrame(raidFrame, unit)
-			if assignedUnit then
-				raidFrame.UUFGroupUnit = assignedUnit
-			else
-				UUF:UnregisterRangeFrame(raidFrame)
-				UUF:UnregisterTargetGlowIndicatorFrame(raidFrame)
-				if raidFrame.DispelHighlightUnit then UUF:UnregisterDispelHighlightEvents(raidFrame) end
-				raidFrame.UUFGroupUnit = nil
-			end
-		elseif raidFrame then
-			UUF:UnregisterRangeFrame(raidFrame)
-			UUF:UnregisterTargetGlowIndicatorFrame(raidFrame)
-			if raidFrame.DispelHighlightUnit then UUF:UnregisterDispelHighlightEvents(raidFrame) end
-			raidFrame.UUFGroupUnit = nil
-		end
-	end
-
+	UUF:ForEachRaidFrame(UpdateRaidFrame, true, UUF.RAID_TEST_MODE, UnitDB)
 	UUF:LayoutRaidFrames()
 	if UUF.RAID_TEST_MODE then UUF:UpdateTestEnvironment("raid", "all") end
 end

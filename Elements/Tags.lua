@@ -72,10 +72,7 @@ function UUF:UpdateUnitTags(unit, tagName)
 		for i = 1, UUF.MAX_PARTY_FRAMES do UpdateFrameTags(UUF["PARTY" .. i], "party" .. i) end
 		UpdateFrameTags(UUF.PARTYPLAYER, "partyplayer")
 	elseif unit == "raid" then
-		for _, raidFrame in ipairs(UUF.RAID_FRAMES) do
-			local raidUnit = raidFrame and (raidFrame:GetAttribute("unit") or raidFrame.UUFConfiguredUnit)
-			if raidUnit then UpdateFrameTags(raidFrame, raidUnit) end
-		end
+		UUF:ForEachRaidFrame(UpdateFrameTags, true, UUF.RAID_TEST_MODE)
 	else
 		UpdateFrameTags(UUF[unit:upper()], unit)
 	end
