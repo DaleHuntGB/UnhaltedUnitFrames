@@ -38,7 +38,7 @@ function UUF:CreateUnitHealthBar(unitFrame, unit)
         HealthBar:SetFrameLevel(unitContainer:GetFrameLevel() + 2)
         HealthBar:SetStatusBarColor(HealthBarDB.Foreground[1], HealthBarDB.Foreground[2], HealthBarDB.Foreground[3], HealthBarDB.ForegroundOpacity)
         HealthBar.colorClass = HealthBarDB.ColourByClass
-        HealthBar.colorReaction = HealthBarDB.ColourByClass and HealthBarDB.ColourByReaction
+        HealthBar.colorReaction = HealthBarDB.ColourByClass
         HealthBar.colorHealth = not HealthBarDB.ColourByClass
         HealthBar.colorTapping = HealthBarDB.ColourWhenTapped
         HealthBar.colorDisconnected = HealthBarDB.ColourWhenDisconnected
@@ -104,7 +104,7 @@ function UUF:UpdateUnitHealthBar(unitFrame, unit)
         unitFrame.Health:SetSize(FrameDB.Width - 2, FrameDB.Height - 2)
         unitFrame.Health:SetStatusBarColor(HealthBarDB.Foreground[1], HealthBarDB.Foreground[2], HealthBarDB.Foreground[3], HealthBarDB.ForegroundOpacity)
         unitFrame.Health.colorClass = HealthBarDB.ColourByClass
-        unitFrame.Health.colorReaction = HealthBarDB.ColourByClass and HealthBarDB.ColourByReaction
+        unitFrame.Health.colorReaction = HealthBarDB.ColourByClass
         unitFrame.Health.colorHealth = not HealthBarDB.ColourByClass
         unitFrame.Health.colorTapping = HealthBarDB.ColourWhenTapped
         unitFrame.Health.colorDisconnected = HealthBarDB.ColourWhenDisconnected
