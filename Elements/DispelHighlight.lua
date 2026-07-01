@@ -22,6 +22,7 @@ function UUF:UpdateDispelColorCurve(unitFrame)
 end
 
 function UUF:CreateUnitDispelHighlight(unitFrame, unit)
+	if UUF.IsTestBuild then return end
 	local DispelHighlightDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].HealthBar.DispelHighlight
 	if not unitFrame.DispelHighlight then
 		local DispelHighlight = unitFrame.Health:CreateTexture(UUF:FetchFrameName(unit) .. "_DispelHighlight", "OVERLAY")
@@ -58,6 +59,11 @@ end
 
 function UUF:UpdateUnitDispelHighlight(unitFrame, unit)
 	if not unitFrame.DispelHighlight then return end
+	if UUF.IsTestBuild then
+		UUF:UnregisterDispelHighlightEvents(unitFrame)
+		unitFrame.DispelHighlight:Hide()
+		return
+	end
 	local DispelHighlightDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].HealthBar.DispelHighlight
 	if unitFrame.DispelHighlight then
 		if DispelHighlightDB.Enabled then
@@ -88,6 +94,7 @@ end
 
 function UUF:UpdateUnitDispelState(unitFrame, unit)
 	if not unitFrame.DispelHighlight then return end
+	if UUF.IsTestBuild then unitFrame.DispelHighlight:Hide() return end
 	if not UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].HealthBar.DispelHighlight.Enabled then
 		unitFrame.DispelHighlight:Hide()
 		return
@@ -133,10 +140,11 @@ function UUF:UpdateUnitDispelState(unitFrame, unit)
 end
 
 function UUF:RegisterDispelHighlightEvents(unitFrame, unit)
-    if not unitFrame.DispelHighlight then return end
-    if unit == "raid" then return end
-    if not UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].HealthBar.DispelHighlight.Enabled then return end
-    local unitToken = unit == "partyplayer" and "player" or unit
+	if not unitFrame.DispelHighlight then return end
+	if UUF.IsTestBuild then return end
+	if unit == "raid" then return end
+	if not UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].HealthBar.DispelHighlight.Enabled then return end
+	local unitToken = unit == "partyplayer" and "player" or unit
 
     unitFrame.DispelHighlightUnit = unit
     if not unitFrame.DispelHighlightHandler then

@@ -1020,6 +1020,7 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
         EnableDispelHighlightingToggle:SetValue(HealthBarDB.DispelHighlight.Enabled)
         EnableDispelHighlightingToggle:SetRelativeWidth(0.5)
         EnableDispelHighlightingToggle:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.DispelHighlight.Enabled = value updateCallback("HealthBar") end)
+        EnableDispelHighlightingToggle:SetDisabled(UUF.IsTestBuild)
         DispelHighlightContainer:AddChild(EnableDispelHighlightingToggle)
 
         local DispelHighlightStyleDropdown = AG:Create("Dropdown")
@@ -1028,6 +1029,7 @@ local function CreateFrameSettings(containerParent, unit, unitHasParent, updateC
         DispelHighlightStyleDropdown:SetValue(HealthBarDB.DispelHighlight.Style)
         DispelHighlightStyleDropdown:SetRelativeWidth(0.5)
         DispelHighlightStyleDropdown:SetCallback("OnValueChanged", function(_, _, value) HealthBarDB.DispelHighlight.Style = value updateCallback("HealthBar") end)
+        DispelHighlightStyleDropdown:SetDisabled(UUF.IsTestBuild)
         DispelHighlightContainer:AddChild(DispelHighlightStyleDropdown)
     end
 end
@@ -3260,6 +3262,7 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
     OnlyShowPlayerToggle:SetCallback("OnEnter", function() GameTooltip:SetOwner(OnlyShowPlayerToggle.frame, "ANCHOR_CURSOR") GameTooltip:AddLine("Overrides |cFF8080FF" .. auraTitle:lower() .. "|r advanced filters. If |cFF8080FFBlacklist|r is checked, it will be respected.", 1, 1, 1, true) GameTooltip:Show() end)
     OnlyShowPlayerToggle:SetCallback("OnLeave", function() GameTooltip:Hide() end)
     OnlyShowPlayerToggle:SetRelativeWidth(isCustom and 0.5 or 0.33)
+    OnlyShowPlayerToggle:SetDisabled(UUF.IsTestBuild)
     AuraContainer:AddChild(OnlyShowPlayerToggle)
 
     local ShowTypeCheckbox = AG:Create("CheckBox")
@@ -3494,8 +3497,9 @@ local function CreateSpecificAuraSettings(containerParent, unit, auraDB)
     function RefreshAuraGUI()
         if AuraDB.Enabled then
             GUIWidgets.DeepDisable(AuraContainer, false, Toggle)
-            GUIWidgets.DeepDisable(FilterContainer, AuraDB.OnlyShowPlayer, BlacklistToggle)
-            for _, FilterDropdown in ipairs(FilterDropdowns) do FilterDropdown:SetDisabled(AuraDB.OnlyShowPlayer or (filterAuraDB == "Debuffs" and AuraDB.Filters.Typed)) end
+            OnlyShowPlayerToggle:SetDisabled(UUF.IsTestBuild)
+            GUIWidgets.DeepDisable(FilterContainer, UUF.IsTestBuild or AuraDB.OnlyShowPlayer, BlacklistToggle)
+            for _, FilterDropdown in ipairs(FilterDropdowns) do FilterDropdown:SetDisabled(UUF.IsTestBuild or AuraDB.OnlyShowPlayer or (filterAuraDB == "Debuffs" and AuraDB.Filters.Typed)) end
             GUIWidgets.DeepDisable(LayoutContainer, false, Toggle)
             GUIWidgets.DeepDisable(CountContainer, AuraDB.Count.HideStacks, HideStacksToggle)
         else

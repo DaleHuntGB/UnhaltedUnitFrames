@@ -211,6 +211,7 @@ function UUF:SpawnGroupFrame(unit, FrameDB)
 		for i = 1, UUF.MAX_PARTY_FRAMES do RegisterUnitWatch(UUF[unit:upper() .. i]) end
 		UUF.PARTY_CONTAINER:Show()
 		UUF:LayoutPartyFrames()
+		if UUF.IsTestBuild then C_Timer.After(0, function() UUF:RefreshPartyFrames() end) end
 	elseif unit == "raid" then
 		UUF:CreateRaidContainer()
 		local unitGrowth = (FrameDB.GrowthDirection or "RIGHT_DOWN"):match("^(%a+)_")
@@ -250,6 +251,7 @@ function UUF:SpawnGroupFrame(unit, FrameDB)
 		UUF.RAID_CONTAINER:Show()
 		for _, header in ipairs(UUF.RAID_HEADERS) do header:Show() end
 		UUF:LayoutRaidFrames()
+		if UUF.IsTestBuild then C_Timer.After(0, function() UUF:RefreshRaidFrames() end) end
 	end
 end
 
@@ -281,6 +283,7 @@ function UUF:RefreshGroupFrame(unitFrame, unit)
 	if unitFrame.UpdateTags then unitFrame:UpdateTags() end
 	UUF:UpdateUnitPowerBar(unitFrame, unit)
 	UUF:UpdateUnitRoleIndicator(unitFrame, unit)
+	if UUF.IsTestBuild and UUF.UpdateUnitAuraContainers then UUF:UpdateUnitAuraContainers(unitFrame, unit) end
 end
 
 function UUF:RefreshPartyFrames()
@@ -294,6 +297,7 @@ local function ClearRaidFrameUnit(raidFrame)
 	UUF:UnregisterRangeFrame(raidFrame)
 	UUF:UnregisterTargetGlowIndicatorFrame(raidFrame)
 	if raidFrame.DispelHighlightUnit then UUF:UnregisterDispelHighlightEvents(raidFrame) end
+	if UUF.IsTestBuild and UUF.ClearUnitAuraContainers then UUF:ClearUnitAuraContainers(raidFrame) end
 	raidFrame.UUFGroupUnit = nil
 end
 
@@ -356,6 +360,7 @@ PartyRosterEventFrame:SetScript("OnEvent", function(_, event, addonName)
 		UUF:RefreshGroupRoles()
 	elseif event == "PLAYER_ENTERING_WORLD" or event == "PLAYER_DIFFICULTY_CHANGED" or event == "ZONE_CHANGED_NEW_AREA" then
 		if UUF.db.profile.Units.raid.Frame.AutoAdjustGroups then UUF:LayoutRaidFrames() end
+		if UUF.IsTestBuild then UUF:RefreshPartyFrames() UUF:RefreshRaidFrames() end
 	elseif event == "PLAYER_REGEN_ENABLED" then
 		if UUF.db.profile.Units.raid and UUF.db.profile.Units.raid.ForceHideBlizzard then UUF:HideBlizzardRaidFrames() end
 		UUF:RefreshPartyFrames()

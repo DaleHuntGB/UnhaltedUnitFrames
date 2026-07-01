@@ -1,6 +1,7 @@
 local _, UUF = ...
 local oUF = UUF.oUF
 UUFG = UUFG or {}
+UUF.IsTestBuild = select(4, GetBuildInfo()) == 120100
 UUF.AURA_TEST_MODE = false
 UUF.CASTBAR_TEST_MODE = false
 UUF.BOSS_TEST_MODE = false

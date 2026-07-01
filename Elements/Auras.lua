@@ -124,6 +124,7 @@ function UUF:GetCustomAuraFilter(CustomDB)
 end
 
 function UUF:UpdateUnitAuras(unitFrame, unit)
+	if UUF.IsTestBuild and UUF.UpdateUnitAuraContainers then return UUF:UpdateUnitAuraContainers(unitFrame, unit) end
     if not unit or not unitFrame then return end
     local AurasDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Auras
     if not AurasDB then return end
@@ -307,6 +308,7 @@ function UUF:UpdateUnitAuras(unitFrame, unit)
 end
 
 function UUF:CreateUnitAuras(unitFrame, unit)
+	if UUF.IsTestBuild and UUF.CreateUnitAuraContainers then return UUF:CreateUnitAuraContainers(unitFrame, unit) end
 	local AurasDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Auras
 	local BuffsDB = AurasDB.Buffs
 	local DebuffsDB = AurasDB.Debuffs
@@ -500,6 +502,13 @@ function UUF:UpdateUnitAurasStrata(unit)
         return
     end
     if not unitFrame or not unitDB or not unitDB.Auras then return end
+	if UUF.IsTestBuild and unitFrame.AuraContainers then
+		if unitFrame.AuraContainers.Buffs then unitFrame.AuraContainers.Buffs:SetFrameStrata(unitDB.Auras.FrameStrata) end
+		if unitFrame.AuraContainers.Debuffs then unitFrame.AuraContainers.Debuffs:SetFrameStrata(unitDB.Auras.FrameStrata) end
+		if unitFrame.AuraContainers.Custom then unitFrame.AuraContainers.Custom:SetFrameStrata(unitDB.Auras.FrameStrata) end
+		if unitFrame.PrivateAuraContainer and unitDB.Auras.PrivateAuras then unitFrame.PrivateAuraContainer:SetFrameStrata(unitDB.Auras.PrivateAuras.FrameStrata) end
+		return
+	end
     if unitFrame.BuffContainer then unitFrame.BuffContainer:SetFrameStrata(unitDB.Auras.FrameStrata) end
     if unitFrame.DebuffContainer then unitFrame.DebuffContainer:SetFrameStrata(unitDB.Auras.FrameStrata) end
     if unitFrame.CustomAuraContainer then unitFrame.CustomAuraContainer:SetFrameStrata(unitDB.Auras.FrameStrata) end
@@ -507,6 +516,7 @@ function UUF:UpdateUnitAurasStrata(unit)
 end
 
 function UUF:CreateTestAuras(unitFrame, unit)
+	if UUF.IsTestBuild and UUF.CreateTestAuraContainers then return UUF:CreateTestAuraContainers(unitFrame, unit) end
     if not unit then return end
     if not unitFrame then return end
     local General = UUF.db.profile.General
