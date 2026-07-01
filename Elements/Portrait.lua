@@ -90,26 +90,35 @@ function UUF:CreateUnitPortrait(unitFrame, unit)
 		return unitPortrait
 	end
 
-	local unitPortrait = unitFrame.HighLevelContainer:CreateTexture(UUF:FetchFrameName(unit) .. "_Portrait2D", "BACKGROUND")
-	unitPortrait:SetSize(PortraitDB.Width, PortraitDB.Height)
-	unitPortrait:SetPoint(PortraitDB.Layout[1], unitFrame.HighLevelContainer, PortraitDB.Layout[2], PortraitDB.Layout[3], PortraitDB.Layout[4])
+	local portraitBackdrop = CreateFrame("Frame", UUF:FetchFrameName(unit) .. "_PortraitBackdrop", unitFrame.HighLevelContainer, "BackdropTemplate")
+	portraitBackdrop:SetSize(PortraitDB.Width, PortraitDB.Height)
+	portraitBackdrop:SetPoint(PortraitDB.Layout[1], unitFrame.HighLevelContainer, PortraitDB.Layout[2], PortraitDB.Layout[3], PortraitDB.Layout[4])
+	portraitBackdrop:SetBackdrop(UUF.BACKDROP)
+	portraitBackdrop:SetBackdropColor(26/255, 26/255, 26/255, 1)
+	portraitBackdrop:SetBackdropBorderColor(0, 0, 0, 0)
+
+	local unitPortrait = portraitBackdrop:CreateTexture(UUF:FetchFrameName(unit) .. "_Portrait2D", "ARTWORK")
+	unitPortrait:SetAllPoints(portraitBackdrop)
 	unitPortrait:SetTexCoord((PortraitDB.Zoom or 0) * 0.5, 1 - (PortraitDB.Zoom or 0) * 0.5, (PortraitDB.Zoom or 0) * 0.5, 1 - (PortraitDB.Zoom or 0) * 0.5)
 	unitPortrait.showClass = PortraitDB.UseClassPortrait
+	unitPortrait.Backdrop = portraitBackdrop
 
-	unitPortrait.Border = CreateFrame("Frame", UUF:FetchFrameName(unit) .. "_PortraitBorder", unitFrame.HighLevelContainer, "BackdropTemplate")
-	unitPortrait.Border:SetAllPoints(unitPortrait)
+	unitPortrait.Border = CreateFrame("Frame", UUF:FetchFrameName(unit) .. "_PortraitBorder", portraitBackdrop, "BackdropTemplate")
+	unitPortrait.Border:SetAllPoints(portraitBackdrop)
 	unitPortrait.Border:SetBackdrop(UUF.BACKDROP)
 	unitPortrait.Border:SetBackdropColor(0, 0, 0, 0)
 	unitPortrait.Border:SetBackdropBorderColor(0, 0, 0, 1)
-	unitPortrait.Border:SetFrameLevel(unitFrame.HighLevelContainer:GetFrameLevel() + 10)
+	unitPortrait.Border:SetFrameLevel(portraitBackdrop:GetFrameLevel() + 10)
 
 	if PortraitDB.Enabled then
 		unitFrame.Portrait = unitPortrait
 		unitFrame.Portrait:Show()
+		unitFrame.Portrait.Backdrop:Show()
 	else
 		if unitFrame:IsElementEnabled("Portrait") then unitFrame:DisableElement("Portrait") end
 		unitPortrait:Hide()
 		unitPortrait.Border:Hide()
+		unitPortrait.Backdrop:Hide()
 	end
 
 	return unitPortrait
@@ -121,7 +130,7 @@ function UUF:UpdateUnitPortrait(unitFrame, unit)
 
 	if PortraitDB.Enabled then
 		local isPlayerModel = unitFrame.Portrait and unitFrame.Portrait:IsObjectType("PlayerModel")
-		if unitFrame.Portrait and ((portraitStyle == "3D" and not isPlayerModel) or (portraitStyle ~= "3D" and isPlayerModel)) then
+		if unitFrame.Portrait and ((portraitStyle == "3D" and not isPlayerModel) or (portraitStyle ~= "3D" and (isPlayerModel or not unitFrame.Portrait.Backdrop))) then
 			if unitFrame:IsElementEnabled("Portrait") then unitFrame:DisableElement("Portrait") end
 			unitFrame.Portrait.Border:Hide()
 			unitFrame.Portrait.Border = nil
@@ -151,11 +160,13 @@ function UUF:UpdateUnitPortrait(unitFrame, unit)
 			unitFrame.Portrait:SetPosition(0, 0, 0)
 			unitFrame.Portrait.Backdrop:Show()
 		else
-			unitFrame.Portrait:ClearAllPoints()
-			unitFrame.Portrait:SetSize(PortraitDB.Width, PortraitDB.Height)
-			unitFrame.Portrait:SetPoint(PortraitDB.Layout[1], unitFrame.HighLevelContainer, PortraitDB.Layout[2], PortraitDB.Layout[3], PortraitDB.Layout[4])
+			unitFrame.Portrait.Backdrop:ClearAllPoints()
+			unitFrame.Portrait.Backdrop:SetSize(PortraitDB.Width, PortraitDB.Height)
+			unitFrame.Portrait.Backdrop:SetPoint(PortraitDB.Layout[1], unitFrame.HighLevelContainer, PortraitDB.Layout[2], PortraitDB.Layout[3], PortraitDB.Layout[4])
+			unitFrame.Portrait:SetAllPoints(unitFrame.Portrait.Backdrop)
 			unitFrame.Portrait:SetTexCoord((PortraitDB.Zoom or 0) * 0.5, 1 - (PortraitDB.Zoom or 0) * 0.5, (PortraitDB.Zoom or 0) * 0.5, 1 - (PortraitDB.Zoom or 0) * 0.5)
 			unitFrame.Portrait.showClass = PortraitDB.UseClassPortrait
+			unitFrame.Portrait.Backdrop:Show()
 		end
 
 		unitFrame.Portrait:Show()

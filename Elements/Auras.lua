@@ -37,18 +37,23 @@ local function StyleAuras(_, button, unit, auraType, restyle, auraDB)
 		UUF:ApplyCooldownText(button.Cooldown, nil, unit)
 	end
 	if button.Count then
-		local FontsDB = UUF.db.profile.General.Fonts
-		button.Count:ClearAllPoints()
-		button.Count:SetFont(UUF.Media.Font, AuraDB.Count.FontSize, FontsDB.FontFlag)
-		button.Count:SetPoint(AuraDB.Count.Layout[1], button, AuraDB.Count.Layout[2], AuraDB.Count.Layout[3], AuraDB.Count.Layout[4])
-		if FontsDB.Shadow.Enabled then
-			button.Count:SetShadowColor(FontsDB.Shadow.Colour[1], FontsDB.Shadow.Colour[2], FontsDB.Shadow.Colour[3], FontsDB.Shadow.Colour[4])
-			button.Count:SetShadowOffset(FontsDB.Shadow.XPos, FontsDB.Shadow.YPos)
+		if AuraDB.Count.HideStacks then
+			button.Count:Hide()
 		else
-			button.Count:SetShadowColor(0, 0, 0, 0)
-			button.Count:SetShadowOffset(0, 0)
+			local FontsDB = UUF.db.profile.General.Fonts
+			button.Count:ClearAllPoints()
+			button.Count:SetFont(UUF.Media.Font, AuraDB.Count.FontSize, FontsDB.FontFlag)
+			button.Count:SetPoint(AuraDB.Count.Layout[1], button, AuraDB.Count.Layout[2], AuraDB.Count.Layout[3], AuraDB.Count.Layout[4])
+			if FontsDB.Shadow.Enabled then
+				button.Count:SetShadowColor(FontsDB.Shadow.Colour[1], FontsDB.Shadow.Colour[2], FontsDB.Shadow.Colour[3], FontsDB.Shadow.Colour[4])
+				button.Count:SetShadowOffset(FontsDB.Shadow.XPos, FontsDB.Shadow.YPos)
+			else
+				button.Count:SetShadowColor(0, 0, 0, 0)
+				button.Count:SetShadowOffset(0, 0)
+			end
+			button.Count:SetTextColor(unpack(AuraDB.Count.Colour))
+			button.Count:Show()
 		end
-		button.Count:SetTextColor(unpack(AuraDB.Count.Colour))
 	end
 	if not restyle and button.Overlay then
 		button.Overlay:SetTexture("Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\AuraOverlay.png")
@@ -129,7 +134,7 @@ function UUF:UpdateUnitAuras(unitFrame, unit)
     DebuffsDB.Filter = "HARMFUL"
     if CustomDB then CustomDB.Filter = GetCustomAuraFilter(CustomDB) end
 
-    if unit == "player" then
+    if AurasDB.PrivateAuras then
         local PrivateAurasDB = AurasDB.PrivateAuras
         local privateAuraContainerWidth = PrivateAurasDB.Size * PrivateAurasDB.Num + PrivateAurasDB.Spacing * (PrivateAurasDB.Num - 1)
 
@@ -188,6 +193,7 @@ function UUF:UpdateUnitAuras(unitFrame, unit)
         unitFrame.BuffContainer.createdButtons = unitFrame.Buffs.createdButtons or 0
         unitFrame.BuffContainer.anchoredButtons = unitFrame.Buffs.anchoredButtons or 0
         unitFrame.BuffContainer.PostCreateButton = function(_, button) StyleAuras(_, button, unit, "HELPFUL") end
+        unitFrame.BuffContainer.PostUpdateButton = function(_, button) StyleAuras(_, button, unit, "HELPFUL", true) end
         unitFrame.BuffContainer.showType = BuffsDB.ShowType
         unitFrame.BuffContainer.showBuffType = BuffsDB.ShowType
         unitFrame.BuffContainer:Show()
@@ -218,6 +224,7 @@ function UUF:UpdateUnitAuras(unitFrame, unit)
         unitFrame.DebuffContainer.createdButtons = unitFrame.Debuffs.createdButtons or 0
         unitFrame.DebuffContainer.anchoredButtons = unitFrame.Debuffs.anchoredButtons or 0
         unitFrame.DebuffContainer.PostCreateButton = function(_, button) StyleAuras(_, button, unit, "HARMFUL") end
+        unitFrame.DebuffContainer.PostUpdateButton = function(_, button) StyleAuras(_, button, unit, "HARMFUL", true) end
         unitFrame.DebuffContainer.showType = DebuffsDB.ShowType
         unitFrame.DebuffContainer.showDebuffType = DebuffsDB.ShowType
         unitFrame.DebuffContainer:Show()
@@ -254,6 +261,7 @@ function UUF:UpdateUnitAuras(unitFrame, unit)
             unitFrame.CustomAuraContainer.createdButtons = unitFrame.CustomAuras.createdButtons or 0
             unitFrame.CustomAuraContainer.anchoredButtons = unitFrame.CustomAuras.anchoredButtons or 0
             unitFrame.CustomAuraContainer.PostCreateButton = function(_, button) StyleAuras(_, button, unit, customAuraFilter, nil, "Custom") end
+            unitFrame.CustomAuraContainer.PostUpdateButton = function(_, button) StyleAuras(_, button, unit, customAuraFilter, true, "Custom") end
             unitFrame.CustomAuraContainer.showType = CustomDB.ShowType
             unitFrame.CustomAuraContainer.showBuffType = customAuraType == "Buffs" and CustomDB.ShowType
             unitFrame.CustomAuraContainer.showDebuffType = customAuraType == "Debuffs" and CustomDB.ShowType
@@ -329,6 +337,7 @@ function UUF:CreateUnitAuras(unitFrame, unit)
 			return FilterAura(BuffsDB, filterUnit, aura, "HELPFUL")
 		end
 		unitFrame.BuffContainer.PostCreateButton = function(_, button) StyleAuras(_, button, unit, "HELPFUL") end
+		unitFrame.BuffContainer.PostUpdateButton = function(_, button) StyleAuras(_, button, unit, "HELPFUL", true) end
 		unitFrame.BuffContainer.anchoredButtons = 0
 		unitFrame.BuffContainer.createdButtons = 0
 		unitFrame.BuffContainer.tooltipAnchor = "ANCHOR_CURSOR"
@@ -375,6 +384,7 @@ function UUF:CreateUnitAuras(unitFrame, unit)
 		unitFrame.DebuffContainer.anchoredButtons = 0
 		unitFrame.DebuffContainer.createdButtons = 0
 		unitFrame.DebuffContainer.PostCreateButton = function(_, button) StyleAuras(_, button, unit, "HARMFUL") end
+		unitFrame.DebuffContainer.PostUpdateButton = function(_, button) StyleAuras(_, button, unit, "HARMFUL", true) end
 		unitFrame.DebuffContainer.tooltipAnchor = "ANCHOR_CURSOR"
 		unitFrame.DebuffContainer.showType = DebuffsDB.ShowType
 		unitFrame.DebuffContainer.showDebuffType = DebuffsDB.ShowType
@@ -422,6 +432,7 @@ function UUF:CreateUnitAuras(unitFrame, unit)
 		unitFrame.CustomAuraContainer.anchoredButtons = 0
 		unitFrame.CustomAuraContainer.createdButtons = 0
 		unitFrame.CustomAuraContainer.PostCreateButton = function(_, button) StyleAuras(_, button, unit, customAuraFilter, nil, "Custom") end
+		unitFrame.CustomAuraContainer.PostUpdateButton = function(_, button) StyleAuras(_, button, unit, customAuraFilter, true, "Custom") end
 		unitFrame.CustomAuraContainer.tooltipAnchor = "ANCHOR_CURSOR"
 		unitFrame.CustomAuraContainer.showType = CustomDB.ShowType
 		unitFrame.CustomAuraContainer.showBuffType = customAuraType == "Buffs" and CustomDB.ShowType
@@ -444,7 +455,7 @@ function UUF:CreateUnitAuras(unitFrame, unit)
 		end
 	end
 
-    if unit == "player" then
+    if AurasDB.PrivateAuras then
         local PrivateAurasDB = AurasDB.PrivateAuras
         local privateAuraContainerWidth = PrivateAurasDB.Size * PrivateAurasDB.Num + PrivateAurasDB.Spacing * (PrivateAurasDB.Num - 1)
 
@@ -480,11 +491,19 @@ function UUF:UpdateUnitAurasStrata(unit)
     local normalizedUnit = UUF:GetNormalizedUnit(unit)
     local unitFrame = UUF[unit:upper()]
     local unitDB = UUF.db.profile.Units[normalizedUnit]
+    if unit == "party" then
+        if not unitDB or not unitDB.Auras then return end
+        for i = 1, UUF.MAX_PARTY_FRAMES do
+            UUF:UpdateUnitAurasStrata("party" .. i)
+        end
+        if UUF.PARTYPLAYER and unitDB.Auras.PrivateAuras and UUF.PARTYPLAYER.PrivateAuraContainer then UUF.PARTYPLAYER.PrivateAuraContainer:SetFrameStrata(unitDB.Auras.PrivateAuras.FrameStrata) end
+        return
+    end
     if not unitFrame or not unitDB or not unitDB.Auras then return end
     if unitFrame.BuffContainer then unitFrame.BuffContainer:SetFrameStrata(unitDB.Auras.FrameStrata) end
     if unitFrame.DebuffContainer then unitFrame.DebuffContainer:SetFrameStrata(unitDB.Auras.FrameStrata) end
     if unitFrame.CustomAuraContainer then unitFrame.CustomAuraContainer:SetFrameStrata(unitDB.Auras.FrameStrata) end
-    if unit == "player" and unitFrame.PrivateAuraContainer and unitDB.Auras.PrivateAuras then unitFrame.PrivateAuraContainer:SetFrameStrata(unitDB.Auras.PrivateAuras.FrameStrata) end
+    if unitFrame.PrivateAuraContainer and unitDB.Auras.PrivateAuras then unitFrame.PrivateAuraContainer:SetFrameStrata(unitDB.Auras.PrivateAuras.FrameStrata) end
 end
 
 function UUF:CreateTestAuras(unitFrame, unit)
@@ -499,8 +518,8 @@ function UUF:CreateTestAuras(unitFrame, unit)
         if unitFrame:IsElementEnabled("Auras") then unitFrame:DisableElement("Auras") end
         if unitFrame:IsElementEnabled("CustomAuras") then unitFrame:DisableElement("CustomAuras") end
 
-		if unit == "player" and unitFrame.PrivateAuraContainer then
-			local PrivateAurasDB = UUF.db.profile.Units.player.Auras.PrivateAuras
+		if unitFrame.PrivateAuraContainer and AurasDB.PrivateAuras then
+			local PrivateAurasDB = AurasDB.PrivateAuras
 			if PrivateAurasDB.Enabled then
 				unitFrame.PrivateAuraContainer:Show()
 
@@ -611,6 +630,7 @@ function UUF:CreateTestAuras(unitFrame, unit)
                     button.Icon:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", -1, 1)
                     button.Icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
                     button.Count:SetText(j)
+                    if BuffsDB.Count.HideStacks then button.Count:Hide() else button.Count:Show() end
                     button.Duration = button.Duration or button:CreateFontString(nil, "OVERLAY")
                     UUF:ApplyCooldownText(button, button.Duration, unit)
                     button.Duration:SetText("10m")
@@ -680,6 +700,7 @@ function UUF:CreateTestAuras(unitFrame, unit)
                     button.Icon:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", -1, 1)
                     button.Icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
                     button.Count:SetText(j)
+                    if DebuffsDB.Count.HideStacks then button.Count:Hide() else button.Count:Show() end
                     button.Duration = button.Duration or button:CreateFontString(nil, "OVERLAY")
                     UUF:ApplyCooldownText(button, button.Duration, unit)
                     button.Duration:SetText("10m")
@@ -749,6 +770,7 @@ function UUF:CreateTestAuras(unitFrame, unit)
                     button.Icon:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", -1, 1)
                     button.Icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
                     button.Count:SetText(j)
+                    if CustomDB.Count.HideStacks then button.Count:Hide() else button.Count:Show() end
                     button.Duration = button.Duration or button:CreateFontString(nil, "OVERLAY")
                     UUF:ApplyCooldownText(button, button.Duration, unit)
                     button.Duration:SetText("10m")
@@ -794,7 +816,7 @@ function UUF:CreateTestAuras(unitFrame, unit)
             if not unitFrame:IsElementEnabled("CustomAuras") then unitFrame:EnableElement("CustomAuras") end
             if unitFrame.CustomAuraContainer and unitFrame.CustomAuraContainer.ForceUpdate then unitFrame.CustomAuraContainer:ForceUpdate() end
         end
-		if unit == "player" and unitFrame.PrivateAuraContainer then
+		if unitFrame.PrivateAuraContainer then
 			for j = 1, (unitFrame.PrivateAuraContainer.maxFake or 0) do
 				local button = unitFrame.PrivateAuraContainer["fake" .. j]
 				if button then button:Hide() end

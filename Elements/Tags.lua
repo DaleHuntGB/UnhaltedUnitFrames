@@ -17,6 +17,13 @@ local function CreateUnitTag(unitFrame, unit, tagDB)
         end
         unitFrame.Tags[tagDB]:SetPoint(TagDB.Layout[1], unitFrame.HighLevelContainer, TagDB.Layout[2], TagDB.Layout[3], TagDB.Layout[4])
         unitFrame.Tags[tagDB]:SetJustifyH(UUF:SetJustification(TagDB.Layout[1]))
+        if TagDB.Layout[1] == "TOPLEFT" or TagDB.Layout[1] == "TOP" or TagDB.Layout[1] == "TOPRIGHT" then
+            unitFrame.Tags[tagDB]:SetJustifyV("TOP")
+        elseif TagDB.Layout[1] == "BOTTOMLEFT" or TagDB.Layout[1] == "BOTTOM" or TagDB.Layout[1] == "BOTTOMRIGHT" then
+            unitFrame.Tags[tagDB]:SetJustifyV("BOTTOM")
+        else
+            unitFrame.Tags[tagDB]:SetJustifyV("MIDDLE")
+        end
         unitFrame:Tag(unitFrame.Tags[tagDB], TagDB.Tag)
     end
 end
@@ -38,9 +45,19 @@ function UUF:UpdateUnitTag(unitFrame, unit, tagDB)
         unitFrame.Tags[tagDB]:ClearAllPoints()
         unitFrame.Tags[tagDB]:SetPoint(TagDB.Layout[1], unitFrame.HighLevelContainer, TagDB.Layout[2], TagDB.Layout[3], TagDB.Layout[4])
         unitFrame.Tags[tagDB]:SetJustifyH(UUF:SetJustification(TagDB.Layout[1]))
+        if TagDB.Layout[1] == "TOPLEFT" or TagDB.Layout[1] == "TOP" or TagDB.Layout[1] == "TOPRIGHT" then
+            unitFrame.Tags[tagDB]:SetJustifyV("TOP")
+        elseif TagDB.Layout[1] == "BOTTOMLEFT" or TagDB.Layout[1] == "BOTTOM" or TagDB.Layout[1] == "BOTTOMRIGHT" then
+            unitFrame.Tags[tagDB]:SetJustifyV("BOTTOM")
+        else
+            unitFrame.Tags[tagDB]:SetJustifyV("MIDDLE")
+        end
         unitFrame:Tag(unitFrame.Tags[tagDB], TagDB.Tag)
     end
     unitFrame.Tags[tagDB]:UpdateTag()
+    local tagText = unitFrame.Tags[tagDB]:GetText()
+    unitFrame.Tags[tagDB]:SetText("")
+    unitFrame.Tags[tagDB]:SetText(tagText or "")
 end
 
 function UUF:CreateUnitTags(unitFrame, unit)
@@ -50,29 +67,30 @@ function UUF:CreateUnitTags(unitFrame, unit)
     end
 end
 
-function UUF:UpdateUnitTags()
-    UUF.SEPARATOR = UUF.db.profile.General.Separator or "||"
-    UUF.TOT_SEPARATOR = UUF.db.profile.General.ToTSeparator or "»"
-    for unit in pairs(UUF.db.profile.Units) do
-        local UnitDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)]
-        if unit == "boss" then
-            for i = 1, UUF.MAX_BOSS_FRAMES do
-                local bossFrame = UUF["BOSS"..i]
-                if bossFrame then
-                    for tagName in pairs(UnitDB.Tags) do
-                        UUF:UpdateUnitTag(bossFrame, "boss"..i, tagName)
-                    end
-                end
-            end
-        else
-            local frame = UUF[unit:upper()]
-            if frame then
-                for tagName in pairs(UnitDB.Tags) do
-                    UUF:UpdateUnitTag(frame, unit, tagName)
-                end
-            end
-        end
-    end
+function UUF:UpdateUnitTags(unit, tagName)
+	if not unit then return end
+	local UnitDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)]
+	if not UnitDB or not UnitDB.Tags then return end
+	UUF.SEPARATOR = UUF.db.profile.General.Separator or "||"
+	UUF.TOT_SEPARATOR = UUF.db.profile.General.ToTSeparator or "»"
+
+	local function UpdateFrameTags(unitFrame, frameUnit)
+		if not unitFrame then return end
+		if tagName then
+			UUF:UpdateUnitTag(unitFrame, frameUnit, tagName)
+		else
+			for configuredTag in pairs(UnitDB.Tags) do UUF:UpdateUnitTag(unitFrame, frameUnit, configuredTag) end
+		end
+	end
+
+	if unit == "boss" then
+		for i = 1, UUF.MAX_BOSS_FRAMES do UpdateFrameTags(UUF["BOSS" .. i], "boss" .. i) end
+	elseif unit == "party" then
+		for i = 1, UUF.MAX_PARTY_FRAMES do UpdateFrameTags(UUF["PARTY" .. i], "party" .. i) end
+		UpdateFrameTags(UUF.PARTYPLAYER, "partyplayer")
+	elseif unit == "raid" then
+		UUF:ForEachRaidFrame(UpdateFrameTags, true, UUF.RAID_TEST_MODE)
+	else
+		UpdateFrameTags(UUF[unit:upper()], unit)
+	end
 end
-
-

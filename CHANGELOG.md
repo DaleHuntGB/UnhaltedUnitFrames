@@ -1,3 +1,22 @@
+## V12.0.27
+- *Hopefully* fix when units join/leave, the frames update.
+- *Hopefully* fix some dancing tags.
+## V12.0.26
+- Hopefully fix Pet Frames not being Class Coloured.
+## V12.0.25
+- Add Party / Raid Frames.
+- Indicators:
+  - Ready Check.
+  - Resurrect.
+  - Threat.
+  - Phase.
+  - Role.
+  - Fix Highlight / Target Overlays breaking when making changes.
+- Tags
+  - Healer Mana & Healer Mana with Sign.
+- Test Environment Rework.
+- Dead & Offline Backdrop Colour.
+- Heal Absorbs will reverse grow when selecting `Attach to Missing Health`.
 ## V12.0.24
 - Fixed `Classification` Textures not appearing.
 - File Restructure.

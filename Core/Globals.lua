@@ -4,8 +4,18 @@ UUFG = UUFG or {}
 UUF.AURA_TEST_MODE = false
 UUF.CASTBAR_TEST_MODE = false
 UUF.BOSS_TEST_MODE = false
+UUF.PARTY_TEST_MODE = false
+UUF.RAID_TEST_MODE = false
 UUF.BOSS_FRAMES = {}
 UUF.MAX_BOSS_FRAMES = 5
+UUF.PARTY_FRAMES = {}
+UUF.MAX_PARTY_FRAMES = 4
+UUF.RAID_FRAMES = {}
+UUF.RAID_TEST_FRAMES = {}
+UUF.RAID_HEADERS = {}
+UUF.MAX_RAID_FRAMES = 40
+UUF.MAX_RAID_GROUPS = 8
+UUF.MAX_RAID_FRAMES_PER_GROUP = 5
 local CooldownDurationFormatter = C_StringUtil.CreateNumericRuleFormatter()
 
 UUF.LSM = LibStub("LibSharedMedia-3.0")
@@ -88,9 +98,45 @@ UUF.ClassificationTextures = {
 }
 
 UUF.QuestTextures = {
-    DEFAULT = "Interface\\TargetingFrame\\PortraitQuestBadge",
-    QUEST0 = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Quest\\Quest01.png",
-    QUEST1 = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Quest\\Quest02.png",
+    ["DEFAULT"] = "Interface\\TargetingFrame\\PortraitQuestBadge",
+    ["QUEST0"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Quest\\Quest01.png",
+    ["QUEST1"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Quest\\Quest02.png",
+}
+
+UUF.RoleTextures = {
+    ["Blizzard"] = {
+        ["TANK"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\Blizzard\\Tank.tga",
+        ["HEALER"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\Blizzard\\Healer.tga",
+        ["DAMAGER"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\Blizzard\\DPS.tga",
+    },
+    ["Colour"] = {
+        ["TANK"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\Colour\\Tank.tga",
+        ["HEALER"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\Colour\\Healer.tga",
+        ["DAMAGER"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\Colour\\DPS.tga",
+    },
+    ["White"] = {
+        ["TANK"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\White\\Tank.tga",
+        ["HEALER"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\White\\Healer.tga",
+        ["DAMAGER"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\White\\DPS.tga",
+    },
+    ["ElvUI"] = {
+        ["TANK"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\ElvUI\\Tank.tga",
+        ["HEALER"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\ElvUI\\Healer.tga",
+        ["DAMAGER"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\ElvUI\\DPS.tga",
+    },
+	["Square"] = {
+		["TANK"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\Square\\Tank.png",
+		["HEALER"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\Square\\Healer.png",
+		["DAMAGER"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\Role\\Square\\DPS.png",
+	},
+}
+
+UUF.ReadyCheckTextures = {
+	["White"] = {
+		["READY"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\ReadyCheck\\White\\Ready.png",
+		["NOTREADY"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\ReadyCheck\\White\\NotReady.png",
+		["WAITING"] = "Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\ReadyCheck\\White\\Pending.png",
+	},
 }
 
 function UUF:PrettyPrint(MSG) print(UUF.ADDON_NAME .. ":|r " .. MSG) end
@@ -104,9 +150,14 @@ function UUF:FetchFrameName(unit)
         ["focustarget"] = "UUF_FocusTarget",
         ["pet"] = "UUF_Pet",
         ["boss"] = "UUF_Boss",
+        ["party"] = "UUF_Party",
+        ["partyplayer"] = "UUF_PartyPlayer",
+        ["raid"] = "UUF_Raid",
     }
     if not unit then return end
     if unit:match("^boss(%d+)$") then local unitID = unit:match("^boss(%d+)$") return "UUF_Boss" .. unitID end
+    if unit:match("^party(%d+)$") then local unitID = unit:match("^party(%d+)$") return "UUF_Party" .. unitID end
+    if unit:match("^raid(%d+)$") then local unitID = unit:match("^raid(%d+)$") return "UUF_Raid" .. unitID end
     return UnitToFrame[unit]
 end
 
@@ -139,6 +190,9 @@ end
 function UUF:ApplyCooldownText(icon, textRegion, unit)
     if not icon then return end
     local CooldownTextDB = UUF.db.profile.General.CooldownText
+    for _, breakpoint in ipairs(CooldownTextDB.CooldownBreakpoints) do
+        if breakpoint.displayStyle == "secondsOnly" then breakpoint.min = 1 end
+    end
     if icon.SetCountdownFormatter then
         CooldownDurationFormatter:SetBreakpoints(CooldownTextDB.CooldownBreakpoints)
         icon:SetCountdownFormatter(CooldownDurationFormatter)
@@ -253,6 +307,22 @@ function UUF:LoadCustomColours()
         oUF.colors.reaction[reaction] = oUF:CreateColor(color[1], color[2], color[3])
     end
 
+    local DefaultStatusColours = UUF:GetDefaultDB().profile.General.Colours.Status
+    local StatusColours = General.Colours.Status or DefaultStatusColours
+    local tappedColor = StatusColours.Tapped or DefaultStatusColours.Tapped
+    local disconnectedColor = StatusColours.Disconnected or DefaultStatusColours.Disconnected
+    local deadBackdropColor = StatusColours.DeadBackdrop or DefaultStatusColours.DeadBackdrop
+    oUF.colors.tapped = oUF:CreateColor(tappedColor[1], tappedColor[2], tappedColor[3])
+    oUF.colors.disconnected = oUF:CreateColor(disconnectedColor[1], disconnectedColor[2], disconnectedColor[3])
+    oUF.colors.deadBackdrop = oUF:CreateColor(deadBackdropColor[1], deadBackdropColor[2], deadBackdropColor[3])
+
+    local DefaultThreatColours = UUF:GetDefaultDB().profile.General.Colours.Threat
+    local ThreatColours = General.Colours.Threat or DefaultThreatColours
+    for threatStatus, defaultColor in pairs(DefaultThreatColours) do
+        local color = ThreatColours[threatStatus] or defaultColor
+        oUF.colors.threat[threatStatus] = oUF:CreateColor(color[1], color[2], color[3])
+    end
+
     if General.Colours.Dispel then
         local dispelMap = {
             Magic = oUF.Enum.DispelType.Magic,
@@ -350,7 +420,7 @@ function UUF:GetReactionColour(reaction)
 end
 
 function UUF:GetNormalizedUnit(unit)
-    local normalizedUnit = unit == "vehicle" and "player" or unit:match("^boss%d+$") and "boss" or unit
+    local normalizedUnit = unit == "vehicle" and "player" or unit == "partyplayer" and "party" or unit:match("^boss%d+$") and "boss" or unit:match("^party%d+$") and "party" or unit:match("^raid%d+$") and "raid" or unit
     return normalizedUnit
 end
 

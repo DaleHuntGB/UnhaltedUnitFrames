@@ -17,13 +17,13 @@ function UnhaltedUnitFrames:OnInitialize()
         UUF.db:SetProfile(globalProfile)
     end
 
-    UUF.db.RegisterCallback(UUF, "OnProfileChanged", function() UUF:ResolveLSM() UUF:LoadCustomColours() UUF:UpdateAllUnitFrames() end)
-    UUF.db.RegisterCallback(UUF, "OnProfileCopied", function() UUF:ResolveLSM() UUF:LoadCustomColours() UUF:UpdateAllUnitFrames() end)
-    UUF.db.RegisterCallback(UUF, "OnProfileReset", function() UUF:ResolveLSM() UUF:LoadCustomColours() UUF:UpdateAllUnitFrames() end)
+	UUF.db.RegisterCallback(UUF, "OnProfileChanged", function() UUF:ResolveLSM() UUF:LoadCustomColours() UUF:UpdateAllUnitFrames() for unit in pairs(UUF.db.profile.Units) do UUF:UpdateUnitTags(unit) end end)
+	UUF.db.RegisterCallback(UUF, "OnProfileCopied", function() UUF:ResolveLSM() UUF:LoadCustomColours() UUF:UpdateAllUnitFrames() for unit in pairs(UUF.db.profile.Units) do UUF:UpdateUnitTags(unit) end end)
+	UUF.db.RegisterCallback(UUF, "OnProfileReset", function() UUF:ResolveLSM() UUF:LoadCustomColours() UUF:UpdateAllUnitFrames() for unit in pairs(UUF.db.profile.Units) do UUF:UpdateUnitTags(unit) end end)
 
     local playerSpecializationChangedEventFrame = CreateFrame("Frame")
     playerSpecializationChangedEventFrame:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
-    playerSpecializationChangedEventFrame:SetScript("OnEvent", function(_, event, ...) if InCombatLockdown() then return end if event ~= "PLAYER_SPECIALIZATION_CHANGED" then return end local unit = ... if unit == "player" then C_Timer.After(0.1, function() UUF:ResolveLSM() UUF:LoadCustomColours() UUF:UpdateAllUnitFrames() end) end end)
+	playerSpecializationChangedEventFrame:SetScript("OnEvent", function(_, event, ...) if InCombatLockdown() then return end if event ~= "PLAYER_SPECIALIZATION_CHANGED" then return end local unit = ... if unit == "player" then C_Timer.After(0.1, function() UUF:ResolveLSM() UUF:LoadCustomColours() UUF:UpdateAllUnitFrames() for configuredUnit in pairs(UUF.db.profile.Units) do UUF:UpdateUnitTags(configuredUnit) end end) end end)
 end
 
 function UnhaltedUnitFrames:OnEnable()
@@ -36,4 +36,6 @@ function UnhaltedUnitFrames:OnEnable()
     UUF:SpawnUnitFrame("focustarget")
     UUF:SpawnUnitFrame("pet")
     UUF:SpawnUnitFrame("boss")
+    UUF:SpawnUnitFrame("party")
+    UUF:SpawnUnitFrame("raid")
 end
