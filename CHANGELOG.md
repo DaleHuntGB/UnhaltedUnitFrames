@@ -1,3 +1,6 @@
+## V12.0.27
+- *Hopefully* fix when units join/leave, the frames update.
+- *Hopefully* fix some dancing tags.
 ## V12.0.26
 - Hopefully fix Pet Frames not being Class Coloured.
 ## V12.0.25
