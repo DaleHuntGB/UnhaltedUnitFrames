@@ -17,6 +17,13 @@ local function CreateUnitTag(unitFrame, unit, tagDB)
         end
         unitFrame.Tags[tagDB]:SetPoint(TagDB.Layout[1], unitFrame.HighLevelContainer, TagDB.Layout[2], TagDB.Layout[3], TagDB.Layout[4])
         unitFrame.Tags[tagDB]:SetJustifyH(UUF:SetJustification(TagDB.Layout[1]))
+        if TagDB.Layout[1] == "TOPLEFT" or TagDB.Layout[1] == "TOP" or TagDB.Layout[1] == "TOPRIGHT" then
+            unitFrame.Tags[tagDB]:SetJustifyV("TOP")
+        elseif TagDB.Layout[1] == "BOTTOMLEFT" or TagDB.Layout[1] == "BOTTOM" or TagDB.Layout[1] == "BOTTOMRIGHT" then
+            unitFrame.Tags[tagDB]:SetJustifyV("BOTTOM")
+        else
+            unitFrame.Tags[tagDB]:SetJustifyV("MIDDLE")
+        end
         unitFrame:Tag(unitFrame.Tags[tagDB], TagDB.Tag)
     end
 end
@@ -38,9 +45,19 @@ function UUF:UpdateUnitTag(unitFrame, unit, tagDB)
         unitFrame.Tags[tagDB]:ClearAllPoints()
         unitFrame.Tags[tagDB]:SetPoint(TagDB.Layout[1], unitFrame.HighLevelContainer, TagDB.Layout[2], TagDB.Layout[3], TagDB.Layout[4])
         unitFrame.Tags[tagDB]:SetJustifyH(UUF:SetJustification(TagDB.Layout[1]))
+        if TagDB.Layout[1] == "TOPLEFT" or TagDB.Layout[1] == "TOP" or TagDB.Layout[1] == "TOPRIGHT" then
+            unitFrame.Tags[tagDB]:SetJustifyV("TOP")
+        elseif TagDB.Layout[1] == "BOTTOMLEFT" or TagDB.Layout[1] == "BOTTOM" or TagDB.Layout[1] == "BOTTOMRIGHT" then
+            unitFrame.Tags[tagDB]:SetJustifyV("BOTTOM")
+        else
+            unitFrame.Tags[tagDB]:SetJustifyV("MIDDLE")
+        end
         unitFrame:Tag(unitFrame.Tags[tagDB], TagDB.Tag)
     end
     unitFrame.Tags[tagDB]:UpdateTag()
+    local tagText = unitFrame.Tags[tagDB]:GetText()
+    unitFrame.Tags[tagDB]:SetText("")
+    unitFrame.Tags[tagDB]:SetText(tagText or "")
 end
 
 function UUF:CreateUnitTags(unitFrame, unit)
